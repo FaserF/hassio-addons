@@ -11,20 +11,20 @@ async function run() {
   console.log('🚀 Running WhatsApp Addon Unified Test Suite...\n');
 
   try {
-    console.log('--- 1/6 Validating UI Scope & References ---');
+    console.log('--- 1/7 Validating UI Scope & References ---');
     await import('./validate-ui-scope.js');
 
-    console.log('\n--- 2/6 Testing UI Rendering ---');
+    console.log('\n--- 2/7 Testing UI Rendering ---');
     const { runUiRenderTests } = await import('./test-ui-render.js');
     await runUiRenderTests();
 
-    console.log('\n--- 3/6 Testing Contact Cache ---');
+    console.log('\n--- 3/7 Testing Contact Cache ---');
     await import('./test-contact-cache.js');
 
-    console.log('\n--- 4/6 Testing Moderation Engine ---');
+    console.log('\n--- 4/7 Testing Moderation Engine ---');
     await import('./test-moderation.js');
 
-    console.log('\n--- 5/6 Testing Commands Engine ---');
+    console.log('\n--- 5/7 Testing Commands Engine ---');
     await import('./test-commands.js');
 
     console.log('\n--- 6/7 Testing Telegram Bridge ---');

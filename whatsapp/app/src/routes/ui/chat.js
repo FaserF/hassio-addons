@@ -47,11 +47,11 @@ async function createNewGroupSubmit(event) {
   const rawParts = partEl ? partEl.value.trim() : '';
 
   if (!subject) {
-    showToast('Please enter a group subject / name', 'warning');
+    showToast(t('chats.group_subject_warning'), 'warning');
     return;
   }
   if (!rawParts) {
-    showToast('Please enter at least one participant phone number', 'warning');
+    showToast(t('chats.group_participant_warning'), 'warning');
     return;
   }
 
@@ -61,7 +61,7 @@ async function createNewGroupSubmit(event) {
     .filter((p) => p.length > 0);
 
   if (participants.length === 0) {
-    showToast('Please enter at least one valid participant number', 'warning');
+    showToast(t('chats.group_participant_valid_warning'), 'warning');
     return;
   }
 
@@ -73,7 +73,7 @@ async function createNewGroupSubmit(event) {
     });
     const data = await res.json();
     if (res.ok && (data.success || data.status === 'created')) {
-      showToast(`Group "${subject}" created successfully! 👥`, 'success');
+      showToast(t('chats.group_created', { name: subject }), 'success');
       closeNewChatModal();
       await loadChats();
       const newJid = data.group?.id || data.group?.gid;
@@ -81,16 +81,16 @@ async function createNewGroupSubmit(event) {
         selectChat(newJid, subject);
       }
     } else {
-      showToast(data.detail || 'Failed to create group', 'danger');
+      showToast(data.detail || t('chats.group_create_failed'), 'danger');
     }
   } catch (err) {
-    showToast('Error creating group: ' + err.message, 'danger');
+    showToast(t('chats.group_create_error', { error: err.message }), 'danger');
   }
 }
 
 function openNewChatModal() {
   if (!isConnected) {
-    showToast('WhatsApp is not connected. Scan QR Code first.', 'warning');
+    showToast(t('chats.not_connected'), 'warning');
     return;
   }
   const modal = document.getElementById('new-chat-modal');
@@ -121,7 +121,7 @@ function startNewChatSubmit(e) {
   if (!jid.includes('@')) {
     const cleanNum = jid.replace(/[^0-9]/g, '');
     if (!cleanNum) {
-      showToast('Invalid phone number', 'danger');
+      showToast(t('chats.invalid_phone'), 'danger');
       return;
     }
     jid = `${cleanNum}@s.whatsapp.net`;
@@ -130,7 +130,7 @@ function startNewChatSubmit(e) {
   closeNewChatModal();
   const displayName = jid.split('@')[0];
   selectChat(jid, displayName);
-  showToast(`Chat initialized for ${displayName}`, 'success');
+  showToast(t('chats.initialized', { name: displayName }), 'success');
 }
 
 function matchJid(a, b, extraName = '') {
@@ -288,7 +288,7 @@ function navigateToTelegramMapping(event, jid, mappingId) {
 function renderChatList(chats) {
   const container = document.getElementById('chat-list-items');
   if (!chats || chats.length === 0) {
-    container.innerHTML = '<div class="empty-state">No conversations active yet</div>';
+    container.innerHTML = `<div class="empty-state">${t('chats.no_conversations')}</div>`;
     return;
   }
 
@@ -298,7 +298,7 @@ function renderChatList(chats) {
   );
 
   if (filtered.length === 0) {
-    container.innerHTML = '<div class="empty-state">No matching chats found</div>';
+    container.innerHTML = `<div class="empty-state">${t('chats.no_matching')}</div>`;
     return;
   }
 
@@ -372,7 +372,7 @@ function renderChatList(chats) {
                         <span class="chat-name">${escapeHtml(c.name)}${badgesContainer}</span>
                         <span class="chat-time">${timeStr}</span>
                     </div>
-                    <div class="chat-last-msg">${escapeHtml(c.preview || 'No messages')}</div>
+                    <div class="chat-last-msg">${escapeHtml(c.preview || t('chats.no_messages'))}</div>
                 </div>
             </div>
         `;
@@ -487,7 +487,7 @@ function selectChat(jid, name) {
   updateChatHeaderBadges(jid, name || activeChatName);
 
   document.getElementById('chat-thread-messages').innerHTML =
-    '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading…</div>';
+    `<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> ${t('common.loading')}</div>`;
 
   const items = document.querySelectorAll('.chat-item');
   items.forEach((item) => item.classList.remove('active'));
@@ -546,13 +546,13 @@ async function voteOnPollOption(e, optText) {
       body: JSON.stringify({ jid: activeChatJid, option: optText, session_id: currentSession }),
     });
     if (res.ok) {
-      showToast(`Voted: "${optText}" 🗳️`, 'success');
+      showToast(t('chats.voted', { option: optText }), 'success');
       loadChatMessages(activeChatJid);
     } else {
-      showToast('Failed to cast vote', 'danger');
+      showToast(t('chats.vote_failed'), 'danger');
     }
   } catch (err) {
-    showToast('Failed to cast vote', 'danger');
+    showToast(t('chats.vote_failed'), 'danger');
   }
 }
 
@@ -785,7 +785,7 @@ async function loadChatMessages(jid) {
       container.scrollHeight - container.clientHeight <= container.scrollTop + 80;
 
     if (messages.length === 0) {
-      container.innerHTML = '<div class="empty-state">No messages in this conversation yet</div>';
+      container.innerHTML = `<div class="empty-state">${t('chats.no_messages_conversation')}</div>`;
       return;
     }
 
@@ -945,12 +945,12 @@ function ctxCopy() {
   closeAllOverlays();
   if (!ctxTargetMsg) return;
   navigator.clipboard.writeText(ctxTargetMsg.dataset.msgText || '').catch(() => {});
-  showToast('Copied to clipboard', 'success');
+  showToast(t('chats.copied'), 'success');
 }
 
 function ctxForward() {
   closeAllOverlays();
-  showToast('Forward: select a chat (coming soon)', 'info');
+  showToast(t('chats.forward_coming_soon'), 'info');
 }
 
 function ctxReact(e) {
@@ -995,7 +995,7 @@ function ctxReact(e) {
 
 function ctxDelete() {
   closeAllOverlays();
-  showToast('Deleted for you', 'info');
+  showToast(t('chats.deleted_for_you'), 'info');
 }
 
 function startReply(msgId, senderName, text) {
@@ -1058,14 +1058,14 @@ async function sendReaction(emoji) {
     });
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
-      showToast('Reaction failed: ' + (err.detail || resp.status), 'danger');
+      showToast(t('chats.reaction_failed', { error: err.detail || resp.status }), 'danger');
       return;
     }
-    showToast(finalEmoji ? 'Reaction sent' : 'Reaction removed', 'success');
+    showToast(finalEmoji ? t('chats.reaction_sent') : t('chats.reaction_removed'), 'success');
     delete lastLoadedMessagesCache[activeChatJid];
     setTimeout(() => loadChatMessages(activeChatJid), 300);
   } catch {
-    showToast('Failed to update reaction', 'danger');
+    showToast(t('chats.reaction_update_failed'), 'danger');
   }
 }
 
@@ -1164,7 +1164,7 @@ async function sendFileMessage(input) {
   const file = input.files[0];
   input.value = '';
   const mime = file.type;
-  showToast('Uploading…', 'info');
+  showToast(t('chats.uploading'), 'info');
 
   const reader = new FileReader();
   reader.onload = async () => {
@@ -1187,13 +1187,13 @@ async function sendFileMessage(input) {
         }),
       });
       if (resp.ok) {
-        showToast('File sent', 'success');
+        showToast(t('chats.file_sent'), 'success');
         setTimeout(() => loadChatMessages(activeChatJid), 800);
       } else {
-        showToast('Failed to send file', 'danger');
+        showToast(t('chats.file_send_failed'), 'danger');
       }
     } catch {
-      showToast('Failed to send file', 'danger');
+      showToast(t('chats.file_send_failed'), 'danger');
     }
   };
   reader.readAsDataURL(file);
@@ -1309,7 +1309,7 @@ async function sendChatMessage(event) {
   if (!message) return;
 
   input.value = '';
-  showToast('Sending message...', 'info');
+  showToast(t('chats.sending'), 'info');
 
   try {
     const payload = {
@@ -1330,16 +1330,16 @@ async function sendChatMessage(event) {
       body: JSON.stringify(payload),
     });
     if (response.ok) {
-      showToast('Message sent', 'success');
+      showToast(t('chats.message_sent'), 'success');
       delete lastLoadedMessagesCache[activeChatJid];
       loadChatMessages(activeChatJid);
       loadChats();
     } else {
       const errData = await response.json();
-      showToast(errData.error || 'Failed to send message', 'danger');
+      showToast(errData.error || t('chats.message_send_failed'), 'danger');
     }
   } catch (e) {
-    showToast('Network error sending message', 'danger');
+    showToast(t('chats.network_error_send'), 'danger');
   }
 }
 
@@ -1351,7 +1351,7 @@ async function openChatInfoDrawer() {
 
   drawer.style.display = 'flex';
   body.innerHTML =
-    '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading info…</div>';
+    `<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> ${t('chats.loading_info')}</div>`;
 
   try {
     const res = await fetch(
@@ -1439,7 +1439,7 @@ async function openChatInfoDrawer() {
       `;
     }
   } catch (e) {
-    body.innerHTML = '<div class="empty-state">Could not load chat info</div>';
+    body.innerHTML = `<div class="empty-state">${t('chats.could_not_load_info')}</div>`;
   }
 }
 

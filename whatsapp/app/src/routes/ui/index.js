@@ -176,33 +176,33 @@ export function renderDashboard(sessionId) {
             </a>
             <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="nav-item" data-tooltip="Integration Repo">
                 <i class="fas fa-puzzle-piece nav-icon"></i>
-                <span>Integration Repo</span>
+                <span data-i18n="shell.integration_repo">Integration Repo</span>
             </a>
             <a id="ha-repo-link" href="https://github.com/FaserF/hassio-addons" target="_blank" class="nav-item" data-tooltip="HA App Repo">
                 <i class="fas fa-cubes nav-icon"></i>
-                <span>HA App Repo</span>
+                <span data-i18n="shell.ha_app_repo">HA App Repo</span>
             </a>
             <a id="raw-logs-link" href="#" target="_blank" class="nav-item" data-tooltip="Raw Connection Logs">
                 <i class="fas fa-file-alt nav-icon"></i>
-                <span>Raw Connection Logs</span>
+                <span data-i18n="shell.raw_connection_logs">Raw Connection Logs</span>
             </a>
             <a id="full-logs-link" href="#" target="_top" class="nav-item" style="display:none;" data-tooltip="Full System Logs">
                 <i class="fas fa-file-invoice nav-icon"></i>
-                <span>Full System Logs</span>
+                <span data-i18n="shell.full_system_logs">Full System Logs</span>
             </a>
         </nav>
         
         <div class="sidebar-footer">
-            <div class="sys-info-title">System Properties</div>
+            <div class="sys-info-title" data-i18n="shell.system_properties">System Properties</div>
             <div class="sys-info-text">
-                <a href="#" onclick="openUpdateModal('addon'); return false;" class="sys-info-link">Addon: <span id="addon-version-sidebar" class="sys-info-val">...</span><span id="addon-update-badge" class="update-badge" style="display:none;" title="Update Available!">⚡ Update</span></a>
-                <a href="#" onclick="openUpdateModal('integration'); return false;" class="sys-info-link">Integration: <span id="int-version-sidebar" class="sys-info-val">...</span><span id="int-update-badge" class="update-badge" style="display:none;" title="Update Available!">⚡ Update</span></a>
-                <a href="#" onclick="openDependencyModal('Baileys'); return false;" class="sys-info-link">Baileys: <span id="baileys-version" class="sys-info-val">...</span><span id="baileys-update-badge" class="update-badge dep-badge" style="display:none;" title="Updated via Addon update">⚡ Info</span></a>
-                <a href="#" onclick="openDependencyModal('Node.js'); return false;" class="sys-info-link">Node: <span id="node-version" class="sys-info-val">...</span><span id="node-update-badge" class="update-badge dep-badge" style="display:none;" title="Updated via Addon update">⚡ Info</span></a>
-                <a href="#" onclick="openDependencyModal('Express'); return false;" class="sys-info-link">Express: <span id="express-version" class="sys-info-val">...</span><span id="express-update-badge" class="update-badge dep-badge" style="display:none;" title="Updated via Addon update">⚡ Info</span></a>
-                <a href="#" onclick="openDependencyModal('Alpine Linux'); return false;" class="sys-info-link">Alpine: <span id="alpine-version" class="sys-info-val">...</span><span id="alpine-update-badge" class="update-badge dep-badge" style="display:none;" title="Updated via Addon update">⚡ Info</span></a>
+                <a href="#" onclick="openUpdateModal('addon'); return false;" class="sys-info-link">Addon: <span id="addon-version-sidebar" class="sys-info-val">...</span><span id="addon-update-badge" class="update-badge" style="display:none;" title="Update Available!" data-i18n-title="shell.update_available">⚡ Update</span></a>
+                <a href="#" onclick="openUpdateModal('integration'); return false;" class="sys-info-link">Integration: <span id="int-version-sidebar" class="sys-info-val">...</span><span id="int-update-badge" class="update-badge" style="display:none;" title="Update Available!" data-i18n-title="shell.update_available">⚡ Update</span></a>
+                <a href="#" onclick="openDependencyModal('Baileys'); return false;" class="sys-info-link">Baileys: <span id="baileys-version" class="sys-info-val">...</span><span id="baileys-update-badge" class="update-badge dep-badge" style="display:none;" title="Updated via Addon update" data-i18n-title="shell.updated_via_addon">⚡ Info</span></a>
+                <a href="#" onclick="openDependencyModal('Node.js'); return false;" class="sys-info-link">Node: <span id="node-version" class="sys-info-val">...</span><span id="node-update-badge" class="update-badge dep-badge" style="display:none;" title="Updated via Addon update" data-i18n-title="shell.updated_via_addon">⚡ Info</span></a>
+                <a href="#" onclick="openDependencyModal('Express'); return false;" class="sys-info-link">Express: <span id="express-version" class="sys-info-val">...</span><span id="express-update-badge" class="update-badge dep-badge" style="display:none;" title="Updated via Addon update" data-i18n-title="shell.updated_via_addon">⚡ Info</span></a>
+                <a href="#" onclick="openDependencyModal('Alpine Linux'); return false;" class="sys-info-link">Alpine: <span id="alpine-version" class="sys-info-val">...</span><span id="alpine-update-badge" class="update-badge dep-badge" style="display:none;" title="Updated via Addon update" data-i18n-title="shell.updated_via_addon">⚡ Info</span></a>
             </div>
-            <div class="sidebar-info-badge" id="sidebar-info-badge" data-tooltip="System Info Loading..." title="Click for System Properties" onclick="showSystemPropertiesModal()">
+            <div class="sidebar-info-badge" id="sidebar-info-badge" data-tooltip="System Info Loading..." title="Click for System Properties" data-i18n-title="shell.system_properties_title" onclick="showSystemPropertiesModal()">
                 <i class="fas fa-info"></i>
             </div>
         </div>
@@ -215,7 +215,7 @@ export function renderDashboard(sessionId) {
             </div>
             <div class="header-actions">
                 <div class="session-selector-container">
-                    <span class="session-label">Session:</span>
+                    <span class="session-label" data-i18n="shell.session_label">Session:</span>
                     <select id="session-select" class="session-select" onchange="switchSession(this.value)">
                         <option value="${escapeHtml(sessionId)}">${escapeHtml(sessionId)}</option>
                     </select>
@@ -227,7 +227,7 @@ export function renderDashboard(sessionId) {
                         <option value="en">🇬🇧 EN</option>
                     </select>
                 </div>
-                <button id="theme-toggle" class="theme-toggle" title="Toggle Light/Dark Mode" onclick="toggleTheme()">🌓</button>
+                <button id="theme-toggle" class="theme-toggle" title="Toggle Light/Dark Mode" data-i18n-title="shell.toggle_theme_title" onclick="toggleTheme()">🌓</button>
             </div>
         </header>
 
@@ -235,16 +235,16 @@ export function renderDashboard(sessionId) {
             <div id="dev-banner" class="banner banner-warning" style="display:none;">
                 <i class="fas fa-exclamation-triangle banner-warning-icon"></i>
                 <div>
-                    <strong>Development / Beta Release Active</strong><br>
-                    You are running a beta or edge version of the gateway. Some settings may behave experimentally.
+                    <strong data-i18n="shell.dev_banner_title">Development / Beta Release Active</strong><br>
+                    <span data-i18n="shell.dev_banner_desc">You are running a beta or edge version of the gateway. Some settings may behave experimentally.</span>
                 </div>
             </div>
 
             <div id="passkey-banner" class="banner banner-warning" style="display:none;">
                 <i class="fas fa-key banner-warning-icon"></i>
                 <div>
-                    <strong>WhatsApp Passkey Requirement Detected</strong><br>
-                    Your account has passkeys active which restricts Baileys pairing. Open WhatsApp Settings &rarr; Account &rarr; Passkeys and remove them to pair this daemon. Click restart afterward.
+                    <strong data-i18n="shell.passkey_req_title">WhatsApp Passkey Requirement Detected</strong><br>
+                    <span data-i18n="shell.passkey_req_desc">Your account has passkeys active which restricts Baileys pairing. Open WhatsApp Settings &rarr; Account &rarr; Passkeys and remove them to pair this daemon. Click restart afterward.</span>
                 </div>
             </div>
 
@@ -259,7 +259,7 @@ export function renderDashboard(sessionId) {
             ${telegramView()}
 
             <footer class="footer-info">
-                WhatsApp Gateway &bull; Session: <strong id="footer-session-id" style="color:var(--text-main);">...</strong> (<span id="footer-session-status">...</span>)
+                <span data-i18n="shell.footer_gateway">WhatsApp Gateway</span> &bull; <span data-i18n="shell.session_label">Session:</span> <strong id="footer-session-id" style="color:var(--text-main);">...</strong> (<span id="footer-session-status">...</span>)
             </footer>
         </div>
     </main>
@@ -270,15 +270,15 @@ export function renderDashboard(sessionId) {
   <div class="modal-overlay" id="confirm-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 id="modal-title">Confirm Action</h3>
+        <h3 id="modal-title" data-i18n="shell.confirm_action">Confirm Action</h3>
         <button class="modal-close-btn" id="modal-close"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
-        <p id="modal-message">Are you sure you want to proceed?</p>
+        <p id="modal-message" data-i18n="shell.confirm_proceed">Are you sure you want to proceed?</p>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary btn-sm" id="modal-cancel-btn">Cancel</button>
-        <button class="btn btn-danger btn-sm" id="modal-confirm-btn">Confirm</button>
+        <button class="btn btn-secondary btn-sm" id="modal-cancel-btn" data-i18n="common.cancel">Cancel</button>
+        <button class="btn btn-danger btn-sm" id="modal-confirm-btn" data-i18n="common.confirm">Confirm</button>
       </div>
     </div>
   </div>
@@ -287,7 +287,7 @@ export function renderDashboard(sessionId) {
   <div class="modal-overlay" id="version-update-modal">
     <div class="modal-card modal-lg">
       <div class="modal-header">
-        <h3><i class="fas fa-arrow-alt-circle-up" style="color:var(--primary);margin-right:8px;"></i> <span id="update-modal-title">Update Information</span></h3>
+        <h3><i class="fas fa-arrow-alt-circle-up" style="color:var(--primary);margin-right:8px;"></i> <span id="update-modal-title" data-i18n="shell.update_info">Update Information</span></h3>
         <button class="modal-close-btn" onclick="closeUpdateModal()"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
@@ -300,19 +300,19 @@ export function renderDashboard(sessionId) {
         <div class="update-rationale-box">
           <i class="fas fa-shield-alt rationale-icon"></i>
           <div>
-            <strong>Why should you keep your software updated?</strong>
-            <p>Updates provide critical security patches, stability improvements, and protocol compatibility updates for WhatsApp Web (Baileys) and Home Assistant.</p>
+            <strong data-i18n="shell.why_keep_updated">Why should you keep your software updated?</strong>
+            <p data-i18n="shell.why_keep_updated_desc">Updates provide critical security patches, stability improvements, and protocol compatibility updates for WhatsApp Web (Baileys) and Home Assistant.</p>
           </div>
         </div>
 
         <div class="changelog-container">
-          <div class="changelog-title"><i class="fas fa-list-ul"></i> Changelog / Release Notes</div>
-          <div id="update-changelog-content" class="changelog-body">Loading changelog...</div>
+          <div class="changelog-title"><i class="fas fa-list-ul"></i> <span data-i18n="shell.changelog_title">Changelog / Release Notes</span></div>
+          <div id="update-changelog-content" class="changelog-body" data-i18n="shell.loading_changelog">Loading changelog...</div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary btn-sm" onclick="closeUpdateModal()">Close</button>
-        <a id="update-action-btn" href="#" target="_top" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Update Now</a>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeUpdateModal()" data-i18n="common.close">Close</button>
+        <a id="update-action-btn" href="#" target="_top" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> <span data-i18n="shell.update_now">Update Now</span></a>
       </div>
     </div>
   </div>
@@ -321,7 +321,7 @@ export function renderDashboard(sessionId) {
   <div class="modal-overlay" id="dependency-info-modal">
     <div class="modal-card modal-lg">
       <div class="modal-header">
-        <h3><i class="fas fa-cubes" style="color:var(--primary);margin-right:8px;"></i> <span id="dep-modal-title">Package Dependency</span></h3>
+        <h3><i class="fas fa-cubes" style="color:var(--primary);margin-right:8px;"></i> <span id="dep-modal-title" data-i18n="shell.pkg_dependency">Package Dependency</span></h3>
         <button class="modal-close-btn" onclick="closeDependencyModal()"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
@@ -334,34 +334,34 @@ export function renderDashboard(sessionId) {
         <div class="update-rationale-box" id="dep-rationale-box">
           <i class="fas fa-info-circle rationale-icon" id="dep-rationale-icon"></i>
           <div>
-            <strong id="dep-rationale-title">Bundled Dependency</strong>
-            <p id="dep-rationale-desc">This component is bundled and managed directly inside the WhatsApp Addon image.</p>
+            <strong id="dep-rationale-title" data-i18n="shell.bundled_dep">Bundled Dependency</strong>
+            <p id="dep-rationale-desc" data-i18n="shell.bundled_dep_desc">This component is bundled and managed directly inside the WhatsApp Addon image.</p>
           </div>
         </div>
 
         <div class="dep-details-grid">
           <div class="dep-detail-card">
-            <span class="dep-detail-label">Role in Gateway</span>
+            <span class="dep-detail-label" data-i18n="shell.role_in_gateway">Role in Gateway</span>
             <span class="dep-detail-val" id="dep-role-desc">Core engine component</span>
           </div>
           <div class="dep-detail-card">
-            <span class="dep-detail-label">Update Pipeline</span>
-            <span class="dep-detail-val">Ships with Addon Releases</span>
+            <span class="dep-detail-label" data-i18n="shell.update_pipeline">Update Pipeline</span>
+            <span class="dep-detail-val" data-i18n="shell.ships_with_addon">Ships with Addon Releases</span>
           </div>
         </div>
 
-        <p style="font-size:13px; color:var(--text-main); line-height:1.5; margin-top:12px;">
+        <p style="font-size:13px; color:var(--text-main); line-height:1.5; margin-top:12px;" data-i18n="shell.dep_note">
           Dependencies are regularly updated to ensure maximum security, protocol compatibility, and performance. If an addon update is pending, installing it will automatically upgrade this dependency.
         </p>
       </div>
       <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
         <div style="display:flex; gap:8px;">
-          <a id="dep-repo-btn" href="#" target="_blank" class="btn btn-secondary btn-sm"><i class="fab fa-github"></i> Official Repo</a>
-          <a id="dep-releases-btn" href="#" target="_blank" class="btn btn-secondary btn-sm"><i class="fas fa-tags"></i> Release Notes</a>
+          <a id="dep-repo-btn" href="#" target="_blank" class="btn btn-secondary btn-sm"><i class="fab fa-github"></i> <span data-i18n="shell.official_repo">Official Repo</span></a>
+          <a id="dep-releases-btn" href="#" target="_blank" class="btn btn-secondary btn-sm"><i class="fas fa-tags"></i> <span data-i18n="shell.release_notes">Release Notes</span></a>
         </div>
         <div style="display:flex; gap:8px;">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="closeDependencyModal()">Close</button>
-          <a id="dep-action-btn" href="https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml" target="_blank" class="btn btn-primary btn-sm"><i class="fas fa-exclamation-circle"></i> Open Issue</a>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeDependencyModal()" data-i18n="common.close">Close</button>
+          <a id="dep-action-btn" href="https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml" target="_blank" class="btn btn-primary btn-sm"><i class="fas fa-exclamation-circle"></i> <span data-i18n="shell.open_issue">Open Issue</span></a>
         </div>
       </div>
     </div>
@@ -370,39 +370,39 @@ export function renderDashboard(sessionId) {
   <div class="modal-overlay" id="system-properties-modal">
     <div class="modal-card modal-lg">
       <div class="modal-header">
-        <h3><i class="fas fa-microchip" style="color:var(--primary);margin-right:8px;"></i> System Properties Overview</h3>
+        <h3><i class="fas fa-microchip" style="color:var(--primary);margin-right:8px;"></i> <span data-i18n="shell.system_properties_overview">System Properties Overview</span></h3>
         <button class="modal-close-btn" onclick="closeSystemPropertiesModal()"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
         <div class="dep-details-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
           <div class="dep-detail-card" style="cursor:pointer;" onclick="closeSystemPropertiesModal(); openUpdateModal('addon');">
-            <span class="dep-detail-label">Addon Version</span>
+            <span class="dep-detail-label" data-i18n="shell.addon_version">Addon Version</span>
             <span class="dep-detail-val" id="sys-modal-addon">...</span>
           </div>
           <div class="dep-detail-card" style="cursor:pointer;" onclick="closeSystemPropertiesModal(); openUpdateModal('integration');">
-            <span class="dep-detail-label">Integration Version</span>
+            <span class="dep-detail-label" data-i18n="shell.int_version">Integration Version</span>
             <span class="dep-detail-val" id="sys-modal-int">...</span>
           </div>
           <div class="dep-detail-card" style="cursor:pointer;" onclick="closeSystemPropertiesModal(); openDependencyModal('Baileys');">
-            <span class="dep-detail-label">Baileys Library</span>
+            <span class="dep-detail-label" data-i18n="shell.baileys_lib">Baileys Library</span>
             <span class="dep-detail-val" id="sys-modal-baileys">...</span>
           </div>
           <div class="dep-detail-card" style="cursor:pointer;" onclick="closeSystemPropertiesModal(); openDependencyModal('Node.js');">
-            <span class="dep-detail-label">Node.js Engine</span>
+            <span class="dep-detail-label" data-i18n="shell.node_engine">Node.js Engine</span>
             <span class="dep-detail-val" id="sys-modal-node">...</span>
           </div>
           <div class="dep-detail-card" style="cursor:pointer;" onclick="closeSystemPropertiesModal(); openDependencyModal('Express');">
-            <span class="dep-detail-label">Express Framework</span>
+            <span class="dep-detail-label" data-i18n="shell.express_framework">Express Framework</span>
             <span class="dep-detail-val" id="sys-modal-express">...</span>
           </div>
           <div class="dep-detail-card" style="cursor:pointer;" onclick="closeSystemPropertiesModal(); openDependencyModal('Alpine Linux');">
-            <span class="dep-detail-label">Alpine Base OS</span>
+            <span class="dep-detail-label" data-i18n="shell.alpine_os">Alpine Base OS</span>
             <span class="dep-detail-val" id="sys-modal-alpine">...</span>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary btn-sm" onclick="closeSystemPropertiesModal()">Close</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeSystemPropertiesModal()" data-i18n="common.close">Close</button>
       </div>
     </div>
   </div>
@@ -411,47 +411,47 @@ export function renderDashboard(sessionId) {
   <div class="modal-overlay" id="new-chat-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3><i class="fas fa-comment-medical" style="color:var(--primary);margin-right:8px;"></i> New Conversation</h3>
+        <h3><i class="fas fa-comment-medical" style="color:var(--primary);margin-right:8px;"></i> <span data-i18n="shell.new_conversation">New Conversation</span></h3>
         <button class="modal-close-btn" onclick="closeNewChatModal()"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
         <!-- Mode Switcher Tabs -->
         <div style="display:flex;gap:8px;margin-bottom:18px;border-bottom:1px solid var(--border-color);padding-bottom:12px;">
           <button type="button" id="tab-btn-direct-chat" class="btn btn-primary btn-sm" onclick="switchNewChatTab('direct')" style="flex:1;">
-            <i class="fas fa-user" style="margin-right:6px;"></i> Direct Chat
+            <i class="fas fa-user" style="margin-right:6px;"></i> <span data-i18n="shell.direct_chat">Direct Chat</span>
           </button>
           <button type="button" id="tab-btn-group-chat" class="btn btn-secondary btn-sm" onclick="switchNewChatTab('group')" style="flex:1;">
-            <i class="fas fa-users" style="margin-right:6px;"></i> Create Group
+            <i class="fas fa-users" style="margin-right:6px;"></i> <span data-i18n="shell.create_group">Create Group</span>
           </button>
         </div>
 
         <!-- Mode 1: Direct Chat Form -->
         <form id="new-direct-chat-form" onsubmit="startNewChatSubmit(event)">
           <div class="form-group" style="margin-bottom:16px;">
-            <label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;">Phone Number or Chat JID</label>
-            <input type="text" id="new-chat-number" class="chat-message-input" placeholder="e.g. 4917612345678 or 4917612345678@s.whatsapp.net" style="width:100%;border:1px solid var(--border-color);padding:10px 14px;border-radius:8px;background:var(--bg-input);">
-            <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">Include country code without + or spaces (e.g. 49... for Germany).</p>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;" data-i18n="shell.phone_or_jid">Phone Number or Chat JID</label>
+            <input type="text" id="new-chat-number" class="chat-message-input" placeholder="e.g. 4917612345678 or 4917612345678@s.whatsapp.net" data-i18n-placeholder="shell.phone_or_jid_ph" style="width:100%;border:1px solid var(--border-color);padding:10px 14px;border-radius:8px;background:var(--bg-input);">
+            <p style="font-size:11px;color:var(--text-muted);margin-top:6px;" data-i18n="shell.phone_hint">Include country code without + or spaces (e.g. 49... for Germany).</p>
           </div>
           <div class="modal-footer" style="margin-top:16px;padding:0;">
-            <button type="button" class="btn btn-secondary btn-sm" onclick="closeNewChatModal()">Cancel</button>
-            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Open Chat</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeNewChatModal()" data-i18n="common.cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> <span data-i18n="shell.open_chat">Open Chat</span></button>
           </div>
         </form>
 
         <!-- Mode 2: Create Group Form -->
         <form id="new-group-chat-form" onsubmit="createNewGroupSubmit(event)" style="display:none;">
           <div class="form-group" style="margin-bottom:12px;">
-            <label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;">Group Subject / Name</label>
-            <input type="text" id="new-group-subject" class="chat-message-input" placeholder="e.g. Project Team Chat" style="width:100%;border:1px solid var(--border-color);padding:10px 14px;border-radius:8px;background:var(--bg-input);">
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;" data-i18n="shell.group_subject">Group Subject / Name</label>
+            <input type="text" id="new-group-subject" class="chat-message-input" placeholder="e.g. Project Team Chat" data-i18n-placeholder="shell.group_subject_ph" style="width:100%;border:1px solid var(--border-color);padding:10px 14px;border-radius:8px;background:var(--bg-input);">
           </div>
           <div class="form-group" style="margin-bottom:16px;">
-            <label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;">Participant Phone Numbers (comma separated)</label>
-            <input type="text" id="new-group-participants" class="chat-message-input" placeholder="e.g. 491761234567, 491769876543" style="width:100%;border:1px solid var(--border-color);padding:10px 14px;border-radius:8px;background:var(--bg-input);">
-            <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">At least 1 participant number required. Country code without +.</p>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;" data-i18n="shell.participant_numbers">Participant Phone Numbers (comma separated)</label>
+            <input type="text" id="new-group-participants" class="chat-message-input" placeholder="e.g. 491761234567, 491769876543" data-i18n-placeholder="shell.participant_numbers_ph" style="width:100%;border:1px solid var(--border-color);padding:10px 14px;border-radius:8px;background:var(--bg-input);">
+            <p style="font-size:11px;color:var(--text-muted);margin-top:6px;" data-i18n="shell.participant_hint">At least 1 participant number required. Country code without +.</p>
           </div>
           <div class="modal-footer" style="margin-top:16px;padding:0;">
-            <button type="button" class="btn btn-secondary btn-sm" onclick="closeNewChatModal()">Cancel</button>
-            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-users"></i> Create & Open Group</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeNewChatModal()" data-i18n="common.cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-users"></i> <span data-i18n="shell.create_open_group">Create &amp; Open Group</span></button>
           </div>
         </form>
       </div>

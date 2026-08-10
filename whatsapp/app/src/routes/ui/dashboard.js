@@ -295,7 +295,7 @@ async function updateDashboard() {
                 '</div>'
             )
             .join('')
-        : '<div class="empty-state">No messages sent recently</div>'
+        : `<div class="empty-state">${window.t('dashboard.no_sent')}</div>`
     );
 
     setElHtml(
@@ -317,7 +317,7 @@ async function updateDashboard() {
                 '</div>'
             )
             .join('')
-        : '<div class="empty-state">No messages received recently</div>'
+        : `<div class="empty-state">${window.t('dashboard.no_received')}</div>`
     );
 
     setElHtml(
@@ -342,7 +342,7 @@ async function updateDashboard() {
                 '</div>'
             )
             .join('')
-        : '<div class="empty-state">No failures recorded</div>'
+        : `<div class="empty-state">${window.t('dashboard.no_failures')}</div>`
     );
   } catch (e) {
     console.error('❌ updateDashboard error:', e);
@@ -353,6 +353,7 @@ async function updateDashboard() {
     }
   }
 }
+
 
 // System Logs, Session Management & Backups
 
@@ -377,7 +378,7 @@ async function loadLogs() {
                 '</span></div>'
             )
             .join('')
-        : '<div class="log-entry">No logs yet</div>';
+        : `<div class="log-entry">${t('dashboard.no_logs')}</div>`;
     }
   } catch (err) {
     console.error(err);
@@ -399,20 +400,20 @@ async function downloadDebugInfo() {
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
-    showToast('Debug info downloaded successfully', 'success');
+    showToast(t('dashboard.debug_downloaded'), 'success');
   } catch (e) {
-    showToast('Failed to download debug bundle', 'danger');
+    showToast(t('dashboard.debug_failed'), 'danger');
   }
 }
 
 async function restartSession() {
   const ok = await showConfirm(
-    'Restart WhatsApp Daemon?',
-    'Are you sure you want to trigger a soft restart on this session daemon?'
+    t('dashboard.restart_confirm_title'),
+    t('dashboard.restart_confirm_msg')
   );
   if (!ok) return;
 
-  showToast('Restarting session...', 'warning');
+  showToast(t('dashboard.restarting_session'), 'warning');
   try {
     const response = await fetch(basePath + 'api/session/restart', {
       method: 'POST',
@@ -423,22 +424,22 @@ async function restartSession() {
       body: JSON.stringify({ session_id: currentSession }),
     });
     if (response.ok) {
-      showToast('Restart command acknowledged', 'success');
+      showToast(t('dashboard.restart_ack'), 'success');
       setTimeout(updateDashboard, 1500);
     }
   } catch (e) {
-    showToast('Restart request failed', 'danger');
+    showToast(t('dashboard.restart_failed'), 'danger');
   }
 }
 
 async function logoutSession() {
   const ok = await showConfirm(
-    'WARNING: Hard Reset Session?',
-    'This will logout WhatsApp from your mobile client and delete all credentials. You will need to scan the QR code to pair again.'
+    t('dashboard.reset_confirm_title'),
+    t('dashboard.reset_confirm_msg')
   );
   if (!ok) return;
 
-  showToast('Deleting credentials...', 'warning');
+  showToast(t('dashboard.deleting_credentials'), 'warning');
   try {
     const response = await fetch(basePath + 'session', {
       method: 'DELETE',
@@ -449,22 +450,22 @@ async function logoutSession() {
       body: JSON.stringify({ session_id: currentSession }),
     });
     if (response.ok) {
-      showToast('Session logged out and reset completed', 'success');
+      showToast(t('dashboard.reset_completed'), 'success');
       updateDashboard();
     }
   } catch (e) {
-    showToast('Reset request failed', 'danger');
+    showToast(t('dashboard.reset_failed'), 'danger');
   }
 }
 
 async function purgeSessions() {
   const ok = await showConfirm(
-    'Clean Disconnected Sessions?',
-    'This will delete all inactive or stale session directories and free up resources.'
+    t('dashboard.purge_confirm_title'),
+    t('dashboard.purge_confirm_msg')
   );
   if (!ok) return;
 
-  showToast('Purging disconnected sessions...', 'info');
+  showToast(t('dashboard.purging_sessions'), 'info');
   try {
     const response = await fetch(basePath + 'api/sessions/purge', {
       method: 'POST',
@@ -475,18 +476,18 @@ async function purgeSessions() {
     });
     if (response.ok) {
       const resData = await response.json();
-      showToast(`Purged ${resData.purgedCount || 0} disconnected session(s)`, 'success');
+      showToast(t('dashboard.purged_count', { count: resData.purgedCount || 0 }), 'success');
       updateDashboard();
     } else {
-      showToast('Purge request failed', 'danger');
+      showToast(t('dashboard.purge_failed'), 'danger');
     }
   } catch (e) {
-    showToast('Purge request failed: ' + e.message, 'danger');
+    showToast(t('dashboard.purge_failed_error', { error: e.message }), 'danger');
   }
 }
 
 async function clearLogs() {
-  const ok = await showConfirm('Clear Connection Logs?', 'Do you want to purge connection logs?');
+  const ok = await showConfirm(t('dashboard.clear_logs_confirm_title'), t('dashboard.clear_logs_confirm_msg'));
   if (!ok) return;
 
   try {
@@ -499,11 +500,11 @@ async function clearLogs() {
       body: JSON.stringify({ session_id: currentSession }),
     });
     if (response.ok) {
-      showToast('Logs database cleared', 'success');
+      showToast(t('dashboard.logs_cleared'), 'success');
       updateDashboard();
     }
   } catch (e) {
-    showToast('Failed to clear logs', 'danger');
+    showToast(t('dashboard.logs_clear_failed'), 'danger');
   }
 }
 
@@ -517,6 +518,7 @@ function switchSession(id) {
   }
   updateDashboard();
 }
+
 
 // Update & Dependency Modals
 
@@ -717,6 +719,7 @@ function closeDependencyModal() {
   if (modal) modal.classList.remove('show');
 }
 
+
 // Moderation Core (Store, Group Selector, Rules, Greetings, Captcha, Warns, Commands)
 
 let modStoreCache = null;
@@ -798,6 +801,7 @@ const TRACKED_FIELD_IDS = [
   'mod-antiraid-max',
   'mod-antiraid-win',
   'mod-antispam-links-enabled',
+  'mod-antispam-bot-enabled',
   'mod-notify-deleted-action',
   'mod-notify-bypassed-actions',
   'mod-ai-enabled',
@@ -950,8 +954,6 @@ async function unsavedModalSaveAndSwitch() {
   markClean();
   if (proceed) proceed();
 }
-// ── End Dirty Tracking ────────────────────────────────────────────────────────
-
 function updateModerationDisabledState() {
   const globalToggle = document.getElementById('mod-global-toggle');
   const isGlobalEnabled = globalToggle ? globalToggle.checked : true;
@@ -980,7 +982,7 @@ function updateModerationDisabledState() {
   // 2) Group-level toggle: disable group sub-panels if group moderation is disabled
   const groupToggle = document.getElementById('mod-group-toggle');
   const isGroupEnabled = groupToggle ? groupToggle.checked : true;
-  if (isGlobalEnabled && currentModGroup) {
+  if (isGlobalEnabled && typeof currentModGroup !== 'undefined' && currentModGroup) {
     const groupContent = document.getElementById('mod-group-content');
     if (groupContent) {
       const subCards = groupContent.querySelectorAll('.mod-settings-card, .mod-sub-panel, .card');
@@ -1091,11 +1093,11 @@ async function saveGlobalRulesInline() {
       body: JSON.stringify({ global_rules: rules }),
     });
     if (res.ok) {
-      showToast('Global default rules saved successfully! 🌐', 'success');
+      showToast(t('moderation.global_rules_saved'), 'success');
       loadModerationConfig();
     }
   } catch (e) {
-    showToast('Failed to save global rules', 'danger');
+    showToast(t('moderation.global_rules_save_failed'), 'danger');
   }
 }
 
@@ -1124,12 +1126,12 @@ async function saveGlobalRulesFromModal() {
       body: JSON.stringify({ global_rules: rules }),
     });
     if (res.ok) {
-      showToast('Global rules saved successfully! 🌐', 'success');
+      showToast(t('moderation.global_rules_saved'), 'success');
       closeGlobalRulesModal();
       loadModerationConfig();
     }
   } catch (e) {
-    showToast('Failed to save global rules', 'danger');
+    showToast(t('moderation.global_rules_save_failed'), 'danger');
   }
 }
 
@@ -1142,11 +1144,11 @@ async function toggleGlobalModeration(enabled) {
       body: JSON.stringify({ global_enabled: enabled }),
     });
     if (res.ok) {
-      showToast(enabled ? 'Global Moderation Enabled 🛡️' : 'Global Moderation Disabled', 'info');
+      showToast(enabled ? t('moderation.global_enabled') : t('moderation.global_disabled'), 'info');
       loadModerationConfig();
     }
   } catch (e) {
-    showToast('Failed to toggle global moderation', 'danger');
+    showToast(t('moderation.global_toggle_failed'), 'danger');
   }
 }
 
@@ -1186,6 +1188,8 @@ async function selectModerationGroup(groupId) {
   if (rulesText) rulesText.value = config.rules?.text || '';
   const rulesShow = document.getElementById('mod-rules-show-on-join');
   if (rulesShow) rulesShow.checked = Boolean(config.rules?.show_on_join);
+  const groupLang = document.getElementById('mod-group-language-select');
+  if (groupLang) groupLang.value = config.language || 'en';
 
   // Greetings
   const welcE = document.getElementById('mod-welcome-enabled');
@@ -1255,7 +1259,7 @@ async function selectModerationGroup(groupId) {
 
     const entries = Object.keys(mergedWarns).filter((u) => mergedWarns[u]?.length);
     if (!entries.length) {
-      warnList.innerHTML = '<div class="empty-state">No active user warnings</div>';
+      warnList.innerHTML = `<div class="empty-state">${t('moderation.no_warns')}</div>`;
     } else {
       warnList.innerHTML = entries
         .map((u) => {
@@ -1289,7 +1293,7 @@ async function selectModerationGroup(groupId) {
     const bannedMap = config.banned_users || {};
     const bannedUserIds = Object.keys(bannedMap);
     if (!bannedUserIds.length) {
-      bansList.innerHTML = '<div class="empty-state">No banned users</div>';
+      bansList.innerHTML = `<div class="empty-state">${t('moderation.no_bans')}</div>`;
     } else {
       bansList.innerHTML = bannedUserIds
         .map((u) => {
@@ -1317,7 +1321,7 @@ async function selectModerationGroup(groupId) {
   if (kicksList) {
     const kickLogs = config.kick_log || [];
     if (!kickLogs.length) {
-      kicksList.innerHTML = '<div class="empty-state">No kick history</div>';
+      kicksList.innerHTML = `<div class="empty-state">${t('moderation.no_kicks')}</div>`;
     } else {
       kicksList.innerHTML = kickLogs
         .map((k) => {
@@ -1344,7 +1348,7 @@ async function selectModerationGroup(groupId) {
   if (reportsList) {
     const reports = config.reports || [];
     if (!reports.length) {
-      reportsList.innerHTML = '<div class="empty-state">No reports submitted yet</div>';
+      reportsList.innerHTML = `<div class="empty-state">${t('moderation.no_reports')}</div>`;
     } else {
       reportsList.innerHTML = reports
         .slice()
@@ -1509,7 +1513,7 @@ async function selectModerationGroup(groupId) {
         })
         .join('');
     } else {
-      defaultCmdsGrid.innerHTML = '<div class="empty-state">No commands registered</div>';
+      defaultCmdsGrid.innerHTML = `<div class="empty-state">${t('moderation.no_cmds')}</div>`;
     }
 
     // Clear search box when group changes
@@ -1523,7 +1527,7 @@ async function selectModerationGroup(groupId) {
     const customCmds = config.commands?.custom_commands || [];
     if (!customCmds.length) {
       customCmdsList.innerHTML =
-        '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">No custom mapped commands added yet</div>';
+        `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">${t('moderation.no_custom_cmds')}</div>`;
     } else {
       const typeLabel = (t) => {
         if (t === 'webhook')
@@ -1611,7 +1615,7 @@ async function selectModerationGroup(groupId) {
     );
     if (!entries.length) {
       mutedList.innerHTML =
-        '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:6px 0;">No muted users currently</div>';
+        `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:6px 0;">${t('moderation.no_muted_users')}</div>`;
     } else {
       mutedList.innerHTML = entries
         .map(([userKey, data]) => {
@@ -1666,7 +1670,7 @@ async function selectModerationGroup(groupId) {
     const words = config.blacklist?.words || [];
     if (!words.length) {
       blTags.innerHTML =
-        '<span style="color:var(--text-muted);font-size:12px;">No blacklisted words or patterns yet</span>';
+        `<span style="color:var(--text-muted);font-size:12px;">${t('moderation.no_blacklist_words')}</span>`;
     } else {
       blTags.innerHTML = words
         .map(
@@ -1686,7 +1690,7 @@ async function selectModerationGroup(groupId) {
     const filters = config.filters || [];
     if (!filters.length) {
       filtersList.innerHTML =
-        '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">No filter rules configured yet</div>';
+        `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">${t('moderation.no_filters')}</div>`;
     } else {
       filtersList.innerHTML = filters
         .map(
@@ -1731,11 +1735,11 @@ async function toggleGroupModeration(enabled) {
   try {
     const res = await fetch(url, { method: 'POST' });
     if (res.ok) {
-      showToast(enabled ? 'Group Moderation Enabled' : 'Group Moderation Disabled', 'success');
+      showToast(enabled ? t('moderation.group_enabled') : t('moderation.group_disabled'), 'success');
       loadModerationConfig();
     }
   } catch (e) {
-    showToast('Failed to update group moderation', 'danger');
+    showToast(t('moderation.group_update_failed'), 'danger');
   }
 }
 
@@ -1767,20 +1771,22 @@ function _registerDirtyListeners() {
 }
 
 async function saveGroupRules() {
-  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   const text = document.getElementById('mod-rules-text')?.value || '';
   const showOnJoin = Boolean(document.getElementById('mod-rules-show-on-join')?.checked);
+  const lang = document.getElementById('mod-group-language-select')?.value || 'en';
 
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.rules = { text, show_on_join: showOnJoin };
+  groupConfig.language = lang;
 
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Group rules saved!', 'success');
+  showToast(t('moderation.group_rules_saved'), 'success');
 }
 
 async function saveGroupGreetings() {
-  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.greetings = {
     welcome_enabled: Boolean(document.getElementById('mod-welcome-enabled')?.checked),
@@ -1799,7 +1805,7 @@ async function saveGroupGreetings() {
   };
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Greetings & Captcha saved!', 'success');
+  showToast(t('moderation.greetings_saved'), 'success');
   loadCaptchaUsers();
 }
 
@@ -1893,18 +1899,18 @@ async function toggleUserCaptchaVerification(userId, verified) {
     );
     const json = await res.json();
     if (json.success) {
-      showToast(`User ${userId} set to ${verified ? 'Verified' : 'Unverified'}`, 'success');
+      showToast(t('moderation.user_verification_updated', { user: userId, status: verified ? t('moderation.verified') : t('moderation.unverified') }), 'success');
       loadCaptchaUsers();
     } else {
-      showToast(json.error || 'Failed to update user captcha verification', 'error');
+      showToast(json.error || t('moderation.user_verification_failed'), 'error');
     }
   } catch (err) {
-    showToast(`Error updating verification: ${err.message}`, 'error');
+    showToast(t('moderation.user_verification_error', { error: err.message }), 'error');
   }
 }
 
 async function saveGroupWarnings() {
-  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.warnings = {
     ...(groupConfig.warnings || {}),
@@ -1913,11 +1919,11 @@ async function saveGroupWarnings() {
   };
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Warnings config saved!', 'success');
+  showToast(t('moderation.warnings_saved'), 'success');
 }
 
 async function saveGroupCommands() {
-  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
 
   const enabled = Boolean(document.getElementById('mod-cmds-enabled')?.checked);
   const multi_command_enabled = Boolean(document.getElementById('mod-cmds-multi-enabled')?.checked);
@@ -1942,7 +1948,7 @@ async function saveGroupCommands() {
   };
 
   await saveGroupConfig(groupConfig);
-  showToast('Commands configuration saved!', 'success');
+  showToast(t('moderation.commands_saved'), 'success');
 }
 
 function toggleAllDefaultCommands(enable) {
@@ -2003,7 +2009,7 @@ async function addCustomCommandRule() {
   if (!name || !currentModGroup) return;
   if (cmdType === 'auto_reply' && !resp) return;
   if (cmdType === 'alias' && !aliasTarget) {
-    showToast('Please select a target command for the alias.', 'error');
+    showToast(t('moderation.select_alias_target'), 'error');
     return;
   }
 
@@ -2029,7 +2035,7 @@ async function addCustomCommandRule() {
   if (adminOnlyInp) adminOnlyInp.checked = false;
 
   await saveGroupConfig(groupConfig);
-  showToast(`Custom command !${name} added!`, 'success');
+  showToast(t('moderation.custom_command_added', { name }), 'success');
   selectModerationGroup(currentModGroup);
   setTimeout(() => {
     if (nameInp) nameInp.focus();
@@ -2108,12 +2114,12 @@ async function clearUserWarnInUi(userId) {
       }
     );
     if (res.ok) {
-      showToast(`Warnings cleared for @${userId}`, 'success');
+      showToast(t('moderation.warnings_cleared', { user: userId }), 'success');
       loadModerationConfig();
       setTimeout(() => selectModerationGroup(currentModGroup), 200);
     }
   } catch (e) {
-    showToast('Failed to clear warnings', 'danger');
+    showToast(t('moderation.warnings_clear_failed'), 'danger');
   }
 }
 
@@ -2128,12 +2134,12 @@ async function resolveReportInUi(reportId) {
       }
     );
     if (res.ok) {
-      showToast('Report marked as resolved', 'success');
+      showToast(t('moderation.report_resolved'), 'success');
       loadModerationConfig();
       setTimeout(() => selectModerationGroup(currentModGroup), 200);
     }
   } catch (e) {
-    showToast('Failed to resolve report', 'danger');
+    showToast(t('moderation.report_resolve_failed'), 'danger');
   }
 }
 
@@ -2148,12 +2154,12 @@ async function unbanUserInUi(userId) {
       }
     );
     if (res.ok) {
-      showToast(`Unbanned @${userId}`, 'success');
+      showToast(t('moderation.unbanned_user', { user: userId }), 'success');
       loadModerationConfig();
       setTimeout(() => selectModerationGroup(currentModGroup), 200);
     }
   } catch (e) {
-    showToast('Failed to unban user', 'danger');
+    showToast(t('moderation.unban_failed'), 'danger');
   }
 }
 
@@ -2168,12 +2174,12 @@ async function clearKickLogInUi(userId) {
       }
     );
     if (res.ok) {
-      showToast(`Kick log entry removed for @${userId}`, 'success');
+      showToast(t('moderation.kick_log_removed', { user: userId }), 'success');
       loadModerationConfig();
       setTimeout(() => selectModerationGroup(currentModGroup), 200);
     }
   } catch (e) {
-    showToast('Failed to remove kick log entry', 'danger');
+    showToast(t('moderation.kick_log_remove_failed'), 'danger');
   }
 }
 
@@ -2188,19 +2194,20 @@ async function unmuteUserInUi(userId) {
       }
     );
     if (res.ok) {
-      showToast(`Unmuted @${userId}`, 'success');
+      showToast(t('moderation.unmuted_user', { user: userId }), 'success');
       loadModerationConfig();
       setTimeout(() => selectModerationGroup(currentModGroup), 200);
     }
   } catch (e) {
-    showToast('Failed to unmute user', 'danger');
+    showToast(t('moderation.unmute_failed'), 'danger');
   }
 }
+
 
 // Moderation Security (Content Locks, Anti-Spam / Anti-Raid, Blacklist)
 
 async function saveGroupLocks() {
-  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   const lockKeys = [
     'image',
@@ -2223,7 +2230,7 @@ async function saveGroupLocks() {
   });
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Content locks saved!', 'success');
+  showToast(t('moderation.locks_saved'), 'success');
 }
 
 async function addBlacklistWord() {
@@ -2263,7 +2270,7 @@ async function saveGroupBlacklist() {
     document.getElementById('mod-blacklist-mode')?.value || 'exact';
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Blacklist saved!', 'success');
+  showToast(t('moderation.blacklist_saved'), 'success');
 }
 
 async function saveGroupAntispam() {
@@ -2282,7 +2289,12 @@ async function saveGroupAntispam() {
       window_seconds: parseInt(document.getElementById('mod-antiraid-win')?.value, 10) || 10,
       action: 'lockdown',
     },
+    bot_anti_spam: {
+      enabled: Boolean(document.getElementById('mod-antispam-bot-enabled')?.checked),
+      max_messages_5s: 5,
+    },
     notify_deleted_action: Boolean(document.getElementById('mod-notify-deleted-action')?.checked),
+
     notify_bypassed_actions: Boolean(
       document.getElementById('mod-notify-bypassed-actions')?.checked
     ),
@@ -2300,14 +2312,14 @@ async function saveGroupAntispam() {
   );
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Anti-Spam & Anti-Raid saved!', 'success');
+  showToast(t('moderation.antispam_antiraid_saved'), 'success');
 }
 
 let testTargetUser = '';
 
 async function generateGroupTestCommandsModal() {
   if (!currentModGroup) {
-    showToast('Please select a group first.', 'warning');
+    showToast(t('moderation.select_group_warning'), 'warning');
     return;
   }
   const modal = document.getElementById('test-commands-modal');
@@ -2374,7 +2386,7 @@ async function generateGroupTestCommandsModal() {
         return `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:var(--body-bg);border:1px solid var(--border-color);border-radius:4px;margin-bottom:4px;">
           <code style="font-size:11px;white-space:pre-wrap;word-break:break-all;color:var(--text-main);">${escapedItem}</code>
-          <button class="btn btn-secondary btn-sm" style="padding:1px 6px;font-size:10px;margin-left:8px;flex-shrink:0;" onclick="navigator.clipboard.writeText(this.previousElementSibling.innerText);showToast('Copied command!','success');" title="Copy command"><i class="fas fa-copy"></i></button>
+          <button class="btn btn-secondary btn-sm" style="padding:1px 6px;font-size:10px;margin-left:8px;flex-shrink:0;" onclick="navigator.clipboard.writeText(this.previousElementSibling.innerText);showToast(t('chats.copied'),'success');" title="Copy command"><i class="fas fa-copy"></i></button>
         </div>`;
       })
       .join('');
@@ -2509,7 +2521,7 @@ function copyAllFromBlock(btnBtn) {
     .map((c) => c.innerText)
     .join('\n');
   navigator.clipboard.writeText(text);
-  showToast('Copied all commands in block!', 'success');
+  showToast(t('chats.copied'), 'success');
 }
 
 function closeTestCommandsModal() {
@@ -2519,7 +2531,7 @@ function closeTestCommandsModal() {
 
 async function sendTestSuiteToGroup() {
   if (!currentModGroup) {
-    showToast('No group selected.', 'warning');
+    showToast(t('moderation.select_group_warning'), 'warning');
     return;
   }
 
@@ -2528,7 +2540,7 @@ async function sendTestSuiteToGroup() {
   if (!modal) return;
   const codes = modal.querySelectorAll('.copyable-block-items code');
   if (!codes || codes.length === 0) {
-    showToast('No commands to send.', 'warning');
+    showToast(t('moderation.select_group_warning'), 'warning');
     return;
   }
 
@@ -2536,7 +2548,7 @@ async function sendTestSuiteToGroup() {
     .map((c) => c.innerText.trim())
     .filter(Boolean);
   if (lines.length === 0) {
-    showToast('No commands to send.', 'warning');
+    showToast(t('moderation.select_group_warning'), 'warning');
     return;
   }
 
@@ -2556,15 +2568,252 @@ async function sendTestSuiteToGroup() {
       }),
     });
     if (resp.ok) {
-      showToast('✅ Test suite sent to group!', 'success');
+      showToast(t('chats.message_sent'), 'success');
     } else {
       const err = await resp.json().catch(() => ({}));
-      showToast('Failed to send: ' + (err.detail || resp.status), 'danger');
+      showToast(t('chats.message_send_failed'), 'danger');
     }
   } catch (e) {
-    showToast('Network error: ' + e.message, 'danger');
+    showToast(t('chats.network_error_send'), 'danger');
   }
 }
+
+function toggleAutoTestModeUI(enabled) {
+  const optionsDiv = document.getElementById('mod-autotest-options');
+  const logStream = document.getElementById('mod-autotest-log-stream');
+  if (optionsDiv) {
+    optionsDiv.style.display = enabled ? 'flex' : 'none';
+  }
+  if (!enabled && logStream) {
+    logStream.style.display = 'none';
+  }
+}
+
+function selectAllModSubtests(select) {
+  const checkboxes = document.querySelectorAll('.mod-subtest-cb');
+  checkboxes.forEach((cb) => {
+    cb.checked = Boolean(select);
+  });
+}
+
+function clearAutoTestLogs() {
+  const logContent = document.getElementById('mod-autotest-log-content');
+  const progressBar = document.getElementById('mod-autotest-progress-bar');
+  const progressContainer = document.getElementById('mod-autotest-progress-bar-container');
+  if (logContent) logContent.innerHTML = '';
+  if (progressBar) progressBar.style.width = '0%';
+  if (progressContainer) progressContainer.style.display = 'none';
+}
+
+function exportAutoTestLogs() {
+  const logContent = document.getElementById('mod-autotest-log-content');
+  if (!logContent || !logContent.innerText.trim()) {
+    showToast(t('moderation.select_group_warning'), 'warning');
+    return;
+  }
+  const text = logContent.innerText;
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `moderation-autotest-log-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function runAutonomousModerationTest() {
+  if (!currentModGroup) {
+    showToast(t('moderation.select_group_warning'), 'warning');
+    return;
+  }
+
+  const safeOnly = Boolean(document.getElementById('mod-autotest-safe-only')?.checked);
+  const delayMs = parseInt(document.getElementById('mod-autotest-delay')?.value, 10) || 500;
+  const runBtn = document.getElementById('btn-run-autotest');
+  const logStream = document.getElementById('mod-autotest-log-stream');
+  const logContent = document.getElementById('mod-autotest-log-content');
+  const progressBar = document.getElementById('mod-autotest-progress-bar');
+  const progressContainer = document.getElementById('mod-autotest-progress-bar-container');
+
+  const selected_subtests = Array.from(document.querySelectorAll('.mod-subtest-cb:checked')).map(
+    (cb) => cb.value
+  );
+
+  if (selected_subtests.length === 0) {
+    showToast(t('moderation.select_group_warning'), 'warning');
+    return;
+  }
+
+  if (logStream) logStream.style.display = 'block';
+  if (progressContainer) progressContainer.style.display = 'block';
+  if (progressBar) progressBar.style.width = '0%';
+  if (logContent) logContent.innerHTML = '';
+  if (runBtn) {
+    runBtn.disabled = true;
+    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+  }
+
+  const appendLog = (msg, styleType = 'normal') => {
+    if (!logContent) return;
+    const isAtBottom = logStream
+      ? logStream.scrollHeight - logStream.scrollTop <= logStream.clientHeight + 60
+      : true;
+    const div = document.createElement('div');
+    if (styleType === 'error') {
+      div.style.color = '#ff5555';
+    } else if (styleType === 'category') {
+      div.style.color = '#00e5ff';
+      div.style.fontWeight = 'bold';
+      div.style.marginTop = '6px';
+    } else if (styleType === 'header') {
+      div.style.color = '#ffcc00';
+      div.style.fontWeight = 'bold';
+    } else if (styleType === 'success') {
+      div.style.color = '#33ff33';
+    } else {
+      div.style.color = '#cccccc';
+    }
+    div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    logContent.appendChild(div);
+    if (logStream && isAtBottom) {
+      logStream.scrollTop = logStream.scrollHeight;
+    }
+  };
+
+  appendLog(
+    `🚀 Initiating autonomous auto-test for group: ${currentModGroup} (Safe-Only: ${safeOnly}, Delay: ${delayMs}ms)...`,
+    'header'
+  );
+
+  try {
+    const res = await fetch(
+      (typeof basePath !== 'undefined' ? basePath : '') + 'api/moderation/autotest',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Auth-Token': typeof apiToken !== 'undefined' ? apiToken : '',
+        },
+        body: JSON.stringify({
+          group_id: currentModGroup,
+          safe_only: safeOnly,
+          delay_ms: delayMs,
+          selected_subtests,
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      const errText = await res.text();
+      let errMsg = res.statusText;
+      try {
+        const jsonErr = JSON.parse(errText);
+        errMsg = jsonErr.error || jsonErr.message || errMsg;
+      } catch (_e) {}
+      throw new Error(errMsg);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // keep last incomplete line in buffer
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const event = JSON.parse(line);
+          if (event.type === 'log') {
+            const style =
+              event.level === 'category_start'
+                ? 'category'
+                : event.level === 'error'
+                  ? 'error'
+                  : 'normal';
+            appendLog(event.message, style);
+          } else if (event.type === 'progress') {
+            const pct = Math.round((event.step / event.total) * 100);
+            if (progressBar) progressBar.style.width = `${pct}%`;
+            const statusSymbol = event.status === 'PASSED' ? '✅' : '❌';
+            appendLog(
+              `Step ${event.step}/${event.total} [${event.category.split('.')[0]}]: "${event.command}" -> ${event.status} ${statusSymbol} (${event.details})`,
+              event.status === 'PASSED' ? 'success' : 'error'
+            );
+          } else if (event.type === 'complete') {
+            if (progressBar) progressBar.style.width = '100%';
+            appendLog(`----------------------------------------`, 'header');
+            appendLog(
+              `✅ Auto-test completed! Passed: ${event.data.passed}/${event.data.total} in ${(event.data.duration_ms / 1000).toFixed(2)}s`,
+              'success'
+            );
+            appendLog(`📩 Markdown summary report delivered to WhatsApp group!`, 'header');
+            showToast(t('moderation.antispam_antiraid_saved'), 'success');
+          }
+        } catch (_err) {
+          appendLog(line, 'normal');
+        }
+      }
+    }
+
+    if (buffer && buffer.trim()) {
+      try {
+        const event = JSON.parse(buffer.trim());
+        if (event.type === 'log') {
+          appendLog(
+            event.message,
+            event.level === 'category_start'
+              ? 'category'
+              : event.level === 'error'
+                ? 'error'
+                : 'normal'
+          );
+        } else if (event.type === 'complete') {
+          if (progressBar) progressBar.style.width = '100%';
+          appendLog(`----------------------------------------`, 'header');
+          appendLog(
+            `✅ Auto-test completed! Passed: ${event.data.passed}/${event.data.total} in ${(event.data.duration_ms / 1000).toFixed(2)}s`,
+            'success'
+          );
+          appendLog(`📩 Markdown summary report delivered to WhatsApp group!`, 'header');
+          showToast(t('moderation.antispam_antiraid_saved'), 'success');
+        }
+      } catch (_e) {
+        appendLog(buffer.trim(), 'normal');
+      }
+    }
+  } catch (err) {
+    appendLog(`❌ Auto-test error: ${err.message}`, 'error');
+    showToast(t('moderation.group_update_failed'), 'danger');
+  } finally {
+    if (runBtn) {
+      runBtn.disabled = false;
+      runBtn.innerHTML = '<i class="fas fa-play"></i> Start Auto-Test';
+    }
+  }
+}
+
+function copyAutoTestLogs() {
+  const logContent = document.getElementById('mod-autotest-log-content');
+  if (logContent && logContent.textContent) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(logContent.textContent);
+    }
+    showToast(t('chats.copied'), 'success');
+  }
+}
+
+window.runAutonomousModerationTest = runAutonomousModerationTest;
+window.clearAutoTestLogs = clearAutoTestLogs;
+window.exportAutoTestLogs = exportAutoTestLogs;
+window.copyAutoTestLogs = copyAutoTestLogs;
+
 
 // Moderation Intelligence (AI Auto-Reply, Sentiment, System Prompt, Filters)
 
@@ -2582,7 +2831,7 @@ async function addFilterRule() {
   document.getElementById('mod-filter-response').value = '';
 
   await saveGroupConfig(groupConfig);
-  showToast(`${type === 'faq' ? 'FAQ' : 'Auto-reply'} filter rule added!`, 'success');
+  showToast(t('moderation.filter_rule_added', { type: type === 'faq' ? 'FAQ' : 'Auto-reply' }), 'success');
   selectModerationGroup(currentModGroup);
   setTimeout(() => {
     const el = document.getElementById('mod-filter-trigger');
@@ -2605,11 +2854,11 @@ async function saveGroupFilters() {
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Filters saved!', 'success');
+  showToast(t('moderation.filters_saved'), 'success');
 }
 
 async function saveGroupAiConfig() {
-  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.ai = {
     enabled: Boolean(document.getElementById('mod-ai-enabled')?.checked),
@@ -2639,13 +2888,14 @@ async function saveGroupAiConfig() {
     });
     if (res.ok) {
       markClean();
-      showToast('AI & Translation Settings Saved!', 'success');
+      showToast(t('moderation.ai_settings_saved'), 'success');
       loadModerationConfig();
     }
   } catch (e) {
-    showToast('Failed to save AI settings', 'danger');
+    showToast(t('moderation.ai_settings_save_failed'), 'danger');
   }
 }
+
 
 // Moderation Federation & Import/Export
 
@@ -2656,7 +2906,7 @@ async function saveGroupFederation() {
   groupConfig.federation_id = fedId;
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Federation settings saved!', 'success');
+  showToast(t('moderation.federation_saved'), 'success');
 }
 
 async function addFedBlacklistWord() {
@@ -2676,7 +2926,7 @@ async function addFedBlacklistWord() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ federations: modStoreCache.federations }),
     });
-    showToast('Federation pattern added!', 'success');
+    showToast(t('moderation.federation_created'), 'success');
     loadModerationConfig();
     setTimeout(() => {
       const el = document.getElementById('mod-fed-blacklist-new');
@@ -2696,7 +2946,7 @@ async function removeFedBlacklistWord(idx) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ federations: modStoreCache.federations }),
     });
-    showToast('Federation pattern removed', 'info');
+    showToast(t('moderation.federation_exported'), 'info');
     loadModerationConfig();
   }
 }
@@ -2724,7 +2974,7 @@ async function saveGroupConfig(groupConfig) {
 }
 
 async function exportGroupModerationConfig() {
-  if (!currentModGroup) return showToast('Please select a group first', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   try {
     const res = await fetch(
       basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/export`,
@@ -2741,16 +2991,16 @@ async function exportGroupModerationConfig() {
     a.href = url;
     a.download = `moderation_${currentModGroup.split('@')[0]}.json`;
     a.click();
-    showToast('Export downloaded!', 'success');
+    showToast(t('moderation.federation_exported'), 'success');
   } catch (e) {
-    showToast('Export failed', 'danger');
+    showToast(t('moderation.federation_saved'), 'danger');
   }
 }
 
 async function importGroupModerationConfig() {
-  if (!currentModGroup) return showToast('Please select a group first', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   const txt = document.getElementById('mod-import-text')?.value.trim();
-  if (!txt) return showToast('Please paste JSON data first', 'warning');
+  if (!txt) return showToast(t('moderation.invalid_json'), 'warning');
 
   try {
     const data = JSON.parse(txt);
@@ -2763,13 +3013,13 @@ async function importGroupModerationConfig() {
       }
     );
     if (res.ok) {
-      showToast('Config imported successfully!', 'success');
+      showToast(t('moderation.federation_imported'), 'success');
       loadModerationConfig();
     } else {
-      showToast('Import failed', 'danger');
+      showToast(t('moderation.invalid_json'), 'danger');
     }
   } catch (e) {
-    showToast('Invalid JSON format', 'danger');
+    showToast(t('moderation.invalid_json'), 'danger');
   }
 }
 
@@ -2815,7 +3065,7 @@ async function saveNewCustomFederation() {
   const name = document.getElementById('mod-new-fed-name')?.value.trim();
   const desc =
     document.getElementById('mod-new-fed-desc')?.value.trim() || 'Custom local security federation';
-  if (!name) return showToast('Please enter a federation name', 'warning');
+  if (!name) return showToast(t('moderation.select_group_warning'), 'warning');
 
   const newFed = {
     id: `fed_local_${Date.now()}`,
@@ -2846,7 +3096,7 @@ async function saveNewCustomFederation() {
       body: JSON.stringify({ federations: modStoreCache.federations }),
     });
     if (res.ok) {
-      showToast(`Custom Federation "${name}" created! 🛡️`, 'success');
+      showToast(t('moderation.federation_created'), 'success');
       closeCreateFederationModal();
       const nameEl = document.getElementById('mod-new-fed-name');
       if (nameEl) nameEl.value = '';
@@ -2860,7 +3110,7 @@ async function saveNewCustomFederation() {
       }
     }
   } catch (e) {
-    showToast('Failed to create custom federation', 'danger');
+    showToast(t('moderation.federation_saved'), 'danger');
   }
 }
 
@@ -2868,7 +3118,7 @@ function exportFederationConfig() {
   const fedSelect = document.getElementById('mod-fed-select');
   const fedId = fedSelect?.value || 'fed_global_default';
   const fed = (modStoreCache?.federations || []).find((f) => f.id === fedId);
-  if (!fed) return showToast('No active federation selected to export', 'warning');
+  if (!fed) return showToast(t('moderation.select_group_warning'), 'warning');
 
   const exportData = {
     version: '1.0',
@@ -2883,7 +3133,7 @@ function exportFederationConfig() {
   a.href = url;
   a.download = `federation_${fed.id}.json`;
   a.click();
-  showToast(`Exported Federation "${fed.name || fed.id}"! 🛡️`, 'success');
+  showToast(t('moderation.federation_exported'), 'success');
 }
 
 function openImportFederationModal() {
@@ -2909,12 +3159,12 @@ async function submitImportFederation() {
 
   if (urlInp) {
     try {
-      showToast('Fetching federation JSON from URL...', 'info');
+      showToast(t('moderation.federation_exported'), 'info');
       const res = await fetch(urlInp);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       importedData = await res.json();
     } catch (err) {
-      showToast(`Failed to fetch from URL: ${err.message}`, 'danger');
+      showToast(t('moderation.invalid_json'), 'danger');
       return;
     }
   } else if (file) {
@@ -2922,11 +3172,11 @@ async function submitImportFederation() {
       const text = await file.text();
       importedData = JSON.parse(text);
     } catch (err) {
-      showToast('Invalid JSON file', 'danger');
+      showToast(t('moderation.invalid_json'), 'danger');
       return;
     }
   } else {
-    showToast('Please enter a URL or select a JSON file to import', 'warning');
+    showToast(t('moderation.invalid_json'), 'warning');
     return;
   }
 
@@ -2934,7 +3184,7 @@ async function submitImportFederation() {
   const fedObj = importedData?.federation || importedData;
   if (!fedObj || typeof fedObj !== 'object' || !fedObj.name) {
     return showToast(
-      'Invalid federation JSON structure. Must contain at least a "name" property.',
+      t('moderation.invalid_json'),
       'danger'
     );
   }
@@ -2959,7 +3209,7 @@ async function submitImportFederation() {
       body: JSON.stringify({ federations: modStoreCache.federations }),
     });
     if (res.ok) {
-      showToast(`Federation "${fedObj.name}" imported successfully! 🛡️`, 'success');
+      showToast(t('moderation.federation_imported'), 'success');
       closeImportFederationModal();
       await loadModerationConfig();
       const fedSelect = document.getElementById('mod-fed-select');
@@ -2969,14 +3219,14 @@ async function submitImportFederation() {
       }
     }
   } catch (e) {
-    showToast('Failed to save imported federation', 'danger');
+    showToast(t('moderation.federation_saved'), 'danger');
   }
 }
+
 
 // Telegram Bridge Dashboard UI Logic
 
 let cachedTelegramBots = [];
-let cachedTelegramMappings = [];
 
 function updateTelegramBridgeDisabledState(enabled) {
   const tab = document.getElementById('tab-telegram');
@@ -3006,9 +3256,9 @@ async function loadTelegramBridgeData() {
       updateTelegramBridgeDisabledState(Boolean(cfg.enabled));
 
       cachedTelegramBots = cfg.bots || [];
-      cachedTelegramMappings = cfg.mappings || [];
       renderTelegramBots(cachedTelegramBots);
-      renderTelegramMappings(cachedTelegramMappings, cachedTelegramBots);
+      renderTelegramMappings(cfg.mappings || [], cachedTelegramBots);
+      populateTelegramTestMappingDropdown(cfg.mappings || []);
     }
   } catch (err) {
     console.error('Failed to load Telegram bridge config', err);
@@ -3126,10 +3376,10 @@ async function toggleTelegramBridge(enabled) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ enabled }),
     });
-    showToast(enabled ? 'Telegram Bridge Enabled ✈️' : 'Telegram Bridge Disabled', 'info');
+    showToast(enabled ? t('telegram.bridge_active') : t('telegram.mapping_deleted'), 'info');
     loadTelegramBridgeData();
   } catch (e) {
-    showToast('Failed to update Telegram Bridge state', 'danger');
+    showToast(t('telegram.bot_add_failed'), 'danger');
   }
 }
 
@@ -3177,7 +3427,7 @@ async function saveTelegramBotModal() {
   const token = document.getElementById('tg-bot-modal-token')?.value || '';
 
   if (!token.trim()) {
-    showToast('Please enter a valid Bot Token', 'warning');
+    showToast(t('telegram.bot_add_failed'), 'warning');
     return;
   }
 
@@ -3189,52 +3439,52 @@ async function saveTelegramBotModal() {
     });
     const data = await res.json();
     if (!data.success) {
-      showToast(data.error || 'Failed to save bot', 'danger');
+      showToast(data.error || t('telegram.bot_add_failed'), 'danger');
     } else {
-      showToast('Telegram Bot saved & connected successfully! 🤖', 'success');
+      showToast(t('telegram.bot_added'), 'success');
       closeTelegramBotModal();
       loadTelegramBridgeData();
     }
   } catch (e) {
-    showToast('Error saving Bot Token', 'danger');
+    showToast(t('telegram.bot_add_error', { error: e.message }), 'danger');
   }
 }
 
 async function deleteTelegramBot(botId) {
   const confirmed = await showConfirm(
-    '<i class="fas fa-robot" style="color:#dc3545; margin-right:8px;"></i> Delete Telegram Bot',
-    'Are you sure you want to remove this Telegram Bot and all associated mappings?',
-    '<i class="fas fa-trash"></i> Delete Bot',
-    'Cancel',
+    t('telegram.delete_bot_confirm_title'),
+    t('telegram.delete_bot_confirm_msg'),
+    t('common.delete'),
+    t('common.cancel'),
     'danger'
   );
   if (!confirmed) return;
   try {
     await fetch(`api/telegram/bots/${botId}`, { method: 'DELETE' });
-    showToast('Telegram Bot removed', 'warning');
+    showToast(t('telegram.bot_deleted'), 'warning');
     loadTelegramBridgeData();
   } catch (e) {
-    showToast('Failed to delete bot', 'danger');
+    showToast(t('telegram.bot_delete_failed'), 'danger');
   }
 }
 
 async function toggleTelegramMapping(id) {
   await fetch(`api/telegram/mappings/${id}/toggle`, { method: 'POST' });
-  showToast('Mapping status updated', 'info');
+  showToast(t('telegram.mapping_added'), 'info');
   loadTelegramBridgeData();
 }
 
 async function deleteTelegramMapping(id) {
   const confirmed = await showConfirm(
-    '<i class="fas fa-link" style="color:#dc3545; margin-right:8px;"></i> Remove Mapping',
-    'Are you sure you want to remove this Telegram chat mapping?',
-    '<i class="fas fa-trash"></i> Remove Mapping',
-    'Cancel',
+    t('telegram.delete_mapping_confirm_title'),
+    t('telegram.delete_mapping_confirm_msg'),
+    t('common.delete'),
+    t('common.cancel'),
     'danger'
   );
   if (!confirmed) return;
   await fetch(`api/telegram/mappings/${id}`, { method: 'DELETE' });
-  showToast('Telegram mapping removed', 'warning');
+  showToast(t('telegram.mapping_deleted'), 'warning');
   loadTelegramBridgeData();
 }
 
@@ -3355,67 +3605,8 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
   }
 }
 
-function checkTelegramMappingConflict() {
-  const currentId = document.getElementById('tg-modal-id')?.value || '';
-  const waSelect = document.getElementById('tg-modal-wa-select');
-  let wa_jid = waSelect?.value || '';
-  if (wa_jid === '__custom__' || !wa_jid) {
-    wa_jid = document.getElementById('tg-modal-wa-jid')?.value || '';
-  }
-
-  const tgSelect = document.getElementById('tg-modal-tg-select');
-  let tg_chat_id = tgSelect?.value || '';
-  if (tg_chat_id === '__custom__' || !tg_chat_id) {
-    tg_chat_id = document.getElementById('tg-modal-tg-chat-id')?.value || '';
-  }
-
-  const warningContainer = document.getElementById('tg-modal-conflict-warning');
-  const warningText = document.getElementById('tg-modal-conflict-text');
-  const confirmCheckbox = document.getElementById('tg-modal-confirm-conflict');
-
-  if (!warningContainer || !warningText || !confirmCheckbox) return false;
-
-  if (!wa_jid || !tg_chat_id || !Array.isArray(cachedTelegramMappings)) {
-    warningContainer.style.display = 'none';
-    confirmCheckbox.checked = false;
-    return false;
-  }
-
-  // Conflict 1: Multiple Telegram sources mapping into the SAME WhatsApp destination
-  const waConflicts = cachedTelegramMappings.filter(
-    (m) => m.id !== currentId && m.wa_jid === wa_jid && m.enabled !== false
-  );
-
-  // Conflict 2: Multiple WhatsApp sources mapping into the SAME Telegram destination
-  const tgConflicts = cachedTelegramMappings.filter(
-    (m) => m.id !== currentId && String(m.tg_chat_id) === String(tg_chat_id) && m.enabled !== false
-  );
-
-  if (waConflicts.length > 0 || tgConflicts.length > 0) {
-    const details = [];
-    if (waConflicts.length > 0) {
-      details.push(
-        `Target WhatsApp chat (<code>${escapeHtml(wa_jid)}</code>) is already targeted by ${waConflicts.length} other mapping(s).`
-      );
-    }
-    if (tgConflicts.length > 0) {
-      details.push(
-        `Target Telegram chat (<code>${escapeHtml(tg_chat_id)}</code>) is already targeted by ${tgConflicts.length} other mapping(s).`
-      );
-    }
-    warningText.innerHTML = `${details.join('<br>')}<br>Mapping multiple sources to the same destination can cause infinite message loops, duplicate forwarding, or severe chat spam.`;
-    warningContainer.style.display = 'block';
-    return true;
-  } else {
-    warningContainer.style.display = 'none';
-    confirmCheckbox.checked = false;
-    return false;
-  }
-}
-
 function onTgBotSelectChange(botId) {
   populateTelegramModalDropdowns(botId);
-  checkTelegramMappingConflict();
 }
 
 function onTgWaSelectChange(val) {
@@ -3429,7 +3620,6 @@ function onTgWaSelectChange(val) {
     customInp.style.display = 'none';
     customInp.value = val;
   }
-  checkTelegramMappingConflict();
 }
 
 function onTgTgSelectChange(val) {
@@ -3443,7 +3633,6 @@ function onTgTgSelectChange(val) {
     customInp.style.display = 'none';
     customInp.value = val;
   }
-  checkTelegramMappingConflict();
 }
 
 let tgMappingInitialState = null;
@@ -3468,6 +3657,12 @@ function getTgMappingCurrentState() {
     direct_mirror: document.getElementById('tg-modal-direct-mirror')?.checked || false,
     sync_edits: document.getElementById('tg-modal-sync-edits')?.checked || false,
     sync_deletions: document.getElementById('tg-modal-sync-deletions')?.checked || false,
+    poll_sync_mode: document.getElementById('tg-modal-poll-sync-mode')?.value || 'text_diagram',
+    poll_diagram_text: document.getElementById('tg-modal-poll-diagram-text')?.checked || false,
+    poll_update_msg: document.getElementById('tg-modal-poll-update-msg')?.checked || false,
+    poll_delete_old: document.getElementById('tg-modal-poll-delete-old')?.checked || false,
+    sync_system_events: document.getElementById('tg-modal-sync-system-events')?.checked || false,
+    sync_pins: document.getElementById('tg-modal-sync-pins')?.checked || false,
   };
 }
 
@@ -3498,10 +3693,23 @@ function openAddTelegramMappingModal() {
   const syncDeletionsEl = document.getElementById('tg-modal-sync-deletions');
   if (syncDeletionsEl) syncDeletionsEl.checked = true;
 
+  const pollModeEl = document.getElementById('tg-modal-poll-sync-mode');
+  if (pollModeEl) pollModeEl.value = 'text_diagram';
+  const pollDiagramEl = document.getElementById('tg-modal-poll-diagram-text');
+  if (pollDiagramEl) pollDiagramEl.checked = true;
+  const pollUpdateEl = document.getElementById('tg-modal-poll-update-msg');
+  if (pollUpdateEl) pollUpdateEl.checked = true;
+  const pollDeleteEl = document.getElementById('tg-modal-poll-delete-old');
+  if (pollDeleteEl) pollDeleteEl.checked = true;
+
+  const sysEvEl = document.getElementById('tg-modal-sync-system-events');
+  if (sysEvEl) sysEvEl.checked = true;
+  const pinsEl = document.getElementById('tg-modal-sync-pins');
+  if (pinsEl) pinsEl.checked = true;
+
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'flex';
   populateTelegramModalDropdowns();
-  checkTelegramMappingConflict();
   setTimeout(() => {
     tgMappingInitialState = getTgMappingCurrentState();
   }, 100);
@@ -3567,6 +3775,24 @@ async function editTelegramMapping(id) {
     const syncDeletionsEl = document.getElementById('tg-modal-sync-deletions');
     if (syncDeletionsEl) syncDeletionsEl.checked = mapping.sync_deletions !== false;
 
+    const pollModeEl = document.getElementById('tg-modal-poll-sync-mode');
+    if (pollModeEl) pollModeEl.value = mapping.poll_sync_mode || 'text_diagram';
+
+    const pollDiagramEl = document.getElementById('tg-modal-poll-diagram-text');
+    if (pollDiagramEl) pollDiagramEl.checked = mapping.poll_send_text_diagram !== false;
+
+    const pollUpdateEl = document.getElementById('tg-modal-poll-update-msg');
+    if (pollUpdateEl) pollUpdateEl.checked = mapping.poll_send_update_message !== false;
+
+    const pollDeleteEl = document.getElementById('tg-modal-poll-delete-old');
+    if (pollDeleteEl) pollDeleteEl.checked = mapping.poll_delete_old_message !== false;
+
+    const sysEvEl = document.getElementById('tg-modal-sync-system-events');
+    if (sysEvEl) sysEvEl.checked = mapping.sync_system_events !== false;
+
+    const pinsEl = document.getElementById('tg-modal-sync-pins');
+    if (pinsEl) pinsEl.checked = mapping.sync_pins !== false;
+
     const modal = document.getElementById('tg-mapping-modal');
     if (modal) modal.style.display = 'flex';
 
@@ -3598,17 +3824,17 @@ async function editTelegramMapping(id) {
 
     tgMappingInitialState = getTgMappingCurrentState();
   } catch (e) {
-    showToast('Error opening mapping editor', 'danger');
+    showToast(t('telegram.mapping_add_error', { error: e.message }), 'danger');
   }
 }
 
 async function closeTelegramMappingModal(force = false) {
   if (!force && hasTgMappingUnsavedChanges()) {
     const confirmClose = await showConfirm(
-      '<i class="fas fa-exclamation-triangle" style="color:#ffc107; margin-right:8px;"></i> Unsaved Changes',
-      'You have unsaved changes. Are you sure you want to close without saving?',
-      '<i class="fas fa-trash"></i> Discard Changes',
-      '<i class="fas fa-undo"></i> Keep Editing',
+      t('telegram.unsaved_changes_title'),
+      t('telegram.unsaved_changes_msg'),
+      t('common.delete'),
+      t('common.cancel'),
       'danger'
     );
     if (!confirmClose) {
@@ -3617,10 +3843,6 @@ async function closeTelegramMappingModal(force = false) {
   }
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'none';
-  const warningContainer = document.getElementById('tg-modal-conflict-warning');
-  if (warningContainer) warningContainer.style.display = 'none';
-  const confirmCheckbox = document.getElementById('tg-modal-confirm-conflict');
-  if (confirmCheckbox) confirmCheckbox.checked = false;
   tgMappingInitialState = null;
 }
 
@@ -3666,16 +3888,20 @@ async function saveTelegramMappingModal() {
   const is_direct_chat_mirror = document.getElementById('tg-modal-direct-mirror')?.checked || false;
   const sync_edits = document.getElementById('tg-modal-sync-edits')?.checked || false;
   const sync_deletions = document.getElementById('tg-modal-sync-deletions')?.checked || false;
+  const poll_sync_mode =
+    document.getElementById('tg-modal-poll-sync-mode')?.value || 'text_diagram';
+  const poll_send_text_diagram =
+    document.getElementById('tg-modal-poll-diagram-text')?.checked || false;
+  const poll_send_update_message =
+    document.getElementById('tg-modal-poll-update-msg')?.checked || false;
+  const poll_delete_old_message =
+    document.getElementById('tg-modal-poll-delete-old')?.checked || false;
+  const sync_system_events =
+    document.getElementById('tg-modal-sync-system-events')?.checked || false;
+  const sync_pins = document.getElementById('tg-modal-sync-pins')?.checked || false;
 
   if (!wa_jid || !tg_chat_id) {
-    showToast('Please select both a WhatsApp Chat and a Telegram Chat', 'warning');
-    return;
-  }
-
-  const isConflict = checkTelegramMappingConflict();
-  const confirmCheckbox = document.getElementById('tg-modal-confirm-conflict');
-  if (isConflict && confirmCheckbox && !confirmCheckbox.checked) {
-    showToast('Please confirm the Security & Spam Warning before saving this mapping', 'warning');
+    showToast(t('telegram.mapping_add_failed'), 'warning');
     return;
   }
 
@@ -3703,18 +3929,24 @@ async function saveTelegramMappingModal() {
         is_direct_chat_mirror,
         sync_edits,
         sync_deletions,
+        poll_sync_mode,
+        poll_send_text_diagram,
+        poll_send_update_message,
+        poll_delete_old_message,
+        sync_system_events,
+        sync_pins,
       }),
     });
     const data = await res.json();
     if (!data.success) {
-      showToast(data.error || 'Failed to save mapping', 'danger');
+      showToast(data.error || t('telegram.mapping_add_failed'), 'danger');
     } else {
-      showToast('Telegram mapping saved successfully!', 'success');
+      showToast(t('telegram.mapping_added'), 'success');
       closeTelegramMappingModal(true);
       loadTelegramBridgeData();
     }
   } catch (e) {
-    showToast('Failed to connect to server', 'danger');
+    showToast(t('telegram.mapping_add_error', { error: e.message }), 'danger');
   }
 }
 
@@ -3755,6 +3987,261 @@ function onTgDirectMirrorToggle(checked) {
   }
 }
 window.onTgDirectMirrorToggle = onTgDirectMirrorToggle;
+
+function populateTelegramTestMappingDropdown(mappings = []) {
+  const select = document.getElementById('tg-test-mapping-select');
+  if (!select) return;
+  if (mappings.length === 0) {
+    select.innerHTML =
+      '<option value="">No mappings configured - Click "+ Add New Mapping" above first</option>';
+    return;
+  }
+  select.innerHTML = mappings
+    .map(
+      (m) =>
+        `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name || 'Chat Bridge')} (WA: ${escapeHtml(m.wa_jid)} ↔ TG: ${escapeHtml(m.tg_chat_id)})</option>`
+    )
+    .join('');
+}
+window.populateTelegramTestMappingDropdown = populateTelegramTestMappingDropdown;
+
+function selectAllTgSubtests(select) {
+  const checkboxes = document.querySelectorAll('.tg-subtest-cb');
+  checkboxes.forEach((cb) => {
+    cb.checked = Boolean(select);
+  });
+}
+window.selectAllTgSubtests = selectAllTgSubtests;
+
+let tgTestPollInterval = null;
+
+async function runTelegramBridgeTest() {
+  const mappingSelect = document.getElementById('tg-test-mapping-select');
+  const directionSelect = document.getElementById('tg-test-direction-select');
+  const runBtn = document.getElementById('tg-run-test-btn');
+  const panel = document.getElementById('tg-test-results-panel');
+  const statusBadge = document.getElementById('tg-test-status-badge');
+  const progressText = document.getElementById('tg-test-progress-text');
+  const runIdEl = document.getElementById('tg-test-run-id');
+  const logOutput = document.getElementById('tg-test-log-output');
+
+  const mapping_id = mappingSelect?.value;
+  const direction = directionSelect?.value || 'wa_to_tg';
+
+  const selected_subtests = Array.from(document.querySelectorAll('.tg-subtest-cb:checked')).map(
+    (cb) => cb.value
+  );
+
+  if (!mapping_id) {
+    showToast(t('telegram.test_mapping'), 'warning');
+    return;
+  }
+
+  if (selected_subtests.length === 0) {
+    showToast(t('telegram.test_subtests'), 'warning');
+    return;
+  }
+
+  // Pre-flight: check WhatsApp connection status before launching
+  if (typeof isConnected !== 'undefined' && !isConnected) {
+    showToast(
+      t('chats.not_connected'),
+      'danger'
+    );
+    return;
+  }
+
+  if (runBtn) {
+    runBtn.disabled = true;
+    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+  }
+
+  if (panel) panel.style.display = 'block';
+  if (typeof toggleTgTestSuiteUI === 'function') toggleTgTestSuiteUI(true);
+  if (statusBadge) {
+    statusBadge.style.background = '#0088cc';
+    statusBadge.textContent = 'RUNNING';
+  }
+  if (progressText) {
+    const label = window.t('telegram.test_progress_label') || 'Progress';
+    progressText.textContent = `${label}: 0 / ${selected_subtests.length} steps`;
+  }
+  if (runIdEl) runIdEl.textContent = 'Run ID: Initializing...';
+  if (logOutput) logOutput.textContent = 'Starting integration test...\n';
+
+  try {
+    const res = await fetch('api/telegram/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mapping_id,
+        direction,
+        selected_subtests,
+        session_id: currentSession,
+      }),
+    });
+
+    const data = await res.json();
+    if (!data.success) {
+      showToast(data.error || t('telegram.mapping_add_failed'), 'danger');
+      if (runBtn) {
+        runBtn.disabled = false;
+        runBtn.innerHTML = '<i class="fas fa-play"></i> Run Integration Test';
+      }
+      if (statusBadge) {
+        statusBadge.style.background = '#dc3545';
+        statusBadge.textContent = 'FAILED';
+      }
+      if (logOutput) logOutput.textContent += `\nError: ${data.error || 'Failed to start test'}`;
+      return;
+    }
+
+    const runId = data.runId;
+    if (runIdEl) runIdEl.textContent = `Run ID: ${runId}`;
+
+    if (tgTestPollInterval) clearInterval(tgTestPollInterval);
+
+    tgTestPollInterval = setInterval(() => {
+      pollTelegramTestResults(runId);
+    }, 1000);
+
+    pollTelegramTestResults(runId);
+  } catch (err) {
+    showToast(t('telegram.mapping_add_error', { error: err.message }), 'danger');
+    if (runBtn) {
+      runBtn.disabled = false;
+      runBtn.innerHTML = '<i class="fas fa-play"></i> Run Integration Test';
+    }
+  }
+}
+window.runTelegramBridgeTest = runTelegramBridgeTest;
+
+async function pollTelegramTestResults(runId) {
+  try {
+    const res = await fetch(`api/telegram/test/results/${runId}`);
+    if (!res.ok) return;
+
+    const json = await res.json();
+    if (!json.success || !json.data) return;
+
+    const testRun = json.data;
+    const statusBadge = document.getElementById('tg-test-status-badge');
+    const progressText = document.getElementById('tg-test-progress-text');
+    const logOutput = document.getElementById('tg-test-log-output');
+    const runBtn = document.getElementById('tg-run-test-btn');
+
+    if (progressText) {
+      const label = window.t('telegram.test_progress_label') || 'Progress';
+      progressText.textContent = `${label}: ${testRun.passedSteps} / ${testRun.totalSteps} steps`;
+    }
+
+    if (logOutput && Array.isArray(testRun.logs)) {
+      const isAtBottom =
+        logOutput.scrollHeight - logOutput.scrollTop <= logOutput.clientHeight + 60;
+      const formattedLogs = testRun.logs
+        .map((l) => {
+          const time = l.time ? new Date(l.time).toLocaleTimeString() : '';
+          const prefix =
+            l.level === 'error'
+              ? '❌'
+              : l.level === 'success'
+                ? '✅'
+                : l.level === 'warn'
+                  ? '⚠️'
+                  : 'ℹ️';
+          return `[${time}] ${prefix} [${l.step}] ${l.msg}`;
+        })
+        .join('\n');
+      logOutput.textContent = formattedLogs;
+      if (isAtBottom) {
+        logOutput.scrollTop = logOutput.scrollHeight;
+      }
+    }
+
+    if (testRun.status !== 'running') {
+      if (tgTestPollInterval) {
+        clearInterval(tgTestPollInterval);
+        tgTestPollInterval = null;
+      }
+      if (runBtn) {
+        runBtn.disabled = false;
+        runBtn.innerHTML = '<i class="fas fa-play"></i> Run Integration Test';
+      }
+      if (statusBadge) {
+        if (testRun.status === 'passed') {
+          statusBadge.style.background = '#28a745';
+          statusBadge.textContent = 'PASSED ✅';
+          showToast(t('telegram.test_ready'), 'success');
+        } else {
+          statusBadge.style.background = '#dc3545';
+          statusBadge.textContent = 'FAILED ❌';
+          showToast(t('telegram.test_ready'), 'warning');
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error polling Telegram test results', err);
+  }
+}
+
+function copyTgTestLogs() {
+  const logOutput = document.getElementById('tg-test-log-output');
+  if (!logOutput || !logOutput.textContent) {
+    showToast(t('telegram.test_log'), 'warning');
+    return;
+  }
+  const text = logOutput.textContent;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => showToast(t('telegram.copy_log'), 'success'))
+      .catch(() => fallbackCopyTextToClipboard(text));
+  } else {
+    fallbackCopyTextToClipboard(text);
+  }
+}
+
+function fallbackCopyTextToClipboard(text) {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.top = '0';
+  textArea.style.left = '0';
+  textArea.style.position = 'fixed';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    const successful = document.execCommand('copy');
+    if (successful) {
+      showToast(t('telegram.copy_log'), 'success');
+    } else {
+      showToast(t('telegram.mapping_delete_failed'), 'danger');
+    }
+  } catch (err) {
+    showToast(t('telegram.mapping_delete_error', { error: err.message }), 'danger');
+  }
+  document.body.removeChild(textArea);
+}
+
+function toggleTgTestSuiteUI(forceState) {
+  const body = document.getElementById('tg-test-suite-body');
+  const chevron = document.getElementById('tg-test-suite-chevron');
+  if (!body) return;
+  const isExpanded = forceState !== undefined ? forceState : body.style.display !== 'none';
+  const nextState = forceState !== undefined ? forceState : !isExpanded;
+
+  body.style.display = nextState ? 'block' : 'none';
+  if (chevron) {
+    chevron.style.transform = nextState ? 'rotate(180deg)' : 'rotate(0deg)';
+  }
+}
+
+window.runTelegramBridgeTest = runTelegramBridgeTest;
+window.selectAllTgSubtests = selectAllTgSubtests;
+window.copyTgTestLogs = copyTgTestLogs;
+window.pollTelegramTestResults = pollTelegramTestResults;
+window.toggleTgTestSuiteUI = toggleTgTestSuiteUI;
+
 
 // Global Window Exports
 window.isNewerVersion = isNewerVersion;
@@ -3826,3 +4313,8 @@ window.closeTestCommandsModal = closeTestCommandsModal;
 window.updateTestCommandsPrefill = updateTestCommandsPrefill;
 window.copyAllFromBlock = copyAllFromBlock;
 window.sendTestSuiteToGroup = sendTestSuiteToGroup;
+window.toggleAutoTestModeUI = toggleAutoTestModeUI;
+window.runAutonomousModerationTest = runAutonomousModerationTest;
+window.selectAllModSubtests = selectAllModSubtests;
+window.clearAutoTestLogs = clearAutoTestLogs;
+window.exportAutoTestLogs = exportAutoTestLogs;

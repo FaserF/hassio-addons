@@ -7,7 +7,7 @@ async function saveGroupFederation() {
   groupConfig.federation_id = fedId;
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Federation settings saved!', 'success');
+  showToast(t('moderation.federation_saved'), 'success');
 }
 
 async function addFedBlacklistWord() {
@@ -27,7 +27,7 @@ async function addFedBlacklistWord() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ federations: modStoreCache.federations }),
     });
-    showToast('Federation pattern added!', 'success');
+    showToast(t('moderation.federation_created'), 'success');
     loadModerationConfig();
     setTimeout(() => {
       const el = document.getElementById('mod-fed-blacklist-new');
@@ -47,7 +47,7 @@ async function removeFedBlacklistWord(idx) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ federations: modStoreCache.federations }),
     });
-    showToast('Federation pattern removed', 'info');
+    showToast(t('moderation.federation_exported'), 'info');
     loadModerationConfig();
   }
 }
@@ -75,7 +75,7 @@ async function saveGroupConfig(groupConfig) {
 }
 
 async function exportGroupModerationConfig() {
-  if (!currentModGroup) return showToast('Please select a group first', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   try {
     const res = await fetch(
       basePath + `api/moderation/groups/${encodeURIComponent(currentModGroup)}/export`,
@@ -92,16 +92,16 @@ async function exportGroupModerationConfig() {
     a.href = url;
     a.download = `moderation_${currentModGroup.split('@')[0]}.json`;
     a.click();
-    showToast('Export downloaded!', 'success');
+    showToast(t('moderation.federation_exported'), 'success');
   } catch (e) {
-    showToast('Export failed', 'danger');
+    showToast(t('moderation.federation_saved'), 'danger');
   }
 }
 
 async function importGroupModerationConfig() {
-  if (!currentModGroup) return showToast('Please select a group first', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   const txt = document.getElementById('mod-import-text')?.value.trim();
-  if (!txt) return showToast('Please paste JSON data first', 'warning');
+  if (!txt) return showToast(t('moderation.invalid_json'), 'warning');
 
   try {
     const data = JSON.parse(txt);
@@ -114,13 +114,13 @@ async function importGroupModerationConfig() {
       }
     );
     if (res.ok) {
-      showToast('Config imported successfully!', 'success');
+      showToast(t('moderation.federation_imported'), 'success');
       loadModerationConfig();
     } else {
-      showToast('Import failed', 'danger');
+      showToast(t('moderation.invalid_json'), 'danger');
     }
   } catch (e) {
-    showToast('Invalid JSON format', 'danger');
+    showToast(t('moderation.invalid_json'), 'danger');
   }
 }
 
@@ -166,7 +166,7 @@ async function saveNewCustomFederation() {
   const name = document.getElementById('mod-new-fed-name')?.value.trim();
   const desc =
     document.getElementById('mod-new-fed-desc')?.value.trim() || 'Custom local security federation';
-  if (!name) return showToast('Please enter a federation name', 'warning');
+  if (!name) return showToast(t('moderation.select_group_warning'), 'warning');
 
   const newFed = {
     id: `fed_local_${Date.now()}`,
@@ -197,7 +197,7 @@ async function saveNewCustomFederation() {
       body: JSON.stringify({ federations: modStoreCache.federations }),
     });
     if (res.ok) {
-      showToast(`Custom Federation "${name}" created! 🛡️`, 'success');
+      showToast(t('moderation.federation_created'), 'success');
       closeCreateFederationModal();
       const nameEl = document.getElementById('mod-new-fed-name');
       if (nameEl) nameEl.value = '';
@@ -211,7 +211,7 @@ async function saveNewCustomFederation() {
       }
     }
   } catch (e) {
-    showToast('Failed to create custom federation', 'danger');
+    showToast(t('moderation.federation_saved'), 'danger');
   }
 }
 
@@ -219,7 +219,7 @@ function exportFederationConfig() {
   const fedSelect = document.getElementById('mod-fed-select');
   const fedId = fedSelect?.value || 'fed_global_default';
   const fed = (modStoreCache?.federations || []).find((f) => f.id === fedId);
-  if (!fed) return showToast('No active federation selected to export', 'warning');
+  if (!fed) return showToast(t('moderation.select_group_warning'), 'warning');
 
   const exportData = {
     version: '1.0',
@@ -234,7 +234,7 @@ function exportFederationConfig() {
   a.href = url;
   a.download = `federation_${fed.id}.json`;
   a.click();
-  showToast(`Exported Federation "${fed.name || fed.id}"! 🛡️`, 'success');
+  showToast(t('moderation.federation_exported'), 'success');
 }
 
 function openImportFederationModal() {
@@ -260,12 +260,12 @@ async function submitImportFederation() {
 
   if (urlInp) {
     try {
-      showToast('Fetching federation JSON from URL...', 'info');
+      showToast(t('moderation.federation_exported'), 'info');
       const res = await fetch(urlInp);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       importedData = await res.json();
     } catch (err) {
-      showToast(`Failed to fetch from URL: ${err.message}`, 'danger');
+      showToast(t('moderation.invalid_json'), 'danger');
       return;
     }
   } else if (file) {
@@ -273,11 +273,11 @@ async function submitImportFederation() {
       const text = await file.text();
       importedData = JSON.parse(text);
     } catch (err) {
-      showToast('Invalid JSON file', 'danger');
+      showToast(t('moderation.invalid_json'), 'danger');
       return;
     }
   } else {
-    showToast('Please enter a URL or select a JSON file to import', 'warning');
+    showToast(t('moderation.invalid_json'), 'warning');
     return;
   }
 
@@ -285,7 +285,7 @@ async function submitImportFederation() {
   const fedObj = importedData?.federation || importedData;
   if (!fedObj || typeof fedObj !== 'object' || !fedObj.name) {
     return showToast(
-      'Invalid federation JSON structure. Must contain at least a "name" property.',
+      t('moderation.invalid_json'),
       'danger'
     );
   }
@@ -310,7 +310,7 @@ async function submitImportFederation() {
       body: JSON.stringify({ federations: modStoreCache.federations }),
     });
     if (res.ok) {
-      showToast(`Federation "${fedObj.name}" imported successfully! 🛡️`, 'success');
+      showToast(t('moderation.federation_imported'), 'success');
       closeImportFederationModal();
       await loadModerationConfig();
       const fedSelect = document.getElementById('mod-fed-select');
@@ -320,6 +320,6 @@ async function submitImportFederation() {
       }
     }
   } catch (e) {
-    showToast('Failed to save imported federation', 'danger');
+    showToast(t('moderation.federation_saved'), 'danger');
   }
 }

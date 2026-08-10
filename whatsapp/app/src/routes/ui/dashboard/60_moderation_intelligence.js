@@ -14,7 +14,7 @@ async function addFilterRule() {
   document.getElementById('mod-filter-response').value = '';
 
   await saveGroupConfig(groupConfig);
-  showToast(`${type === 'faq' ? 'FAQ' : 'Auto-reply'} filter rule added!`, 'success');
+  showToast(t('moderation.filter_rule_added', { type: type === 'faq' ? 'FAQ' : 'Auto-reply' }), 'success');
   selectModerationGroup(currentModGroup);
   setTimeout(() => {
     const el = document.getElementById('mod-filter-trigger');
@@ -37,11 +37,11 @@ async function saveGroupFilters() {
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Filters saved!', 'success');
+  showToast(t('moderation.filters_saved'), 'success');
 }
 
 async function saveGroupAiConfig() {
-  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.ai = {
     enabled: Boolean(document.getElementById('mod-ai-enabled')?.checked),
@@ -71,10 +71,10 @@ async function saveGroupAiConfig() {
     });
     if (res.ok) {
       markClean();
-      showToast('AI & Translation Settings Saved!', 'success');
+      showToast(t('moderation.ai_settings_saved'), 'success');
       loadModerationConfig();
     }
   } catch (e) {
-    showToast('Failed to save AI settings', 'danger');
+    showToast(t('moderation.ai_settings_save_failed'), 'danger');
   }
 }

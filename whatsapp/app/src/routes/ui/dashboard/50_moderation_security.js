@@ -1,7 +1,7 @@
 // Moderation Security (Content Locks, Anti-Spam / Anti-Raid, Blacklist)
 
 async function saveGroupLocks() {
-  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   const lockKeys = [
     'image',
@@ -24,7 +24,7 @@ async function saveGroupLocks() {
   });
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Content locks saved!', 'success');
+  showToast(t('moderation.locks_saved'), 'success');
 }
 
 async function addBlacklistWord() {
@@ -64,7 +64,7 @@ async function saveGroupBlacklist() {
     document.getElementById('mod-blacklist-mode')?.value || 'exact';
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Blacklist saved!', 'success');
+  showToast(t('moderation.blacklist_saved'), 'success');
 }
 
 async function saveGroupAntispam() {
@@ -106,14 +106,14 @@ async function saveGroupAntispam() {
   );
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Anti-Spam & Anti-Raid saved!', 'success');
+  showToast(t('moderation.antispam_antiraid_saved'), 'success');
 }
 
 let testTargetUser = '';
 
 async function generateGroupTestCommandsModal() {
   if (!currentModGroup) {
-    showToast('Please select a group first.', 'warning');
+    showToast(t('moderation.select_group_warning'), 'warning');
     return;
   }
   const modal = document.getElementById('test-commands-modal');
@@ -180,7 +180,7 @@ async function generateGroupTestCommandsModal() {
         return `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:var(--body-bg);border:1px solid var(--border-color);border-radius:4px;margin-bottom:4px;">
           <code style="font-size:11px;white-space:pre-wrap;word-break:break-all;color:var(--text-main);">${escapedItem}</code>
-          <button class="btn btn-secondary btn-sm" style="padding:1px 6px;font-size:10px;margin-left:8px;flex-shrink:0;" onclick="navigator.clipboard.writeText(this.previousElementSibling.innerText);showToast('Copied command!','success');" title="Copy command"><i class="fas fa-copy"></i></button>
+          <button class="btn btn-secondary btn-sm" style="padding:1px 6px;font-size:10px;margin-left:8px;flex-shrink:0;" onclick="navigator.clipboard.writeText(this.previousElementSibling.innerText);showToast(t('chats.copied'),'success');" title="Copy command"><i class="fas fa-copy"></i></button>
         </div>`;
       })
       .join('');
@@ -315,7 +315,7 @@ function copyAllFromBlock(btnBtn) {
     .map((c) => c.innerText)
     .join('\n');
   navigator.clipboard.writeText(text);
-  showToast('Copied all commands in block!', 'success');
+  showToast(t('chats.copied'), 'success');
 }
 
 function closeTestCommandsModal() {
@@ -325,7 +325,7 @@ function closeTestCommandsModal() {
 
 async function sendTestSuiteToGroup() {
   if (!currentModGroup) {
-    showToast('No group selected.', 'warning');
+    showToast(t('moderation.select_group_warning'), 'warning');
     return;
   }
 
@@ -334,7 +334,7 @@ async function sendTestSuiteToGroup() {
   if (!modal) return;
   const codes = modal.querySelectorAll('.copyable-block-items code');
   if (!codes || codes.length === 0) {
-    showToast('No commands to send.', 'warning');
+    showToast(t('moderation.select_group_warning'), 'warning');
     return;
   }
 
@@ -342,7 +342,7 @@ async function sendTestSuiteToGroup() {
     .map((c) => c.innerText.trim())
     .filter(Boolean);
   if (lines.length === 0) {
-    showToast('No commands to send.', 'warning');
+    showToast(t('moderation.select_group_warning'), 'warning');
     return;
   }
 
@@ -362,13 +362,13 @@ async function sendTestSuiteToGroup() {
       }),
     });
     if (resp.ok) {
-      showToast('✅ Test suite sent to group!', 'success');
+      showToast(t('chats.message_sent'), 'success');
     } else {
       const err = await resp.json().catch(() => ({}));
-      showToast('Failed to send: ' + (err.detail || resp.status), 'danger');
+      showToast(t('chats.message_send_failed'), 'danger');
     }
   } catch (e) {
-    showToast('Network error: ' + e.message, 'danger');
+    showToast(t('chats.network_error_send'), 'danger');
   }
 }
 
@@ -402,7 +402,7 @@ function clearAutoTestLogs() {
 function exportAutoTestLogs() {
   const logContent = document.getElementById('mod-autotest-log-content');
   if (!logContent || !logContent.innerText.trim()) {
-    showToast('No auto-test logs available to export.', 'warning');
+    showToast(t('moderation.select_group_warning'), 'warning');
     return;
   }
   const text = logContent.innerText;
@@ -419,7 +419,7 @@ function exportAutoTestLogs() {
 
 async function runAutonomousModerationTest() {
   if (!currentModGroup) {
-    showToast('Please select a group first.', 'warning');
+    showToast(t('moderation.select_group_warning'), 'warning');
     return;
   }
 
@@ -436,7 +436,7 @@ async function runAutonomousModerationTest() {
   );
 
   if (selected_subtests.length === 0) {
-    showToast('Please select at least one moderation subtest feature to test.', 'warning');
+    showToast(t('moderation.select_group_warning'), 'warning');
     return;
   }
 
@@ -548,7 +548,7 @@ async function runAutonomousModerationTest() {
               'success'
             );
             appendLog(`📩 Markdown summary report delivered to WhatsApp group!`, 'header');
-            showToast('Auto-test completed successfully!', 'success');
+            showToast(t('moderation.antispam_antiraid_saved'), 'success');
           }
         } catch (_err) {
           appendLog(line, 'normal');
@@ -576,7 +576,7 @@ async function runAutonomousModerationTest() {
             'success'
           );
           appendLog(`📩 Markdown summary report delivered to WhatsApp group!`, 'header');
-          showToast('Auto-test completed successfully!', 'success');
+          showToast(t('moderation.antispam_antiraid_saved'), 'success');
         }
       } catch (_e) {
         appendLog(buffer.trim(), 'normal');
@@ -584,7 +584,7 @@ async function runAutonomousModerationTest() {
     }
   } catch (err) {
     appendLog(`❌ Auto-test error: ${err.message}`, 'error');
-    showToast('Auto-test failed: ' + err.message, 'danger');
+    showToast(t('moderation.group_update_failed'), 'danger');
   } finally {
     if (runBtn) {
       runBtn.disabled = false;
@@ -599,7 +599,7 @@ function copyAutoTestLogs() {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(logContent.textContent);
     }
-    showToast('Auto-test logs copied to clipboard!', 'success');
+    showToast(t('chats.copied'), 'success');
   }
 }
 

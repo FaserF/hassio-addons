@@ -9,7 +9,7 @@ export default ({ PORT, API_TOKEN, getLocalIP }) => `
                             <div id="disconnect-reason" class="disconnect-reason"></div>
                         </div>
                         <div id="qr-container" class="qr-container" style="display:none;">
-                            <img id="qr-code" class="qr-code" src="" alt="Pairing QR Code" />
+                            <img id="qr-code" class="qr-code" src="" alt="Pairing QR Code" data-i18n-title="dashboard.pairing_qr_code" />
                         </div>
                         <div id="init-placeholder" class="qr-container" style="flex-direction:column;gap:12px;background-color:var(--bg-app);border-color:var(--border-color);">
                             <div class="spinner"></div>
@@ -35,7 +35,7 @@ export default ({ PORT, API_TOKEN, getLocalIP }) => `
                             </div>
                             <div class="details-item">
                                 <span class="details-label" data-i18n="dashboard.api_bearer_token">API Bearer Token</span>
-                                <code class="highlight-token" title="Click to Select All">${API_TOKEN}</code>
+                                <code class="highlight-token" title="Click to Select All" data-i18n-title="dashboard.click_to_select_all">${API_TOKEN}</code>
                             </div>
                             <div class="details-item">
                                 <span class="details-label" data-i18n="dashboard.static_local_address">Static Local Address</span>
@@ -89,9 +89,9 @@ export default ({ PORT, API_TOKEN, getLocalIP }) => `
                     <div class="card">
                         <div class="card-title"><i class="fas fa-sliders-h"></i> <span data-i18n="dashboard.system_maintenance">System Maintenance</span></div>
                         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 10px;">
-                            <button class="btn btn-secondary" onclick="restartSession()" title="Restart Daemon"><i class="fas fa-sync-alt"></i> <span data-i18n="dashboard.restart_daemon">Restart Daemon</span></button>
-                            <button class="btn btn-secondary" onclick="purgeSessions()" title="Clean Inactive Sessions"><i class="fas fa-broom"></i> <span data-i18n="dashboard.clean_sessions">Clean Sessions</span></button>
-                            <button class="btn btn-danger" onclick="logoutSession()" title="Hard Reset / Logout"><i class="fas fa-sign-out-alt"></i> <span data-i18n="dashboard.hard_reset">Hard Reset</span></button>
+                            <button class="btn btn-secondary" onclick="restartSession()" title="Restart Daemon" data-i18n-title="dashboard.restart_daemon_title"><i class="fas fa-sync-alt"></i> <span data-i18n="dashboard.restart_daemon">Restart Daemon</span></button>
+                            <button class="btn btn-secondary" onclick="purgeSessions()" title="Clean Inactive Sessions" data-i18n-title="dashboard.clean_sessions_title"><i class="fas fa-broom"></i> <span data-i18n="dashboard.clean_sessions">Clean Sessions</span></button>
+                            <button class="btn btn-danger" onclick="logoutSession()" title="Hard Reset / Logout" data-i18n-title="dashboard.hard_reset_title"><i class="fas fa-sign-out-alt"></i> <span data-i18n="dashboard.hard_reset">Hard Reset</span></button>
                         </div>
                         <p style="font-size:11px; color:var(--text-muted); margin:0;"><span data-i18n="dashboard.restart_hint">Restarting will attempt a fresh connection without deleting credentials.</span></p>
                     </div>

@@ -21,7 +21,7 @@ async function loadLogs() {
                 '</span></div>'
             )
             .join('')
-        : '<div class="log-entry">No logs yet</div>';
+        : `<div class="log-entry">${t('dashboard.no_logs')}</div>`;
     }
   } catch (err) {
     console.error(err);
@@ -43,20 +43,20 @@ async function downloadDebugInfo() {
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
-    showToast('Debug info downloaded successfully', 'success');
+    showToast(t('dashboard.debug_downloaded'), 'success');
   } catch (e) {
-    showToast('Failed to download debug bundle', 'danger');
+    showToast(t('dashboard.debug_failed'), 'danger');
   }
 }
 
 async function restartSession() {
   const ok = await showConfirm(
-    'Restart WhatsApp Daemon?',
-    'Are you sure you want to trigger a soft restart on this session daemon?'
+    t('dashboard.restart_confirm_title'),
+    t('dashboard.restart_confirm_msg')
   );
   if (!ok) return;
 
-  showToast('Restarting session...', 'warning');
+  showToast(t('dashboard.restarting_session'), 'warning');
   try {
     const response = await fetch(basePath + 'api/session/restart', {
       method: 'POST',
@@ -67,22 +67,22 @@ async function restartSession() {
       body: JSON.stringify({ session_id: currentSession }),
     });
     if (response.ok) {
-      showToast('Restart command acknowledged', 'success');
+      showToast(t('dashboard.restart_ack'), 'success');
       setTimeout(updateDashboard, 1500);
     }
   } catch (e) {
-    showToast('Restart request failed', 'danger');
+    showToast(t('dashboard.restart_failed'), 'danger');
   }
 }
 
 async function logoutSession() {
   const ok = await showConfirm(
-    'WARNING: Hard Reset Session?',
-    'This will logout WhatsApp from your mobile client and delete all credentials. You will need to scan the QR code to pair again.'
+    t('dashboard.reset_confirm_title'),
+    t('dashboard.reset_confirm_msg')
   );
   if (!ok) return;
 
-  showToast('Deleting credentials...', 'warning');
+  showToast(t('dashboard.deleting_credentials'), 'warning');
   try {
     const response = await fetch(basePath + 'session', {
       method: 'DELETE',
@@ -93,22 +93,22 @@ async function logoutSession() {
       body: JSON.stringify({ session_id: currentSession }),
     });
     if (response.ok) {
-      showToast('Session logged out and reset completed', 'success');
+      showToast(t('dashboard.reset_completed'), 'success');
       updateDashboard();
     }
   } catch (e) {
-    showToast('Reset request failed', 'danger');
+    showToast(t('dashboard.reset_failed'), 'danger');
   }
 }
 
 async function purgeSessions() {
   const ok = await showConfirm(
-    'Clean Disconnected Sessions?',
-    'This will delete all inactive or stale session directories and free up resources.'
+    t('dashboard.purge_confirm_title'),
+    t('dashboard.purge_confirm_msg')
   );
   if (!ok) return;
 
-  showToast('Purging disconnected sessions...', 'info');
+  showToast(t('dashboard.purging_sessions'), 'info');
   try {
     const response = await fetch(basePath + 'api/sessions/purge', {
       method: 'POST',
@@ -119,18 +119,18 @@ async function purgeSessions() {
     });
     if (response.ok) {
       const resData = await response.json();
-      showToast(`Purged ${resData.purgedCount || 0} disconnected session(s)`, 'success');
+      showToast(t('dashboard.purged_count', { count: resData.purgedCount || 0 }), 'success');
       updateDashboard();
     } else {
-      showToast('Purge request failed', 'danger');
+      showToast(t('dashboard.purge_failed'), 'danger');
     }
   } catch (e) {
-    showToast('Purge request failed: ' + e.message, 'danger');
+    showToast(t('dashboard.purge_failed_error', { error: e.message }), 'danger');
   }
 }
 
 async function clearLogs() {
-  const ok = await showConfirm('Clear Connection Logs?', 'Do you want to purge connection logs?');
+  const ok = await showConfirm(t('dashboard.clear_logs_confirm_title'), t('dashboard.clear_logs_confirm_msg'));
   if (!ok) return;
 
   try {
@@ -143,11 +143,11 @@ async function clearLogs() {
       body: JSON.stringify({ session_id: currentSession }),
     });
     if (response.ok) {
-      showToast('Logs database cleared', 'success');
+      showToast(t('dashboard.logs_cleared'), 'success');
       updateDashboard();
     }
   } catch (e) {
-    showToast('Failed to clear logs', 'danger');
+    showToast(t('dashboard.logs_clear_failed'), 'danger');
   }
 }
 

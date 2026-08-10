@@ -371,11 +371,11 @@ async function saveGlobalRulesInline() {
       body: JSON.stringify({ global_rules: rules }),
     });
     if (res.ok) {
-      showToast('Global default rules saved successfully! 🌐', 'success');
+      showToast(t('moderation.global_rules_saved'), 'success');
       loadModerationConfig();
     }
   } catch (e) {
-    showToast('Failed to save global rules', 'danger');
+    showToast(t('moderation.global_rules_save_failed'), 'danger');
   }
 }
 
@@ -404,12 +404,12 @@ async function saveGlobalRulesFromModal() {
       body: JSON.stringify({ global_rules: rules }),
     });
     if (res.ok) {
-      showToast('Global rules saved successfully! 🌐', 'success');
+      showToast(t('moderation.global_rules_saved'), 'success');
       closeGlobalRulesModal();
       loadModerationConfig();
     }
   } catch (e) {
-    showToast('Failed to save global rules', 'danger');
+    showToast(t('moderation.global_rules_save_failed'), 'danger');
   }
 }
 
@@ -422,11 +422,11 @@ async function toggleGlobalModeration(enabled) {
       body: JSON.stringify({ global_enabled: enabled }),
     });
     if (res.ok) {
-      showToast(enabled ? 'Global Moderation Enabled 🛡️' : 'Global Moderation Disabled', 'info');
+      showToast(enabled ? t('moderation.global_enabled') : t('moderation.global_disabled'), 'info');
       loadModerationConfig();
     }
   } catch (e) {
-    showToast('Failed to toggle global moderation', 'danger');
+    showToast(t('moderation.global_toggle_failed'), 'danger');
   }
 }
 
@@ -537,7 +537,7 @@ async function selectModerationGroup(groupId) {
 
     const entries = Object.keys(mergedWarns).filter((u) => mergedWarns[u]?.length);
     if (!entries.length) {
-      warnList.innerHTML = '<div class="empty-state">No active user warnings</div>';
+      warnList.innerHTML = `<div class="empty-state">${t('moderation.no_warns')}</div>`;
     } else {
       warnList.innerHTML = entries
         .map((u) => {
@@ -571,7 +571,7 @@ async function selectModerationGroup(groupId) {
     const bannedMap = config.banned_users || {};
     const bannedUserIds = Object.keys(bannedMap);
     if (!bannedUserIds.length) {
-      bansList.innerHTML = '<div class="empty-state">No banned users</div>';
+      bansList.innerHTML = `<div class="empty-state">${t('moderation.no_bans')}</div>`;
     } else {
       bansList.innerHTML = bannedUserIds
         .map((u) => {
@@ -599,7 +599,7 @@ async function selectModerationGroup(groupId) {
   if (kicksList) {
     const kickLogs = config.kick_log || [];
     if (!kickLogs.length) {
-      kicksList.innerHTML = '<div class="empty-state">No kick history</div>';
+      kicksList.innerHTML = `<div class="empty-state">${t('moderation.no_kicks')}</div>`;
     } else {
       kicksList.innerHTML = kickLogs
         .map((k) => {
@@ -626,7 +626,7 @@ async function selectModerationGroup(groupId) {
   if (reportsList) {
     const reports = config.reports || [];
     if (!reports.length) {
-      reportsList.innerHTML = '<div class="empty-state">No reports submitted yet</div>';
+      reportsList.innerHTML = `<div class="empty-state">${t('moderation.no_reports')}</div>`;
     } else {
       reportsList.innerHTML = reports
         .slice()
@@ -791,7 +791,7 @@ async function selectModerationGroup(groupId) {
         })
         .join('');
     } else {
-      defaultCmdsGrid.innerHTML = '<div class="empty-state">No commands registered</div>';
+      defaultCmdsGrid.innerHTML = `<div class="empty-state">${t('moderation.no_cmds')}</div>`;
     }
 
     // Clear search box when group changes
@@ -805,7 +805,7 @@ async function selectModerationGroup(groupId) {
     const customCmds = config.commands?.custom_commands || [];
     if (!customCmds.length) {
       customCmdsList.innerHTML =
-        '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">No custom mapped commands added yet</div>';
+        `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">${t('moderation.no_custom_cmds')}</div>`;
     } else {
       const typeLabel = (t) => {
         if (t === 'webhook')
@@ -893,7 +893,7 @@ async function selectModerationGroup(groupId) {
     );
     if (!entries.length) {
       mutedList.innerHTML =
-        '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:6px 0;">No muted users currently</div>';
+        `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:6px 0;">${t('moderation.no_muted_users')}</div>`;
     } else {
       mutedList.innerHTML = entries
         .map(([userKey, data]) => {
@@ -948,7 +948,7 @@ async function selectModerationGroup(groupId) {
     const words = config.blacklist?.words || [];
     if (!words.length) {
       blTags.innerHTML =
-        '<span style="color:var(--text-muted);font-size:12px;">No blacklisted words or patterns yet</span>';
+        `<span style="color:var(--text-muted);font-size:12px;">${t('moderation.no_blacklist_words')}</span>`;
     } else {
       blTags.innerHTML = words
         .map(
@@ -968,7 +968,7 @@ async function selectModerationGroup(groupId) {
     const filters = config.filters || [];
     if (!filters.length) {
       filtersList.innerHTML =
-        '<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">No filter rules configured yet</div>';
+        `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">${t('moderation.no_filters')}</div>`;
     } else {
       filtersList.innerHTML = filters
         .map(
@@ -1013,11 +1013,11 @@ async function toggleGroupModeration(enabled) {
   try {
     const res = await fetch(url, { method: 'POST' });
     if (res.ok) {
-      showToast(enabled ? 'Group Moderation Enabled' : 'Group Moderation Disabled', 'success');
+      showToast(enabled ? t('moderation.group_enabled') : t('moderation.group_disabled'), 'success');
       loadModerationConfig();
     }
   } catch (e) {
-    showToast('Failed to update group moderation', 'danger');
+    showToast(t('moderation.group_update_failed'), 'danger');
   }
 }
 
@@ -1049,7 +1049,7 @@ function _registerDirtyListeners() {
 }
 
 async function saveGroupRules() {
-  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   const text = document.getElementById('mod-rules-text')?.value || '';
   const showOnJoin = Boolean(document.getElementById('mod-rules-show-on-join')?.checked);
   const lang = document.getElementById('mod-group-language-select')?.value || 'en';
@@ -1060,11 +1060,11 @@ async function saveGroupRules() {
 
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Group rules & language saved!', 'success');
+  showToast(t('moderation.group_rules_saved'), 'success');
 }
 
 async function saveGroupGreetings() {
-  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.greetings = {
     welcome_enabled: Boolean(document.getElementById('mod-welcome-enabled')?.checked),
@@ -1083,7 +1083,7 @@ async function saveGroupGreetings() {
   };
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Greetings & Captcha saved!', 'success');
+  showToast(t('moderation.greetings_saved'), 'success');
   loadCaptchaUsers();
 }
 
@@ -1177,18 +1177,18 @@ async function toggleUserCaptchaVerification(userId, verified) {
     );
     const json = await res.json();
     if (json.success) {
-      showToast(`User ${userId} set to ${verified ? 'Verified' : 'Unverified'}`, 'success');
+      showToast(t('moderation.user_verification_updated', { user: userId, status: verified ? t('moderation.verified') : t('moderation.unverified') }), 'success');
       loadCaptchaUsers();
     } else {
-      showToast(json.error || 'Failed to update user captcha verification', 'error');
+      showToast(json.error || t('moderation.user_verification_failed'), 'error');
     }
   } catch (err) {
-    showToast(`Error updating verification: ${err.message}`, 'error');
+    showToast(t('moderation.user_verification_error', { error: err.message }), 'error');
   }
 }
 
 async function saveGroupWarnings() {
-  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.warnings = {
     ...(groupConfig.warnings || {}),
@@ -1197,11 +1197,11 @@ async function saveGroupWarnings() {
   };
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Warnings config saved!', 'success');
+  showToast(t('moderation.warnings_saved'), 'success');
 }
 
 async function saveGroupCommands() {
-  if (!currentModGroup) return showToast('Please select a group', 'warning');
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
 
   const enabled = Boolean(document.getElementById('mod-cmds-enabled')?.checked);
   const multi_command_enabled = Boolean(document.getElementById('mod-cmds-multi-enabled')?.checked);
@@ -1226,7 +1226,7 @@ async function saveGroupCommands() {
   };
 
   await saveGroupConfig(groupConfig);
-  showToast('Commands configuration saved!', 'success');
+  showToast(t('moderation.commands_saved'), 'success');
 }
 
 function toggleAllDefaultCommands(enable) {
@@ -1287,7 +1287,7 @@ async function addCustomCommandRule() {
   if (!name || !currentModGroup) return;
   if (cmdType === 'auto_reply' && !resp) return;
   if (cmdType === 'alias' && !aliasTarget) {
-    showToast('Please select a target command for the alias.', 'error');
+    showToast(t('moderation.select_alias_target'), 'error');
     return;
   }
 
@@ -1313,7 +1313,7 @@ async function addCustomCommandRule() {
   if (adminOnlyInp) adminOnlyInp.checked = false;
 
   await saveGroupConfig(groupConfig);
-  showToast(`Custom command !${name} added!`, 'success');
+  showToast(t('moderation.custom_command_added', { name }), 'success');
   selectModerationGroup(currentModGroup);
   setTimeout(() => {
     if (nameInp) nameInp.focus();
@@ -1392,12 +1392,12 @@ async function clearUserWarnInUi(userId) {
       }
     );
     if (res.ok) {
-      showToast(`Warnings cleared for @${userId}`, 'success');
+      showToast(t('moderation.warnings_cleared', { user: userId }), 'success');
       loadModerationConfig();
       setTimeout(() => selectModerationGroup(currentModGroup), 200);
     }
   } catch (e) {
-    showToast('Failed to clear warnings', 'danger');
+    showToast(t('moderation.warnings_clear_failed'), 'danger');
   }
 }
 
@@ -1412,12 +1412,12 @@ async function resolveReportInUi(reportId) {
       }
     );
     if (res.ok) {
-      showToast('Report marked as resolved', 'success');
+      showToast(t('moderation.report_resolved'), 'success');
       loadModerationConfig();
       setTimeout(() => selectModerationGroup(currentModGroup), 200);
     }
   } catch (e) {
-    showToast('Failed to resolve report', 'danger');
+    showToast(t('moderation.report_resolve_failed'), 'danger');
   }
 }
 
@@ -1432,12 +1432,12 @@ async function unbanUserInUi(userId) {
       }
     );
     if (res.ok) {
-      showToast(`Unbanned @${userId}`, 'success');
+      showToast(t('moderation.unbanned_user', { user: userId }), 'success');
       loadModerationConfig();
       setTimeout(() => selectModerationGroup(currentModGroup), 200);
     }
   } catch (e) {
-    showToast('Failed to unban user', 'danger');
+    showToast(t('moderation.unban_failed'), 'danger');
   }
 }
 
@@ -1452,12 +1452,12 @@ async function clearKickLogInUi(userId) {
       }
     );
     if (res.ok) {
-      showToast(`Kick log entry removed for @${userId}`, 'success');
+      showToast(t('moderation.kick_log_removed', { user: userId }), 'success');
       loadModerationConfig();
       setTimeout(() => selectModerationGroup(currentModGroup), 200);
     }
   } catch (e) {
-    showToast('Failed to remove kick log entry', 'danger');
+    showToast(t('moderation.kick_log_remove_failed'), 'danger');
   }
 }
 
@@ -1472,11 +1472,11 @@ async function unmuteUserInUi(userId) {
       }
     );
     if (res.ok) {
-      showToast(`Unmuted @${userId}`, 'success');
+      showToast(t('moderation.unmuted_user', { user: userId }), 'success');
       loadModerationConfig();
       setTimeout(() => selectModerationGroup(currentModGroup), 200);
     }
   } catch (e) {
-    showToast('Failed to unmute user', 'danger');
+    showToast(t('moderation.unmute_failed'), 'danger');
   }
 }

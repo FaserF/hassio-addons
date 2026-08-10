@@ -448,25 +448,28 @@ export function registerTelegramRoutes(app) {
       }
 
       try {
-        let textMsgRef = null;
+        let waTextMsgRef = null;
+        let tgTextMsgRef = null;
 
         // STEP 1: Text & Markdown Formatting Test
         try {
           log(
             'STEP_1',
-            `Executing Step 1/16: Text & Markdown formatting (${shouldStepBeWa(1) ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 1/16: Text & Markdown formatting (${isBiDirectional ? 'Bi-directional' : isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
           );
-          if (shouldStepBeWa(1)) {
-            const text = `🧪 [Bridge Test 1/16] *Bold*, _Italic_, ~Strike~, \`Code\` & https://github.com (${new Date().toLocaleTimeString()})`;
-            textMsgRef = await session.sock.sendMessage(mapping.wa_jid, { text });
+          const text = `🧪 [Bridge Test 1/16] *Bold*, _Italic_, ~Strike~, \`Code\` & https://github.com (${new Date().toLocaleTimeString()})`;
+          const htmlText = `🧪 [Bridge Test 1/16] <b>Bold</b>, <i>Italic</i>, <s>Strike</s>, <code>Code</code> &amp; <a href="https://github.com">Link</a> (${new Date().toLocaleTimeString()})`;
+
+          if (isWaToTg || isBiDirectional) {
+            waTextMsgRef = await session.sock.sendMessage(mapping.wa_jid, { text });
             log(
               'STEP_1',
-              `Sent WhatsApp formatted text message (ID: ${textMsgRef?.key?.id || 'OK'})`,
+              `Sent WhatsApp formatted text message (ID: ${waTextMsgRef?.key?.id || 'OK'})`,
               'success'
             );
-          } else {
-            const htmlText = `🧪 [Bridge Test 1/16] <b>Bold</b>, <i>Italic</i>, <s>Strike</s>, <code>Code</code> &amp; <a href="https://github.com">Link</a> (${new Date().toLocaleTimeString()})`;
-            textMsgRef = await bot.sendMessage(
+          }
+          if (!isWaToTg || isBiDirectional) {
+            tgTextMsgRef = await bot.sendMessage(
               mapping.tg_chat_id,
               htmlText,
               null,
@@ -475,7 +478,7 @@ export function registerTelegramRoutes(app) {
             );
             log(
               'STEP_1',
-              `Sent Telegram HTML text message (ID: ${textMsgRef?.message_id || 'OK'})`,
+              `Sent Telegram HTML text message (ID: ${tgTextMsgRef?.message_id || 'OK'})`,
               'success'
             );
           }
@@ -641,13 +644,30 @@ export function registerTelegramRoutes(app) {
             });
             log('STEP_6', 'Sent WhatsApp Image with Photo Caption', 'success');
           } else {
-            await bot.sendPhoto(
-              mapping.tg_chat_id,
-              imgUrl,
-              '🧪 [Bridge Test 6/16] Sample Image with Photo Caption',
-              null,
-              mapping.tg_thread_id || null
-            );
+            try {
+              await bot.sendPhoto(
+                mapping.tg_chat_id,
+                imgUrl,
+                '🧪 [Bridge Test 6/16] Sample Image with Photo Caption',
+                null,
+                mapping.tg_thread_id || null
+              );
+            } catch (pErr) {
+              // 1x1 transparent PNG fallback buffer if external URL fails
+              const transparentPng = Buffer.from(
+                'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+                'base64'
+              );
+              await bot.sendMediaFile(
+                'sendPhoto',
+                mapping.tg_chat_id,
+                transparentPng,
+                'photo',
+                '🧪 [Bridge Test 6/16] Sample Image with Photo Caption',
+                null,
+                mapping.tg_thread_id || null
+              );
+            }
             log('STEP_6', 'Sent Telegram Image with Photo Caption', 'success');
           }
           testRun.passedSteps++;
@@ -845,9 +865,9 @@ export function registerTelegramRoutes(app) {
             `Executing Step 12/16: Emoji Reactions (${shouldStepBeWa(12) ? 'WA -> TG' : 'TG -> WA'})`
           );
           if (shouldStepBeWa(12)) {
-            if (textMsgRef && textMsgRef.key) {
+            if (waTextMsgRef && waTextMsgRef.key) {
               await session.sock.sendMessage(mapping.wa_jid, {
-                react: { text: '🔥', key: textMsgRef.key },
+                react: { text: '🔥', key: waTextMsgRef.key },
               });
               log('STEP_12', 'Sent WhatsApp Emoji Reaction 🔥 to Step 1 message', 'success');
             } else {
@@ -857,8 +877,8 @@ export function registerTelegramRoutes(app) {
               log('STEP_12', 'Sent simulated WhatsApp Emoji Reaction', 'success');
             }
           } else {
-            if (textMsgRef && textMsgRef.message_id) {
-              await bot.setMessageReaction(mapping.tg_chat_id, textMsgRef.message_id, '🔥');
+            if (tgTextMsgRef && tgTextMsgRef.message_id) {
+              await bot.setMessageReaction(mapping.tg_chat_id, tgTextMsgRef.message_id, '🔥');
               log('STEP_12', 'Sent Telegram Emoji Reaction 🔥 to Step 1 message', 'success');
             } else {
               await bot.sendMessage(
@@ -968,11 +988,11 @@ export function registerTelegramRoutes(app) {
             `Executing Step 15/16: Quoted Reply Chains & Thread Context (${shouldStepBeWa(15) ? 'WA -> TG' : 'TG -> WA'})`
           );
           if (shouldStepBeWa(15)) {
-            if (textMsgRef) {
+            if (waTextMsgRef) {
               await session.sock.sendMessage(
                 mapping.wa_jid,
                 { text: '🧪 [Bridge Test 15/16] Quoted Reply Chain response to Step 1 Message' },
-                { quoted: textMsgRef }
+                { quoted: waTextMsgRef }
               );
               log('STEP_15', 'Sent WhatsApp Quoted Reply chain to Step 1 message', 'success');
             } else {
@@ -982,7 +1002,7 @@ export function registerTelegramRoutes(app) {
               log('STEP_15', 'Sent WhatsApp Reply text message', 'success');
             }
           } else {
-            const replyMsgId = textMsgRef?.message_id || null;
+            const replyMsgId = tgTextMsgRef?.message_id || null;
             await bot.sendMessage(
               mapping.tg_chat_id,
               '🧪 <b>[Bridge Test 15/16] Quoted Reply Chain response to Step 1 Message</b>',
@@ -1049,13 +1069,13 @@ export function registerTelegramRoutes(app) {
           `• Result: ${testRun.status === 'passed' ? '✅ ALL 16 STEPS PASSED' : '⚠️ PARTIAL / FAILED'}\n` +
           `• Passed Steps: ${testRun.passedSteps}/${testRun.totalSteps}\n` +
           `• Direction: ${directionText}\n` +
-          `• Mapping: ${mapping.name}\n` +
+          `• Mapping: ${safeMappingName}\n` +
           `• Run ID: ${runId}\n` +
           `• Duration: ${Math.round((new Date(testRun.endTime) - new Date(testRun.startTime)) / 1000)}s\n` +
           `\n<b>Verified 16 Feature Types:</b>\n` +
-          `1. Text & Formatting | 2. Native Polls | 3. Poll Vote Sync | 4. Native Location\n` +
-          `5. Rich Event Cards | 6. Images & Captions | 7. Voice Notes (PTT) | 8. Video Notes\n` +
-          `9. Documents & Names | 10. WebP Stickers | 11. VCard Contacts | 12. Emoji Reactions\n` +
+          `1. Text &amp; Formatting | 2. Native Polls | 3. Poll Vote Sync | 4. Native Location\n` +
+          `5. Rich Event Cards | 6. Images &amp; Captions | 7. Voice Notes (PTT) | 8. Video Notes\n` +
+          `9. Documents &amp; Names | 10. WebP Stickers | 11. VCard Contacts | 12. Emoji Reactions\n` +
           `13. Message Edits | 14. Revoke/Deletions | 15. Quoted Reply Chains | 16. System Events`;
 
         testRun.summary = summaryText;

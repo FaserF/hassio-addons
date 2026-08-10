@@ -137,27 +137,81 @@ async function runI18nTests() {
     }
   }
 
-  // Test 7: Verify all data-i18n attributes in UI views map to existing translation keys
+  // Test 7: Verify all data-i18n attributes in UI views & shell map to existing translation keys
   const viewsDir = path.resolve(__dirname, '../src/routes/ui/views');
+  const indexJsPath = path.resolve(__dirname, '../src/routes/ui/index.js');
+  const enKeysSet = new Set(enKeys);
+  let missingViewKeys = [];
+
+  const filesToScan = [];
   if (fs.existsSync(viewsDir)) {
-    const viewFiles = fs.readdirSync(viewsDir).filter((f) => f.endsWith('.js'));
-    const enKeysSet = new Set(enKeys);
-    let missingViewKeys = [];
-    for (const vf of viewFiles) {
-      const content = fs.readFileSync(path.join(viewsDir, vf), 'utf8');
-      const matches = content.matchAll(/data-i18n(?:-placeholder|-title)?=["']([^"']+)["']/g);
-      for (const m of matches) {
-        const k = m[1];
-        if (!enKeysSet.has(k)) {
-          missingViewKeys.push(`${vf}:${k}`);
-        }
+    fs.readdirSync(viewsDir)
+      .filter((f) => f.endsWith('.js'))
+      .forEach((f) => filesToScan.push(path.join(viewsDir, f)));
+  }
+  if (fs.existsSync(indexJsPath)) {
+    filesToScan.push(indexJsPath);
+  }
+
+  for (const filePath of filesToScan) {
+    const fileName = path.basename(filePath);
+    const content = fs.readFileSync(filePath, 'utf8');
+    const matches = content.matchAll(/data-i18n(?:-placeholder|-title)?=["']([^"']+)["']/g);
+    for (const m of matches) {
+      const k = m[1];
+      if (!enKeysSet.has(k)) {
+        missingViewKeys.push(`${fileName}:${k}`);
       }
     }
-    assertTest(
-      missingViewKeys.length === 0,
-      `All HTML view data-i18n attributes map to valid translation keys (missing: ${missingViewKeys.length > 0 ? missingViewKeys.join(', ') : 'none'})`
-    );
   }
+
+  assertTest(
+    missingViewKeys.length === 0,
+    `All HTML view & shell data-i18n attributes map to valid translation keys (missing: ${missingViewKeys.length > 0 ? missingViewKeys.join(', ') : 'none'})`
+  );
+
+  // Test 8: Automated JS String Scanner Test for showToast & showConfirm calls
+  const uiDir = path.resolve(__dirname, '../src/routes/ui');
+  function getJsFilesRecursively(dir) {
+    let results = [];
+    if (!fs.existsSync(dir)) return results;
+    const list = fs.readdirSync(dir, { withFileTypes: true });
+    for (const item of list) {
+      const fullPath = path.join(dir, item.name);
+      if (item.isDirectory()) {
+        results = results.concat(getJsFilesRecursively(fullPath));
+      } else if (item.isFile() && item.name.endsWith('.js')) {
+        results.push(fullPath);
+      }
+    }
+    return results;
+  }
+
+  const jsFiles = getJsFilesRecursively(uiDir);
+  let hardcodedToastAlerts = [];
+
+  for (const file of jsFiles) {
+    const relFile = path.relative(uiDir, file);
+    const content = fs.readFileSync(file, 'utf8');
+    const lines = content.split('\n');
+    lines.forEach((line, idx) => {
+      // Check showToast
+      const toastMatch = line.match(/showToast\s*\(\s*(['"`])(.*?)\1/);
+      if (toastMatch && !/showToast\s*\(\s*t\s*\(/.test(line)) {
+        hardcodedToastAlerts.push(`${relFile}:${idx + 1} [toast: ${toastMatch[2]}]`);
+      }
+      // Check showConfirm
+      const confirmMatch = line.match(/showConfirm\s*\(\s*(['"`])(.*?)\1/);
+      if (confirmMatch && !/showConfirm\s*\(\s*t\s*\(/.test(line)) {
+        hardcodedToastAlerts.push(`${relFile}:${idx + 1} [confirm: ${confirmMatch[2]}]`);
+      }
+    });
+  }
+
+  assertTest(
+    hardcodedToastAlerts.length === 0,
+    `Automated JS String Scanner: zero hardcoded showToast/showConfirm string literals (found: ${hardcodedToastAlerts.length > 0 ? hardcodedToastAlerts.join('; ') : 'none'})`
+  );
 
   if (failed > 0) {
     throw new Error(`i18n unit tests failed with ${failed} error(s)`);

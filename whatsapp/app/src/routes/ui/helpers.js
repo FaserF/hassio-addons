@@ -79,8 +79,9 @@ if (typeof window !== 'undefined' && window.fetch && !window._fetchAuthPatched) 
   };
 }
 
-function showToast(message, type = 'info') {
+function showToast(message, type = 'info', params = {}) {
   const container = document.getElementById('toast-container');
+  if (!container) return;
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   let icon = 'fa-info-circle';
@@ -88,7 +89,8 @@ function showToast(message, type = 'info') {
   if (type === 'danger') icon = 'fa-exclamation-circle';
   if (type === 'warning') icon = 'fa-exclamation-triangle';
 
-  toast.innerHTML = `<i class="fas ${icon} toast-icon"></i><span>${message}</span>`;
+  const resolvedMsg = typeof t === 'function' ? t(message, params) : message;
+  toast.innerHTML = `<i class="fas ${icon} toast-icon"></i><span>${resolvedMsg}</span>`;
   container.appendChild(toast);
 
   setTimeout(() => {
@@ -125,18 +127,25 @@ let modalResolver = null;
 function showConfirm(
   title,
   msg,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
-  btnType = 'danger'
+  confirmText = 'common.confirm',
+  cancelText = 'common.cancel',
+  btnType = 'danger',
+  titleParams = {},
+  msgParams = {}
 ) {
-  if (modalTitle) modalTitle.innerHTML = title;
-  if (modalMessage) modalMessage.innerHTML = msg;
+  const resolvedTitle = typeof t === 'function' ? t(title, titleParams) : title;
+  const resolvedMsg = typeof t === 'function' ? t(msg, msgParams) : msg;
+  const resolvedConfirm = typeof t === 'function' ? t(confirmText) : confirmText;
+  const resolvedCancel = typeof t === 'function' ? t(cancelText) : cancelText;
+
+  if (modalTitle) modalTitle.innerHTML = resolvedTitle;
+  if (modalMessage) modalMessage.innerHTML = resolvedMsg;
   if (modalConfirmBtn) {
-    modalConfirmBtn.innerHTML = confirmText;
+    modalConfirmBtn.innerHTML = resolvedConfirm;
     modalConfirmBtn.className = `btn btn-${btnType} btn-sm`;
   }
   if (modalCancelBtn) {
-    modalCancelBtn.innerHTML = cancelText;
+    modalCancelBtn.innerHTML = resolvedCancel;
   }
   if (confirmModal) confirmModal.classList.add('show');
   return new Promise((resolve) => {
@@ -265,10 +274,10 @@ async function setAppLanguage(lang) {
   try {
     await initI18n(lang);
     const langName = lang === 'de' ? '🇩🇪 Deutsch' : '🇬🇧 English';
-    showToast(`Language switched to ${langName}`, 'success');
+    showToast(t('common.language_switched', { lang: langName }), 'success');
   } catch (err) {
     console.error('setAppLanguage failed:', err);
-    showToast('Failed to switch language', 'danger');
+    showToast(t('common.failed_switch_language'), 'danger');
   }
 }
 

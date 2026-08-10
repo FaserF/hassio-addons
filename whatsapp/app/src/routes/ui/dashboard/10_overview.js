@@ -295,7 +295,7 @@ async function updateDashboard() {
                 '</div>'
             )
             .join('')
-        : '<div class="empty-state">No messages sent recently</div>'
+        : `<div class="empty-state">${window.t('dashboard.no_sent')}</div>`
     );
 
     setElHtml(
@@ -317,7 +317,7 @@ async function updateDashboard() {
                 '</div>'
             )
             .join('')
-        : '<div class="empty-state">No messages received recently</div>'
+        : `<div class="empty-state">${window.t('dashboard.no_received')}</div>`
     );
 
     setElHtml(
@@ -342,7 +342,7 @@ async function updateDashboard() {
                 '</div>'
             )
             .join('')
-        : '<div class="empty-state">No failures recorded</div>'
+        : `<div class="empty-state">${window.t('dashboard.no_failures')}</div>`
     );
   } catch (e) {
     console.error('❌ updateDashboard error:', e);

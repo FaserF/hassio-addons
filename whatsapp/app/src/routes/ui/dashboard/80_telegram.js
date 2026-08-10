@@ -150,10 +150,10 @@ async function toggleTelegramBridge(enabled) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ enabled }),
     });
-    showToast(enabled ? 'Telegram Bridge Enabled ✈️' : 'Telegram Bridge Disabled', 'info');
+    showToast(enabled ? t('telegram.bridge_active') : t('telegram.mapping_deleted'), 'info');
     loadTelegramBridgeData();
   } catch (e) {
-    showToast('Failed to update Telegram Bridge state', 'danger');
+    showToast(t('telegram.bot_add_failed'), 'danger');
   }
 }
 
@@ -201,7 +201,7 @@ async function saveTelegramBotModal() {
   const token = document.getElementById('tg-bot-modal-token')?.value || '';
 
   if (!token.trim()) {
-    showToast('Please enter a valid Bot Token', 'warning');
+    showToast(t('telegram.bot_add_failed'), 'warning');
     return;
   }
 
@@ -213,52 +213,52 @@ async function saveTelegramBotModal() {
     });
     const data = await res.json();
     if (!data.success) {
-      showToast(data.error || 'Failed to save bot', 'danger');
+      showToast(data.error || t('telegram.bot_add_failed'), 'danger');
     } else {
-      showToast('Telegram Bot saved & connected successfully! 🤖', 'success');
+      showToast(t('telegram.bot_added'), 'success');
       closeTelegramBotModal();
       loadTelegramBridgeData();
     }
   } catch (e) {
-    showToast('Error saving Bot Token', 'danger');
+    showToast(t('telegram.bot_add_error', { error: e.message }), 'danger');
   }
 }
 
 async function deleteTelegramBot(botId) {
   const confirmed = await showConfirm(
-    '<i class="fas fa-robot" style="color:#dc3545; margin-right:8px;"></i> Delete Telegram Bot',
-    'Are you sure you want to remove this Telegram Bot and all associated mappings?',
-    '<i class="fas fa-trash"></i> Delete Bot',
-    'Cancel',
+    t('telegram.delete_bot_confirm_title'),
+    t('telegram.delete_bot_confirm_msg'),
+    t('common.delete'),
+    t('common.cancel'),
     'danger'
   );
   if (!confirmed) return;
   try {
     await fetch(`api/telegram/bots/${botId}`, { method: 'DELETE' });
-    showToast('Telegram Bot removed', 'warning');
+    showToast(t('telegram.bot_deleted'), 'warning');
     loadTelegramBridgeData();
   } catch (e) {
-    showToast('Failed to delete bot', 'danger');
+    showToast(t('telegram.bot_delete_failed'), 'danger');
   }
 }
 
 async function toggleTelegramMapping(id) {
   await fetch(`api/telegram/mappings/${id}/toggle`, { method: 'POST' });
-  showToast('Mapping status updated', 'info');
+  showToast(t('telegram.mapping_added'), 'info');
   loadTelegramBridgeData();
 }
 
 async function deleteTelegramMapping(id) {
   const confirmed = await showConfirm(
-    '<i class="fas fa-link" style="color:#dc3545; margin-right:8px;"></i> Remove Mapping',
-    'Are you sure you want to remove this Telegram chat mapping?',
-    '<i class="fas fa-trash"></i> Remove Mapping',
-    'Cancel',
+    t('telegram.delete_mapping_confirm_title'),
+    t('telegram.delete_mapping_confirm_msg'),
+    t('common.delete'),
+    t('common.cancel'),
     'danger'
   );
   if (!confirmed) return;
   await fetch(`api/telegram/mappings/${id}`, { method: 'DELETE' });
-  showToast('Telegram mapping removed', 'warning');
+  showToast(t('telegram.mapping_deleted'), 'warning');
   loadTelegramBridgeData();
 }
 
@@ -598,17 +598,17 @@ async function editTelegramMapping(id) {
 
     tgMappingInitialState = getTgMappingCurrentState();
   } catch (e) {
-    showToast('Error opening mapping editor', 'danger');
+    showToast(t('telegram.mapping_add_error', { error: e.message }), 'danger');
   }
 }
 
 async function closeTelegramMappingModal(force = false) {
   if (!force && hasTgMappingUnsavedChanges()) {
     const confirmClose = await showConfirm(
-      '<i class="fas fa-exclamation-triangle" style="color:#ffc107; margin-right:8px;"></i> Unsaved Changes',
-      'You have unsaved changes. Are you sure you want to close without saving?',
-      '<i class="fas fa-trash"></i> Discard Changes',
-      '<i class="fas fa-undo"></i> Keep Editing',
+      t('telegram.unsaved_changes_title'),
+      t('telegram.unsaved_changes_msg'),
+      t('common.delete'),
+      t('common.cancel'),
       'danger'
     );
     if (!confirmClose) {
@@ -675,7 +675,7 @@ async function saveTelegramMappingModal() {
   const sync_pins = document.getElementById('tg-modal-sync-pins')?.checked || false;
 
   if (!wa_jid || !tg_chat_id) {
-    showToast('Please select both a WhatsApp Chat and a Telegram Chat', 'warning');
+    showToast(t('telegram.mapping_add_failed'), 'warning');
     return;
   }
 
@@ -713,14 +713,14 @@ async function saveTelegramMappingModal() {
     });
     const data = await res.json();
     if (!data.success) {
-      showToast(data.error || 'Failed to save mapping', 'danger');
+      showToast(data.error || t('telegram.mapping_add_failed'), 'danger');
     } else {
-      showToast('Telegram mapping saved successfully!', 'success');
+      showToast(t('telegram.mapping_added'), 'success');
       closeTelegramMappingModal(true);
       loadTelegramBridgeData();
     }
   } catch (e) {
-    showToast('Failed to connect to server', 'danger');
+    showToast(t('telegram.mapping_add_error', { error: e.message }), 'danger');
   }
 }
 
@@ -807,19 +807,19 @@ async function runTelegramBridgeTest() {
   );
 
   if (!mapping_id) {
-    showToast('Please select a target mapping to run integration test', 'warning');
+    showToast(t('telegram.test_mapping'), 'warning');
     return;
   }
 
   if (selected_subtests.length === 0) {
-    showToast('Please select at least one subtest to execute', 'warning');
+    showToast(t('telegram.test_subtests'), 'warning');
     return;
   }
 
   // Pre-flight: check WhatsApp connection status before launching
   if (typeof isConnected !== 'undefined' && !isConnected) {
     showToast(
-      '⚠️ WhatsApp is not connected. Please connect your WhatsApp session first.',
+      t('chats.not_connected'),
       'danger'
     );
     return;
@@ -836,7 +836,10 @@ async function runTelegramBridgeTest() {
     statusBadge.style.background = '#0088cc';
     statusBadge.textContent = 'RUNNING';
   }
-  if (progressText) progressText.textContent = `Progress: 0 / ${selected_subtests.length} steps`;
+  if (progressText) {
+    const label = window.t('telegram.test_progress_label') || 'Progress';
+    progressText.textContent = `${label}: 0 / ${selected_subtests.length} steps`;
+  }
   if (runIdEl) runIdEl.textContent = 'Run ID: Initializing...';
   if (logOutput) logOutput.textContent = 'Starting integration test...\n';
 
@@ -854,7 +857,7 @@ async function runTelegramBridgeTest() {
 
     const data = await res.json();
     if (!data.success) {
-      showToast(data.error || 'Failed to start test', 'danger');
+      showToast(data.error || t('telegram.mapping_add_failed'), 'danger');
       if (runBtn) {
         runBtn.disabled = false;
         runBtn.innerHTML = '<i class="fas fa-play"></i> Run Integration Test';
@@ -878,7 +881,7 @@ async function runTelegramBridgeTest() {
 
     pollTelegramTestResults(runId);
   } catch (err) {
-    showToast(`Error launching test: ${err.message}`, 'danger');
+    showToast(t('telegram.mapping_add_error', { error: err.message }), 'danger');
     if (runBtn) {
       runBtn.disabled = false;
       runBtn.innerHTML = '<i class="fas fa-play"></i> Run Integration Test';
@@ -902,7 +905,8 @@ async function pollTelegramTestResults(runId) {
     const runBtn = document.getElementById('tg-run-test-btn');
 
     if (progressText) {
-      progressText.textContent = `Progress: ${testRun.passedSteps} / ${testRun.totalSteps} steps`;
+      const label = window.t('telegram.test_progress_label') || 'Progress';
+      progressText.textContent = `${label}: ${testRun.passedSteps} / ${testRun.totalSteps} steps`;
     }
 
     if (logOutput && Array.isArray(testRun.logs)) {
@@ -941,11 +945,11 @@ async function pollTelegramTestResults(runId) {
         if (testRun.status === 'passed') {
           statusBadge.style.background = '#28a745';
           statusBadge.textContent = 'PASSED ✅';
-          showToast('Telegram Bridge Integration Test Passed! 🎉', 'success');
+          showToast(t('telegram.test_ready'), 'success');
         } else {
           statusBadge.style.background = '#dc3545';
           statusBadge.textContent = 'FAILED ❌';
-          showToast('Telegram Bridge Integration Test Completed with Warnings/Failures', 'warning');
+          showToast(t('telegram.test_ready'), 'warning');
         }
       }
     }
@@ -957,14 +961,14 @@ async function pollTelegramTestResults(runId) {
 function copyTgTestLogs() {
   const logOutput = document.getElementById('tg-test-log-output');
   if (!logOutput || !logOutput.textContent) {
-    showToast('No logs available to copy', 'warning');
+    showToast(t('telegram.test_log'), 'warning');
     return;
   }
   const text = logOutput.textContent;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard
       .writeText(text)
-      .then(() => showToast('Telegram test logs copied to clipboard!', 'success'))
+      .then(() => showToast(t('telegram.copy_log'), 'success'))
       .catch(() => fallbackCopyTextToClipboard(text));
   } else {
     fallbackCopyTextToClipboard(text);
@@ -983,12 +987,12 @@ function fallbackCopyTextToClipboard(text) {
   try {
     const successful = document.execCommand('copy');
     if (successful) {
-      showToast('Telegram test logs copied to clipboard!', 'success');
+      showToast(t('telegram.copy_log'), 'success');
     } else {
-      showToast('Failed to copy logs', 'danger');
+      showToast(t('telegram.mapping_delete_failed'), 'danger');
     }
   } catch (err) {
-    showToast('Failed to copy logs: ' + err.message, 'danger');
+    showToast(t('telegram.mapping_delete_error', { error: err.message }), 'danger');
   }
   document.body.removeChild(textArea);
 }
