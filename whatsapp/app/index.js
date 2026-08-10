@@ -112,6 +112,13 @@ app.listen(PORT, '0.0.0.0', () => {
 
 async function handleShutdown(signal) {
   logger.info({ signal }, '👋 Shutdown signal received. Saving state and cleaning up...');
+  setHealthStatus('shutting_down', 'Addon is restarting / shutting down');
+  for (const session of sessions.values()) {
+    if (session.stats) {
+      session.stats.shutting_down = true;
+      session.stats.last_disconnect_reason = 'shutting_down';
+    }
+  }
   let anyConnected = false;
   for (const session of sessions.values()) {
     if (session.isConnected) {

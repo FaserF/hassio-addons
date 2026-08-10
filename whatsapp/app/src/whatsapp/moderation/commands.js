@@ -3233,16 +3233,15 @@ async function executeSingleCommandLine(
     }
 
     // Command not found in registry or custom commands.
-    // If the sender is an admin (or sending with command prefix), notify them that the command does not exist
-    // and provide fuzzy search suggestions of similar valid commands.
-    if (isAdminUser) {
-      const allBuiltIn = registry.getAllCommandNames();
-      const allCustom = (config.commands?.custom_commands || []).map((c) =>
-        c.command.toLowerCase().replace(/^[!/#]+/, '')
-      );
-      const allCmds = Array.from(new Set([...allBuiltIn, ...allCustom]));
-      const suggestions = findCommandSuggestions(cmdStr, allCmds, 3);
+    // Notify admins always. Notify non-admins ONLY if at least one fuzzy suggestion was found.
+    const allBuiltIn = registry.getAllCommandNames();
+    const allCustom = (config.commands?.custom_commands || []).map((c) =>
+      c.command.toLowerCase().replace(/^[!/#]+/, '')
+    );
+    const allCmds = Array.from(new Set([...allBuiltIn, ...allCustom]));
+    const suggestions = findCommandSuggestions(cmdStr, allCmds, 3);
 
+    if (isAdminUser || suggestions.length > 0) {
       let suggestText = '';
       if (suggestions.length > 0) {
         suggestText = `\n\n${gt(config, 'bot_replies.did_you_mean')}\n${suggestions.map((s) => `• \`${prefix}${s}\``).join('\n')}`;
@@ -3262,9 +3261,9 @@ async function executeSingleCommandLine(
         },
         msg
       );
-      return true; // admin was notified of unknown command
+      return true; // user/admin was notified of unknown command
     }
-    // Non-admin typed a command-like string that doesn't exist — do NOT mark as handled
+    // Non-admin typed a command-like string with no fuzzy suggestions — do NOT mark as handled
     // so the moderation engine (blacklist, FAQ auto-responder) still gets to evaluate the message.
     return false;
   }
