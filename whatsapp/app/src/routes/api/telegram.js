@@ -750,89 +750,99 @@ export function registerTelegramRoutes(app) {
 
         await new Promise((r) => setTimeout(r, 1000));
 
-function generateAnonymizedTestReport(testRun, mapping, currentStep = 9) {
-  const maskJid = (jid) => {
-    if (!jid) return 'unknown';
-    const str = String(jid).trim();
-    const parts = str.split('@');
-    const user = parts[0] || '';
-    const domain = parts[1] ? `@${parts[1]}` : '';
-    if (user.length <= 4) return `****${domain}`;
-    return `${user.substring(0, 3)}***${user.substring(user.length - 2)}${domain}`;
-  };
+        function generateAnonymizedTestReport(testRun, mapping, currentStep = 9) {
+          const maskJid = (jid) => {
+            if (!jid) return 'unknown';
+            const str = String(jid).trim();
+            const parts = str.split('@');
+            const user = parts[0] || '';
+            const domain = parts[1] ? `@${parts[1]}` : '';
+            if (user.length <= 4) return `****${domain}`;
+            return `${user.substring(0, 3)}***${user.substring(user.length - 2)}${domain}`;
+          };
 
-  const maskChatId = (id) => {
-    const s = String(id || '').trim();
-    if (s.length <= 4) return '****';
-    return `${s.substring(0, 4)}***${s.substring(s.length - 3)}`;
-  };
+          const maskChatId = (id) => {
+            const s = String(id || '').trim();
+            if (s.length <= 4) return '****';
+            return `${s.substring(0, 4)}***${s.substring(s.length - 3)}`;
+          };
 
-  const stepsList = [
-    { num: 1, name: 'Text & Formatting Syntax Sync' },
-    { num: 2, name: 'Interactive Native Poll Creation' },
-    { num: 3, name: 'Real-time Poll Vote Update Stream' },
-    { num: 4, name: 'Native Geolocation & Maps Sync' },
-    { num: 5, name: 'Rich Calendar / Event Cards' },
-    { num: 6, name: 'High-Res Image & Photo Captions' },
-    { num: 7, name: 'Voice Notes (PTT Audio Stream)' },
-    { num: 8, name: 'Video Clips & Round Video Notes' },
-    { num: 9, name: 'Document & File Attachment Engine' },
-    { num: 10, name: 'Animated & WebP Sticker Conversion' },
-    { num: 11, name: 'VCard Contact Card Normalization' },
-    { num: 12, name: 'Bidirectional Emoji Reactions' },
-    { num: 13, name: 'Real-time Message Edit Propagation' },
-    { num: 14, name: 'Message Revoke / Un-send Deletions' },
-    { num: 15, name: 'Quoted Reply Chain Association' },
-    { num: 16, name: 'System Events & Membership Notices' },
-  ];
+          const stepsList = [
+            { num: 1, name: 'Text & Formatting Syntax Sync' },
+            { num: 2, name: 'Interactive Native Poll Creation' },
+            { num: 3, name: 'Real-time Poll Vote Update Stream' },
+            { num: 4, name: 'Native Geolocation & Maps Sync' },
+            { num: 5, name: 'Rich Calendar / Event Cards' },
+            { num: 6, name: 'High-Res Image & Photo Captions' },
+            { num: 7, name: 'Voice Notes (PTT Audio Stream)' },
+            { num: 8, name: 'Video Clips & Round Video Notes' },
+            { num: 9, name: 'Document & File Attachment Engine' },
+            { num: 10, name: 'Animated & WebP Sticker Conversion' },
+            { num: 11, name: 'VCard Contact Card Normalization' },
+            { num: 12, name: 'Bidirectional Emoji Reactions' },
+            { num: 13, name: 'Real-time Message Edit Propagation' },
+            { num: 14, name: 'Message Revoke / Un-send Deletions' },
+            { num: 15, name: 'Quoted Reply Chain Association' },
+            { num: 16, name: 'System Events & Membership Notices' },
+          ];
 
-  const lines = [
-    '================================================================================',
-    '       TELEGRAM & WHATSAPP BRIDGE AUTOMATED E2E VERIFICATION REPORT',
-    '================================================================================',
-    `Run ID:           ${testRun.runId || 'N/A'}`,
-    `Generated At:     ${new Date().toISOString()}`,
-    `Test Direction:   ${testRun.direction || 'WA <-> TG'}`,
-    `Mapping Name:     ${mapping ? mapping.name || 'Default Mapping' : 'Default Mapping'}`,
-    `WhatsApp Target:  ${mapping ? maskJid(mapping.wa_jid) : 'unknown'}`,
-    `Telegram Target:  ${mapping ? maskChatId(mapping.tg_chat_id) : 'unknown'}`,
-    '--------------------------------------------------------------------------------',
-    '',
-    '16-FEATURE STEP VERIFICATION STATUS:',
-  ];
+          const lines = [
+            '================================================================================',
+            '       TELEGRAM & WHATSAPP BRIDGE AUTOMATED E2E VERIFICATION REPORT',
+            '================================================================================',
+            `Run ID:           ${testRun.runId || 'N/A'}`,
+            `Generated At:     ${new Date().toISOString()}`,
+            `Test Direction:   ${testRun.direction || 'WA <-> TG'}`,
+            `Mapping Name:     ${mapping ? mapping.name || 'Default Mapping' : 'Default Mapping'}`,
+            `WhatsApp Target:  ${mapping ? maskJid(mapping.wa_jid) : 'unknown'}`,
+            `Telegram Target:  ${mapping ? maskChatId(mapping.tg_chat_id) : 'unknown'}`,
+            '--------------------------------------------------------------------------------',
+            '',
+            '16-FEATURE STEP VERIFICATION STATUS:',
+          ];
 
-  stepsList.forEach((s) => {
-    let status = '[ PENDING ]';
-    if (s.num <= currentStep) {
-      status = '[ PASSED  ]';
-    }
-    lines.push(`  Step ${String(s.num).padStart(2, '0')}: ${status} ${s.name}`);
-  });
+          stepsList.forEach((s) => {
+            let status = '[ PENDING ]';
+            if (s.num <= currentStep) {
+              status = '[ PASSED  ]';
+            }
+            lines.push(`  Step ${String(s.num).padStart(2, '0')}: ${status} ${s.name}`);
+          });
 
-  lines.push('');
-  lines.push('--------------------------------------------------------------------------------');
-  lines.push('EXECUTION LOG TRAIL (ANONYMIZED):');
-  lines.push('--------------------------------------------------------------------------------');
+          lines.push('');
+          lines.push(
+            '--------------------------------------------------------------------------------'
+          );
+          lines.push('EXECUTION LOG TRAIL (ANONYMIZED):');
+          lines.push(
+            '--------------------------------------------------------------------------------'
+          );
 
-  if (Array.isArray(testRun.logs) && testRun.logs.length > 0) {
-    testRun.logs.forEach((logItem) => {
-      const timeStr = logItem.time || new Date().toLocaleTimeString();
-      let msg = String(logItem.msg || logItem.message || '');
-      msg = msg.replace(/\b\d{8,15}@s\.whatsapp\.net\b/g, (m) => maskJid(m));
-      msg = msg.replace(/\b-?\d{8,14}\b/g, (m) => maskChatId(m));
-      lines.push(`[${timeStr}] [${logItem.step || 'INFO'}] [${logItem.level || 'info'}] ${msg}`);
-    });
-  } else {
-    lines.push('No execution logs recorded.');
-  }
+          if (Array.isArray(testRun.logs) && testRun.logs.length > 0) {
+            testRun.logs.forEach((logItem) => {
+              const timeStr = logItem.time || new Date().toLocaleTimeString();
+              let msg = String(logItem.msg || logItem.message || '');
+              msg = msg.replace(/\b\d{8,15}@s\.whatsapp\.net\b/g, (m) => maskJid(m));
+              msg = msg.replace(/\b-?\d{8,14}\b/g, (m) => maskChatId(m));
+              lines.push(
+                `[${timeStr}] [${logItem.step || 'INFO'}] [${logItem.level || 'info'}] ${msg}`
+              );
+            });
+          } else {
+            lines.push('No execution logs recorded.');
+          }
 
-  lines.push('');
-  lines.push('================================================================================');
-  lines.push('                         END OF AUTOMATED TEST REPORT');
-  lines.push('================================================================================');
+          lines.push('');
+          lines.push(
+            '================================================================================'
+          );
+          lines.push('                         END OF AUTOMATED TEST REPORT');
+          lines.push(
+            '================================================================================'
+          );
 
-  return lines.join('\n');
-}
+          return lines.join('\n');
+        }
 
         // STEP 9: Documents & Files with original filenames Test
         try {
