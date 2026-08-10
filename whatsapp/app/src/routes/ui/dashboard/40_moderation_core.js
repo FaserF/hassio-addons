@@ -347,7 +347,14 @@ async function loadModerationConfig() {
       }
 
       const groups = Array.from(groupMap.values());
-      const preserved = select.value;
+      let preserved = select.value;
+      if (window.initialUrlState && window.initialUrlState.tab === 'moderation' && window.initialUrlState.params && window.initialUrlState.params.group) {
+        const restoreGroup = window.initialUrlState.params.group;
+        delete window.initialUrlState.params.group;
+        if (groupMap.has(restoreGroup)) {
+          preserved = restoreGroup;
+        }
+      }
       let opts = `<option value="">${window.t('moderation.select_group')}</option>`;
       groups.forEach((g) => {
         opts += `<option value="${g.id}"${g.id === preserved ? ' selected' : ''}>${g.name}</option>`;
@@ -434,6 +441,10 @@ async function toggleGlobalModeration(enabled) {
 
 async function selectModerationGroup(groupId) {
   currentModGroup = groupId;
+  if (window.updateUrlState) {
+    if (groupId) window.updateUrlState('moderation', { group: groupId });
+    else window.updateUrlState('moderation', {});
+  }
   const contentCard = document.getElementById('mod-group-content');
   const placeholderCard = document.getElementById('mod-no-group-placeholder');
 

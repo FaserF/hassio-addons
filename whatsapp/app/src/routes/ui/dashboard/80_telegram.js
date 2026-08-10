@@ -33,6 +33,16 @@ async function loadTelegramBridgeData() {
       renderTelegramBots(cachedTelegramBots);
       renderTelegramMappings(cfg.mappings || [], cachedTelegramBots);
       populateTelegramTestMappingDropdown(cfg.mappings || []);
+      if (window.initialUrlState && window.initialUrlState.tab === 'telegram' && window.initialUrlState.params) {
+        if (window.initialUrlState.params.mapping) {
+          const restoreMapId = window.initialUrlState.params.mapping;
+          delete window.initialUrlState.params.mapping;
+          editTelegramMapping(restoreMapId);
+        } else if (window.initialUrlState.params.action === 'add') {
+          delete window.initialUrlState.params.action;
+          openAddTelegramMappingModal();
+        }
+      }
     }
   } catch (err) {
     console.error('Failed to load Telegram bridge config', err);
@@ -452,6 +462,7 @@ function hasTgMappingUnsavedChanges() {
 }
 
 function openAddTelegramMappingModal() {
+  if (window.updateUrlState) window.updateUrlState('telegram', { action: 'add' });
   const title = document.getElementById('tg-modal-title');
   if (title)
     title.innerHTML =
@@ -499,6 +510,7 @@ function openAddTelegramMappingModal() {
 }
 
 async function editTelegramMapping(id) {
+  if (window.updateUrlState) window.updateUrlState('telegram', { mapping: id });
   try {
     const res = await fetch(basePath + 'api/telegram/config');
     const json = await res.json();
@@ -630,6 +642,7 @@ async function closeTelegramMappingModal(force = false) {
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'none';
   tgMappingInitialState = null;
+  if (window.updateUrlState) window.updateUrlState('telegram', {});
 }
 
 async function saveTelegramMappingModal() {

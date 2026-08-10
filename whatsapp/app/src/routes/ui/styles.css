@@ -700,6 +700,61 @@ body {
 
 /* Mobile Media Queries */
 @media (max-width: 768px) {
+  /* Universal Responsive Text & Button Overflow Protection */
+  .btn,
+  button {
+    white-space: normal !important;
+    word-break: break-word !important;
+    height: auto !important;
+    min-height: 38px !important;
+    max-width: 100% !important;
+    text-align: center !important;
+    padding: 6px 12px !important;
+  }
+
+  .mod-inline-controls,
+  .mod-feature-header,
+  .mod-field-group,
+  .drawer-section,
+  .card,
+  .mod-card {
+    flex-wrap: wrap !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .mod-field-label,
+  label,
+  .mod-option-label {
+    white-space: normal !important;
+    word-break: break-word !important;
+    max-width: 100% !important;
+  }
+
+  .drawer-title,
+  .mod-hero-title,
+  .mod-feature-title,
+  h1, h2, h3, h4 {
+    word-break: break-word !important;
+    max-width: 100% !important;
+  }
+
+  .drawer-value,
+  .drawer-desc,
+  .mod-feature-desc,
+  code {
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    max-width: 100% !important;
+  }
+
+  .mod-chip-checkbox,
+  label.mod-chip-checkbox {
+    white-space: normal !important;
+    word-break: break-word !important;
+    max-width: 100% !important;
+  }
+
   .chat-info-drawer {
     width: 100% !important;
     position: absolute;
@@ -3210,4 +3265,38 @@ label.mod-chip-checkbox {
   border-color: var(--primary, #25d366) !important;
   color: var(--text-main) !important;
   background: var(--bg-hover) !important;
+}
+
+/* ── Desktop Dynamic Full-Height Chats Layout (Zero Wasted Space) ── */
+body.tab-chats-active .content-body {
+  padding: 12px 16px 8px 16px !important;
+  gap: 8px !important;
+  overflow: hidden !important;
+  height: calc(100vh - var(--header-height, 64px)) !important;
+  max-height: calc(100vh - var(--header-height, 64px)) !important;
+}
+
+body.tab-chats-active #tab-chats {
+  flex: 1 1 0% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.tab-chats-active .chat-container-layout {
+  flex: 1 1 0% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-medium) !important;
+}
+
+body.tab-chats-active .footer-info {
+  margin-top: 0 !important;
+  padding: 4px 8px !important;
+  border-top: none !important;
+  font-size: 11px !important;
+  flex-shrink: 0 !important;
+  background: transparent !important;
 }

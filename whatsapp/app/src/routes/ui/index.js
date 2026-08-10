@@ -533,18 +533,73 @@ export function renderDashboard(sessionId) {
 
     const validTabs = ['dashboard', 'logs', 'chats', 'moderation', 'telegram'];
 
-    function getTabFromUrl() {
-        const hash = (window.location.hash || '').replace(/^#/, '').toLowerCase().trim();
-        if (validTabs.includes(hash)) return hash;
+    function parseUrlState() {
+        const rawHash = (window.location.hash || '').replace(/^#/, '').trim();
+        let tabPart = rawHash;
+        let queryPart = '';
+
+        if (rawHash.includes('?')) {
+            const parts = rawHash.split('?');
+            tabPart = parts[0];
+            queryPart = parts.slice(1).join('?');
+        } else if (rawHash.includes('/')) {
+            const parts = rawHash.split('/');
+            tabPart = parts[0];
+            queryPart = 'jid=' + encodeURIComponent(parts.slice(1).join('/'));
+        }
+
+        tabPart = tabPart.toLowerCase();
+        let tab = validTabs.includes(tabPart) ? tabPart : null;
 
         try {
             const urlParams = new URLSearchParams(window.location.search);
             const queryTab = (urlParams.get('tab') || '').toLowerCase().trim();
-            if (validTabs.includes(queryTab)) return queryTab;
+            if (validTabs.includes(queryTab)) tab = queryTab;
         } catch (e) {}
 
-        return null;
+        const params = {};
+        if (queryPart) {
+            try {
+                const sp = new URLSearchParams(queryPart);
+                for (const [k, v] of sp.entries()) {
+                    params[k] = v;
+                }
+            } catch (e) {}
+        }
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            for (const [k, v] of urlParams.entries()) {
+                if (k !== 'tab' && !params[k]) params[k] = v;
+            }
+        } catch (e) {}
+
+        return { tab, params };
     }
+
+    const initialUrlState = parseUrlState();
+    window.initialUrlState = initialUrlState;
+
+    function getTabFromUrl() {
+        const st = parseUrlState();
+        return st.tab || null;
+    }
+
+    function updateUrlState(tabId, paramsObj = {}) {
+        const queryParts = [];
+        for (const [k, v] of Object.entries(paramsObj)) {
+            if (v) queryParts.push(encodeURIComponent(k) + '=' + encodeURIComponent(v));
+        }
+        const queryString = queryParts.length > 0 ? '?' + queryParts.join('&') : '';
+        const newHash = '#' + tabId + queryString;
+
+        if (window.history && typeof window.history.replaceState === 'function') {
+            try {
+                window.history.replaceState(null, '', newHash);
+            } catch (e) {}
+        }
+    }
+    window.updateUrlState = updateUrlState;
+    window.parseUrlState = parseUrlState;
 
     function _doSwitchTab(tabId, updateHistory = true) {
         if (!validTabs.includes(tabId)) tabId = 'dashboard';
@@ -564,16 +619,15 @@ export function renderDashboard(sessionId) {
         const contentBody = document.querySelector('.content-body');
         if (contentBody) contentBody.scrollTop = 0;
 
-        if (updateHistory && window.history && typeof window.history.replaceState === 'function') {
-            try {
-                const currentHash = (window.location.hash || '').replace(/^#/, '');
-                if (currentHash !== tabId) {
-                    window.history.replaceState(null, '', '#' + tabId);
-                }
-            } catch (e) {}
+        if (updateHistory) {
+            const currentState = parseUrlState();
+            if (currentState.tab !== tabId) {
+                updateUrlState(tabId, {});
+            }
         }
 
         isChatTabActive = (tabId === 'chats');
+        document.body.classList.toggle('tab-chats-active', isChatTabActive);
         if (isChatTabActive) {
             loadChats();
         } else if (tabId === 'moderation') {
