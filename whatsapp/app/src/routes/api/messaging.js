@@ -6,7 +6,10 @@ import { trackSent } from '../../whatsapp/actions.js';
 import { getQuotedMessage } from '../../whatsapp/events/index.js';
 import { ensureConnected, asyncHandler } from './helpers.js';
 import { generateMessageID } from '../../utils/security.js';
-import { syncWhatsAppDeleteToTelegram } from '../../whatsapp/telegram/listener.js';
+import {
+  syncWhatsAppDeleteToTelegram,
+  syncWhatsAppEditToTelegram,
+} from '../../whatsapp/telegram/listener.js';
 
 export function registerMessagingRoutes(app) {
   app.post(
@@ -343,6 +346,7 @@ export function registerMessagingRoutes(app) {
           text: newText,
           edit: { remoteJid: jid, fromMe: true, id: messageId },
         });
+        syncWhatsAppEditToTelegram(messageId, jid, newText);
         res.json({ status: 'edited' });
       } catch (err) {
         res.status(500).json({ detail: err.message });

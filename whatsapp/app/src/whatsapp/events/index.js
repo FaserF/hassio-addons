@@ -27,6 +27,7 @@ import {
   syncWhatsAppToTelegram,
   syncWhatsAppGroupEventToTelegram,
   syncWhatsAppDeleteToTelegram,
+  syncWhatsAppEditToTelegram,
   startTelegramPolling,
 } from '../telegram/listener.js';
 
@@ -354,6 +355,29 @@ export function handleIncomingMessages(session) {
             '🗑️ Detected WhatsApp message deletion (protocolMessage REVOKE)'
           );
           syncWhatsAppDeleteToTelegram(deletedId, targetJid);
+        }
+      } else if (
+        protNode &&
+        (protNode.type === 14 || protNode.type === 'MESSAGE_EDIT' || String(protNode.type) === '14')
+      ) {
+        const editedWaMsgId = protNode.key?.id;
+        const targetJid = protNode.key?.remoteJid || msg.key?.remoteJid;
+        const editedContentObj = protNode.editedMessage || msg.message?.editedMessage;
+        const newText =
+          editedContentObj?.conversation ||
+          editedContentObj?.extendedTextMessage?.text ||
+          editedContentObj?.imageMessage?.caption ||
+          editedContentObj?.videoMessage?.caption ||
+          '';
+        if (editedWaMsgId && targetJid && newText) {
+          logger.info(
+            { editedWaMsgId, targetJid },
+            '✏️ Detected WhatsApp message edit (protocolMessage MESSAGE_EDIT)'
+          );
+          const isGroup = targetJid.endsWith('@g.us');
+          const groupName = isGroup ? session.groupCache?.get(targetJid) || targetJid : '';
+          const senderName = msg.pushName || session.contactCache?.get(targetJid)?.name || '';
+          syncWhatsAppEditToTelegram(editedWaMsgId, targetJid, newText, groupName, senderName);
         }
       }
     }
@@ -1032,6 +1056,29 @@ export function handleIncomingMessages(session) {
                 '🗑️ Received messages.update (REVOKE) event from Baileys'
               );
               syncWhatsAppDeleteToTelegram(deletedId, targetJid);
+            }
+          } else if (
+            prot &&
+            (prot.type === 14 || prot.type === 'MESSAGE_EDIT' || String(prot.type) === '14')
+          ) {
+            const editedWaMsgId = prot.key?.id || key?.id;
+            const targetJid = prot.key?.remoteJid || key?.remoteJid;
+            const editedContentObj = prot.editedMessage || update.message?.editedMessage;
+            const newText =
+              editedContentObj?.conversation ||
+              editedContentObj?.extendedTextMessage?.text ||
+              editedContentObj?.imageMessage?.caption ||
+              editedContentObj?.videoMessage?.caption ||
+              '';
+            if (editedWaMsgId && targetJid && newText) {
+              logger.info(
+                { editedWaMsgId, targetJid },
+                '✏️ Received messages.update (MESSAGE_EDIT) event from Baileys'
+              );
+              const isGroup = targetJid.endsWith('@g.us');
+              const groupName = isGroup ? session.groupCache?.get(targetJid) || targetJid : '';
+              const senderName = session.contactCache?.get(targetJid)?.name || '';
+              syncWhatsAppEditToTelegram(editedWaMsgId, targetJid, newText, groupName, senderName);
             }
           }
         }

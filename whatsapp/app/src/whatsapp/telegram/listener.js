@@ -147,6 +147,74 @@ export async function syncWhatsAppDeleteToTelegram(waMsgId, waJid) {
   }
 }
 
+export async function syncWhatsAppEditToTelegram(
+  waMsgId,
+  waJid,
+  newText,
+  groupName = '',
+  senderName = ''
+) {
+  if (!waMsgId || !newText) return;
+  const store = loadTelegramStore();
+  if (!store.enabled) return;
+
+  const mapped = resolveTgMsgFromWa(waMsgId);
+  if (!mapped || !mapped.tgMsgId || !mapped.tgChatId) return;
+
+  const mappings = (store.mappings || []).filter(
+    (m) => m.enabled && (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound')
+  );
+
+  const targetMappings = mappings.filter(
+    (m) =>
+      (m.wa_jid && m.wa_jid.toLowerCase() === (waJid || '').toLowerCase()) ||
+      String(m.tg_chat_id) === String(mapped.tgChatId)
+  );
+
+  const listToProcess =
+    targetMappings.length > 0
+      ? targetMappings
+      : (store.mappings || []).filter(
+          (m) => m.enabled && String(m.tg_chat_id) === String(mapped.tgChatId)
+        );
+
+  for (const mapping of listToProcess) {
+    if (mapping.sync_edits === false) continue;
+    const bot = getTelegramBotClient(mapping.bot_id);
+    if (!bot) continue;
+
+    const isGroupWa = waJid.endsWith('@g.us');
+    const isDirectMirror = Boolean(mapping.is_direct_chat_mirror);
+    const header = isDirectMirror
+      ? ''
+      : formatHeader(
+          groupName,
+          senderName,
+          isGroupWa ? mapping.include_group_name : false,
+          isGroupWa ? mapping.include_sender_name : false,
+          mapping.anonymize_phone_numbers
+        );
+
+    let processedText = applyRegexReplacements(newText, mapping.regex_replacements || []);
+    const formattedBody =
+      mapping.convert_formatting !== false ? waToTelegramHtml(processedText) : processedText;
+    const fullText = `${header}${formattedBody}`;
+
+    try {
+      await bot.editMessageText(mapped.tgChatId, mapped.tgMsgId, fullText);
+      logger.info(
+        { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+        '✏️ Successfully mirrored WhatsApp message edit to Telegram'
+      );
+    } catch (err) {
+      logger.debug(
+        { error: err.message, waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+        'Failed to edit Telegram message for edited WhatsApp message'
+      );
+    }
+  }
+}
+
 export async function syncWhatsAppToTelegram(
   msg,
   waJid,
@@ -840,7 +908,12 @@ export async function processTelegramUpdates() {
           continue;
         }
 
-        const msg = update.message || update.channel_post;
+        const isEdit = Boolean(update.edited_message || update.edited_channel_post);
+        const msg =
+          update.message ||
+          update.channel_post ||
+          update.edited_message ||
+          update.edited_channel_post;
         if (!msg || !msg.chat) continue;
 
         updateCachedChat(msg.chat, botConfig.id);
@@ -1103,6 +1176,25 @@ export async function processTelegramUpdates() {
           }
           if (session && session.sock && session.isConnected) {
             try {
+              if (isEdit) {
+                const mapped = resolveWaMsgFromTg(tgChatId, String(msg.message_id));
+                if (mapped && mapped.waMsgId && mapped.waJid) {
+                  await session.sock.sendMessage(mapping.wa_jid, {
+                    text: outboundWaText,
+                    edit: {
+                      remoteJid: mapping.wa_jid,
+                      fromMe: mapped.fromMe !== undefined ? mapped.fromMe : true,
+                      id: mapped.waMsgId,
+                    },
+                  });
+                  logger.info(
+                    { tgChatId, tgMsgId: msg.message_id, waMsgId: mapped.waMsgId },
+                    '✏️ Mirrored Telegram message edit to WhatsApp'
+                  );
+                  continue;
+                }
+              }
+
               const sendOptions = {};
               if (quotedWaMsgId) {
                 sendOptions.quoted = { key: { remoteJid: mapping.wa_jid, id: quotedWaMsgId } };
