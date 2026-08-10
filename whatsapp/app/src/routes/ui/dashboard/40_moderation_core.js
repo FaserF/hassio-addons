@@ -181,7 +181,7 @@ function _guardDirty(proceedFn) {
   _dirty.onProceed = proceedFn;
   const modal = document.getElementById('unsaved-changes-modal');
   const nameEl = document.getElementById('unsaved-panel-name');
-  if (nameEl) nameEl.textContent = _dirty.panelLabel || 'this section';
+  if (nameEl) nameEl.textContent = _dirty.panelLabel || (window.t ? window.t('moderation.this_section') : 'this section');
   if (modal) modal.classList.add('show');
   return false;
 }
@@ -1111,7 +1111,7 @@ async function loadCaptchaUsers() {
     const users = json.data || [];
 
     if (!Array.isArray(users) || users.length === 0) {
-      listEl.innerHTML = '<div class="empty-state">No group users found</div>';
+      listEl.innerHTML = `<div class="empty-state">${window.t ? window.t('moderation.no_group_users') : 'No group users found'}</div>`;
       return;
     }
 
@@ -1159,7 +1159,7 @@ async function loadCaptchaUsers() {
       })
       .join('');
   } catch (err) {
-    listEl.innerHTML = `<div class="empty-state" style="color:var(--danger);">Failed to load captcha users: ${escapeHtml(err.message)}</div>`;
+    listEl.innerHTML = `<div class="empty-state" style="color:var(--danger);">${window.t ? window.t('moderation.failed_load_captcha_users', { error: escapeHtml(err.message) }) : 'Failed to load captcha users: ' + escapeHtml(err.message)}</div>`;
   }
 }
 
@@ -1266,7 +1266,7 @@ window.filterDefaultCommands = function filterDefaultCommands(query) {
         'grid-column:1/-1; color:var(--text-muted); font-size:12px; padding:8px 4px;';
       grid.appendChild(emptyEl);
     }
-    emptyEl.textContent = `No commands matching "${query}"`;
+    emptyEl.textContent = window.t ? window.t('moderation.no_matching_commands', { query }) : `No commands matching "${query}"`;
     emptyEl.style.display = '';
   } else if (emptyEl) {
     emptyEl.style.display = 'none';

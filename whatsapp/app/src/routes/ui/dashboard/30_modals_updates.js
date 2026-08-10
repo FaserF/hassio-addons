@@ -42,9 +42,9 @@ function openUpdateModal(type) {
       ? window.isNewerVersion(currentVersion, latestVersion)
       : latestVersion && latestVersion !== currentVersion;
 
-  if (title) title.textContent = isNewer ? `${compName} Update Available` : `${compName} Info`;
+  if (title) title.textContent = isNewer ? (window.t ? window.t('dashboard.update_available_title', { name: compName }) : `${compName} Update Available`) : (window.t ? window.t('dashboard.info_title', { name: compName }) : `${compName} Info`);
   if (currVer) currVer.textContent = currentVersion;
-  if (newVer) newVer.textContent = latestVersion || 'Up to date';
+  if (newVer) newVer.textContent = latestVersion || (window.t ? window.t('dashboard.up_to_date') : 'Up to date');
 
   if (newVerPill) {
     if (!isNewer) {
@@ -61,11 +61,11 @@ function openUpdateModal(type) {
   if (actionBtn) {
     if (isNewer) {
       actionBtn.href = directUpdateUrl;
-      actionBtn.innerHTML = '<i class="fas fa-download"></i> Update Now';
+      actionBtn.innerHTML = '<i class="fas fa-download"></i> ' + (window.t ? window.t('dashboard.update_now') : 'Update Now');
       actionBtn.style.display = 'inline-flex';
     } else {
       actionBtn.href = repoUrl;
-      actionBtn.innerHTML = '<i class="fab fa-github"></i> View Repository';
+      actionBtn.innerHTML = '<i class="fab fa-github"></i> ' + (window.t ? window.t('dashboard.view_repo') : 'View Repository');
       actionBtn.style.display = 'inline-flex';
     }
     actionBtn.target = '_blank';
@@ -100,25 +100,25 @@ function openDependencyModal(depName) {
       repo: 'https://github.com/WhiskeySockets/Baileys',
       releases: 'https://github.com/WhiskeySockets/Baileys/releases',
       version: data.baileysVersion || 'N/A',
-      role: 'WhatsApp Web Protocol Engine',
+      role: window.t ? window.t('dashboard.role_baileys') : 'WhatsApp Web Protocol Engine',
     },
     'Node.js': {
       repo: 'https://github.com/nodejs/node',
       releases: 'https://github.com/nodejs/node/releases',
       version: data.nodeVersion || 'N/A',
-      role: 'JavaScript Runtime Environment',
+      role: window.t ? window.t('dashboard.role_nodejs') : 'JavaScript Runtime Environment',
     },
     Express: {
       repo: 'https://github.com/expressjs/express',
       releases: 'https://github.com/expressjs/express/releases',
       version: data.expressVersion || 'N/A',
-      role: 'REST API & Web UI Framework',
+      role: window.t ? window.t('dashboard.role_express') : 'REST API & Web UI Framework',
     },
     'Alpine Linux': {
       repo: 'https://alpinelinux.org',
       releases: 'https://alpinelinux.org/releases/',
       version: data.alpineVersion || 'N/A',
-      role: 'Base Docker Operating System',
+      role: window.t ? window.t('dashboard.role_alpine') : 'Base Docker Operating System',
     },
   };
 
@@ -126,7 +126,7 @@ function openDependencyModal(depName) {
     repo: 'https://github.com',
     releases: 'https://github.com',
     version: 'N/A',
-    role: 'Core Gateway Component',
+    role: window.t ? window.t('dashboard.role_core_gateway') : 'Core Gateway Component',
   };
 
   const hasAddonUpdate =
@@ -134,14 +134,14 @@ function openDependencyModal(depName) {
       ? window.isNewerVersion(data.addonVersion, data.latestAddonVersion)
       : false;
 
-  if (title) title.textContent = `${depName} Dependency Info`;
+  if (title) title.textContent = window.t ? window.t('dashboard.dep_info_title', { depName }) : `${depName} Dependency Info`;
   if (currVer) currVer.textContent = info.version;
   if (roleDesc) roleDesc.textContent = info.role;
 
   if (addonStatus) {
     addonStatus.textContent = hasAddonUpdate
-      ? `Update Available (${data.latestAddonVersion})`
-      : 'Addon Up to date';
+      ? (window.t ? window.t('dashboard.update_available_ver', { version: data.latestAddonVersion }) : `Update Available (${data.latestAddonVersion})`)
+      : (window.t ? window.t('dashboard.addon_up_to_date') : 'Addon Up to date');
   }
 
   if (addonStatusPill) {
@@ -159,14 +159,14 @@ function openDependencyModal(depName) {
       rationaleBox.className = 'update-rationale-box';
       rationaleIcon.className = 'fas fa-arrow-alt-circle-up rationale-icon';
       rationaleIcon.style.color = 'var(--primary)';
-      rationaleTitle.textContent = 'Addon Update Pending';
-      rationaleDesc.textContent = `A newer Addon release (${data.latestAddonVersion}) is ready! Updating your Addon will automatically upgrade ${depName}.`;
+      rationaleTitle.textContent = window.t ? window.t('dashboard.addon_update_pending') : 'Addon Update Pending';
+      rationaleDesc.textContent = window.t ? window.t('dashboard.addon_update_pending_desc', { version: data.latestAddonVersion, depName }) : `A newer Addon release (${data.latestAddonVersion}) is ready! Updating your Addon will automatically upgrade ${depName}.`;
     } else {
       rationaleBox.className = 'update-rationale-box warning';
       rationaleIcon.className = 'fas fa-info-circle rationale-icon';
       rationaleIcon.style.color = 'var(--warning)';
-      rationaleTitle.textContent = 'Bundled Dependency Management';
-      rationaleDesc.textContent = `${depName} is bundled inside the WhatsApp Addon container and is updated with each Addon release.`;
+      rationaleTitle.textContent = window.t ? window.t('dashboard.bundled_dep_mgmt') : 'Bundled Dependency Management';
+      rationaleDesc.textContent = window.t ? window.t('dashboard.bundled_dep_mgmt_desc', { depName }) : `${depName} is bundled inside the WhatsApp Addon container and is updated with each Addon release.`;
     }
   }
 
@@ -176,14 +176,14 @@ function openDependencyModal(depName) {
   if (actionBtn) {
     if (hasAddonUpdate) {
       actionBtn.className = 'btn btn-primary btn-sm';
-      actionBtn.innerHTML = '<i class="fas fa-download"></i> Update Addon Now';
+      actionBtn.innerHTML = '<i class="fas fa-download"></i> ' + (window.t ? window.t('dashboard.update_addon_now') : 'Update Addon Now');
       actionBtn.href = data.isStandalone
         ? data.addonReleaseUrl || 'https://github.com/FaserF/hassio-addons/releases'
         : 'https://my.home-assistant.io/redirect/supervisor_addon/?addon=whatsapp';
       actionBtn.target = '_blank';
     } else {
       actionBtn.className = 'btn btn-secondary btn-sm';
-      actionBtn.innerHTML = '<i class="fab fa-github"></i> Report Vulnerability / Issue';
+      actionBtn.innerHTML = '<i class="fab fa-github"></i> ' + (window.t ? window.t('dashboard.report_issue') : 'Report Vulnerability / Issue');
       actionBtn.href = 'https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml';
       actionBtn.target = '_blank';
     }

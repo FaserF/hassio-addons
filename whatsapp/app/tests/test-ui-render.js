@@ -65,6 +65,11 @@ export async function runUiRenderTests() {
       'Search toggle button exists in header'
     );
 
+    assert.ok(
+      htmlOutput.includes('id="active-chat-header-badges"'),
+      'Header badges container element exists'
+    );
+
     const chatJs = await import('../src/routes/ui/chat.js');
     if (typeof chatJs.renderMediaBlock === 'function') {
       const imgBlock = chatJs.renderMediaBlock({

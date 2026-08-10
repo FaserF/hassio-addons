@@ -402,6 +402,92 @@ async function runI18nTests() {
     assertTest(usesGtForInfo, 'commands.js: uses gt() and bot_replies keys for !info command');
   }
 
+  // Test 13: Technical German terms translations verification
+  assertTest(
+    t('de', 'dashboard.hard_reset') === 'Vollständiges Zurücksetzen',
+    'German translation for hard_reset is "Vollständiges Zurücksetzen"'
+  );
+  assertTest(
+    t('de', 'dashboard.reset_confirm_title') === 'Vollständiges Zurücksetzen & Abmelden?',
+    'German translation for reset_confirm_title is "Vollständiges Zurücksetzen & Abmelden?"'
+  );
+  assertTest(
+    t('de', 'dashboard.hard_reset_title') === 'Vollständiges Zurücksetzen / Abmelden',
+    'German translation for hard_reset_title is "Vollständiges Zurücksetzen / Abmelden"'
+  );
+  assertTest(
+    t('de', 'dashboard.standalone') === 'Eigenständiger Modus',
+    'German translation for standalone is "Eigenständiger Modus"'
+  );
+  assertTest(
+    t('de', 'nav.telegram') === 'Telegram-Brücke',
+    'German translation for telegram is "Telegram-Brücke"'
+  );
+  assertTest(
+    t('de', 'moderation.dest_private_join') === 'Direktnachricht (DM) an beitretenden Benutzer',
+    'German translation for dest_private_join uses "Direktnachricht (DM)"'
+  );
+  assertTest(
+    t('de', 'moderation.dest_private_leave') === 'Direktnachricht (DM) an verlassenden Benutzer',
+    'German translation for dest_private_leave uses "Direktnachricht (DM)"'
+  );
+  assertTest(
+    t('de', 'moderation.captcha_dest_private') === 'Direktnachricht (DM)',
+    'German translation for captcha_dest_private uses "Direktnachricht (DM)"'
+  );
+
+  // Test 14: Zero un-translated HTML view text assertion
+  let untranslatedHtmlElements = [];
+  if (fs.existsSync(viewsDir)) {
+    const viewFiles = fs.readdirSync(viewsDir).filter((f) => f.endsWith('.js'));
+    for (const f of viewFiles) {
+      let content = fs.readFileSync(path.join(viewsDir, f), 'utf8');
+
+      // Strip elements that have data-i18n attributes (including their inner HTML)
+      content = content.replace(/<([a-z1-6]+)(?:\s+[^>]*?)?\bdata-i18n(?:-placeholder|-title)?=["'][^"']+["'][^>]*>[\s\S]*?<\/\1>/gi, '');
+
+      const leafTagRegex = /<([a-z1-6]+)(?:\s+[^>]*?)?>([^<]+)<\/\1>/gi;
+      let match;
+      while ((match = leafTagRegex.exec(content)) !== null) {
+        const tagName = match[1].toLowerCase();
+        const innerText = match[2].trim();
+
+        if (['style', 'script', 'code', 'pre', 'svg'].includes(tagName)) continue;
+        if (innerText.includes('${')) continue;
+        if (/^&(?:times|bull|middot|nbsp|amp|lt|gt);$/i.test(innerText)) continue;
+        if (/^(?:ms|s|m|h|px|%|\d+)+$/i.test(innerText)) continue;
+        if (!/[a-zA-Z]{2,}/.test(innerText)) continue;
+
+        untranslatedHtmlElements.push(`${f}: <${tagName}>${innerText}</${tagName}>`);
+      }
+    }
+  }
+
+  assertTest(
+    untranslatedHtmlElements.length === 0,
+    `Automated HTML View Scanner: zero un-translated HTML text elements in views (found: ${untranslatedHtmlElements.length > 0 ? untranslatedHtmlElements.join('; ') : 'none'})`
+  );
+
+  // Test 15: German Informal "Du" Form Consistency Assertion
+  const deJsonPath = path.resolve(__dirname, '../src/locales/de.json');
+  const deJsonContent = fs.readFileSync(deJsonPath, 'utf8');
+  const deLines = deJsonContent.split('\n');
+
+  const formalPronounRegex = /\b(Sie|Ihnen|Ihr|Ihre|Ihren|Ihrem|Ihres)\b/;
+  const formalImperativeRegex = /\b[a-zA-ZäöüÄÖÜß]+en\s+Sie\s+/;
+
+  let formalViolations = [];
+  deLines.forEach((line, idx) => {
+    if (formalPronounRegex.test(line) || formalImperativeRegex.test(line) || /\sSie\s/.test(line)) {
+      formalViolations.push(`line ${idx + 1}: ${line.trim()}`);
+    }
+  });
+
+  assertTest(
+    formalViolations.length === 0,
+    `100% of German translations consistently use informal 'Du' form (formal violations found: ${formalViolations.length > 0 ? formalViolations.join('; ') : 'none'})`
+  );
+
   if (failed > 0) {
     throw new Error(`i18n unit tests failed with ${failed} error(s)`);
   }

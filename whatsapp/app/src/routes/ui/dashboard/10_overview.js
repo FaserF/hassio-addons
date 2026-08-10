@@ -31,7 +31,7 @@ async function updateDashboard() {
       const badge = document.getElementById('status-badge');
       if (badge) {
         badge.className = 'status-badge disconnected';
-        badge.textContent = 'Connection Error ⚠️';
+        badge.textContent = window.t ? window.t('dashboard.status_connection_error') : 'Connection Error ⚠️';
       }
       return;
     }
@@ -43,9 +43,9 @@ async function updateDashboard() {
       if (badge) {
         badge.className = 'status-badge disconnected';
         if (response.status === 403) {
-          badge.textContent = 'Access Blocked (403) ⛔';
+          badge.textContent = window.t ? window.t('dashboard.status_access_blocked') : 'Access Blocked (403) ⛔';
         } else {
-          badge.textContent = 'API Error (' + response.status + ') ⚠️';
+          badge.textContent = window.t ? window.t('dashboard.status_api_error', { status: response.status }) : 'API Error (' + response.status + ') ⚠️';
         }
       }
       return;
@@ -61,7 +61,9 @@ async function updateDashboard() {
     const footerSessionStatus = document.getElementById('footer-session-status');
     if (footerSessionId) footerSessionId.textContent = data.sessionId || currentSession;
     if (footerSessionStatus)
-      footerSessionStatus.textContent = data.isConnected ? 'Connected' : 'Disconnected';
+      footerSessionStatus.textContent = data.isConnected
+        ? (window.t ? window.t('dashboard.connected') : 'Connected')
+        : (window.t ? window.t('dashboard.disconnected') : 'Disconnected');
 
     // Version elements
     const setElText = (id, text) => {
@@ -107,22 +109,24 @@ async function updateDashboard() {
     // Standalone mode adjustments
     const hostUriLabel = document.getElementById('label-host-uri');
     if (hostUriLabel) {
-      hostUriLabel.textContent = data.isStandalone ? 'Gateway Host / Domain URI' : 'Addon Host URI';
+      hostUriLabel.textContent = data.isStandalone
+        ? (window.t ? window.t('dashboard.gateway_host_domain') : 'Gateway Host / Domain URI')
+        : (window.t ? window.t('dashboard.addon_host_uri') : 'Addon Host URI');
     }
     const setupCardTitle = document.getElementById('setup-card-title');
     if (setupCardTitle) {
       setupCardTitle.innerHTML = data.isStandalone
-        ? '<i class="fas fa-network-wired"></i> Connection Setup'
-        : '<i class="fas fa-home"></i> Home Assistant Setup';
+        ? '<i class="fas fa-network-wired"></i> ' + (window.t ? window.t('dashboard.connection_setup') : 'Connection Setup')
+        : '<i class="fas fa-home"></i> ' + (window.t ? window.t('dashboard.ha_setup') : 'Home Assistant Setup');
     }
     if (data.isStandalone) {
       document.title = 'WhatsApp Gateway';
       const subtitle = document.getElementById('logo-subtitle');
-      if (subtitle) subtitle.textContent = 'Standalone';
+      if (subtitle) subtitle.textContent = window.t ? window.t('dashboard.standalone') : 'Standalone';
       const haRepoLink = document.getElementById('ha-repo-link');
       if (haRepoLink) {
         const span = haRepoLink.querySelector('span');
-        if (span) span.textContent = 'Project Repository';
+        if (span) span.textContent = window.t ? window.t('dashboard.project_repo') : 'Project Repository';
       }
     }
 
@@ -172,21 +176,21 @@ async function updateDashboard() {
               ? 'waiting'
               : 'disconnected');
       badge.textContent = data.isConnected
-        ? 'Connected \u2705'
+        ? (window.t ? window.t('dashboard.status_connected') : 'Connected \u2705')
         : data.currentQR
-          ? 'Scan QR Code \uD83D\uDCF1'
+          ? (window.t ? window.t('dashboard.status_scan_qr') : 'Scan QR Code \uD83D\uDCF1')
           : data.isConnecting
-            ? 'Connecting... \u23F3'
+            ? (window.t ? window.t('dashboard.status_connecting') : 'Connecting... \u23F3')
             : data.disconnectReason === 'logged_out'
-              ? 'Logged Out \uD83D\uDEAB'
-              : 'Disconnected \u274C';
+              ? (window.t ? window.t('dashboard.status_logged_out') : 'Logged Out \uD83D\uDEAB')
+              : (window.t ? window.t('dashboard.status_disconnected') : 'Disconnected \u274C');
     }
     const discReason = document.getElementById('disconnect-reason');
     if (discReason) {
       discReason.textContent = data.currentQR
         ? ''
         : data.disconnectReason
-          ? 'Reason: ' + data.disconnectReason
+          ? (window.t ? window.t('dashboard.reason_label', { reason: data.disconnectReason }) : 'Reason: ' + data.disconnectReason)
           : '';
     }
 
@@ -236,7 +240,7 @@ async function updateDashboard() {
       if (statusEl) {
         statusEl.textContent = data.deviceInfo.status
           ? `"${data.deviceInfo.status}"`
-          : 'No profile status set';
+          : (window.t ? window.t('dashboard.no_profile_status') : 'No profile status set');
       }
     }
 
@@ -288,7 +292,8 @@ async function updateDashboard() {
                 '<span class="history-time">' +
                 esc(m.timestamp) +
                 '</span>' +
-                '<span class="history-target">To: ' +
+                '<span class="history-target">' +
+                (window.t ? window.t('dashboard.to_prefix') : 'To: ') +
                 esc(m.target) +
                 '</span>' +
                 '<div class="history-msg">' +
@@ -310,7 +315,8 @@ async function updateDashboard() {
                 '<span class="history-time">' +
                 esc(m.timestamp) +
                 '</span>' +
-                '<span class="history-sender">From: ' +
+                '<span class="history-sender">' +
+                (window.t ? window.t('dashboard.from_prefix') : 'From: ') +
                 esc(m.sender) +
                 '</span>' +
                 '<div class="history-msg">' +
@@ -332,13 +338,15 @@ async function updateDashboard() {
                 '<span class="history-time">' +
                 esc(m.timestamp) +
                 '</span>' +
-                '<span class="history-target">Target: ' +
+                '<span class="history-target">' +
+                (window.t ? window.t('dashboard.target_prefix') : 'Target: ') +
                 esc(m.target) +
                 '</span>' +
                 '<div class="history-msg">' +
                 esc(m.message) +
                 '</div>' +
-                '<div class="history-reason">Error: ' +
+                '<div class="history-reason">' +
+                (window.t ? window.t('dashboard.error_prefix') : 'Error: ') +
                 esc(m.reason) +
                 '</div>' +
                 '</div>'
@@ -351,7 +359,7 @@ async function updateDashboard() {
     const badge = document.getElementById('status-badge');
     if (badge) {
       badge.className = 'status-badge disconnected';
-      badge.textContent = 'UI Render Error ⚠️';
+      badge.textContent = window.t ? window.t('dashboard.ui_render_error') : 'UI Render Error ⚠️';
     }
   }
 }

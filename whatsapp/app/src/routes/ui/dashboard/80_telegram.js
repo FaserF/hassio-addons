@@ -159,7 +159,7 @@ async function toggleTelegramBridge(enabled) {
 
 function openAddTelegramBotModal() {
   const title = document.getElementById('tg-bot-modal-title');
-  if (title) title.innerHTML = '<i class="fas fa-robot"></i> Add Telegram Bot';
+  if (title) title.innerHTML = '<i class="fas fa-robot"></i> ' + (window.t ? window.t('telegram.add_bot_modal_title') : 'Add Telegram Bot');
 
   const idEl = document.getElementById('tg-bot-modal-id');
   if (idEl) idEl.value = '';
@@ -177,7 +177,7 @@ function editTelegramBot(botId) {
   if (!bot) return;
 
   const title = document.getElementById('tg-bot-modal-title');
-  if (title) title.innerHTML = '<i class="fas fa-edit"></i> Edit Telegram Bot';
+  if (title) title.innerHTML = '<i class="fas fa-edit"></i> ' + (window.t ? window.t('telegram.edit_bot_modal_title') : 'Edit Telegram Bot');
 
   const idEl = document.getElementById('tg-bot-modal-id');
   if (idEl) idEl.value = bot.id;
@@ -447,7 +447,7 @@ function hasTgMappingUnsavedChanges() {
 
 function openAddTelegramMappingModal() {
   const title = document.getElementById('tg-modal-title');
-  if (title) title.innerHTML = '<i class="fas fa-link"></i> Add Telegram Chat Mapping';
+  if (title) title.innerHTML = '<i class="fas fa-link"></i> ' + (window.t ? window.t('telegram.add_mapping_modal_title') : 'Add Telegram Chat Mapping');
   const idEl = document.getElementById('tg-modal-id');
   if (idEl) idEl.value = '';
 
@@ -499,7 +499,7 @@ async function editTelegramMapping(id) {
     if (!mapping) return;
 
     const title = document.getElementById('tg-modal-title');
-    if (title) title.innerHTML = '<i class="fas fa-edit"></i> Edit Telegram Chat Mapping';
+    if (title) title.innerHTML = '<i class="fas fa-edit"></i> ' + (window.t ? window.t('telegram.edit_mapping_modal_title') : 'Edit Telegram Chat Mapping');
 
     const idEl = document.getElementById('tg-modal-id');
     if (idEl) idEl.value = mapping.id;
@@ -824,21 +824,21 @@ async function runTelegramBridgeTest() {
 
   if (runBtn) {
     runBtn.disabled = true;
-    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (window.t ? window.t('telegram.testing_button') : 'Testing...');
   }
 
   if (panel) panel.style.display = 'block';
   if (typeof toggleTgTestSuiteUI === 'function') toggleTgTestSuiteUI(true);
   if (statusBadge) {
     statusBadge.style.background = '#0088cc';
-    statusBadge.textContent = 'RUNNING';
+    statusBadge.textContent = window.t ? window.t('telegram.status_running') : 'RUNNING';
   }
   if (progressText) {
     const label = window.t('telegram.test_progress_label') || 'Progress';
     progressText.textContent = `${label}: 0 / ${selected_subtests.length} steps`;
   }
-  if (runIdEl) runIdEl.textContent = 'Run ID: Initializing...';
-  if (logOutput) logOutput.textContent = 'Starting integration test...\n';
+  if (runIdEl) runIdEl.textContent = window.t ? window.t('telegram.run_id_initializing') : 'Run ID: Initializing...';
+  if (logOutput) logOutput.textContent = window.t ? window.t('telegram.starting_test_log') : 'Starting integration test...\n';
 
   try {
     const res = await fetch('api/telegram/test', {
@@ -857,11 +857,11 @@ async function runTelegramBridgeTest() {
       showToast(data.error || t('telegram.mapping_add_failed'), 'danger');
       if (runBtn) {
         runBtn.disabled = false;
-        runBtn.innerHTML = '<i class="fas fa-play"></i> Run Integration Test';
+        runBtn.innerHTML = '<i class="fas fa-play"></i> ' + (window.t ? window.t('telegram.run_test') : 'Run Integration Test');
       }
       if (statusBadge) {
         statusBadge.style.background = '#dc3545';
-        statusBadge.textContent = 'FAILED';
+        statusBadge.textContent = window.t ? window.t('telegram.status_failed') : 'FAILED';
       }
       if (logOutput) logOutput.textContent += `\nError: ${data.error || 'Failed to start test'}`;
       return;

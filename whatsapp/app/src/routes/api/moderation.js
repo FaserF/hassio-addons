@@ -11,7 +11,6 @@ import {
   getGroupCaptchaUsers,
   SPAM_INVITE_LINK_PATTERNS,
   cleanCaptchaInput,
-  findPendingCaptcha as _findPendingCaptcha,
   formatMessageTemplate,
 } from '../../whatsapp/moderation/engine.js';
 import {
@@ -19,7 +18,6 @@ import {
   importGroupModeration,
 } from '../../whatsapp/moderation/migration.js';
 import { registry } from '../../whatsapp/moderation/commands.js';
-import { processAiModeration as _processAiModeration } from '../../whatsapp/moderation/ai.js';
 import { resolveCanonicalUserKey, resolveUserDisplayName } from '../../utils/security.js';
 import { sessions } from '../../session.js';
 

@@ -76,8 +76,8 @@ export default () => `
                     <tr>
                         <th style="width:70px;" data-i18n="common.status">Status</th>
                         <th data-i18n="telegram.mapping_name">Mapping Name</th>
-                        <th><i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp Chat</th>
-                        <th><i class="fab fa-telegram" style="color:#0088cc;"></i> Telegram Target</th>
+                        <th><i class="fab fa-whatsapp" style="color:#25d366;"></i> <span data-i18n="telegram.wa_chat_col">WhatsApp Chat</span></th>
+                        <th><i class="fab fa-telegram" style="color:#0088cc;"></i> <span data-i18n="telegram.tg_target_col">Telegram Target</span></th>
                         <th data-i18n="telegram.direction">Direction</th>
                         <th data-i18n="telegram.settings_options">Settings &amp; Options</th>
                         <th style="text-align:right;" data-i18n="common.actions">Actions</th>
@@ -172,7 +172,7 @@ export default () => `
                     </div>
                     <div style="display:flex; align-items:center; gap:6px;">
                         <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px;" onclick="copyTgTestLogs()"><i class="fas fa-copy"></i> <span data-i18n="telegram.copy_log">Copy All</span></button>
-                        <div style="font-size:11px; color:#9ca3af;" id="tg-test-run-id"><i class="fas fa-terminal"></i> Live Bridge Test Console</div>
+                        <div style="font-size:11px; color:#9ca3af;" id="tg-test-run-id"><i class="fas fa-terminal"></i> <span data-i18n="telegram.live_console_title">Live Bridge Test Console</span></div>
                     </div>
                 </div>
                 <pre id="tg-test-log-output" style="background:#030712; color:#38bdf8; font-family:Consolas, Monaco, monospace; font-size:11px; padding:10px; border-radius:6px; max-height:220px; overflow-y:auto; margin:0; white-space:pre-wrap; word-break:break-word; border:1px solid #1f2937; line-height:1.4;" data-i18n="telegram.test_console_ready">Console Ready. Select a target chat mapping above and click "Run Test" to stream live logs.</pre>
@@ -325,7 +325,7 @@ export default () => `
     <div id="tg-bot-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center;">
         <div class="card" style="width:460px; max-width:90%; background:var(--bg-card); padding:24px; border-radius:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:12px;">
-                <h3 style="margin:0; font-size:16px; font-weight:600;" id="tg-bot-modal-title"><i class="fas fa-robot"></i> Add Telegram Bot</h3>
+                <h3 style="margin:0; font-size:16px; font-weight:600;" id="tg-bot-modal-title"><i class="fas fa-robot"></i> <span data-i18n="telegram.add_bot_modal_title">Add Telegram Bot</span></h3>
                 <button class="btn btn-secondary btn-sm" onclick="closeTelegramBotModal()"><i class="fas fa-times"></i></button>
             </div>
 

@@ -29,10 +29,10 @@ export default () => `
                                     <button class="chat-back-btn" onclick="event.stopPropagation();goBackToChatList(event)"><i class="fas fa-arrow-left"></i></button>
                                     <div class="chat-thread-avatar" id="active-chat-avatar" style="width:40px;height:40px;border-radius:50%;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;"></div>
                                     <div style="flex:1;min-width:0;">
-                                        <h4 id="active-chat-name" style="margin:0;font-size:16px;font-weight:700;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Contact JID</h4>
+                                        <h4 id="active-chat-name" style="margin:0;font-size:16px;font-weight:700;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" data-i18n="chats.contact_jid">Contact JID</h4>
                                         <p id="active-chat-jid" style="margin:2px 0 0;font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                                             <span id="typing-indicator" style="display:none;color:var(--primary);font-style:italic;" data-i18n="chats.typing">typing…</span>
-                                            <span id="active-chat-jid-text">JID details</span>
+                                            <span id="active-chat-jid-text" data-i18n="chats.jid_details">JID details</span>
                                         </p>
                                     </div>
                                 </div>

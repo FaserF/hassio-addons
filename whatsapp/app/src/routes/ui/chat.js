@@ -3,6 +3,8 @@
 let lastLoadedMessagesCache = {};
 let lastChatsCache = '';
 let reactionTargetMsgId = null;
+let chatModConfigCache = null;
+let chatTgConfigCache = null;
 
 function switchNewChatTab(mode) {
   const directForm = document.getElementById('new-direct-chat-form');

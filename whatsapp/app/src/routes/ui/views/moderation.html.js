@@ -405,7 +405,7 @@ export default () => `
                         </div>
                         <div class="mod-field-group" style="margin-bottom:12px;">
                             <label class="mod-field-label" data-i18n="moderation.ai_key_label">Gemini API Key (Global)</label>
-                            <input type="password" id="mod-ai-api-key" class="mod-input" placeholder="AIzaSy..." style="max-width:400px;">
+                            <input type="password" id="mod-ai-api-key" class="mod-input" placeholder="AIzaSy..." data-i18n-placeholder="moderation.ai_api_key_ph" style="max-width:400px;">
                             <p class="mod-field-desc" style="margin-top:4px;" data-i18n="moderation.ai_key_hint">Get your free API key from Google AI Studio (aip.google.dev).</p>
                         </div>
                         <div class="mod-inline-controls" style="margin-bottom:10px;">
@@ -431,7 +431,7 @@ export default () => `
                         </div>
                         <div class="mod-inline-controls">
                             <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.target_lang_label">Target Language:</label>
-                            <select id="mod-trans-target-lang" class="mod-select mod-select-sm"><option value="en">English</option><option value="de">German</option><option value="es">Spanish</option><option value="fr">French</option><option value="it">Italian</option></select>
+                            <select id="mod-trans-target-lang" class="mod-select mod-select-sm"><option value="en" data-i18n="moderation.lang_en_opt">English</option><option value="de" data-i18n="moderation.lang_de_opt">German</option><option value="es" data-i18n="moderation.lang_es_opt">Spanish</option><option value="fr" data-i18n="moderation.lang_fr_opt">French</option><option value="it" data-i18n="moderation.lang_it_opt">Italian</option></select>
                             <label class="mod-field-label" style="margin:0; margin-left:12px; white-space:nowrap;" data-i18n="moderation.trans_mode_label">Translation Mode:</label>
                             <select id="mod-trans-mode" class="mod-select mod-select-sm">
                                 <option value="manual" data-i18n="moderation.trans_mode_manual">Manual (via !translate command)</option>

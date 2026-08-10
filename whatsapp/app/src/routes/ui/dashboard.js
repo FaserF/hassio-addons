@@ -31,7 +31,7 @@ async function updateDashboard() {
       const badge = document.getElementById('status-badge');
       if (badge) {
         badge.className = 'status-badge disconnected';
-        badge.textContent = 'Connection Error ⚠️';
+        badge.textContent = window.t ? window.t('dashboard.status_connection_error') : 'Connection Error ⚠️';
       }
       return;
     }
@@ -43,9 +43,9 @@ async function updateDashboard() {
       if (badge) {
         badge.className = 'status-badge disconnected';
         if (response.status === 403) {
-          badge.textContent = 'Access Blocked (403) ⛔';
+          badge.textContent = window.t ? window.t('dashboard.status_access_blocked') : 'Access Blocked (403) ⛔';
         } else {
-          badge.textContent = 'API Error (' + response.status + ') ⚠️';
+          badge.textContent = window.t ? window.t('dashboard.status_api_error', { status: response.status }) : 'API Error (' + response.status + ') ⚠️';
         }
       }
       return;
@@ -61,7 +61,9 @@ async function updateDashboard() {
     const footerSessionStatus = document.getElementById('footer-session-status');
     if (footerSessionId) footerSessionId.textContent = data.sessionId || currentSession;
     if (footerSessionStatus)
-      footerSessionStatus.textContent = data.isConnected ? 'Connected' : 'Disconnected';
+      footerSessionStatus.textContent = data.isConnected
+        ? (window.t ? window.t('dashboard.connected') : 'Connected')
+        : (window.t ? window.t('dashboard.disconnected') : 'Disconnected');
 
     // Version elements
     const setElText = (id, text) => {
@@ -107,22 +109,24 @@ async function updateDashboard() {
     // Standalone mode adjustments
     const hostUriLabel = document.getElementById('label-host-uri');
     if (hostUriLabel) {
-      hostUriLabel.textContent = data.isStandalone ? 'Gateway Host / Domain URI' : 'Addon Host URI';
+      hostUriLabel.textContent = data.isStandalone
+        ? (window.t ? window.t('dashboard.gateway_host_domain') : 'Gateway Host / Domain URI')
+        : (window.t ? window.t('dashboard.addon_host_uri') : 'Addon Host URI');
     }
     const setupCardTitle = document.getElementById('setup-card-title');
     if (setupCardTitle) {
       setupCardTitle.innerHTML = data.isStandalone
-        ? '<i class="fas fa-network-wired"></i> Connection Setup'
-        : '<i class="fas fa-home"></i> Home Assistant Setup';
+        ? '<i class="fas fa-network-wired"></i> ' + (window.t ? window.t('dashboard.connection_setup') : 'Connection Setup')
+        : '<i class="fas fa-home"></i> ' + (window.t ? window.t('dashboard.ha_setup') : 'Home Assistant Setup');
     }
     if (data.isStandalone) {
       document.title = 'WhatsApp Gateway';
       const subtitle = document.getElementById('logo-subtitle');
-      if (subtitle) subtitle.textContent = 'Standalone';
+      if (subtitle) subtitle.textContent = window.t ? window.t('dashboard.standalone') : 'Standalone';
       const haRepoLink = document.getElementById('ha-repo-link');
       if (haRepoLink) {
         const span = haRepoLink.querySelector('span');
-        if (span) span.textContent = 'Project Repository';
+        if (span) span.textContent = window.t ? window.t('dashboard.project_repo') : 'Project Repository';
       }
     }
 
@@ -172,21 +176,21 @@ async function updateDashboard() {
               ? 'waiting'
               : 'disconnected');
       badge.textContent = data.isConnected
-        ? 'Connected \u2705'
+        ? (window.t ? window.t('dashboard.status_connected') : 'Connected \u2705')
         : data.currentQR
-          ? 'Scan QR Code \uD83D\uDCF1'
+          ? (window.t ? window.t('dashboard.status_scan_qr') : 'Scan QR Code \uD83D\uDCF1')
           : data.isConnecting
-            ? 'Connecting... \u23F3'
+            ? (window.t ? window.t('dashboard.status_connecting') : 'Connecting... \u23F3')
             : data.disconnectReason === 'logged_out'
-              ? 'Logged Out \uD83D\uDEAB'
-              : 'Disconnected \u274C';
+              ? (window.t ? window.t('dashboard.status_logged_out') : 'Logged Out \uD83D\uDEAB')
+              : (window.t ? window.t('dashboard.status_disconnected') : 'Disconnected \u274C');
     }
     const discReason = document.getElementById('disconnect-reason');
     if (discReason) {
       discReason.textContent = data.currentQR
         ? ''
         : data.disconnectReason
-          ? 'Reason: ' + data.disconnectReason
+          ? (window.t ? window.t('dashboard.reason_label', { reason: data.disconnectReason }) : 'Reason: ' + data.disconnectReason)
           : '';
     }
 
@@ -236,7 +240,7 @@ async function updateDashboard() {
       if (statusEl) {
         statusEl.textContent = data.deviceInfo.status
           ? `"${data.deviceInfo.status}"`
-          : 'No profile status set';
+          : (window.t ? window.t('dashboard.no_profile_status') : 'No profile status set');
       }
     }
 
@@ -288,7 +292,8 @@ async function updateDashboard() {
                 '<span class="history-time">' +
                 esc(m.timestamp) +
                 '</span>' +
-                '<span class="history-target">To: ' +
+                '<span class="history-target">' +
+                (window.t ? window.t('dashboard.to_prefix') : 'To: ') +
                 esc(m.target) +
                 '</span>' +
                 '<div class="history-msg">' +
@@ -310,7 +315,8 @@ async function updateDashboard() {
                 '<span class="history-time">' +
                 esc(m.timestamp) +
                 '</span>' +
-                '<span class="history-sender">From: ' +
+                '<span class="history-sender">' +
+                (window.t ? window.t('dashboard.from_prefix') : 'From: ') +
                 esc(m.sender) +
                 '</span>' +
                 '<div class="history-msg">' +
@@ -332,13 +338,15 @@ async function updateDashboard() {
                 '<span class="history-time">' +
                 esc(m.timestamp) +
                 '</span>' +
-                '<span class="history-target">Target: ' +
+                '<span class="history-target">' +
+                (window.t ? window.t('dashboard.target_prefix') : 'Target: ') +
                 esc(m.target) +
                 '</span>' +
                 '<div class="history-msg">' +
                 esc(m.message) +
                 '</div>' +
-                '<div class="history-reason">Error: ' +
+                '<div class="history-reason">' +
+                (window.t ? window.t('dashboard.error_prefix') : 'Error: ') +
                 esc(m.reason) +
                 '</div>' +
                 '</div>'
@@ -351,10 +359,11 @@ async function updateDashboard() {
     const badge = document.getElementById('status-badge');
     if (badge) {
       badge.className = 'status-badge disconnected';
-      badge.textContent = 'UI Render Error ⚠️';
+      badge.textContent = window.t ? window.t('dashboard.ui_render_error') : 'UI Render Error ⚠️';
     }
   }
 }
+
 
 // System Logs, Session Management & Backups
 
@@ -523,6 +532,7 @@ function switchSession(id) {
   updateDashboard();
 }
 
+
 // Update & Dependency Modals
 
 function openUpdateModal(type) {
@@ -567,9 +577,9 @@ function openUpdateModal(type) {
       ? window.isNewerVersion(currentVersion, latestVersion)
       : latestVersion && latestVersion !== currentVersion;
 
-  if (title) title.textContent = isNewer ? `${compName} Update Available` : `${compName} Info`;
+  if (title) title.textContent = isNewer ? (window.t ? window.t('dashboard.update_available_title', { name: compName }) : `${compName} Update Available`) : (window.t ? window.t('dashboard.info_title', { name: compName }) : `${compName} Info`);
   if (currVer) currVer.textContent = currentVersion;
-  if (newVer) newVer.textContent = latestVersion || 'Up to date';
+  if (newVer) newVer.textContent = latestVersion || (window.t ? window.t('dashboard.up_to_date') : 'Up to date');
 
   if (newVerPill) {
     if (!isNewer) {
@@ -586,11 +596,11 @@ function openUpdateModal(type) {
   if (actionBtn) {
     if (isNewer) {
       actionBtn.href = directUpdateUrl;
-      actionBtn.innerHTML = '<i class="fas fa-download"></i> Update Now';
+      actionBtn.innerHTML = '<i class="fas fa-download"></i> ' + (window.t ? window.t('dashboard.update_now') : 'Update Now');
       actionBtn.style.display = 'inline-flex';
     } else {
       actionBtn.href = repoUrl;
-      actionBtn.innerHTML = '<i class="fab fa-github"></i> View Repository';
+      actionBtn.innerHTML = '<i class="fab fa-github"></i> ' + (window.t ? window.t('dashboard.view_repo') : 'View Repository');
       actionBtn.style.display = 'inline-flex';
     }
     actionBtn.target = '_blank';
@@ -625,25 +635,25 @@ function openDependencyModal(depName) {
       repo: 'https://github.com/WhiskeySockets/Baileys',
       releases: 'https://github.com/WhiskeySockets/Baileys/releases',
       version: data.baileysVersion || 'N/A',
-      role: 'WhatsApp Web Protocol Engine',
+      role: window.t ? window.t('dashboard.role_baileys') : 'WhatsApp Web Protocol Engine',
     },
     'Node.js': {
       repo: 'https://github.com/nodejs/node',
       releases: 'https://github.com/nodejs/node/releases',
       version: data.nodeVersion || 'N/A',
-      role: 'JavaScript Runtime Environment',
+      role: window.t ? window.t('dashboard.role_nodejs') : 'JavaScript Runtime Environment',
     },
     Express: {
       repo: 'https://github.com/expressjs/express',
       releases: 'https://github.com/expressjs/express/releases',
       version: data.expressVersion || 'N/A',
-      role: 'REST API & Web UI Framework',
+      role: window.t ? window.t('dashboard.role_express') : 'REST API & Web UI Framework',
     },
     'Alpine Linux': {
       repo: 'https://alpinelinux.org',
       releases: 'https://alpinelinux.org/releases/',
       version: data.alpineVersion || 'N/A',
-      role: 'Base Docker Operating System',
+      role: window.t ? window.t('dashboard.role_alpine') : 'Base Docker Operating System',
     },
   };
 
@@ -651,7 +661,7 @@ function openDependencyModal(depName) {
     repo: 'https://github.com',
     releases: 'https://github.com',
     version: 'N/A',
-    role: 'Core Gateway Component',
+    role: window.t ? window.t('dashboard.role_core_gateway') : 'Core Gateway Component',
   };
 
   const hasAddonUpdate =
@@ -659,14 +669,14 @@ function openDependencyModal(depName) {
       ? window.isNewerVersion(data.addonVersion, data.latestAddonVersion)
       : false;
 
-  if (title) title.textContent = `${depName} Dependency Info`;
+  if (title) title.textContent = window.t ? window.t('dashboard.dep_info_title', { depName }) : `${depName} Dependency Info`;
   if (currVer) currVer.textContent = info.version;
   if (roleDesc) roleDesc.textContent = info.role;
 
   if (addonStatus) {
     addonStatus.textContent = hasAddonUpdate
-      ? `Update Available (${data.latestAddonVersion})`
-      : 'Addon Up to date';
+      ? (window.t ? window.t('dashboard.update_available_ver', { version: data.latestAddonVersion }) : `Update Available (${data.latestAddonVersion})`)
+      : (window.t ? window.t('dashboard.addon_up_to_date') : 'Addon Up to date');
   }
 
   if (addonStatusPill) {
@@ -684,14 +694,14 @@ function openDependencyModal(depName) {
       rationaleBox.className = 'update-rationale-box';
       rationaleIcon.className = 'fas fa-arrow-alt-circle-up rationale-icon';
       rationaleIcon.style.color = 'var(--primary)';
-      rationaleTitle.textContent = 'Addon Update Pending';
-      rationaleDesc.textContent = `A newer Addon release (${data.latestAddonVersion}) is ready! Updating your Addon will automatically upgrade ${depName}.`;
+      rationaleTitle.textContent = window.t ? window.t('dashboard.addon_update_pending') : 'Addon Update Pending';
+      rationaleDesc.textContent = window.t ? window.t('dashboard.addon_update_pending_desc', { version: data.latestAddonVersion, depName }) : `A newer Addon release (${data.latestAddonVersion}) is ready! Updating your Addon will automatically upgrade ${depName}.`;
     } else {
       rationaleBox.className = 'update-rationale-box warning';
       rationaleIcon.className = 'fas fa-info-circle rationale-icon';
       rationaleIcon.style.color = 'var(--warning)';
-      rationaleTitle.textContent = 'Bundled Dependency Management';
-      rationaleDesc.textContent = `${depName} is bundled inside the WhatsApp Addon container and is updated with each Addon release.`;
+      rationaleTitle.textContent = window.t ? window.t('dashboard.bundled_dep_mgmt') : 'Bundled Dependency Management';
+      rationaleDesc.textContent = window.t ? window.t('dashboard.bundled_dep_mgmt_desc', { depName }) : `${depName} is bundled inside the WhatsApp Addon container and is updated with each Addon release.`;
     }
   }
 
@@ -701,14 +711,14 @@ function openDependencyModal(depName) {
   if (actionBtn) {
     if (hasAddonUpdate) {
       actionBtn.className = 'btn btn-primary btn-sm';
-      actionBtn.innerHTML = '<i class="fas fa-download"></i> Update Addon Now';
+      actionBtn.innerHTML = '<i class="fas fa-download"></i> ' + (window.t ? window.t('dashboard.update_addon_now') : 'Update Addon Now');
       actionBtn.href = data.isStandalone
         ? data.addonReleaseUrl || 'https://github.com/FaserF/hassio-addons/releases'
         : 'https://my.home-assistant.io/redirect/supervisor_addon/?addon=whatsapp';
       actionBtn.target = '_blank';
     } else {
       actionBtn.className = 'btn btn-secondary btn-sm';
-      actionBtn.innerHTML = '<i class="fab fa-github"></i> Report Vulnerability / Issue';
+      actionBtn.innerHTML = '<i class="fab fa-github"></i> ' + (window.t ? window.t('dashboard.report_issue') : 'Report Vulnerability / Issue');
       actionBtn.href = 'https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml';
       actionBtn.target = '_blank';
     }
@@ -721,6 +731,7 @@ function closeDependencyModal() {
   const modal = document.getElementById('dependency-info-modal');
   if (modal) modal.classList.remove('show');
 }
+
 
 // Moderation Core (Store, Group Selector, Rules, Greetings, Captcha, Warns, Commands)
 
@@ -905,7 +916,7 @@ function _guardDirty(proceedFn) {
   _dirty.onProceed = proceedFn;
   const modal = document.getElementById('unsaved-changes-modal');
   const nameEl = document.getElementById('unsaved-panel-name');
-  if (nameEl) nameEl.textContent = _dirty.panelLabel || 'this section';
+  if (nameEl) nameEl.textContent = _dirty.panelLabel || (window.t ? window.t('moderation.this_section') : 'this section');
   if (modal) modal.classList.add('show');
   return false;
 }
@@ -1835,7 +1846,7 @@ async function loadCaptchaUsers() {
     const users = json.data || [];
 
     if (!Array.isArray(users) || users.length === 0) {
-      listEl.innerHTML = '<div class="empty-state">No group users found</div>';
+      listEl.innerHTML = `<div class="empty-state">${window.t ? window.t('moderation.no_group_users') : 'No group users found'}</div>`;
       return;
     }
 
@@ -1883,7 +1894,7 @@ async function loadCaptchaUsers() {
       })
       .join('');
   } catch (err) {
-    listEl.innerHTML = `<div class="empty-state" style="color:var(--danger);">Failed to load captcha users: ${escapeHtml(err.message)}</div>`;
+    listEl.innerHTML = `<div class="empty-state" style="color:var(--danger);">${window.t ? window.t('moderation.failed_load_captcha_users', { error: escapeHtml(err.message) }) : 'Failed to load captcha users: ' + escapeHtml(err.message)}</div>`;
   }
 }
 
@@ -1990,7 +2001,7 @@ window.filterDefaultCommands = function filterDefaultCommands(query) {
         'grid-column:1/-1; color:var(--text-muted); font-size:12px; padding:8px 4px;';
       grid.appendChild(emptyEl);
     }
-    emptyEl.textContent = `No commands matching "${query}"`;
+    emptyEl.textContent = window.t ? window.t('moderation.no_matching_commands', { query }) : `No commands matching "${query}"`;
     emptyEl.style.display = '';
   } else if (emptyEl) {
     emptyEl.style.display = 'none';
@@ -2209,6 +2220,7 @@ async function unmuteUserInUi(userId) {
     showToast(t('moderation.unmute_failed'), 'danger');
   }
 }
+
 
 // Moderation Security (Content Locks, Anti-Spam / Anti-Raid, Blacklist)
 
@@ -2658,7 +2670,7 @@ async function runAutonomousModerationTest() {
   if (logContent) logContent.innerHTML = '';
   if (runBtn) {
     runBtn.disabled = true;
-    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (window.t ? window.t('moderation.running_test') : 'Running...');
   }
 
   const appendLog = (msg, styleType = 'normal') => {
@@ -2800,7 +2812,7 @@ async function runAutonomousModerationTest() {
   } finally {
     if (runBtn) {
       runBtn.disabled = false;
-      runBtn.innerHTML = '<i class="fas fa-play"></i> Start Auto-Test';
+      runBtn.innerHTML = '<i class="fas fa-play"></i> ' + (window.t ? window.t('moderation.start_auto_test') : 'Start Auto-Test');
     }
   }
 }
@@ -2819,6 +2831,7 @@ window.runAutonomousModerationTest = runAutonomousModerationTest;
 window.clearAutoTestLogs = clearAutoTestLogs;
 window.exportAutoTestLogs = exportAutoTestLogs;
 window.copyAutoTestLogs = copyAutoTestLogs;
+
 
 // Moderation Intelligence (AI Auto-Reply, Sentiment, System Prompt, Filters)
 
@@ -2903,6 +2916,7 @@ async function saveGroupAiConfig() {
     showToast(t('moderation.ai_settings_save_failed'), 'danger');
   }
 }
+
 
 // Moderation Federation & Import/Export
 
@@ -3227,6 +3241,7 @@ async function submitImportFederation() {
   }
 }
 
+
 // Telegram Bridge Dashboard UI Logic
 
 let cachedTelegramBots = [];
@@ -3285,21 +3300,21 @@ function renderTelegramBots(bots) {
   container.innerHTML = bots
     .map(
       (b) => `
-    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:8px;">
-      <div style="display:flex; align-items:center; gap:12px;">
-        <div style="font-size: 20px; color: #0088cc; background: rgba(0, 136, 204, 0.15); width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding:12px 16px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:8px;">
+      <div style="display:flex; align-items:center; gap:12px; min-width:180px;">
+        <div style="font-size: 20px; color: #0088cc; background: rgba(0, 136, 204, 0.15); width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink:0;">
           <i class="fas fa-robot"></i>
         </div>
         <div>
-          <div style="font-weight:600; font-size:14px;">${escapeHtml(b.name || '@' + b.username)}</div>
-          <div style="font-size:12px; color:var(--text-muted); font-family:monospace;">
+          <div style="font-weight:600; font-size:14px; word-break:break-word;">${escapeHtml(b.name || '@' + b.username)}</div>
+          <div style="font-size:12px; color:var(--text-muted); font-family:monospace; word-break:break-all;">
             Username: @${escapeHtml(b.username || 'unknown')}
           </div>
         </div>
       </div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <button class="btn btn-secondary btn-sm" onclick="editTelegramBot('${b.id}')" title="Edit Bot"><i class="fas fa-edit"></i> Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteTelegramBot('${b.id}')" title="Delete Bot"><i class="fas fa-trash"></i></button>
+      <div style="display:flex; align-items:center; gap:8px; flex-shrink:0; margin-left:auto;">
+        <button class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="editTelegramBot('${b.id}')" title="Edit Bot"><i class="fas fa-edit"></i> Edit</button>
+        <button class="btn btn-danger btn-sm" style="white-space:nowrap;" onclick="deleteTelegramBot('${b.id}')" title="Delete Bot"><i class="fas fa-trash"></i></button>
       </div>
     </div>
   `
@@ -3388,7 +3403,7 @@ async function toggleTelegramBridge(enabled) {
 
 function openAddTelegramBotModal() {
   const title = document.getElementById('tg-bot-modal-title');
-  if (title) title.innerHTML = '<i class="fas fa-robot"></i> Add Telegram Bot';
+  if (title) title.innerHTML = '<i class="fas fa-robot"></i> ' + (window.t ? window.t('telegram.add_bot_modal_title') : 'Add Telegram Bot');
 
   const idEl = document.getElementById('tg-bot-modal-id');
   if (idEl) idEl.value = '';
@@ -3406,7 +3421,7 @@ function editTelegramBot(botId) {
   if (!bot) return;
 
   const title = document.getElementById('tg-bot-modal-title');
-  if (title) title.innerHTML = '<i class="fas fa-edit"></i> Edit Telegram Bot';
+  if (title) title.innerHTML = '<i class="fas fa-edit"></i> ' + (window.t ? window.t('telegram.edit_bot_modal_title') : 'Edit Telegram Bot');
 
   const idEl = document.getElementById('tg-bot-modal-id');
   if (idEl) idEl.value = bot.id;
@@ -3676,7 +3691,7 @@ function hasTgMappingUnsavedChanges() {
 
 function openAddTelegramMappingModal() {
   const title = document.getElementById('tg-modal-title');
-  if (title) title.innerHTML = '<i class="fas fa-link"></i> Add Telegram Chat Mapping';
+  if (title) title.innerHTML = '<i class="fas fa-link"></i> ' + (window.t ? window.t('telegram.add_mapping_modal_title') : 'Add Telegram Chat Mapping');
   const idEl = document.getElementById('tg-modal-id');
   if (idEl) idEl.value = '';
 
@@ -3728,7 +3743,7 @@ async function editTelegramMapping(id) {
     if (!mapping) return;
 
     const title = document.getElementById('tg-modal-title');
-    if (title) title.innerHTML = '<i class="fas fa-edit"></i> Edit Telegram Chat Mapping';
+    if (title) title.innerHTML = '<i class="fas fa-edit"></i> ' + (window.t ? window.t('telegram.edit_mapping_modal_title') : 'Edit Telegram Chat Mapping');
 
     const idEl = document.getElementById('tg-modal-id');
     if (idEl) idEl.value = mapping.id;
@@ -4053,21 +4068,21 @@ async function runTelegramBridgeTest() {
 
   if (runBtn) {
     runBtn.disabled = true;
-    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (window.t ? window.t('telegram.testing_button') : 'Testing...');
   }
 
   if (panel) panel.style.display = 'block';
   if (typeof toggleTgTestSuiteUI === 'function') toggleTgTestSuiteUI(true);
   if (statusBadge) {
     statusBadge.style.background = '#0088cc';
-    statusBadge.textContent = 'RUNNING';
+    statusBadge.textContent = window.t ? window.t('telegram.status_running') : 'RUNNING';
   }
   if (progressText) {
     const label = window.t('telegram.test_progress_label') || 'Progress';
     progressText.textContent = `${label}: 0 / ${selected_subtests.length} steps`;
   }
-  if (runIdEl) runIdEl.textContent = 'Run ID: Initializing...';
-  if (logOutput) logOutput.textContent = 'Starting integration test...\n';
+  if (runIdEl) runIdEl.textContent = window.t ? window.t('telegram.run_id_initializing') : 'Run ID: Initializing...';
+  if (logOutput) logOutput.textContent = window.t ? window.t('telegram.starting_test_log') : 'Starting integration test...\n';
 
   try {
     const res = await fetch('api/telegram/test', {
@@ -4086,11 +4101,11 @@ async function runTelegramBridgeTest() {
       showToast(data.error || t('telegram.mapping_add_failed'), 'danger');
       if (runBtn) {
         runBtn.disabled = false;
-        runBtn.innerHTML = '<i class="fas fa-play"></i> Run Integration Test';
+        runBtn.innerHTML = '<i class="fas fa-play"></i> ' + (window.t ? window.t('telegram.run_test') : 'Run Integration Test');
       }
       if (statusBadge) {
         statusBadge.style.background = '#dc3545';
-        statusBadge.textContent = 'FAILED';
+        statusBadge.textContent = window.t ? window.t('telegram.status_failed') : 'FAILED';
       }
       if (logOutput) logOutput.textContent += `\nError: ${data.error || 'Failed to start test'}`;
       return;
@@ -4241,6 +4256,7 @@ window.selectAllTgSubtests = selectAllTgSubtests;
 window.copyTgTestLogs = copyTgTestLogs;
 window.pollTelegramTestResults = pollTelegramTestResults;
 window.toggleTgTestSuiteUI = toggleTgTestSuiteUI;
+
 
 // Global Window Exports
 window.isNewerVersion = isNewerVersion;

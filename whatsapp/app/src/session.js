@@ -108,9 +108,14 @@ export function getSession(rawSessionId) {
     // Start periodic save for this session
     const saveInterval = setInterval(
       () => {
-        saveMessageStore(sessions.get(sessionId));
-        saveContactCache(sessions.get(sessionId));
-        saveChatCache(sessions.get(sessionId));
+        const s = sessions.get(sessionId);
+        if (!s) {
+          clearInterval(saveInterval);
+          return;
+        }
+        saveMessageStore(s);
+        saveContactCache(s);
+        saveChatCache(s);
       },
       5 * 60 * 1000
     ); // Every 5 minutes
@@ -156,7 +161,7 @@ export async function enqueue(session, task) {
  * Persists the message store to disk.
  */
 export function saveMessageStore(session) {
-  if (!session.messageStore) return;
+  if (!session || !session.messageStore) return;
   const file = path.join(getAuthDir(session.id), 'message_store.json');
   try {
     const data = session.messageStore.dump();
@@ -190,7 +195,7 @@ export function loadMessageStore(session) {
  * Persists the contact cache to disk.
  */
 export function saveContactCache(session) {
-  if (!session.contactCache) return;
+  if (!session || !session.contactCache) return;
   const file = path.join(getAuthDir(session.id), 'contact_cache.json');
   try {
     const entries = Array.from(session.contactCache.entries());
@@ -229,7 +234,7 @@ export function loadContactCache(session) {
  * Persists the chat cache to disk.
  */
 export function saveChatCache(session) {
-  if (!session.chatCache) return;
+  if (!session || !session.chatCache) return;
   const file = path.join(getAuthDir(session.id), 'chat_cache.json');
   try {
     const entries = Array.from(session.chatCache.keys());
