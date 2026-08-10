@@ -170,29 +170,42 @@ body {
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  width: 48px !important;
+  width: 56px !important;
   height: 48px !important;
   min-height: 48px !important;
   border-radius: 12px !important;
   margin: 0 auto !important;
   font-size: 16px !important;
+  box-sizing: border-box !important;
 }
 
 .sidebar.collapsed .nav-menu {
-  padding: 16px 8px;
-  align-items: center;
+  padding: 16px 8px !important;
+  align-items: center !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .sidebar.collapsed .nav-item {
   padding: 0 !important;
+  display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  width: 48px !important;
+  width: 56px !important;
   height: 48px !important;
   min-height: 48px !important;
   gap: 0 !important;
-  position: relative;
-  border-radius: 12px;
+  position: relative !important;
+  border-radius: 12px !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+}
+
+.sidebar.collapsed .nav-item .nav-icon,
+.sidebar.collapsed .sidebar-toggle-btn i {
+  margin: 0 !important;
+  width: 100% !important;
+  text-align: center !important;
 }
 
 /* Hide label text in nav items when collapsed */
