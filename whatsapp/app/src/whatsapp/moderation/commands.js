@@ -9,7 +9,12 @@ import {
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
 import { processAiModeration } from './ai.js';
-import { isSameUser, normalizeJid, resolveUserDisplayName } from '../../utils/security.js';
+import {
+  isSameUser,
+  normalizeJid,
+  resolveUserDisplayName,
+  resolveCanonicalUserKey,
+} from '../../utils/security.js';
 import { t } from '../../locales/loader.js';
 
 /** Translate a bot-reply key using group config language (fallback: 'en') */
@@ -1548,15 +1553,32 @@ registry.register(
 
     const store = loadModerationStore();
     const c = store.groups[groupId] || getGroupModerationConfig(groupId);
-    const warns = c.warnings?.user_warns?.[targetId] || [];
+    const canonicalTarget = resolveCanonicalUserKey(targetJid, session) || targetId;
+    let warns = c.warnings?.user_warns?.[targetId] || c.warnings?.user_warns?.[canonicalTarget] || [];
+    if (!warns.length && c.warnings?.user_warns) {
+      for (const [wKey, wList] of Object.entries(c.warnings.user_warns)) {
+        if (isSameUser(wKey, targetJid, session)) {
+          warns = wList;
+          break;
+        }
+      }
+    }
     const maxWarns = c.warnings?.max_warnings || 3;
     const isApproved =
       (c.approved || []).includes(targetId) ||
       (c.approved || []).includes(targetJid) ||
       (c.approved || []).some((a) => isSameUser(a, targetJid, session));
-    const isMuted =
-      c.muted_users?.[targetId] &&
-      (!c.muted_users[targetId].until || c.muted_users[targetId].until > Date.now());
+    let isMuted = false;
+    if (c.muted_users) {
+      for (const [mKey, mVal] of Object.entries(c.muted_users)) {
+        if (isSameUser(mKey, targetJid, session)) {
+          if (!mVal.until || mVal.until > Date.now()) {
+            isMuted = true;
+            break;
+          }
+        }
+      }
+    }
     const isVerified = isUserVerified(groupId, targetJid, session, rawMsg);
 
     const displayName = resolveUserDisplayName(targetJid, session, c.greetings);

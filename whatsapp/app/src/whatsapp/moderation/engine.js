@@ -185,37 +185,25 @@ export function isUserVerified(groupId, userId, session = null, _rawMsg = null) 
   const config = getGroupModerationConfig(groupId);
   const verifiedUsers = config.verified_users || {};
 
-  // Helper: check a single id against the verified_users map
+  // 1. Direct key/ID or digits lookup
   const checkId = (id) => {
     if (!id) return false;
     if (verifiedUsers[id]?.verified === true) return true;
-    const digits = id.replace(/\D/g, '');
+    const digits = String(id).replace(/\D/g, '');
     if (digits && verifiedUsers[digits]?.verified === true) return true;
     return false;
   };
 
   if (checkId(userId)) return true;
 
-  // Canonical key (LID <-> PN mapping)
+  // 2. Canonical user key lookup (LID <-> PN mapping)
   const canonicalKey = resolveCanonicalUserKey(userId, session);
   if (canonicalKey && checkId(canonicalKey)) return true;
 
-  // Check if any verified user's digits match the target digits
-  const targetDigits = userId.replace(/\D/g, '');
-  if (targetDigits) {
-    for (const [vKey, vVal] of Object.entries(verifiedUsers)) {
-      if (vVal?.verified === true) {
-        const vDigits = vKey.replace(/\D/g, '');
-        if (
-          vDigits &&
-          (vDigits === targetDigits ||
-            (vDigits.length >= 7 &&
-              targetDigits.length >= 7 &&
-              (vDigits.endsWith(targetDigits) || targetDigits.endsWith(vDigits))))
-        ) {
-          return true;
-        }
-      }
+  // 3. Universal user matching using isSameUser against every verified record
+  for (const [vKey, vVal] of Object.entries(verifiedUsers)) {
+    if (vVal?.verified === true) {
+      if (isSameUser(vKey, userId, session)) return true;
     }
   }
 

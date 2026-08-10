@@ -671,20 +671,68 @@ export function renderDashboard(sessionId) {
 
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' || e.keyCode === 27) {
-            var openModals = document.querySelectorAll('.modal-overlay.show, .modal-overlay[style*="display: block"], .modal-overlay[style*="display: flex"], .modal[style*="display: flex"], .modal[style*="display: block"]');
+            // 1. Close open modals / overlays
+            var openModals = document.querySelectorAll('.modal-overlay.show, .modal-overlay[style*="display: block"], .modal-overlay[style*="display: flex"], .modal.show, .modal[style*="display: flex"], .modal[style*="display: block"]');
+            var handledModal = false;
             openModals.forEach(function (m) {
+                handledModal = true;
                 if (m.id === 'confirm-modal' && typeof closeConfirm === 'function') {
                     closeConfirm(false);
                 } else if (m.id === 'tg-mapping-modal' && typeof closeTelegramMappingModal === 'function') {
                     closeTelegramMappingModal();
                 } else if (m.id === 'tg-bot-modal' && typeof closeTelegramBotModal === 'function') {
                     closeTelegramBotModal();
+                } else if (m.id === 'system-properties-modal' && typeof closeSystemPropertiesModal === 'function') {
+                    closeSystemPropertiesModal();
+                } else if (m.id === 'update-modal' && typeof closeUpdateModal === 'function') {
+                    closeUpdateModal();
                 } else if (typeof m.style === 'object' && m.style.display && m.style.display !== 'none') {
                     m.style.display = 'none';
                 } else {
                     m.classList.remove('show');
                 }
             });
+            if (handledModal) return;
+
+            // 2. Close drawers (e.g. Chat Info Drawer)
+            var infoDrawer = document.getElementById('chat-info-drawer');
+            if (infoDrawer && infoDrawer.style.display !== 'none') {
+                if (typeof closeChatInfoDrawer === 'function') closeChatInfoDrawer();
+                else infoDrawer.style.display = 'none';
+                return;
+            }
+
+            // 3. Close active Emoji picker or context menus
+            var emojiPicker = document.getElementById('emoji-picker');
+            if (emojiPicker && emojiPicker.style.display !== 'none') {
+                emojiPicker.style.display = 'none';
+                return;
+            }
+
+            // 4. Close In-Chat Search Bar
+            var inChatSearch = document.getElementById('chat-search-bar');
+            if (inChatSearch && inChatSearch.style.display !== 'none') {
+                if (typeof closeChatSearch === 'function') closeChatSearch();
+                else inChatSearch.style.display = 'none';
+                return;
+            }
+
+            // 5. Cancel Reply Preview Bar in Chat
+            var replyBar = document.getElementById('reply-preview-bar');
+            if (replyBar && replyBar.style.display !== 'none') {
+                if (typeof cancelReply === 'function') cancelReply();
+                else replyBar.style.display = 'none';
+                return;
+            }
+
+            // 6. On Mobile: If inside active chat thread view, ESC goes back to chat list
+            if (document.body.classList.contains('chat-open')) {
+                if (typeof goBackToChatList === 'function') {
+                    goBackToChatList(e);
+                } else {
+                    document.body.classList.remove('chat-open');
+                }
+            }
         }
     });
 
