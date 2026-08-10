@@ -651,9 +651,6 @@ export function renderDashboard(sessionId) {
 
     document.addEventListener('click', function (e) {
         var target = e.target;
-        if (target && (target.id === 'sidebar-toggle-btn' || (target.closest && target.closest('#sidebar-toggle-btn')))) {
-            toggleSidebar(e);
-        }
         if (target && target.classList && (target.classList.contains('modal-overlay') || target.classList.contains('modal'))) {
             if (target.id === 'confirm-modal' && typeof closeConfirm === 'function') {
                 closeConfirm(false);

@@ -2,7 +2,7 @@ import fs from 'fs';
 import { loadTelegramStore, saveTelegramStore, updateCachedChat } from './store.js';
 import { getTelegramBotClient } from './bot.js';
 import { recordMessageMap, resolveWaMsgFromTg, resolveTgMsgFromWa } from './message_map.js';
-import { waToTelegramHtml, anonymizePhoneNumber } from './format.js';
+import { waToTelegramHtml, telegramToWaFormatting, anonymizePhoneNumber } from './format.js';
 import { applyRegexReplacements } from './regex.js';
 import { logger } from '../../logger.js';
 import { getSession, sessions } from '../../session.js';
@@ -1043,7 +1043,8 @@ export async function processTelegramUpdates() {
                 isGroupChat ? mapping.include_sender_name : false
               );
           const cleanHeader = rawHeader.replace(/<\/?b>/g, '');
-          const outboundWaText = `${cleanHeader}${tgQuoteSnippet}${tgText}`;
+          const formattedTgText = mapping.convert_formatting !== false ? telegramToWaFormatting(tgText) : tgText;
+          const outboundWaText = `${cleanHeader}${tgQuoteSnippet}${formattedTgText}`;
 
           let session = getSession('default');
           if (!session || !session.sock || !session.isConnected) {

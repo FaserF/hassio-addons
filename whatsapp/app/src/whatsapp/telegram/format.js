@@ -11,12 +11,42 @@ export function waToTelegramHtml(text) {
 
   // Code blocks ```text```
   out = out.replace(/```([\s\S]*?)```/g, '<code>$1</code>');
+  // Monospace `text`
+  out = out.replace(/(^|\s|\W)`([^`\n]+)`(?=\W|\s|$)/g, '$1<code>$2</code>');
   // Bold *text*
-  out = out.replace(/(^|\s|\W)\*([^*\n]+)\*(\W|\s|$)/g, '$1<b>$2</b>$3');
+  out = out.replace(/(^|\s|\W)\*([^*\n]+)\*(?=\W|\s|$)/g, '$1<b>$2</b>');
   // Italic _text_
-  out = out.replace(/(^|\s|\W)_([^_\n]+)_(\W|\s|$)/g, '$1<i>$2</i>$3');
+  out = out.replace(/(^|\s|\W)_([^_\n]+)_(?=\W|\s|$)/g, '$1<i>$2</i>');
   // Strikethrough ~text~
-  out = out.replace(/(^|\s|\W)~([^~\n]+)~(\W|\s|$)/g, '$1<s>$2</s>$3');
+  out = out.replace(/(^|\s|\W)~([^~\n]+)~(?=\W|\s|$)/g, '$1<s>$2</s>');
+
+  return out;
+}
+
+/**
+ * Convert Telegram MarkdownV2 / HTML formatting to WhatsApp syntax for incoming Telegram messages.
+ * <b>bold</b> or *bold* -> *bold*
+ * <i>italic</i> or _italic_ -> _italic_
+ * <s>strike</s> or ~strike~ -> ~strike~
+ * <code>code</code> -> ```code```
+ */
+export function telegramToWaFormatting(text) {
+  if (!text) return '';
+  let out = String(text);
+
+  // Convert Telegram HTML tags
+  out = out.replace(/<b>([\s\S]*?)<\/b>/gi, '*$1*');
+  out = out.replace(/<strong>([\s\S]*?)<\/strong>/gi, '*$1*');
+  out = out.replace(/<i>([\s\S]*?)<\/i>/gi, '_$1_');
+  out = out.replace(/<em>([\s\S]*?)<\/em>/gi, '_$1_');
+  out = out.replace(/<s>([\s\S]*?)<\/s>/gi, '~$1~');
+  out = out.replace(/<strike>([\s\S]*?)<\/strike>/gi, '~$1~');
+  out = out.replace(/<del>([\s\S]*?)<\/del>/gi, '~$1~');
+  out = out.replace(/<code>([\s\S]*?)<\/code>/gi, '```$1```');
+  out = out.replace(/<pre>([\s\S]*?)<\/pre>/gi, '```$1```');
+
+  // Strip remaining HTML tags if any
+  out = out.replace(/<[^>]+>/g, '');
 
   return out;
 }

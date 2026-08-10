@@ -99,6 +99,29 @@ function showToast(message, type = 'info', params = {}) {
   }, 3500);
 }
 
+function formatFormattedText(str) {
+  if (str == null) return '';
+  let out = String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
+  // Code blocks ```text```
+  out = out.replace(/```([\s\S]*?)```/g, '<code>$1</code>');
+  // Bold *text*
+  out = out.replace(/(^|\s|\W)\*([^*\n]+)\*(\W|\s|$)/g, '$1<b>$2</b>$3');
+  // Italic _text_
+  out = out.replace(/(^|\s|\W)_([^_\n]+)_(\W|\s|$)/g, '$1<i>$2</i>$3');
+  // Strikethrough ~text~
+  out = out.replace(/(^|\s|\W)~([^~\n]+)~(\W|\s|$)/g, '$1<s>$2</s>$3');
+  // Monospace `text`
+  out = out.replace(/(^|\s|\W)`([^`\n]+)`(\W|\s|$)/g, '$1<code>$2</code>$3');
+
+  return out.replace(/\n/g, '<br>');
+}
+
 function escapeHtml(str) {
   if (str == null) return '';
   return String(str)
@@ -286,6 +309,7 @@ window.initI18n = initI18n;
 window.setAppLanguage = setAppLanguage;
 window.currentLang = currentLang;
 window.currentTranslations = currentTranslations;
+window.formatFormattedText = formatFormattedText;
 
 // Auto-initialize i18n on DOM ready
 if (typeof document !== 'undefined') {

@@ -5,8 +5,20 @@ export function registerReactionListener(session) {
       const stored = session.messageStore.get(parentId);
       if (!stored) continue;
       if (!stored._reactions) stored._reactions = [];
-      const senderJid = key.participant || key.remoteJid || '';
-      stored._reactions = stored._reactions.filter((r) => r.sender !== senderJid);
+
+      let rawSender = key.participant || key.participantAlt || key.remoteJidAlt || key.remoteJid || '';
+      if (key.fromMe) {
+        const selfUser = session.sock?.user?.id;
+        const selfPn = selfUser ? selfUser.split(':')[0] : session.stats?.my_number;
+        if (selfPn) rawSender = `${selfPn}@s.whatsapp.net`;
+      }
+      const senderJid = rawSender.split(':')[0].replace(/@lid$/, '@s.whatsapp.net');
+
+      stored._reactions = stored._reactions.filter((r) => {
+        const existingSender = String(r.sender).split(':')[0].replace(/@lid$/, '@s.whatsapp.net');
+        return existingSender !== senderJid && r.sender !== 'me';
+      });
+
       if (reaction?.text) {
         stored._reactions.push({ emoji: reaction.text, sender: senderJid });
       }

@@ -152,12 +152,18 @@ body {
 }
 
 .sidebar.collapsed .sidebar-header {
-  padding: 0 12px;
-  justify-content: space-between;
+  padding: 0;
+  justify-content: center;
+  gap: 8px;
 }
 
 .sidebar.collapsed .logo-icon {
-  font-size: 24px;
+  font-size: 22px;
+}
+
+.sidebar.collapsed .sidebar-toggle-btn {
+  padding: 6px;
+  border-radius: 50%;
 }
 
 .sidebar.collapsed .nav-menu {
@@ -614,6 +620,10 @@ body {
   .sidebar-header {
     height: 52px !important;
     padding: 0 12px !important;
+  }
+
+  .sidebar-toggle-btn {
+    display: none !important;
   }
 
   .nav-menu {

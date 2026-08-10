@@ -817,11 +817,11 @@ async function loadChatMessages(jid) {
         const rawText = m.text && !hasNativeWidget ? m.text : '';
         const textBlock =
           rawText && !(m.mediaType && !m.caption && m.mediaUrl)
-            ? `<div class="msg-bubble-text">${escapeHtml(rawText)}</div>`
+            ? `<div class="msg-bubble-text">${formatFormattedText(rawText)}</div>`
             : '';
         const captionBlock =
           m.caption && m.mediaType && m.mediaUrl
-            ? `<div class="msg-bubble-text" style="margin-top:4px;">${escapeHtml(m.caption)}</div>`
+            ? `<div class="msg-bubble-text" style="margin-top:4px;">${formatFormattedText(m.caption)}</div>`
             : '';
         const ackBlock = renderAck(m);
         const reactBlock = renderReactions(m);
