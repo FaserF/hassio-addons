@@ -137,6 +137,28 @@ async function runI18nTests() {
     }
   }
 
+  // Test 7: Verify all data-i18n attributes in UI views map to existing translation keys
+  const viewsDir = path.resolve(__dirname, '../src/routes/ui/views');
+  if (fs.existsSync(viewsDir)) {
+    const viewFiles = fs.readdirSync(viewsDir).filter((f) => f.endsWith('.js'));
+    const enKeysSet = new Set(enKeys);
+    let missingViewKeys = [];
+    for (const vf of viewFiles) {
+      const content = fs.readFileSync(path.join(viewsDir, vf), 'utf8');
+      const matches = content.matchAll(/data-i18n(?:-placeholder|-title)?=["']([^"']+)["']/g);
+      for (const m of matches) {
+        const k = m[1];
+        if (!enKeysSet.has(k)) {
+          missingViewKeys.push(`${vf}:${k}`);
+        }
+      }
+    }
+    assertTest(
+      missingViewKeys.length === 0,
+      `All HTML view data-i18n attributes map to valid translation keys (missing: ${missingViewKeys.length > 0 ? missingViewKeys.join(', ') : 'none'})`
+    );
+  }
+
   if (failed > 0) {
     throw new Error(`i18n unit tests failed with ${failed} error(s)`);
   }

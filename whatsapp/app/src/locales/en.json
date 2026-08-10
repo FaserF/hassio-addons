@@ -108,10 +108,14 @@
     "select_chat_title": "Select a chat to view messages",
     "select_chat_hint": "Select a contact or group from the left sidebar to start chatting.",
     "contact_info": "Contact Info",
+    "view_contact_details": "Click to view Contact / Group Details",
     "loading_info": "Loading info\u2026",
     "type_message": "Type a message\u2026",
     "typing": "typing\u2026",
-    "start_new_chat": "Start New Chat"
+    "start_new_chat": "Start New Chat",
+    "emoji": "Emoji",
+    "attach_file": "Attach file",
+    "send": "Send"
   },
   "moderation": {
     "title": "WhatsApp Group Moderation & Security Shield",
@@ -142,9 +146,23 @@
       "action": "Warn Action",
       "decay": "Warn Decay (hours)"
     },
+    "rules": {
+      "title": "Group Rules",
+      "desc": "Define group rules for !rules and optionally append them to the welcome message on join."
+    },
+    "greetings": {
+      "title": "Greetings & Captcha",
+      "desc": "Welcome and farewell messages plus join verification."
+    },
+    "captcha": {
+      "title": "Join Captcha Verification",
+      "desc": "Challenge new members before they can post.",
+      "type": "Captcha Type",
+      "timeout": "Timeout (seconds)"
+    },
     "content_locks": {
       "title": "Content Locks",
-      "description": "Block specific message types in the group",
+      "description": "Automatically delete specific message types when sent by non-admin members.",
       "url": "URLs",
       "invite": "Group Invites",
       "poll": "Polls",
@@ -159,10 +177,31 @@
       "rtl": "RTL Text"
     },
     "blacklist": {
-      "title": "Word Blacklist",
+      "title": "Word & Pattern Blacklist",
+      "desc": "Auto-delete messages containing blocked words or regex patterns.",
       "placeholder": "Add word or regex...",
       "add": "Add to Blacklist",
-      "empty": "No blacklisted words yet."
+      "empty": "No blacklisted words configured yet."
+    },
+    "filters": {
+      "title": "Auto-Responder & FAQ Filters",
+      "desc": "Trigger automatic replies or FAQ hints on specific keywords."
+    },
+    "flood": {
+      "title": "Flood Protection",
+      "desc": "Mute users sending too many messages too fast."
+    },
+    "antiraid": {
+      "title": "Anti-Raid Shield",
+      "desc": "Lock group when too many users join in short time."
+    },
+    "antispam_links": {
+      "title": "Anti-Spam Invite Links Removal",
+      "desc": "Automatically delete t.me, wa.me, and unauthorized chat invite links."
+    },
+    "federation": {
+      "title": "Global Security Federation",
+      "desc": "Cross-group security shield for automatic spam prevention, botnet bans, and prohibited link filtering."
     },
     "welcome": {
       "title": "Welcome Message",
@@ -170,7 +209,8 @@
       "enabled": "Enable Welcome Message"
     },
     "captcha": {
-      "title": "Captcha Settings",
+      "title": "Join Captcha Verification",
+      "desc": "Challenge new members before they can post.",
       "type": "Captcha Type",
       "timeout": "Timeout (seconds)"
     },

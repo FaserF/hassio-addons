@@ -831,6 +831,7 @@ async function runTelegramBridgeTest() {
   }
 
   if (panel) panel.style.display = 'block';
+  if (typeof toggleTgTestSuiteUI === 'function') toggleTgTestSuiteUI(true);
   if (statusBadge) {
     statusBadge.style.background = '#0088cc';
     statusBadge.textContent = 'RUNNING';
@@ -955,11 +956,53 @@ async function pollTelegramTestResults(runId) {
 
 function copyTgTestLogs() {
   const logOutput = document.getElementById('tg-test-log-output');
-  if (logOutput && logOutput.textContent) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(logOutput.textContent);
+  if (!logOutput || !logOutput.textContent) {
+    showToast('No logs available to copy', 'warning');
+    return;
+  }
+  const text = logOutput.textContent;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => showToast('Telegram test logs copied to clipboard!', 'success'))
+      .catch(() => fallbackCopyTextToClipboard(text));
+  } else {
+    fallbackCopyTextToClipboard(text);
+  }
+}
+
+function fallbackCopyTextToClipboard(text) {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.top = '0';
+  textArea.style.left = '0';
+  textArea.style.position = 'fixed';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    const successful = document.execCommand('copy');
+    if (successful) {
+      showToast('Telegram test logs copied to clipboard!', 'success');
+    } else {
+      showToast('Failed to copy logs', 'danger');
     }
-    showToast('Telegram test logs copied to clipboard!', 'success');
+  } catch (err) {
+    showToast('Failed to copy logs: ' + err.message, 'danger');
+  }
+  document.body.removeChild(textArea);
+}
+
+function toggleTgTestSuiteUI(forceState) {
+  const body = document.getElementById('tg-test-suite-body');
+  const chevron = document.getElementById('tg-test-suite-chevron');
+  if (!body) return;
+  const isExpanded = forceState !== undefined ? forceState : body.style.display !== 'none';
+  const nextState = forceState !== undefined ? forceState : !isExpanded;
+
+  body.style.display = nextState ? 'block' : 'none';
+  if (chevron) {
+    chevron.style.transform = nextState ? 'rotate(180deg)' : 'rotate(0deg)';
   }
 }
 
@@ -967,3 +1010,4 @@ window.runTelegramBridgeTest = runTelegramBridgeTest;
 window.selectAllTgSubtests = selectAllTgSubtests;
 window.copyTgTestLogs = copyTgTestLogs;
 window.pollTelegramTestResults = pollTelegramTestResults;
+window.toggleTgTestSuiteUI = toggleTgTestSuiteUI;

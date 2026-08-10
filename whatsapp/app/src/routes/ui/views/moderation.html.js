@@ -86,7 +86,7 @@ export default () => `
                     <div id="mod-subpanel-rules" class="mod-subpanel">
                         <div class="mod-feature-header">
                             <div class="mod-feature-icon-wrap mod-color-primary"><i class="fas fa-scroll"></i></div>
-                            <div><div class="mod-feature-title">Group Rules</div><div class="mod-feature-desc">Define group rules for <code>!rules</code> and optionally append them to the welcome message on join.</div></div>
+                            <div><div class="mod-feature-title" data-i18n="moderation.rules.title">Group Rules</div><div class="mod-feature-desc" data-i18n="moderation.rules.desc">Define group rules for <code>!rules</code> and optionally append them to the welcome message on join.</div></div>
                         </div>
                         <textarea id="mod-rules-text" class="mod-textarea" placeholder="1. Be respectful&#10;2. No spam&#10;3. No NSFW content"></textarea>
                         <div class="mod-option-row">
@@ -108,7 +108,7 @@ export default () => `
                     <div id="mod-subpanel-greetings" class="mod-subpanel" style="display:none;">
                         <div class="mod-feature-header">
                             <div class="mod-feature-icon-wrap mod-color-info"><i class="fas fa-user-plus"></i></div>
-                            <div><div class="mod-feature-title">Greetings &amp; Captcha</div><div class="mod-feature-desc">Welcome and farewell messages plus join verification.</div></div>
+                            <div><div class="mod-feature-title" data-i18n="moderation.greetings.title">Greetings &amp; Captcha</div><div class="mod-feature-desc" data-i18n="moderation.greetings.desc">Welcome and farewell messages plus join verification.</div></div>
                         </div>
                         <div class="mod-two-col">
                             <div class="mod-feature-block">
@@ -153,7 +153,7 @@ export default () => `
                         <div class="mod-divider"></div>
                         <div class="mod-feature-header">
                             <div class="mod-feature-icon-wrap mod-color-warning"><i class="fas fa-user-shield"></i></div>
-                            <div><div class="mod-feature-title">Join Captcha Verification</div><div class="mod-feature-desc">Challenge new members before they can post.</div></div>
+                            <div><div class="mod-feature-title" data-i18n="moderation.captcha.title">Join Captcha Verification</div><div class="mod-feature-desc" data-i18n="moderation.captcha.desc">Challenge new members before they can post.</div></div>
                         </div>
                         <div class="mod-inline-controls">
                             <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-captcha-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
@@ -228,8 +228,8 @@ export default () => `
                     <!-- LOCKS -->
                     <div id="mod-subpanel-locks" class="mod-subpanel" style="display:none;">
                         <div class="mod-feature-header">
-                            <div class="mod-feature-icon-wrap mod-color-danger"><i class="fas fa-lock"></i></div>
-                            <div><div class="mod-feature-title">Content Locks</div><div class="mod-feature-desc">Prevent specific content types from being posted.</div></div>
+                            <div class="mod-feature-icon-wrap mod-color-warning"><i class="fas fa-lock"></i></div>
+                            <div><div class="mod-feature-title" data-i18n="moderation.content_locks.title">Content Locks</div><div class="mod-feature-desc" data-i18n="moderation.content_locks.description">Automatically delete specific message types when sent by non-admin members.</div></div>
                         </div>
                         <div class="mod-lock-grid">
                             <label class="mod-lock-card"><div class="mod-lock-icon"><i class="fas fa-image"></i></div><span>Images</span><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-lock-image"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label></label>
@@ -252,7 +252,7 @@ export default () => `
                     <div id="mod-subpanel-blacklist" class="mod-subpanel" style="display:none;">
                         <div class="mod-feature-header">
                             <div class="mod-feature-icon-wrap mod-color-danger"><i class="fas fa-ban"></i></div>
-                            <div><div class="mod-feature-title">Word &amp; Pattern Blacklist</div><div class="mod-feature-desc">Auto-delete messages containing blocked words or regex patterns.</div></div>
+                            <div><div class="mod-feature-title" data-i18n="moderation.blacklist.title">Word &amp; Pattern Blacklist</div><div class="mod-feature-desc" data-i18n="moderation.blacklist.desc">Auto-delete messages containing blocked words or regex patterns.</div></div>
                         </div>
                         <div class="mod-field-group" style="max-width:320px; margin-bottom:12px;">
                             <label class="mod-field-label">Matching Mode</label>
@@ -274,7 +274,7 @@ export default () => `
                     <div id="mod-subpanel-filters" class="mod-subpanel" style="display:none;">
                         <div class="mod-feature-header">
                             <div class="mod-feature-icon-wrap mod-color-info"><i class="fas fa-robot"></i></div>
-                            <div><div class="mod-feature-title">Auto-Responder & FAQ Filters</div><div class="mod-feature-desc">Trigger automatic replies or FAQ hints on specific keywords.</div></div>
+                            <div><div class="mod-feature-title" data-i18n="moderation.filters.title">Auto-Responder &amp; FAQ Filters</div><div class="mod-feature-desc" data-i18n="moderation.filters.desc">Trigger automatic replies or FAQ hints on specific keywords.</div></div>
                         </div>
                         <div class="mod-two-col mod-two-col-tight">
                             <input type="text" id="mod-filter-trigger" class="mod-input" placeholder="Trigger (e.g. wlan, !help)" onkeydown="if(event.key==='Enter'){event.preventDefault();addFilterRule();}">
@@ -299,7 +299,7 @@ export default () => `
                             <div class="mod-feature-block mod-feature-block-full">
                                 <div class="mod-feature-header">
                                     <div class="mod-feature-icon-wrap mod-color-warning"><i class="fas fa-bolt"></i></div>
-                                    <div><div class="mod-feature-title">Flood Protection</div><div class="mod-feature-desc">Mute users sending too many messages too fast.</div></div>
+                                    <div><div class="mod-feature-title" data-i18n="moderation.flood.title">Flood Protection</div><div class="mod-feature-desc" data-i18n="moderation.flood.desc">Mute users sending too many messages too fast.</div></div>
                                 </div>
                                 <div class="mod-option-row"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-flood-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Enable flood protection</span></div>
                                 <div class="mod-rate-row"><span class="mod-rate-label">Max</span><input type="number" id="mod-flood-max" class="mod-number-input" value="5" min="1" max="100"><span class="mod-rate-label">messages in</span><input type="number" id="mod-flood-win" class="mod-number-input" value="5" min="1" max="300"><span class="mod-rate-label">seconds</span></div>
@@ -311,7 +311,7 @@ export default () => `
                             <div class="mod-feature-block mod-feature-block-full">
                                 <div class="mod-feature-header">
                                     <div class="mod-feature-icon-wrap mod-color-danger"><i class="fas fa-shield-alt"></i></div>
-                                    <div><div class="mod-feature-title">Anti-Raid Shield</div><div class="mod-feature-desc">Lock group when too many users join in short time.</div></div>
+                                    <div><div class="mod-feature-title" data-i18n="moderation.antiraid.title">Anti-Raid Shield</div><div class="mod-feature-desc" data-i18n="moderation.antiraid.desc">Lock group when too many users join in short time.</div></div>
                                 </div>
                                 <div class="mod-option-row"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-antiraid-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Enable anti-raid shield</span></div>
                                 <div class="mod-rate-row"><span class="mod-rate-label">Max</span><input type="number" id="mod-antiraid-max" class="mod-number-input" value="5" min="1" max="100"><span class="mod-rate-label">joins in</span><input type="number" id="mod-antiraid-win" class="mod-number-input" value="10" min="1" max="300"><span class="mod-rate-label">seconds</span></div>
@@ -319,7 +319,7 @@ export default () => `
                             <div class="mod-feature-block mod-feature-block-full" style="margin-top:16px;">
                                 <div class="mod-feature-header">
                                     <div class="mod-feature-icon-wrap mod-color-info"><i class="fas fa-link"></i></div>
-                                    <div><div class="mod-feature-title">Anti-Spam Invite Links Removal</div><div class="mod-feature-desc">Automatically delete t.me, wa.me, and unauthorized chat invite links.</div></div>
+                                    <div><div class="mod-feature-title" data-i18n="moderation.antispam_links.title">Anti-Spam Invite Links Removal</div><div class="mod-feature-desc" data-i18n="moderation.antispam_links.desc">Automatically delete t.me, wa.me, and unauthorized chat invite links.</div></div>
                                 </div>
                                 <div class="mod-option-row" style="margin-bottom:12px;"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-antispam-links-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Enable auto-removal of spam &amp; invite links</span></div>
                                 <div class="mod-option-row" style="margin-bottom:12px;"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-notify-deleted-action" checked><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span class="mod-option-label">Send notification message with quote when a prohibited message is deleted (Default: Enabled)</span></div>
@@ -358,7 +358,7 @@ export default () => `
                     <div id="mod-subpanel-federation" class="mod-subpanel" style="display:none;">
                         <div class="mod-feature-header">
                             <div class="mod-feature-icon-wrap mod-color-info"><i class="fas fa-network-wired"></i></div>
-                            <div><div class="mod-feature-title">Global Security Federation</div><div class="mod-feature-desc">Cross-group security shield for automatic spam prevention, botnet bans, and prohibited link filtering.</div></div>
+                            <div><div class="mod-feature-title" data-i18n="moderation.federation.title">Global Security Federation</div><div class="mod-feature-desc" data-i18n="moderation.federation.desc">Cross-group security shield for automatic spam prevention, botnet bans, and prohibited link filtering.</div></div>
                         </div>
                         <div class="mod-field-group" style="max-width:650px; margin-bottom:16px;">
                             <label class="mod-field-label">Active Federation Network</label>

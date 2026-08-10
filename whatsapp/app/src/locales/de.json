@@ -103,15 +103,19 @@
   },
   "chats": {
     "search_placeholder": "Chats suchen...",
-    "search_in_chat": "In diesem Gespr\u00e4ch suchen\u2026",
-    "no_conversations": "Noch keine aktiven Gespr\u00e4che",
-    "select_chat_title": "Chat ausw\u00e4hlen um Nachrichten anzuzeigen",
-    "select_chat_hint": "Kontakt oder Gruppe in der linken Seitenleiste ausw\u00e4hlen um zu chatten.",
-    "contact_info": "Kontaktinfo",
-    "loading_info": "Informationen laden\u2026",
-    "type_message": "Nachricht eingeben\u2026",
+    "search_in_chat": "In dieser Unterhaltung suchen\u2026",
+    "no_conversations": "Noch keine aktiven Unterhaltungen",
+    "select_chat_title": "W\u00e4hle einen Chat aus, um Nachrichten anzuzeigen",
+    "select_chat_hint": "W\u00e4hle einen Kontakt oder eine Gruppe aus der linken Seitenleiste aus, um zu chatten.",
+    "contact_info": "Kontakt-Info",
+    "view_contact_details": "Klicken, um Kontakt- / Gruppen-Details anzuzeigen",
+    "loading_info": "Informationen werden geladen\u2026",
+    "type_message": "Nachricht schreiben\u2026",
     "typing": "schreibt\u2026",
-    "start_new_chat": "Neuen Chat starten"
+    "start_new_chat": "Neuen Chat starten",
+    "emoji": "Emoji",
+    "attach_file": "Datei anh\u00e4ngen",
+    "send": "Senden"
   },
   "moderation": {
     "title": "WhatsApp Gruppen-Moderation & Sicherheits-Schutz",
@@ -142,9 +146,23 @@
       "action": "Warnaktion",
       "decay": "Warnverfall (Stunden)"
     },
+    "rules": {
+      "title": "Gruppenregeln",
+      "desc": "Definiere Gruppenregeln f\u00fcr !rules und h\u00e4nge sie optional an die Begr\u00fc\u00dfungsnachricht an."
+    },
+    "greetings": {
+      "title": "Begr\u00fc\u00dfungen & Captcha",
+      "desc": "Willkommens- und Verabschiedungsnachrichten sowie Beitrittsverifizierung."
+    },
+    "captcha": {
+      "title": "Beitritts-Captcha Verifizierung",
+      "desc": "Fordere neue Mitglieder heraus, bevor sie Nachrichten senden k\u00f6nnen.",
+      "type": "Captcha-Typ",
+      "timeout": "Zeitlimit (Sekunden)"
+    },
     "content_locks": {
       "title": "Inhalts-Sperren",
-      "description": "Bestimmte Nachrichtentypen in der Gruppe sperren",
+      "description": "L\u00f6sche automatisch bestimmte Nachrichtentypen von Mitgliedern ohne Admin-Rechte.",
       "url": "URLs",
       "invite": "Gruppeneinladungen",
       "poll": "Umfragen",
@@ -159,10 +177,31 @@
       "rtl": "RTL-Text"
     },
     "blacklist": {
-      "title": "Wort-Blacklist",
+      "title": "Wort- & Muster-Blacklist",
+      "desc": "L\u00f6sche automatisch Nachrichten mit gesperrten W\u00f6rtern oder Regex-Mustern.",
       "placeholder": "Wort oder Regex hinzuf\u00fcgen...",
       "add": "Zur Blacklist hinzuf\u00fcgen",
-      "empty": "Noch keine Blacklist-W\u00f6rter."
+      "empty": "Noch keine Blacklist-W\u00f6rter konfiguriert."
+    },
+    "filters": {
+      "title": "Auto-Responder & FAQ-Filter",
+      "desc": "L\u00f6se automatische Antworten oder FAQ-Hinweise bei bestimmten Stichw\u00f6rtern aus."
+    },
+    "flood": {
+      "title": "Spam-Schutz (Flood Protection)",
+      "desc": "Stumm schalten von Benutzern, die zu viele Nachrichten zu schnell senden."
+    },
+    "antiraid": {
+      "title": "Anti-Raid Schutzschild",
+      "desc": "Sperre die Gruppe, wenn zu viele Benutzer in kurzer Zeit beitreten."
+    },
+    "antispam_links": {
+      "title": "Entfernung von Spam-Einladungslinks",
+      "desc": "L\u00f6sche automatisch t.me, wa.me und unautorisierte Chat-Einladungslinks."
+    },
+    "federation": {
+      "title": "Globale Sicherheits-F\u00f6deration",
+      "desc": "Gruppen\u00fcbergreifendes Schutzschild f\u00fcr automatische Spam-Pr\u00e4vention, Botnetz-Sperren und Link-Filterung."
     },
     "welcome": {
       "title": "Willkommensnachricht",
@@ -170,7 +209,8 @@
       "enabled": "Willkommensnachricht aktivieren"
     },
     "captcha": {
-      "title": "Captcha-Einstellungen",
+      "title": "Beitritts-Captcha Verifizierung",
+      "desc": "Fordere neue Mitglieder heraus, bevor sie Nachrichten senden k\u00f6nnen.",
       "type": "Captcha-Typ",
       "timeout": "Zeitlimit (Sekunden)"
     },

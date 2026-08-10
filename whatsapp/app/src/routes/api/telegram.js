@@ -366,13 +366,21 @@ export function registerTelegramRoutes(app) {
       );
       log('INIT', `Subtests Selected (${enabledSubtests.length}): ${enabledSubtests.join(', ')}`);
 
+      const isBiDirectional = direction === 'bidirectional';
       const isWaToTg = direction === 'wa_to_tg';
       const directionText =
-        direction === 'bidirectional'
+        isBiDirectional
           ? 'Bi-directional (WhatsApp ↔ Telegram)'
           : isWaToTg
             ? 'WhatsApp ➔ Telegram'
             : 'Telegram ➔ WhatsApp';
+
+      /** Helper to determine if step i (1-indexed) should originate from WhatsApp */
+      const shouldStepBeWa = (stepIndex) => {
+        if (isWaToTg) return true;
+        if (isBiDirectional) return stepIndex % 2 === 1; // Odd steps originate in WA, Even steps in TG
+        return false;
+      };
 
       let startNoticeWaKey = null;
       let startNoticeTgMsgId = null;
@@ -385,12 +393,17 @@ export function registerTelegramRoutes(app) {
         `📋 *Mapping:* ${mapping.name}\n\n` +
         `_This notice is pinned in both chats for the duration of the test run._`;
 
+      const safeMappingName = (mapping.name || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
       const noticeTextTg =
-        `📌 <b>Telegram & WhatsApp Bridge Integration Test Started</b>\n` +
+        `📌 <b>Telegram &amp; WhatsApp Bridge Integration Test Started</b>\n` +
         `━━━━━━━━━━━━━━━━━━━\n` +
-        `🤖 Running automated verification across ${enabledSubtests.length} message & media categories.\n\n` +
+        `🤖 Running automated verification across ${enabledSubtests.length} message &amp; media categories.\n\n` +
         `🔄 <b>Direction:</b> ${directionText}\n` +
-        `📋 <b>Mapping:</b> ${mapping.name}\n\n` +
+        `📋 <b>Mapping:</b> ${safeMappingName}\n\n` +
         `<i>This notice is pinned in both chats for the duration of the test run.</i>`;
 
       // 1. Dispatch & Pin Start Notice in WhatsApp
@@ -442,9 +455,9 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_1',
-            `Executing Step 1/16: Text & Markdown formatting (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 1/16: Text & Markdown formatting (${shouldStepBeWa(1) ? 'WA -> TG' : 'TG -> WA'})`
           );
-          if (isWaToTg) {
+          if (shouldStepBeWa(1)) {
             const text = `🧪 [Bridge Test 1/16] *Bold*, _Italic_, ~Strike~, \`Code\` & https://github.com (${new Date().toLocaleTimeString()})`;
             textMsgRef = await session.sock.sendMessage(mapping.wa_jid, { text });
             log(
@@ -478,9 +491,9 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_2',
-            `Executing Step 2/16: Native Polls & Multiselect Options (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 2/16: Native Polls & Multiselect Options (${shouldStepBeWa(2) ? 'WA -> TG' : 'TG -> WA'})`
           );
-          if (isWaToTg) {
+          if (shouldStepBeWa(2)) {
             await session.sock.sendMessage(mapping.wa_jid, {
               poll: {
                 name: '🧪 [Bridge Test 2/16] Select features to test:',
@@ -517,13 +530,14 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_3',
-            `Executing Step 3/16: Poll Vote updates & multi-user sync (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 3/16: Poll Vote updates & multi-user sync (${shouldStepBeWa(3) ? 'WA -> TG' : 'TG -> WA'})`
           );
-          const pollVoteText = `📊 [Bridge Test 3/16] Poll Vote Update\n👤 Voter: Tester\n🗳️ Vote: Option 1: Text & Formatting, Option 2: Media & Files`;
-          if (isWaToTg) {
+          if (shouldStepBeWa(3)) {
+            const pollVoteText = `📊 [Bridge Test 3/16] Poll Vote Update\n👤 Voter: Tester\n🗳️ Vote: Option 1: Text & Formatting, Option 2: Media & Files`;
             await session.sock.sendMessage(mapping.wa_jid, { text: pollVoteText });
             log('STEP_3', 'Dispatched WhatsApp Poll Vote update notification', 'success');
           } else {
+            const pollVoteText = `📊 [Bridge Test 3/16] Poll Vote Update\n👤 Voter: Tester\n🗳️ Vote: Option 1: Text & Formatting, Option 2: Media & Files`;
             await bot.sendMessage(
               mapping.tg_chat_id,
               pollVoteText,
@@ -543,9 +557,9 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_4',
-            `Executing Step 4/16: Native Location & Live Location pin (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 4/16: Native Location & Live Location pin (${shouldStepBeWa(4) ? 'WA -> TG' : 'TG -> WA'})`
           );
-          if (isWaToTg) {
+          if (shouldStepBeWa(4)) {
             await session.sock.sendMessage(mapping.wa_jid, {
               location: {
                 degreesLatitude: 52.52,
@@ -575,9 +589,9 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_5',
-            `Executing Step 5/16: Rich Event Cards (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 5/16: Rich Event Cards (${shouldStepBeWa(5) ? 'WA -> TG' : 'TG -> WA'})`
           );
-          if (isWaToTg) {
+          if (shouldStepBeWa(5)) {
             await session.sock
               .sendMessage(mapping.wa_jid, {
                 eventMessage: {
@@ -618,21 +632,19 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_6',
-            `Executing Step 6/16: Images & Photo Captions (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 6/16: Images & Photo Captions (${shouldStepBeWa(6) ? 'WA -> TG' : 'TG -> WA'})`
           );
-          const imgUrl = 'https://raw.githubusercontent.com/faserf/ha-whatsapp/main/icon.png';
-          if (isWaToTg) {
+          const imgUrl = 'https://raw.githubusercontent.com/faserf/ha-whatsapp/master/icon.png';
+          if (shouldStepBeWa(6)) {
             await session.sock.sendMessage(mapping.wa_jid, {
               image: { url: imgUrl },
               caption: '🧪 [Bridge Test 6/16] Sample Image with Photo Caption',
             });
             log('STEP_6', 'Sent WhatsApp Image with Photo Caption', 'success');
           } else {
-            await bot.sendMediaFile(
-              'sendPhoto',
+            await bot.sendPhoto(
               mapping.tg_chat_id,
               imgUrl,
-              'photo',
               '🧪 [Bridge Test 6/16] Sample Image with Photo Caption',
               null,
               mapping.tg_thread_id || null
@@ -650,10 +662,10 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_7',
-            `Executing Step 7/16: Voice Notes (PTT) & Audio files (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 7/16: Voice Notes (PTT) & Audio files (${shouldStepBeWa(7) ? 'WA -> TG' : 'TG -> WA'})`
           );
           const sampleAudioUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-          if (isWaToTg) {
+          if (shouldStepBeWa(7)) {
             await session.sock.sendMessage(mapping.wa_jid, {
               audio: { url: sampleAudioUrl },
               mimetype: 'audio/mp4',
@@ -683,11 +695,11 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_8',
-            `Executing Step 8/16: Video & Video Notes (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 8/16: Video & Video Notes (${shouldStepBeWa(8) ? 'WA -> TG' : 'TG -> WA'})`
           );
           const sampleVideoUrl =
             'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4';
-          if (isWaToTg) {
+          if (shouldStepBeWa(8)) {
             await session.sock.sendMessage(mapping.wa_jid, {
               video: { url: sampleVideoUrl },
               caption: '🧪 [Bridge Test 8/16] Sample Video & Video Note Test',
@@ -717,11 +729,11 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_9',
-            `Executing Step 9/16: Documents & Files with original filenames (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 9/16: Documents & Files with original filenames (${shouldStepBeWa(9) ? 'WA -> TG' : 'TG -> WA'})`
           );
           const sampleDocUrl =
             'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
-          if (isWaToTg) {
+          if (shouldStepBeWa(9)) {
             await session.sock.sendMessage(mapping.wa_jid, {
               document: { url: sampleDocUrl },
               mimetype: 'application/pdf',
@@ -750,9 +762,9 @@ export function registerTelegramRoutes(app) {
 
         // STEP 10: Stickers (static & animated WebP) Test
         try {
-          log('STEP_10', `Executing Step 10/16: Stickers (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`);
+          log('STEP_10', `Executing Step 10/16: Stickers (${shouldStepBeWa(10) ? 'WA -> TG' : 'TG -> WA'})`);
           const stickerUrl = 'https://raw.githubusercontent.com/faserf/ha-whatsapp/main/icon.png';
-          if (isWaToTg) {
+          if (shouldStepBeWa(10)) {
             await session.sock
               .sendMessage(mapping.wa_jid, {
                 sticker: { url: stickerUrl },
@@ -795,10 +807,10 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_11',
-            `Executing Step 11/16: Contact Cards (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 11/16: Contact Cards (${shouldStepBeWa(11) ? 'WA -> TG' : 'TG -> WA'})`
           );
           const vcardStr = `BEGIN:VCARD\nVERSION:3.0\nN:Tester;Bridge;;;\nFN:Bridge Integration Tester\nTEL;type=CELL;type=VOICE;waid=491761234567:+49 176 1234567\nEND:VCARD`;
-          if (isWaToTg) {
+          if (shouldStepBeWa(11)) {
             await session.sock.sendMessage(mapping.wa_jid, {
               contacts: {
                 displayName: 'Bridge Integration Tester',
@@ -828,9 +840,9 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_12',
-            `Executing Step 12/16: Emoji Reactions (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 12/16: Emoji Reactions (${shouldStepBeWa(12) ? 'WA -> TG' : 'TG -> WA'})`
           );
-          if (isWaToTg) {
+          if (shouldStepBeWa(12)) {
             if (textMsgRef && textMsgRef.key) {
               await session.sock.sendMessage(mapping.wa_jid, {
                 react: { text: '🔥', key: textMsgRef.key },
@@ -867,9 +879,9 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_13',
-            `Executing Step 13/16: Message Edits bi-directional text edit sync (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 13/16: Message Edits bi-directional text edit sync (${shouldStepBeWa(13) ? 'WA -> TG' : 'TG -> WA'})`
           );
-          if (isWaToTg) {
+          if (shouldStepBeWa(13)) {
             const editNotice = `✏️ [Bridge Test 13/16: Text Edit Sync]\nOriginal message edited at ${new Date().toLocaleTimeString()}`;
             await session.sock.sendMessage(mapping.wa_jid, { text: editNotice });
             log('STEP_13', 'Dispatched WhatsApp Message Edit update notice', 'success');
@@ -905,9 +917,9 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_14',
-            `Executing Step 14/16: Message Deletions revoke message for all (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 14/16: Message Deletions revoke message for all (${shouldStepBeWa(14) ? 'WA -> TG' : 'TG -> WA'})`
           );
-          if (isWaToTg) {
+          if (shouldStepBeWa(14)) {
             const dummyMsg = await session.sock.sendMessage(mapping.wa_jid, {
               text: '🗑️ [Temporary Message to Delete]',
             });
@@ -951,9 +963,9 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_15',
-            `Executing Step 15/16: Quoted Reply Chains & Thread Context (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 15/16: Quoted Reply Chains & Thread Context (${shouldStepBeWa(15) ? 'WA -> TG' : 'TG -> WA'})`
           );
-          if (isWaToTg) {
+          if (shouldStepBeWa(15)) {
             if (textMsgRef) {
               await session.sock.sendMessage(
                 mapping.wa_jid,
@@ -988,10 +1000,10 @@ export function registerTelegramRoutes(app) {
         try {
           log(
             'STEP_16',
-            `Executing Step 16/16: System Events sync (${isWaToTg ? 'WA -> TG' : 'TG -> WA'})`
+            `Executing Step 16/16: System Events sync (${shouldStepBeWa(16) ? 'WA -> TG' : 'TG -> WA'})`
           );
           const sysText = `👥 <b>[System Event Test]</b> Member Tester joined chat, promoted to admin & leave test simulated successfully.`;
-          if (isWaToTg) {
+          if (shouldStepBeWa(16)) {
             await session.sock.sendMessage(mapping.wa_jid, {
               text: sysText.replace(/<\/?b>/g, ''),
             });

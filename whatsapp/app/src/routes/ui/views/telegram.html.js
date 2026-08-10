@@ -95,40 +95,38 @@ export default () => `
         </div>
     </div>
 
-    <!-- Bridge Integration Test Card (At the bottom) -->
-    <div class="card mod-settings-card" style="margin-top: 20px; padding: 20px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
-            <div style="display:flex; align-items:center; gap:14px;">
-                <div style="font-size: 22px; color: #ff9800; background: rgba(255, 152, 0, 0.12); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink:0;">
-                    <i class="fas fa-vial"></i>
-                </div>
-                <div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <h3 style="margin: 0; font-weight: 600; font-size:16px; display:inline;" data-i18n="telegram.test_suite">Bridge Integration Test</h3>
-                        <span class="badge" style="background:rgba(255,152,0,0.15); color:#ff9800; font-size:11px; padding:2px 8px; border-radius:10px;">End-to-End Suite</span>
-                    </div>
-                    <p style="color: var(--text-muted); margin: 2px 0 0; font-size: 13px;">
-                        Run comprehensive end-to-end verification of ALL 16 message &amp; media types (text, polls, votes, location, events, photos, audio, video, docs, stickers, contacts, reactions, edits, deletions, reply chains, system events).
-                    </p>
-                </div>
+    <!-- Bridge Integration Test Card (Collapsed by default, subtle footer panel) -->
+    <div class="card mod-settings-card" style="margin-top: 24px; padding: 14px 18px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;" onclick="toggleTgTestSuiteUI()">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-vial" style="color: var(--text-muted); font-size:14px;"></i>
+                <span style="font-weight: 600; font-size: 13px; color: var(--text-main);" data-i18n="telegram.test_suite">Bridge Integration Test</span>
+                <span class="badge" style="background:var(--card-bg); color:var(--text-muted); font-size:10px; padding:1px 6px; border:1px solid var(--border-color);">Developer Tools</span>
             </div>
-            <button class="btn btn-primary" style="height:42px; padding:0 16px; font-weight:700; font-size:13px; display:flex; align-items:center; gap:6px; white-space:nowrap; flex-shrink:0; background:linear-gradient(135deg, #ff9800 0%, #f57c00 100%); border:none; box-shadow:0 4px 12px rgba(255,152,0,0.3);" id="tg-run-test-btn" onclick="runTelegramBridgeTest()">
-                <i class="fas fa-play"></i> <span data-i18n="telegram.run_test">Run Integration Test</span>
-            </button>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <button type="button" class="btn btn-secondary btn-sm" style="padding:3px 10px; font-size:11px; display:flex; align-items:center; gap:6px;" id="tg-run-test-btn" onclick="event.stopPropagation(); runTelegramBridgeTest();">
+                    <i class="fas fa-play"></i> <span data-i18n="telegram.run_test">Run Test</span>
+                </button>
+                <i class="fas fa-chevron-down" id="tg-test-suite-chevron" style="color:var(--text-muted); font-size:12px; transition:transform 0.2s;"></i>
+            </div>
         </div>
 
-        <div>
+        <div id="tg-test-suite-body" style="display:none; margin-top:14px; border-top:1px solid var(--border-color); padding-top:14px;">
+            <p style="color: var(--text-muted); margin: 0 0 12px; font-size: 12px;">
+                Run comprehensive end-to-end verification of ALL 16 message &amp; media types (text, polls, votes, location, events, photos, audio, video, docs, stickers, contacts, reactions, edits, deletions, reply chains, system events).
+            </p>
+
             <!-- Controls Row: Target Mapping + Direction -->
-            <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; margin-bottom:16px; background:rgba(255,152,0,0.06); border:1px solid rgba(255,152,0,0.25); padding:16px; border-radius:10px;">
-                <div style="flex:1; min-width:240px;">
-                    <label class="mod-field-label" style="font-weight:700; color:#ff9800;"><i class="fas fa-link"></i> <span data-i18n="telegram.test_mapping">Select Target Chat / Group Mapping to Test</span></label>
-                    <select id="tg-test-mapping-select" class="mod-select" style="width:100%; height:40px; font-weight:600;">
+            <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin-bottom:12px; background:var(--bg-app); border:1px solid var(--border-color); padding:12px; border-radius:6px;">
+                <div style="flex:1; min-width:220px;">
+                    <label class="mod-field-label" style="font-size:11px; font-weight:600;"><i class="fas fa-link"></i> <span data-i18n="telegram.test_mapping">Select Target Chat / Group Mapping to Test</span></label>
+                    <select id="tg-test-mapping-select" class="mod-select mod-select-sm" style="width:100%;">
                         <option value="">Loading active mappings...</option>
                     </select>
                 </div>
-                <div style="flex:1; min-width:220px;">
-                    <label class="mod-field-label" style="font-weight:700; color:#ff9800;"><i class="fas fa-exchange-alt"></i> <span data-i18n="telegram.test_direction">Sync Direction</span></label>
-                    <select id="tg-test-direction-select" class="mod-select" style="width:100%; height:40px; font-weight:600;">
+                <div style="flex:1; min-width:200px;">
+                    <label class="mod-field-label" style="font-size:11px; font-weight:600;"><i class="fas fa-exchange-alt"></i> <span data-i18n="telegram.test_direction">Sync Direction</span></label>
+                    <select id="tg-test-direction-select" class="mod-select mod-select-sm" style="width:100%;">
                         <option value="bidirectional" selected>Bi-directional (WhatsApp ↔ Telegram)</option>
                         <option value="wa_to_tg">Outbound Only (WhatsApp ➔ Telegram)</option>
                         <option value="tg_to_wa">Inbound Only (Telegram ➔ WhatsApp)</option>
@@ -137,47 +135,47 @@ export default () => `
             </div>
 
             <!-- Subtest Selection Matrix -->
-            <div style="margin-bottom:16px; background:var(--bg-app); border:1px solid var(--border-color); border-radius:8px; padding:14px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <label class="mod-field-label" style="margin:0; font-weight:600;"><i class="fas fa-tasks"></i> Select Subtests to Execute (Message &amp; Media Types)</label>
+            <div style="margin-bottom:12px; background:var(--bg-app); border:1px solid var(--border-color); border-radius:6px; padding:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <label class="mod-field-label" style="margin:0; font-size:11px; font-weight:600;"><i class="fas fa-tasks"></i> Select Subtests to Execute (Message &amp; Media Types)</label>
                     <div style="display:flex; gap:6px;">
-                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 10px; font-size:11px;" onclick="selectAllTgSubtests(true)" data-i18n="common.select_all">Select All</button>
-                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 10px; font-size:11px;" onclick="selectAllTgSubtests(false)" data-i18n="common.select_none">Select None</button>
+                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px;" onclick="selectAllTgSubtests(true)" data-i18n="common.select_all">Select All</button>
+                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px;" onclick="selectAllTgSubtests(false)" data-i18n="common.select_none">Select None</button>
                     </div>
                 </div>
-                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:8px; font-size:12px;">
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="text" checked> <span>💬 Text &amp; Formatting</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="poll" checked> <span>📊 Native Polls</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="poll_vote" checked> <span>🗳️ Poll Vote Sync</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="location" checked> <span>📍 Location Pins</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="event" checked> <span>📅 Event Cards</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="image" checked> <span>🖼️ Images &amp; Captions</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="voice" checked> <span>🎙️ Voice Notes (PTT)</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="video" checked> <span>🎥 Video &amp; Notes</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="document" checked> <span>📁 Documents &amp; Files</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="sticker" checked> <span>🏷️ WebP Stickers</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="contact" checked> <span>📇 Contact Cards</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="reaction" checked> <span>😀 Emoji Reactions</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="edit" checked> <span>✏️ Message Edits</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="delete" checked> <span>🗑️ Message Deletions</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="reply" checked> <span>💬 Quoted Replies</span></label>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="system_event" checked> <span>🔔 System Events</span></label>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:6px; font-size:11px;">
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="text" checked> <span>💬 Text &amp; Formatting</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="poll" checked> <span>📊 Native Polls</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="poll_vote" checked> <span>🗳️ Poll Vote Sync</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="location" checked> <span>📍 Location Pins</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="event" checked> <span>📅 Event Cards</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="image" checked> <span>🖼️ Images &amp; Captions</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="voice" checked> <span>🎙️ Voice Notes (PTT)</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="video" checked> <span>🎥 Video &amp; Notes</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="document" checked> <span>📁 Documents &amp; Files</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="sticker" checked> <span>🏷️ WebP Stickers</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="contact" checked> <span>📇 Contact Cards</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="reaction" checked> <span>😀 Emoji Reactions</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="edit" checked> <span>✏️ Message Edits</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="delete" checked> <span>🗑️ Message Deletions</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="reply" checked> <span>💬 Quoted Replies</span></label>
+                    <label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" class="tg-subtest-cb" value="system_event" checked> <span>🔔 System Events</span></label>
                 </div>
             </div>
 
             <!-- Live Log Output Panel (Terminal Console) -->
-            <div id="tg-test-results-panel" style="display:block; background:#111827; border:1px solid #374151; border-radius:10px; padding:16px; margin-top:14px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #374151; padding-bottom:8px;">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <span id="tg-test-status-badge" class="badge" style="background:#4b5563; color:#fff; font-size:12px; padding:4px 10px; border-radius:12px;" data-i18n="common.ready">READY</span>
-                        <strong id="tg-test-progress-text" style="font-size:14px; color:#e5e7eb;">Progress: Ready to execute</strong>
-                    </div>
+            <div id="tg-test-results-panel" style="display:block; background:#111827; border:1px solid #374151; border-radius:6px; padding:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #374151; padding-bottom:6px;">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:11px;" onclick="copyTgTestLogs()"><i class="fas fa-copy"></i> <span data-i18n="telegram.copy_log">Copy All</span></button>
-                        <div style="font-size:12px; color:#9ca3af;" id="tg-test-run-id"><i class="fas fa-terminal"></i> Live Bridge Test Console</div>
+                        <span id="tg-test-status-badge" class="badge" style="background:#4b5563; color:#fff; font-size:11px; padding:2px 8px; border-radius:10px;" data-i18n="common.ready">READY</span>
+                        <strong id="tg-test-progress-text" style="font-size:12px; color:#e5e7eb;">Progress: Ready to execute</strong>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px;" onclick="copyTgTestLogs()"><i class="fas fa-copy"></i> <span data-i18n="telegram.copy_log">Copy All</span></button>
+                        <div style="font-size:11px; color:#9ca3af;" id="tg-test-run-id"><i class="fas fa-terminal"></i> Live Bridge Test Console</div>
                     </div>
                 </div>
-                <pre id="tg-test-log-output" style="background:#030712; color:#38bdf8; font-family:Consolas, Monaco, monospace; font-size:12px; padding:14px; border-radius:8px; max-height:300px; overflow-y:auto; margin:0; white-space:pre-wrap; word-break:break-word; border:1px solid #1f2937; line-height:1.5;">Console Ready. Select a target chat mapping above and click "Run Integration Test" to stream live logs.</pre>
+                <pre id="tg-test-log-output" style="background:#030712; color:#38bdf8; font-family:Consolas, Monaco, monospace; font-size:11px; padding:10px; border-radius:6px; max-height:220px; overflow-y:auto; margin:0; white-space:pre-wrap; word-break:break-word; border:1px solid #1f2937; line-height:1.4;">Console Ready. Select a target chat mapping above and click "Run Test" to stream live logs.</pre>
             </div>
         </div>
     </div>
