@@ -295,12 +295,15 @@ export function registerModerationRoutes(app) {
 
   // POST /api/moderation/autotest — Autonomous auto-test execution
   app.post('/api/moderation/autotest', async (req, res) => {
-    const {
-      group_id,
-      safe_only = true,
-      delay_ms = 500,
-      selected_category = 'all',
-    } = req.body || {};
+    try {
+      const {
+        group_id,
+        target_user,
+        safe_only = true,
+        delay_ms = 500,
+        selected_category = 'all',
+        selected_subtests = [],
+      } = req.body || {};
 
     if (!group_id) {
       return res.status(400).json({ success: false, error: 'Missing group_id parameter' });
@@ -693,14 +696,30 @@ export function registerModerationRoutes(app) {
     const effectiveTargetJid = `${effectiveTargetDigits}@s.whatsapp.net`;
     const effectiveTargetMention = `@${effectiveTargetDigits}`;
 
-    // Filter suites if a specific category was requested
-    const selectedSuites =
-      selected_category === 'all'
-        ? allTestSuites
-        : allTestSuites.filter(
-            (s) =>
-              s.id === selected_category || s.category.toLowerCase().includes(selected_category)
-          );
+    const subtestMap = {
+      diagnostics: '1_diagnostic',
+      addressing: '2_addressing',
+      custom_cmds: '3_custom_commands',
+      locks: '4_content_locks',
+      blacklist: '5_filters',
+      spam_links: '6_invite_platforms',
+      warnings: '7_warnings',
+      captcha: '8_welcome_captcha',
+      antiraid: '9_antiraid_flood',
+      federation: '10_federation',
+      ai: '11_ai_intelligence',
+      bot_antispam: '12_outbound_rate_limiter',
+    };
+
+    let selectedSuites = allTestSuites;
+    if (Array.isArray(selected_subtests) && selected_subtests.length > 0) {
+      const allowedIds = selected_subtests.map((st) => subtestMap[st] || st);
+      selectedSuites = allTestSuites.filter((s) => allowedIds.includes(s.id));
+    } else if (selected_category && selected_category !== 'all') {
+      selectedSuites = allTestSuites.filter(
+        (s) => s.id === selected_category || s.category.toLowerCase().includes(selected_category)
+      );
+    }
 
     let totalSteps = 0;
     for (const s of selectedSuites) totalSteps += s.tests.length;
@@ -1210,5 +1229,14 @@ export function registerModerationRoutes(app) {
     });
 
     res.end();
+    } catch (err) {
+      logger.error({ error: err.message, stack: err.stack }, 'Error in /api/moderation/autotest');
+      if (!res.headersSent) {
+        res.status(500).json({ success: false, error: err.message });
+      } else {
+        res.write(JSON.stringify({ type: 'log', level: 'error', message: `❌ Server Error: ${err.message}` }) + '\n');
+        res.end();
+      }
+    }
   });
 }
