@@ -72,14 +72,19 @@ export async function getLatestReleases(
       );
       if (single) intReleaseList = [single];
     }
-    let intRelease = Array.isArray(intReleaseList) ? intReleaseList[0] : null;
     const targetIntVer = currentIntVer || cache.data.integrationVersion;
-    if (Array.isArray(intReleaseList) && targetIntVer) {
-      const exactMatch = intReleaseList.find(
-        (r) => r.tag_name && r.tag_name.replace(/^v/, '') === targetIntVer
-      );
-      if (exactMatch) intRelease = exactMatch;
+    let intRelease = null;
+    if (Array.isArray(intReleaseList) && intReleaseList.length > 0) {
+      if (targetIntVer) {
+        intRelease = intReleaseList.find(
+          (r) => r.tag_name && r.tag_name.replace(/^v/, '') === targetIntVer
+        );
+      }
+      if (!intRelease) {
+        intRelease = intReleaseList[0];
+      }
     }
+
     if (intRelease && intRelease.tag_name) {
       cache.data.latestIntegrationVersion = intRelease.tag_name.replace(/^v/, '');
       cache.data.integrationChangelog = intRelease.body || 'No release notes available.';
@@ -87,32 +92,23 @@ export async function getLatestReleases(
         intRelease.html_url || 'https://github.com/FaserF/ha-whatsapp/releases';
     }
 
-    // 2. Fetch Addon releases (FaserF/hassio-addons)
-    let addonReleaseList = await fetchJson(
-      'https://api.github.com/repos/FaserF/hassio-addons/releases'
-    );
-    if (!Array.isArray(addonReleaseList)) {
-      const single = await fetchJson(
-        'https://api.github.com/repos/FaserF/hassio-addons/releases/latest'
-      );
-      if (single) addonReleaseList = [single];
+    // 2. Fetch Addon release notes from local CHANGELOG.md (FaserF/hassio-addons does not use GitHub releases)
+    cache.data.addonReleaseUrl = 'https://github.com/FaserF/hassio-addons/blob/master/whatsapp/CHANGELOG.md';
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const changelogPath = path.join(process.cwd(), 'CHANGELOG.md');
+      if (fs.existsSync(changelogPath)) {
+        const content = fs.readFileSync(changelogPath, 'utf-8');
+        if (content && content.trim().length > 0) {
+          cache.data.addonChangelog = content.slice(0, 4000);
+        }
+      }
+    } catch (e) {
+      // ignore file read error
     }
-    let addonRelease = Array.isArray(addonReleaseList) ? addonReleaseList[0] : null;
-    const targetAddonVer = currentAddonVer || cache.data.addonVersion;
-    if (Array.isArray(addonReleaseList) && targetAddonVer) {
-      const exactMatch = addonReleaseList.find(
-        (r) =>
-          r.tag_name && r.tag_name.replace(/^v/, '').replace(/^whatsapp-/, '') === targetAddonVer
-      );
-      if (exactMatch) addonRelease = exactMatch;
-    }
-    if (addonRelease && addonRelease.tag_name) {
-      cache.data.latestAddonVersion = addonRelease.tag_name
-        .replace(/^v/, '')
-        .replace(/^whatsapp-/, '');
-      cache.data.addonChangelog = addonRelease.body || 'No release notes available.';
-      cache.data.addonReleaseUrl =
-        addonRelease.html_url || 'https://github.com/FaserF/hassio-addons/releases';
+    if (!cache.data.addonChangelog) {
+      cache.data.addonChangelog = 'No release notes available.';
     }
 
     cache.lastFetch = now;

@@ -188,7 +188,8 @@
     "bundled_dep_mgmt_desc": "{depName} ist im WhatsApp Addon-Container gebündelt und wird mit jedem Addon-Release aktualisiert.",
     "update_addon_now": "Addon jetzt aktualisieren",
     "report_issue": "Schwachstelle / Problem melden",
-    "dep_info_title": "{depName} Abhängigkeits-Info"
+    "dep_info_title": "{depName} Abhängigkeits-Info",
+    "view_repo": "Repository anzeigen"
   },
   "logs": {
     "title": "Verbindungsereignisse",

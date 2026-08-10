@@ -174,7 +174,8 @@
     "bundled_dep_mgmt_desc": "{depName} is bundled inside the WhatsApp Addon container and is updated with each Addon release.",
     "update_addon_now": "Update Addon Now",
     "report_issue": "Report Vulnerability / Issue",
-    "dep_info_title": "{depName} Dependency Info"
+    "dep_info_title": "{depName} Dependency Info",
+    "view_repo": "View Repository"
   },
   "logs": {
     "title": "Connection Events",
