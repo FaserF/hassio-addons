@@ -1,4 +1,4 @@
-import { authMiddleware, anyAuthMiddleware } from '../../middleware.js';
+import { authMiddleware, anyAuthMiddleware, apiLimiter } from '../../middleware.js';
 import { getReqSession } from '../../session.js';
 import { getJid } from '../../utils/jid.js';
 import { ensureConnected, asyncHandler } from './helpers.js';
@@ -247,6 +247,7 @@ export function registerGroupRoutes(app) {
 
   app.post(
     '/groups/subject',
+    apiLimiter,
     anyAuthMiddleware,
     asyncHandler(async (req, res) => {
       try {
@@ -269,6 +270,7 @@ export function registerGroupRoutes(app) {
 
   app.post(
     '/groups/picture',
+    apiLimiter,
     anyAuthMiddleware,
     asyncHandler(async (req, res) => {
       try {

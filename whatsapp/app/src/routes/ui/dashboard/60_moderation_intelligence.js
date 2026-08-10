@@ -1,5 +1,4 @@
 // Moderation Intelligence (AI Auto-Reply, Sentiment, System Prompt, Filters)
-const t = (key, params) => (window.t ? window.t(key, params) : key);
 
 async function addFilterRule() {
   const trig = document.getElementById('mod-filter-trigger')?.value.trim();

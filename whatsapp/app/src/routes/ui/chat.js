@@ -1410,7 +1410,7 @@ async function openChatInfoDrawer() {
 
     const avatarSrc = info.avatarUrl || avatarCache[activeChatJid];
     const avatarHtml = avatarSrc
-      ? `<img src="${avatarSrc}" class="drawer-avatar-img">`
+      ? `<img src="${escapeAttr(avatarSrc)}" class="drawer-avatar-img">`
       : `<div class="drawer-avatar-fallback"><i class="fas ${info.isGroup ? 'fa-users' : 'fa-user'}"></i></div>`;
 
     // Check active states for Telegram & Moderation buttons
@@ -1448,13 +1448,13 @@ async function openChatInfoDrawer() {
     }
 
     const tgActionBtn = activeMapping
-      ? `<button class="btn btn-secondary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;color:#0088cc;border-color:rgba(0,136,204,0.3);" onclick="navigateToTelegramMapping(event, '${activeChatJid}', '${activeMapping.id}')"><i class="fab fa-telegram-plane"></i> Manage Telegram Bridge</button>`
-      : `<button class="btn btn-primary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="navigateToTelegramMapping(event, '${activeChatJid}', null)"><i class="fab fa-telegram-plane"></i> Setup Telegram Bridge</button>`;
+      ? `<button class="btn btn-secondary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;color:#0088cc;border-color:rgba(0,136,204,0.3);" onclick="navigateToTelegramMapping(event, '${escapeAttr(activeChatJid)}', '${escapeAttr(activeMapping.id)}')"><i class="fab fa-telegram-plane"></i> Manage Telegram Bridge</button>`
+      : `<button class="btn btn-primary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="navigateToTelegramMapping(event, '${escapeAttr(activeChatJid)}', null)"><i class="fab fa-telegram-plane"></i> Setup Telegram Bridge</button>`;
 
     const modActionBtn = info.isGroup
       ? hasModActive
-        ? `<button class="btn btn-secondary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--primary);border-color:rgba(37,211,102,0.3);" onclick="navigateToModerationGroup(event, '${activeChatJid}')"><i class="fas fa-shield-alt"></i> Manage Moderation Features</button>`
-        : `<button class="btn btn-primary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="navigateToModerationGroup(event, '${activeChatJid}')"><i class="fas fa-shield-alt"></i> Setup Moderation Features</button>`
+        ? `<button class="btn btn-secondary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--primary);border-color:rgba(37,211,102,0.3);" onclick="navigateToModerationGroup(event, '${escapeAttr(activeChatJid)}')"><i class="fas fa-shield-alt"></i> Manage Moderation Features</button>`
+        : `<button class="btn btn-primary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="navigateToModerationGroup(event, '${escapeAttr(activeChatJid)}')"><i class="fas fa-shield-alt"></i> Setup Moderation Features</button>`
       : '';
 
     const actionButtonsHtml = `
@@ -1523,7 +1523,7 @@ async function openChatInfoDrawer() {
 
         <div class="drawer-section">
           <label class="drawer-label">Created</label>
-          <div class="drawer-value">${createdDate}</div>
+          <div class="drawer-value">${escapeHtml(createdDate)}</div>
         </div>
 
         ${actionButtonsHtml}
@@ -1537,7 +1537,7 @@ async function openChatInfoDrawer() {
       body.innerHTML = `
         <div class="drawer-profile">
           <div class="drawer-avatar-wrapper">${avatarHtml}</div>
-          <h3 class="drawer-title">${escapeHtml(info.name)}</h3>
+          <h3 class="drawer-title">${escapeHtml(info.name || '')}</h3>
           <p class="drawer-subtitle" style="font-family:monospace;font-size:12px;user-select:all;">${escapeHtml(info.jid)}</p>
         </div>
 

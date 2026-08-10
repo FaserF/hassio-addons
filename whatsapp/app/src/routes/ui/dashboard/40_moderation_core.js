@@ -3,7 +3,6 @@
 let modStoreCache = null;
 let currentModGroup = '';
 let builtinCommandsCache = [];
-const t = (key, params) => (window.t ? window.t(key, params) : key);
 
 // ── Dirty / Unsaved-Changes Tracking ─────────────────────────────────────────
 const _dirty = {
