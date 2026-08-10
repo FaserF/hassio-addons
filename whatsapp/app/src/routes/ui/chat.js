@@ -743,10 +743,10 @@ function renderMediaBlock(m) {
     return `<img class="msg-media msg-media-img" src="${url}" alt="${escapeHtml(m.caption || 'Image')}" onclick="window.open('${url}','_blank')" onerror="this.onerror=null;this.outerHTML='<div class=\\'msg-media-badge\\'><i class=\\'fas fa-image\\' style=\\'color:var(--primary);\\'></i> ${fallbackText}</div>';" loading="lazy">`;
   }
   if (m.mediaType === 'video' || (m.mediaMime && m.mediaMime.startsWith('video/'))) {
-    return `<video class="msg-media msg-media-video" controls onerror="this.onerror=null;this.outerHTML='<div class=\\'msg-media-badge\\'><i class=\\'fas fa-video\\' style=\\'color:var(--primary);\\'></i> Video (Expired / Unavailable)</div>';"><source src="${url}" type="${escapeHtml(m.mediaMime || 'video/mp4')}"></video>`;
+    return `<video class="msg-media msg-media-video" controls preload="none" onerror="this.onerror=null;this.outerHTML='<div class=\\'msg-media-badge\\'><i class=\\'fas fa-video\\' style=\\'color:var(--primary);\\'></i> Video (Expired / Unavailable)</div>';"><source src="${url}" type="${escapeHtml(m.mediaMime || 'video/mp4')}"></video>`;
   }
   if (m.mediaType === 'audio' || (m.mediaMime && m.mediaMime.startsWith('audio/'))) {
-    return `<audio class="msg-media msg-media-audio" controls onerror="this.onerror=null;this.outerHTML='<div class=\\'msg-media-badge\\'><i class=\\'fas fa-music\\' style=\\'color:var(--primary);\\'></i> Voice Message (Expired / Unavailable)</div>';"><source src="${url}" type="${escapeHtml(m.mediaMime || 'audio/ogg')}"></audio>`;
+    return `<audio class="msg-media msg-media-audio" controls preload="none" onerror="this.onerror=null;this.outerHTML='<div class=\\'msg-media-badge\\'><i class=\\'fas fa-music\\' style=\\'color:var(--primary);\\'></i> Voice Message (Expired / Unavailable)</div>';"><source src="${url}" type="${escapeHtml(m.mediaMime || 'audio/ogg')}"></audio>`;
   }
   const icon = m.mediaType === 'sticker' ? 'fa-sticky-note' : 'fa-file-alt';
   const fname = url.split('/').pop();

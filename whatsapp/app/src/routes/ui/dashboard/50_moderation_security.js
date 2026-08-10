@@ -142,9 +142,44 @@ async function generateGroupTestCommandsModal() {
   const disabledCmds = new Set(config.commands?.disabled_commands || []);
   const activeCmds = commandsList.filter((c) => !disabledCmds.has(c.cmd));
 
+  // Fetch real group participants to populate member selection picker (excluding bot)
+  let participants = [];
+  try {
+    const chatInfoRes = await fetch(
+      (typeof basePath !== 'undefined' ? basePath : '') +
+        'api/chat_info?session_id=' +
+        encodeURIComponent(typeof currentSession !== 'undefined' ? currentSession : 'default') +
+        '&jid=' +
+        encodeURIComponent(currentModGroup)
+    );
+    if (chatInfoRes.ok) {
+      const chatInfo = await chatInfoRes.json();
+      const botJidRaw = chatInfo.botJidRaw || '';
+      const cleanBotId = botJidRaw ? botJidRaw.split('@')[0].split(':')[0] : '';
+      const allParts = chatInfo.participants || [];
+      participants = allParts.filter((p) => {
+        const cleanPId = p.id.split('@')[0].split(':')[0];
+        return cleanPId !== cleanBotId;
+      });
+    }
+  } catch (_e) {
+    /* fallback to empty */
+  }
+
+  const memberOptionsHtml = participants
+    .map((p) => {
+      const userNum = p.id.split('@')[0].split(':')[0];
+      const displayName = p.name && p.name !== userNum ? `${p.name} (@${userNum})` : `@${userNum}`;
+      const val = `@${userNum}`;
+      const isSelected =
+        testTargetUser === val || testTargetUser === userNum || testTargetUser === `@${userNum}`;
+      return `<option value="${escapeHtml(val)}" ${isSelected ? 'selected' : ''}>${escapeHtml(displayName)} ${p.admin ? '(Admin)' : ''}</option>`;
+    })
+    .join('');
+
   let html = `<div style="font-size:12px;display:flex;flex-direction:column;gap:12px;">`;
 
-  // 1. Group Info Banner, Prefill Target Input & Send-to-Group button
+  // 1. Group Info Banner, Member Target Picker, Interactive Test Controls & Send-to-Group button
   html += `
     <div style="padding:10px;background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.3);border-radius:6px;display:flex;flex-direction:column;gap:8px;">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
@@ -157,10 +192,41 @@ async function generateGroupTestCommandsModal() {
           <i class="fas fa-paper-plane"></i> Send to Group
         </button>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;background:var(--card-bg);padding:6px 10px;border-radius:4px;border:1px solid var(--border-color);">
-        <label style="font-weight:600;white-space:nowrap;color:var(--text-main);"><i class="fas fa-user-tag" style="color:var(--primary);"></i> Prefill User / Phone:</label>
-        <input type="text" id="test-target-user-input" class="mod-input" style="flex:1;padding:4px 8px;font-size:12px;" placeholder="e.g. @john, @491761234567 or 491761234567" value="${escapeHtml(testTargetUser)}" oninput="updateTestCommandsPrefill(this.value)">
+
+      <div style="display:flex;align-items:center;gap:8px;background:var(--card-bg);padding:8px 10px;border-radius:6px;border:1px solid var(--border-color);flex-wrap:wrap;">
+        <label style="font-weight:600;white-space:nowrap;color:var(--text-main);font-size:12px;"><i class="fas fa-user-check" style="color:var(--primary);"></i> Target Group Member:</label>
+        <select id="test-member-dropdown" class="mod-select mod-select-sm" style="flex:1;min-width:180px;background:var(--bg-input);padding:5px 8px;border-radius:6px;border:1px solid var(--border-color);font-size:12px;" onchange="selectTestMemberFromPicker(this.value)">
+          <option value="">Custom / Manual Input...</option>
+          ${memberOptionsHtml}
+        </select>
+        <input type="text" id="test-target-user-input" class="mod-input" style="width:140px;padding:5px 8px;font-size:12px;" placeholder="@491761234567" value="${escapeHtml(testTargetUser)}" oninput="updateTestCommandsPrefill(this.value)">
       </div>
+
+      ${
+        testTargetUser
+          ? `
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:var(--card-bg);padding:6px 10px;border-radius:6px;border:1px solid var(--border-color);margin-top:2px;">
+        <div style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px;">
+          <i class="fas fa-vial" style="color:var(--primary);"></i> Test Actions for <strong>${escapeHtml(testTargetUser)}</strong>:
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:11px;color:#f59e0b;" onclick="testActionWarnUser('${escapeHtml(testTargetUser)}')" title="Issue test warning to user">
+            <i class="fas fa-exclamation-triangle"></i> Warn
+          </button>
+          <button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:11px;color:#ef4444;" onclick="testActionKickUser('${escapeHtml(testTargetUser)}')" title="Kick test member from group">
+            <i class="fas fa-user-minus"></i> Kick
+          </button>
+          <button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:11px;color:#10b981;" onclick="testActionAddUser('${escapeHtml(testTargetUser)}')" title="Re-add test member back to group">
+            <i class="fas fa-user-plus"></i> Re-Add
+          </button>
+          <button class="btn btn-primary btn-sm" style="padding:3px 10px;font-size:11px;background:#8b5cf6;border-color:#8b5cf6;" onclick="testActionRevertState('${escapeHtml(testTargetUser)}')" title="Revert warnings, unban, and restore member to group">
+            <i class="fas fa-undo"></i> Revert &amp; Restore
+          </button>
+        </div>
+      </div>
+      `
+          : ''
+      }
     </div>`;
 
   const userPlaceholder = testTargetUser
@@ -298,6 +364,13 @@ async function generateGroupTestCommandsModal() {
   modal.classList.add('show');
 }
 
+function selectTestMemberFromPicker(val) {
+  testTargetUser = val ? val.trim() : '';
+  const inp = document.getElementById('test-target-user-input');
+  if (inp) inp.value = testTargetUser;
+  generateGroupTestCommandsModal();
+}
+
 function updateTestCommandsPrefill(val) {
   testTargetUser = val ? val.trim() : '';
   generateGroupTestCommandsModal();
@@ -306,6 +379,101 @@ function updateTestCommandsPrefill(val) {
     inp.focus();
     inp.setSelectionRange(inp.value.length, inp.value.length);
   }
+}
+
+async function testActionWarnUser(userJid) {
+  if (!currentModGroup || !userJid)
+    return showToast(t('moderation.select_group_warning'), 'warning');
+  const cleanUser = userJid.replace(/^@/, '').replace(/\D/g, '') || userJid.replace(/^@/, '');
+  const config = modStoreCache?.groups?.[currentModGroup] || {};
+  config.user_warns = config.user_warns || {};
+  config.user_warns[cleanUser] = config.user_warns[cleanUser] || [];
+  config.user_warns[cleanUser].push({ reason: 'Manual UI Test Warning', timestamp: Date.now() });
+  await saveGroupConfig(config);
+  selectModerationGroup(currentModGroup);
+  showToast(`Issued test warning to @${cleanUser}`, 'success');
+  generateGroupTestCommandsModal();
+}
+
+async function testActionKickUser(userJid) {
+  if (!currentModGroup || !userJid)
+    return showToast(t('moderation.select_group_warning'), 'warning');
+  const cleanJid = userJid.replace(/^@/, '');
+  try {
+    const res = await fetch(
+      (typeof basePath !== 'undefined' ? basePath : '') + 'api/group/participants/remove',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: typeof currentSession !== 'undefined' ? currentSession : 'default',
+          groupJid: currentModGroup,
+          participantJid: cleanJid,
+        }),
+      }
+    );
+    const data = await res.json();
+    if (data.success) {
+      showToast(`Kicked test user @${cleanJid} from group`, 'success');
+    } else {
+      showToast(`Kick failed: ${data.detail || 'Check bot admin permissions'}`, 'error');
+    }
+  } catch (err) {
+    showToast(`Error: ${err.message}`, 'error');
+  }
+}
+
+async function testActionAddUser(userJid) {
+  if (!currentModGroup || !userJid)
+    return showToast(t('moderation.select_group_warning'), 'warning');
+  const cleanJid = userJid.replace(/^@/, '');
+  try {
+    const res = await fetch(
+      (typeof basePath !== 'undefined' ? basePath : '') + 'api/group/participants/add',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: typeof currentSession !== 'undefined' ? currentSession : 'default',
+          groupJid: currentModGroup,
+          participantJid: cleanJid,
+        }),
+      }
+    );
+    const data = await res.json();
+    if (data.success) {
+      showToast(`Re-added test user @${cleanJid} to group`, 'success');
+    } else {
+      showToast(`Re-add failed: ${data.detail || 'Check bot admin permissions'}`, 'error');
+    }
+  } catch (err) {
+    showToast(`Error: ${err.message}`, 'error');
+  }
+}
+
+async function testActionRevertState(userJid) {
+  if (!currentModGroup || !userJid)
+    return showToast(t('moderation.select_group_warning'), 'warning');
+  const cleanUser = userJid.replace(/^@/, '').replace(/\D/g, '') || userJid.replace(/^@/, '');
+
+  // 1. Clear Warnings
+  if (typeof clearUserWarnInUi === 'function') {
+    clearUserWarnInUi(cleanUser);
+  }
+
+  // 2. Unban if Banned
+  if (typeof unbanUserInUi === 'function') {
+    unbanUserInUi(cleanUser);
+  }
+
+  // 3. Ensure user is in group (Attempt Re-add)
+  await testActionAddUser(userJid);
+
+  showToast(
+    `✅ Test state reverted for @${cleanUser}. All warnings cleared and user restored.`,
+    'success'
+  );
+  generateGroupTestCommandsModal();
 }
 
 function copyAllFromBlock(btnBtn) {

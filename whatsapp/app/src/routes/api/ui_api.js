@@ -428,6 +428,44 @@ export function registerUiApiRoutes(app) {
     }
   });
 
+  app.post('/api/group/participants/add', uiAuthMiddleware, async (req, res) => {
+    try {
+      const sessionId = sanitizeSessionId(req.body.session_id || 'default');
+      const session = getSession(sessionId);
+      if (!session || !session.sock || !session.isConnected) {
+        return res.status(400).json({ detail: 'WhatsApp session not connected' });
+      }
+      const { groupJid, participantJid } = req.body;
+      if (!groupJid || !participantJid) {
+        return res.status(400).json({ detail: 'Missing groupJid or participantJid' });
+      }
+      const cleanParticipant = participantJid.includes('@') ? participantJid : participantJid + '@s.whatsapp.net';
+      const result = await session.sock.groupParticipantsUpdate(groupJid, [cleanParticipant], 'add');
+      res.json({ success: true, result });
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
+  });
+
+  app.post('/api/group/participants/remove', uiAuthMiddleware, async (req, res) => {
+    try {
+      const sessionId = sanitizeSessionId(req.body.session_id || 'default');
+      const session = getSession(sessionId);
+      if (!session || !session.sock || !session.isConnected) {
+        return res.status(400).json({ detail: 'WhatsApp session not connected' });
+      }
+      const { groupJid, participantJid } = req.body;
+      if (!groupJid || !participantJid) {
+        return res.status(400).json({ detail: 'Missing groupJid or participantJid' });
+      }
+      const cleanParticipant = participantJid.includes('@') ? participantJid : participantJid + '@s.whatsapp.net';
+      const result = await session.sock.groupParticipantsUpdate(groupJid, [cleanParticipant], 'remove');
+      res.json({ success: true, result });
+    } catch (err) {
+      res.status(500).json({ detail: err.message });
+    }
+  });
+
   app.post('/api/poll/vote', uiAuthMiddleware, async (req, res) => {
     try {
       const sessionId = sanitizeSessionId(req.body.session_id || 'default');
