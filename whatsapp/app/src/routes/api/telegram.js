@@ -644,30 +644,19 @@ export function registerTelegramRoutes(app) {
             });
             log('STEP_6', 'Sent WhatsApp Image with Photo Caption', 'success');
           } else {
-            try {
-              await bot.sendPhoto(
-                mapping.tg_chat_id,
-                imgUrl,
-                '🧪 [Bridge Test 6/16] Sample Image with Photo Caption',
-                null,
-                mapping.tg_thread_id || null
-              );
-            } catch (_pErr) {
-              // 1x1 transparent PNG fallback buffer if external URL fails
-              const transparentPng = Buffer.from(
-                'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-                'base64'
-              );
-              await bot.sendMediaFile(
-                'sendPhoto',
-                mapping.tg_chat_id,
-                transparentPng,
-                'photo',
-                '🧪 [Bridge Test 6/16] Sample Image with Photo Caption',
-                null,
-                mapping.tg_thread_id || null
-              );
-            }
+            const samplePngBuffer = Buffer.from(
+              'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+              'base64'
+            );
+            await bot.sendMediaFile(
+              'sendPhoto',
+              mapping.tg_chat_id,
+              samplePngBuffer,
+              'photo',
+              '🧪 [Bridge Test 6/16] Sample Image with Photo Caption',
+              null,
+              mapping.tg_thread_id || null
+            );
             log('STEP_6', 'Sent Telegram Image with Photo Caption', 'success');
           }
           testRun.passedSteps++;
@@ -1066,7 +1055,7 @@ export function registerTelegramRoutes(app) {
 
         const summaryText =
           `🏁 <b>[Telegram Bridge 16-Type E2E Integration Test Complete]</b>\n` +
-          `• Result: ${testRun.status === 'passed' ? '✅ ALL 16 STEPS PASSED' : '⚠️ PARTIAL / FAILED'}\n` +
+          `• Result: ${testRun.status === 'passed' ? `✅ ALL ${testRun.totalSteps} STEPS PASSED` : '⚠️ PARTIAL / FAILED'}\n` +
           `• Passed Steps: ${testRun.passedSteps}/${testRun.totalSteps}\n` +
           `• Direction: ${directionText}\n` +
           `• Mapping: ${safeMappingName}\n` +

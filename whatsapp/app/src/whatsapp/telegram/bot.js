@@ -200,7 +200,7 @@ export class TelegramBotClient {
     threadId = null,
     disableNotification = false
   ) {
-    if (typeof filePathOrUrl === 'string' && fs.existsSync(filePathOrUrl)) {
+    if (Buffer.isBuffer(filePathOrUrl) || (typeof filePathOrUrl === 'string' && fs.existsSync(filePathOrUrl))) {
       const formData = new FormData();
       formData.append('chat_id', chatId);
       if (caption) {
@@ -211,9 +211,18 @@ export class TelegramBotClient {
       if (threadId) formData.append('message_thread_id', String(threadId));
       if (disableNotification) formData.append('disable_notification', 'true');
 
-      const fileBuffer = fs.readFileSync(filePathOrUrl);
-      const filename = path.basename(filePathOrUrl);
-      const blob = new Blob([fileBuffer]);
+      let blob;
+      let filename = 'file.bin';
+      if (Buffer.isBuffer(filePathOrUrl)) {
+        blob = new Blob([filePathOrUrl]);
+        if (mediaField === 'photo') filename = 'photo.png';
+        else if (mediaField === 'sticker') filename = 'sticker.webp';
+        else if (mediaField === 'voice') filename = 'voice.ogg';
+      } else {
+        const fileBuffer = fs.readFileSync(filePathOrUrl);
+        filename = path.basename(filePathOrUrl);
+        blob = new Blob([fileBuffer]);
+      }
       formData.append(mediaField, blob, filename);
 
       const sanitizedMethod = ALLOWED_METHODS.get(method);

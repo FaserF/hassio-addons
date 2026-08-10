@@ -471,6 +471,7 @@ try {
   console.log('✅ PASSED: Participant leave event correctly processed for goodbye message');
 
   // Test 8: Warning normalization and self-warn prevention
+  clearUserWarnings('1203630123456789@g.us', '491761234567');
   await issueUserWarning(mockSession, '1203630123456789@g.us', '+491761234567', 'Warn with plus');
   await issueUserWarning(mockSession, '1203630123456789@g.us', '491761234567', 'Warn without plus');
   const normConfig = getGroupModerationConfig('1203630123456789@g.us');

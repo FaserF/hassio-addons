@@ -10,6 +10,13 @@ import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
 import { processAiModeration } from './ai.js';
 import { isSameUser, normalizeJid, resolveUserDisplayName } from '../../utils/security.js';
+import { t } from '../../locales/loader.js';
+
+/** Translate a bot-reply key using group config language (fallback: 'en') */
+function gt(config, key, params = {}) {
+  const lang = config?.language || 'en';
+  return t(lang, key, params);
+}
 
 class CommandRegistry {
   constructor() {
@@ -1553,15 +1560,18 @@ registry.register(
     const isVerified = isUserVerified(groupId, targetJid, session, rawMsg);
 
     const displayName = resolveUserDisplayName(targetJid, session, c.greetings);
-    let infoText = `📋 *User Info: ${displayName}*\n\n`;
-    infoText += `🆔 ID: \`${targetId}\`\n`;
-    infoText += `⚠️ Warnings: ${warns.length}/${maxWarns}\n`;
-    infoText += `🤖 Captcha Verified: ${isVerified ? 'Yes' : 'No'}\n`;
-    infoText += `✅ Approved (Whitelist): ${isApproved ? 'Yes' : 'No'}\n`;
-    infoText += `🔇 Muted: ${isMuted ? 'Yes' : 'No'}\n`;
+    const yesStr = gt(config, 'bot_replies.yes');
+    const noStr = gt(config, 'bot_replies.no');
+
+    let infoText = `${gt(config, 'bot_replies.user_info', { name: displayName })}\n\n`;
+    infoText += `${gt(config, 'bot_replies.user_id', { id: targetId })}\n`;
+    infoText += `${gt(config, 'bot_replies.warnings', { count: warns.length, max: maxWarns })}\n`;
+    infoText += `${gt(config, 'bot_replies.captcha_verified', { status: isVerified ? yesStr : noStr })}\n`;
+    infoText += `${gt(config, 'bot_replies.approved_whitelist', { status: isApproved ? yesStr : noStr })}\n`;
+    infoText += `${gt(config, 'bot_replies.info_muted', { status: isMuted ? yesStr : noStr })}\n`;
 
     if (warns.length > 0) {
-      infoText += `\n*Warning History:*\n`;
+      infoText += `\n${gt(config, 'bot_replies.warning_history')}\n`;
       warns.forEach((w, i) => {
         infoText += `${i + 1}. ${w.reason} (${new Date(w.timestamp).toLocaleString()})\n`;
       });

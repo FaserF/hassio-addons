@@ -243,6 +243,85 @@ async function runI18nTests() {
     'bot_replies.faq_hint',
     'bot_replies.warning_max_reached',
     'bot_replies.welcome_group_info',
+    'bot_replies.user_info',
+    'bot_replies.user_id',
+    'bot_replies.warnings',
+    'bot_replies.captcha_verified',
+    'bot_replies.approved_whitelist',
+    'bot_replies.info_muted',
+    'bot_replies.warning_history',
+    'bot_replies.yes',
+    'bot_replies.no',
+    'bot_replies.rules_updated',
+    'bot_replies.welcome_updated',
+    'bot_replies.goodbye_updated',
+    'bot_replies.usage_setrules',
+    'bot_replies.usage_setwelcome',
+    'bot_replies.usage_setgoodbye',
+    'bot_replies.promoted_users',
+    'bot_replies.demoted_users',
+    'bot_replies.cannot_promote_self',
+    'bot_replies.cannot_demote_self',
+    'bot_replies.cannot_action_bot',
+    'bot_replies.promote_mention_required',
+    'bot_replies.demote_mention_required',
+    'bot_replies.promote_failed',
+    'bot_replies.demote_failed',
+    'bot_replies.cannot_report_self',
+    'bot_replies.cannot_report_bot',
+    'bot_replies.report_notice',
+    'bot_replies.report_dm',
+    'bot_replies.approve_mention_required',
+    'bot_replies.approved_users',
+    'bot_replies.unapprove_mention_required',
+    'bot_replies.unapproved_users',
+    'bot_replies.current_welcome',
+    'bot_replies.current_goodbye',
+    'bot_replies.usage_save',
+    'bot_replies.note_saved',
+    'bot_replies.usage_get',
+    'bot_replies.note_not_found',
+    'bot_replies.no_notes',
+    'bot_replies.notes_list',
+    'bot_replies.usage_filter',
+    'bot_replies.filter_text_required',
+    'bot_replies.filter_added',
+    'bot_replies.usage_stop',
+    'bot_replies.filter_stopped',
+    'bot_replies.filter_not_found',
+    'bot_replies.no_filters',
+    'bot_replies.filters_list',
+    'bot_replies.pong',
+    'bot_replies.id_info',
+    'bot_replies.no_rules_configured',
+    'bot_replies.warn_mention_required',
+    'bot_replies.cannot_warn_self',
+    'bot_replies.cannot_warn_admin',
+    'bot_replies.unwarn_mention_required',
+    'bot_replies.warnings_cleared',
+    'bot_replies.user_no_warnings',
+    'bot_replies.warns_mention_required',
+    'bot_replies.user_warnings_list',
+    'bot_replies.user_zero_warnings',
+    'bot_replies.kick_mention_required',
+    'bot_replies.cannot_kick_self',
+    'bot_replies.cannot_kick_bot',
+    'bot_replies.ban_mention_required',
+    'bot_replies.cannot_ban_self',
+    'bot_replies.cannot_ban_bot',
+    'bot_replies.unban_mention_required',
+    'bot_replies.unbanned_user',
+    'bot_replies.user_not_banned',
+    'bot_replies.unkick_mention_required',
+    'bot_replies.kick_log_cleared',
+    'bot_replies.usage_lock',
+    'bot_replies.type_locked',
+    'bot_replies.unknown_lock_type',
+    'bot_replies.usage_unlock',
+    'bot_replies.type_unlocked',
+    'bot_replies.no_locks',
+    'bot_replies.all_locks_disabled',
+    'bot_replies.active_locks',
   ];
   const enKeysForBotReplies = new Set(getAllKeys(enDict));
   const missingBotReplyKeys = BOT_REPLY_REQUIRED_KEYS.filter((k) => !enKeysForBotReplies.has(k));
@@ -302,6 +381,20 @@ async function runI18nTests() {
       hardcodedInReplies.length === 0,
       `engine.js: no hardcoded English bot-reply phrases found (found: ${hardcodedInReplies.length > 0 ? hardcodedInReplies.join(', ') : 'none'})`
     );
+  }
+
+  // Test 12: commands.js bot reply localization — ensures t() and gt() helpers are used
+  const commandsPath = path.resolve(__dirname, '../src/whatsapp/moderation/commands.js');
+  if (fs.existsSync(commandsPath)) {
+    const commandsContent = fs.readFileSync(commandsPath, 'utf8');
+    const importsT = /import\s*\{[^}]*\bt\b[^}]*\}\s*from\s*['"].*locales\/loader\.js['"]/.test(
+      commandsContent
+    );
+    assertTest(importsT, 'commands.js: imports t() from locales/loader.js for command response translation');
+    const definesGt = /function gt\s*\(/.test(commandsContent);
+    assertTest(definesGt, 'commands.js: defines gt(config, key, params) translation helper');
+    const usesGtForInfo = /bot_replies\.user_info/.test(commandsContent) && /bot_replies\.user_id/.test(commandsContent);
+    assertTest(usesGtForInfo, 'commands.js: uses gt() and bot_replies keys for !info command');
   }
 
   if (failed > 0) {
