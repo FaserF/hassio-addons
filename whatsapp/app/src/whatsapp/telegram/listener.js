@@ -111,9 +111,7 @@ export async function syncWhatsAppDeleteToTelegram(waMsgId, waJid) {
   if (!mapped || !mapped.tgMsgId || !mapped.tgChatId) return;
 
   const mappings = (store.mappings || []).filter(
-    (m) =>
-      m.enabled &&
-      (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound')
+    (m) => m.enabled && (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound')
   );
 
   const targetMappings = mappings.filter(
@@ -122,7 +120,12 @@ export async function syncWhatsAppDeleteToTelegram(waMsgId, waJid) {
       String(m.tg_chat_id) === String(mapped.tgChatId)
   );
 
-  const listToProcess = targetMappings.length > 0 ? targetMappings : (store.mappings || []).filter((m) => m.enabled && String(m.tg_chat_id) === String(mapped.tgChatId));
+  const listToProcess =
+    targetMappings.length > 0
+      ? targetMappings
+      : (store.mappings || []).filter(
+          (m) => m.enabled && String(m.tg_chat_id) === String(mapped.tgChatId)
+        );
 
   for (const mapping of listToProcess) {
     if (mapping.sync_deletes === false) continue;
