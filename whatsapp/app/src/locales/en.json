@@ -260,6 +260,13 @@
     "active_groups": "Configured Groups",
     "select_group": "Select a Group to Configure",
     "global_toggle_tooltip": "ON: Moderation is active for individually enabled groups.\nOFF: Moderation is globally disabled for ALL groups.",
+    "warn_badge": "{count} warning(s)",
+    "clear_all_warns": "Clear All",
+    "unban_btn": "Unban",
+    "remove_btn": "Remove",
+    "reason_label_fmt": "Reason: {reason}",
+    "reason_banned_default": "Banned",
+    "reason_kick_default": "Kick",
     "no_groups": "No groups configured yet. Add your bot to a WhatsApp group to get started.",
     "tabs": {
       "core": "General & Rules",

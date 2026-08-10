@@ -1,4 +1,5 @@
 // Telegram Bridge Dashboard UI Logic
+const t = (key, params) => (window.t ? window.t(key, params) : key);
 
 let cachedTelegramBots = [];
 

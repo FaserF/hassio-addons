@@ -274,6 +274,13 @@
     "active_groups": "Konfigurierte Gruppen",
     "select_group": "Gruppe zur Konfiguration auswählen",
     "global_toggle_tooltip": "EIN: Moderation ist bei einzeln aktivierten Gruppen aktiv.\nAUS: Moderation ist global für ALLE Gruppen ausgeschaltet.",
+    "warn_badge": "{count} Verwarnung(en)",
+    "clear_all_warns": "Alle löschen",
+    "unban_btn": "Entsperren",
+    "remove_btn": "Entfernen",
+    "reason_label_fmt": "Grund: {reason}",
+    "reason_banned_default": "Gesperrt",
+    "reason_kick_default": "Gekickt",
     "no_groups": "Noch keine Gruppen konfiguriert. Füge deinen Bot einer WhatsApp-Gruppe hinzu.",
     "tabs": {
       "core": "Allgemein & Regeln",

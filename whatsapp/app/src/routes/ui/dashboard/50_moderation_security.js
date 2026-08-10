@@ -1,4 +1,5 @@
 // Moderation Security (Content Locks, Anti-Spam / Anti-Raid, Blacklist)
+const t = (key, params) => (window.t ? window.t(key, params) : key);
 
 async function saveGroupLocks() {
   if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');

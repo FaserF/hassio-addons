@@ -3,6 +3,7 @@
 let modStoreCache = null;
 let currentModGroup = '';
 let builtinCommandsCache = [];
+const t = (key, params) => (window.t ? window.t(key, params) : key);
 
 // ── Dirty / Unsaved-Changes Tracking ─────────────────────────────────────────
 const _dirty = {
@@ -351,13 +352,19 @@ async function loadModerationConfig() {
       if (
         window.initialUrlState &&
         window.initialUrlState.tab === 'moderation' &&
-        window.initialUrlState.params &&
-        window.initialUrlState.params.group
+        window.initialUrlState.params
       ) {
-        const restoreGroup = window.initialUrlState.params.group;
-        delete window.initialUrlState.params.group;
-        if (groupMap.has(restoreGroup)) {
-          preserved = restoreGroup;
+        if (window.initialUrlState.params.group) {
+          const restoreGroup = window.initialUrlState.params.group;
+          delete window.initialUrlState.params.group;
+          if (groupMap.has(restoreGroup)) {
+            preserved = restoreGroup;
+          }
+        }
+        if (window.initialUrlState.params.subtab) {
+          const restoreSubTab = window.initialUrlState.params.subtab;
+          delete window.initialUrlState.params.subtab;
+          _doSwitchModSubTab(restoreSubTab);
         }
       }
       const selectLabel =
@@ -453,8 +460,10 @@ async function toggleGlobalModeration(enabled) {
 async function selectModerationGroup(groupId) {
   currentModGroup = groupId;
   if (window.updateUrlState) {
-    if (groupId) window.updateUrlState('moderation', { group: groupId });
-    else window.updateUrlState('moderation', {});
+    const params = {};
+    if (groupId) params.group = groupId;
+    if (currentModSubTab && currentModSubTab !== 'core') params.subtab = currentModSubTab;
+    window.updateUrlState('moderation', params);
   }
   const contentCard = document.getElementById('mod-group-content');
   const placeholderCard = document.getElementById('mod-no-group-placeholder');
@@ -561,7 +570,7 @@ async function selectModerationGroup(groupId) {
 
     const entries = Object.keys(mergedWarns).filter((u) => mergedWarns[u]?.length);
     if (!entries.length) {
-      warnList.innerHTML = `<div class="empty-state">${t('moderation.no_warns')}</div>`;
+      warnList.innerHTML = `<div class="empty-state" data-i18n="moderation.no_warns">${t('moderation.no_warns')}</div>`;
     } else {
       warnList.innerHTML = entries
         .map((u) => {
@@ -577,8 +586,8 @@ async function selectModerationGroup(groupId) {
           return `
         <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <div><strong style="color:var(--primary);">@${escapeHtml(u)}</strong> <span class="badge badge-warning" style="font-size:11px;padding:2px 6px;">${warns.length} warning(s)</span></div>
-            <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="clearUserWarnInUi('${escapeHtml(u)}')">Clear All</button>
+            <div><strong style="color:var(--primary);">@${escapeHtml(u)}</strong> <span class="badge badge-warning" style="font-size:11px;padding:2px 6px;">${t('moderation.warn_badge', { count: warns.length })}</span></div>
+            <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="clearUserWarnInUi('${escapeHtml(u)}')">${t('moderation.clear_all_warns')}</button>
           </div>
           <div style="border-top:1px solid var(--border-color);padding-top:4px;">
             ${items}
@@ -595,22 +604,23 @@ async function selectModerationGroup(groupId) {
     const bannedMap = config.banned_users || {};
     const bannedUserIds = Object.keys(bannedMap);
     if (!bannedUserIds.length) {
-      bansList.innerHTML = `<div class="empty-state">${t('moderation.no_bans')}</div>`;
+      bansList.innerHTML = `<div class="empty-state" data-i18n="moderation.no_bans">${t('moderation.no_bans')}</div>`;
     } else {
       bansList.innerHTML = bannedUserIds
         .map((u) => {
           const info = bannedMap[u];
           const timeStr = info.timestamp ? new Date(info.timestamp).toLocaleString() : 'N/A';
+          const reasonText = escapeHtml(info.reason || t('moderation.reason_banned_default'));
           return `
         <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
               <strong style="color:#e74c3c;">🚫 @${escapeHtml(u)}</strong>
               <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
-                Reason: ${escapeHtml(info.reason || 'Banned')} &middot; <span style="font-size:10px;opacity:0.8;">${timeStr}</span>
+                ${t('moderation.reason_label_fmt', { reason: reasonText })} &middot; <span style="font-size:10px;opacity:0.8;">${timeStr}</span>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" style="padding:2px 8px;" onclick="unbanUserInUi('${escapeHtml(u)}')"><i class="fas fa-unlock"></i> Unban</button>
+            <button class="btn btn-secondary btn-sm" style="padding:2px 8px;" onclick="unbanUserInUi('${escapeHtml(u)}')"><i class="fas fa-unlock"></i> ${t('moderation.unban_btn')}</button>
           </div>
         </div>`;
         })
@@ -623,21 +633,22 @@ async function selectModerationGroup(groupId) {
   if (kicksList) {
     const kickLogs = config.kick_log || [];
     if (!kickLogs.length) {
-      kicksList.innerHTML = `<div class="empty-state">${t('moderation.no_kicks')}</div>`;
+      kicksList.innerHTML = `<div class="empty-state" data-i18n="moderation.no_kicks">${t('moderation.no_kicks')}</div>`;
     } else {
       kicksList.innerHTML = kickLogs
         .map((k) => {
           const timeStr = k.timestamp ? new Date(k.timestamp).toLocaleString() : 'N/A';
+          const reasonText = escapeHtml(k.reason || t('moderation.reason_kick_default'));
           return `
         <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
               <strong style="color:var(--warning);">👢 @${escapeHtml(k.userId)}</strong>
               <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
-                Reason: ${escapeHtml(k.reason || 'Kick')} &middot; <span style="font-size:10px;opacity:0.8;">${timeStr}</span>
+                ${t('moderation.reason_label_fmt', { reason: reasonText })} &middot; <span style="font-size:10px;opacity:0.8;">${timeStr}</span>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="clearKickLogInUi('${escapeHtml(k.userId)}')"><i class="fas fa-trash"></i> Remove</button>
+            <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="clearKickLogInUi('${escapeHtml(k.userId)}')"><i class="fas fa-trash"></i> ${t('moderation.remove_btn')}</button>
           </div>
         </div>`;
         })
@@ -650,7 +661,7 @@ async function selectModerationGroup(groupId) {
   if (reportsList) {
     const reports = config.reports || [];
     if (!reports.length) {
-      reportsList.innerHTML = `<div class="empty-state">${t('moderation.no_reports')}</div>`;
+      reportsList.innerHTML = `<div class="empty-state" data-i18n="moderation.no_reports">${t('moderation.no_reports')}</div>`;
     } else {
       reportsList.innerHTML = reports
         .slice()
@@ -1048,6 +1059,7 @@ async function toggleGroupModeration(enabled) {
 }
 
 function _doSwitchModSubTab(subTab) {
+  currentModSubTab = subTab;
   // Hide all panels
   const panels = document.querySelectorAll('.mod-subpanel');
   panels.forEach((p) => {
@@ -1066,6 +1078,13 @@ function _doSwitchModSubTab(subTab) {
     subTabBar.querySelectorAll('button').forEach((btn) => btn.classList.remove('active'));
     const activeBtn = subTabBar.querySelector(`[data-subtab="${subTab}"]`);
     if (activeBtn) activeBtn.classList.add('active');
+  }
+
+  if (window.updateUrlState) {
+    const params = {};
+    if (currentModGroup) params.group = currentModGroup;
+    if (currentModSubTab && currentModSubTab !== 'core') params.subtab = currentModSubTab;
+    window.updateUrlState('moderation', params);
   }
 }
 
