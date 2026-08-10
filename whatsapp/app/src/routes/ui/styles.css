@@ -3303,10 +3303,18 @@ body.tab-chats-active .footer-info {
 
 /* ── Moderation Subpanel & Blacklist Spacious Modern Layout ── */
 .mod-subpanel {
+  flex-direction: column;
+  gap: 20px;
+  padding: 8px 4px;
+}
+
+.mod-subpanel[style*="display: none"] {
+  display: none !important;
+}
+
+.mod-subpanel.active,
+.mod-subpanel[style*="display: block"] {
   display: flex !important;
-  flex-direction: column !important;
-  gap: 20px !important;
-  padding: 8px 4px !important;
 }
 
 .mod-feature-header {

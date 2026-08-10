@@ -1050,9 +1050,15 @@ async function toggleGroupModeration(enabled) {
 function _doSwitchModSubTab(subTab) {
   // Hide all panels
   const panels = document.querySelectorAll('.mod-subpanel');
-  panels.forEach((p) => (p.style.display = 'none'));
+  panels.forEach((p) => {
+    p.style.display = 'none';
+    p.classList.remove('active');
+  });
   const activeP = document.getElementById(`mod-subpanel-${subTab}`);
-  if (activeP) activeP.style.display = 'block';
+  if (activeP) {
+    activeP.style.display = 'block';
+    activeP.classList.add('active');
+  }
 
   // Update active button state
   const subTabBar = document.querySelector('#tab-moderation .mod-subtab-bar');
