@@ -4090,8 +4090,7 @@ function populateTelegramTestMappingDropdown(mappings = []) {
   const select = document.getElementById('tg-test-mapping-select');
   if (!select) return;
   if (mappings.length === 0) {
-    select.innerHTML =
-      `<option value="">${window.t('telegram.no_mappings_configured')}</option>`;
+    select.innerHTML = `<option value="">${window.t('telegram.no_mappings_configured')}</option>`;
     return;
   }
   select.innerHTML = mappings
