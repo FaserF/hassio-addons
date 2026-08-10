@@ -81,6 +81,12 @@ export function registerModerationRoutes(app) {
       saveModerationStore(store);
     }
 
+    for (const s of sessions.values()) {
+      if (s.eventQueue) {
+        s.eventQueue.push({ type: 'config_updated', feature: 'moderation' });
+      }
+    }
+
     res.json({ success: true, data: loadModerationStore() });
   });
 

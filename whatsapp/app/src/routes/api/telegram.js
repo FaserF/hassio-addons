@@ -24,6 +24,11 @@ export function registerTelegramRoutes(app) {
     }
 
     saveTelegramStore(store);
+    for (const s of sessions.values()) {
+      if (s.eventQueue) {
+        s.eventQueue.push({ type: 'config_updated', feature: 'telegram' });
+      }
+    }
     res.json({ success: true, data: store });
   };
   app.post('/api/telegram/config', handleTelegramConfigUpdate);
