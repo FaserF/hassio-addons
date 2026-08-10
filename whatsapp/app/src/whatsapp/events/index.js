@@ -650,8 +650,17 @@ export function handleIncomingMessages(session) {
         const senderDisplay = senderJid.includes('@g.us') ? senderJid : senderJid.split('@')[0];
         const displayText = text || `[${messageType || 'Unknown'}]`;
         if (msg.key.fromMe) {
-          // Self-sent message (e.g. admin sending to themselves): track only as sent
+          // Self-sent message: track as sent
           trackSent(session, senderDisplay, displayText);
+          // If message is in a 1:1 self/admin chat, also track as received so it appears in Inbound Queue and HA received sensor
+          const isToAdminPrimary = isAdmin(msg.key.remoteJid, session);
+          const isToAdminAlt = msg.key.remoteJidAlt
+            ? isAdmin(msg.key.remoteJidAlt, session)
+            : false;
+          const is1on1Chat = !msg.key.remoteJid.endsWith('@g.us');
+          if (isToAdminPrimary || isToAdminAlt || is1on1Chat) {
+            trackReceived(session, senderDisplay, displayText);
+          }
         } else {
           trackReceived(session, senderDisplay, displayText);
         }

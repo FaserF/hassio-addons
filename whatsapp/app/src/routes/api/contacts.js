@@ -56,11 +56,6 @@ export function registerContactRoutes(app) {
             chatJids.add(gId);
           }
         }
-        if (session.contactCache) {
-          for (const cId of session.contactCache.keys()) {
-            if (cId && cId !== 'status@broadcast') chatJids.add(cId);
-          }
-        }
         chatJids.delete('status@broadcast');
 
         const chats = Array.from(chatJids).map((jid) => ({
