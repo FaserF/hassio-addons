@@ -390,10 +390,15 @@ async function runI18nTests() {
     const importsT = /import\s*\{[^}]*\bt\b[^}]*\}\s*from\s*['"].*locales\/loader\.js['"]/.test(
       commandsContent
     );
-    assertTest(importsT, 'commands.js: imports t() from locales/loader.js for command response translation');
+    assertTest(
+      importsT,
+      'commands.js: imports t() from locales/loader.js for command response translation'
+    );
     const definesGt = /function gt\s*\(/.test(commandsContent);
     assertTest(definesGt, 'commands.js: defines gt(config, key, params) translation helper');
-    const usesGtForInfo = /bot_replies\.user_info/.test(commandsContent) && /bot_replies\.user_id/.test(commandsContent);
+    const usesGtForInfo =
+      /bot_replies\.user_info/.test(commandsContent) &&
+      /bot_replies\.user_id/.test(commandsContent);
     assertTest(usesGtForInfo, 'commands.js: uses gt() and bot_replies keys for !info command');
   }
 

@@ -200,7 +200,10 @@ export class TelegramBotClient {
     threadId = null,
     disableNotification = false
   ) {
-    if (Buffer.isBuffer(filePathOrUrl) || (typeof filePathOrUrl === 'string' && fs.existsSync(filePathOrUrl))) {
+    if (
+      Buffer.isBuffer(filePathOrUrl) ||
+      (typeof filePathOrUrl === 'string' && fs.existsSync(filePathOrUrl))
+    ) {
       const formData = new FormData();
       formData.append('chat_id', chatId);
       if (caption) {
