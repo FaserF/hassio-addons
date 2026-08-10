@@ -3553,9 +3553,7 @@ async function deleteTelegramBot(botId) {
   const isDefault = defaultBot && defaultBot.id === botId;
 
   // Count active mappings using this bot
-  const boundMappings = allMappings.filter(
-    (m) => m.bot_id === botId || (!m.bot_id && isDefault)
-  );
+  const boundMappings = allMappings.filter((m) => m.bot_id === botId || (!m.bot_id && isDefault));
   const count = boundMappings.length;
   const otherBots = allBots.filter((b) => b.id !== botId);
 
@@ -3627,7 +3625,9 @@ async function deleteTelegramBot(botId) {
   }
 
   try {
-    const query = transferToBotId ? `?transfer_to_bot_id=${encodeURIComponent(transferToBotId)}` : '';
+    const query = transferToBotId
+      ? `?transfer_to_bot_id=${encodeURIComponent(transferToBotId)}`
+      : '';
     await fetch(`api/telegram/bots/${botId}${query}`, { method: 'DELETE' });
     showToast(t('telegram.bot_deleted'), 'warning');
     loadTelegramBridgeData();
