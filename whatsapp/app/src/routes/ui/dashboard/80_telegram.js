@@ -33,7 +33,11 @@ async function loadTelegramBridgeData() {
       renderTelegramBots(cachedTelegramBots);
       renderTelegramMappings(cfg.mappings || [], cachedTelegramBots);
       populateTelegramTestMappingDropdown(cfg.mappings || []);
-      if (window.initialUrlState && window.initialUrlState.tab === 'telegram' && window.initialUrlState.params) {
+      if (
+        window.initialUrlState &&
+        window.initialUrlState.tab === 'telegram' &&
+        window.initialUrlState.params
+      ) {
         if (window.initialUrlState.params.mapping) {
           const restoreMapId = window.initialUrlState.params.mapping;
           delete window.initialUrlState.params.mapping;

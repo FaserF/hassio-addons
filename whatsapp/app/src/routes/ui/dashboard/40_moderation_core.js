@@ -348,7 +348,12 @@ async function loadModerationConfig() {
 
       const groups = Array.from(groupMap.values());
       let preserved = select.value;
-      if (window.initialUrlState && window.initialUrlState.tab === 'moderation' && window.initialUrlState.params && window.initialUrlState.params.group) {
+      if (
+        window.initialUrlState &&
+        window.initialUrlState.tab === 'moderation' &&
+        window.initialUrlState.params &&
+        window.initialUrlState.params.group
+      ) {
         const restoreGroup = window.initialUrlState.params.group;
         delete window.initialUrlState.params.group;
         if (groupMap.has(restoreGroup)) {

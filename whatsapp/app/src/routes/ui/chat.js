@@ -247,7 +247,12 @@ async function loadChats() {
       lastChatsCache = chatsKey;
       renderChatList(allChats);
     }
-    if (window.initialUrlState && window.initialUrlState.tab === 'chats' && window.initialUrlState.params && window.initialUrlState.params.jid) {
+    if (
+      window.initialUrlState &&
+      window.initialUrlState.tab === 'chats' &&
+      window.initialUrlState.params &&
+      window.initialUrlState.params.jid
+    ) {
       const restoreJid = window.initialUrlState.params.jid;
       delete window.initialUrlState.params.jid;
       const foundChat = (allChats || []).find((c) => matchJid(c.jid, restoreJid));
