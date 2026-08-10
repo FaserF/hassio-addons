@@ -1469,10 +1469,26 @@ async function openChatInfoDrawer() {
         )
         .join('');
 
+      const canEdit = info.canEditGroupInfo;
+      const avatarWrapperHtml = canEdit
+        ? `<div class="drawer-avatar-wrapper editable" onclick="triggerGroupAvatarChange()" title="${escapeAttr(t('chats.change_group_picture'))}">
+             ${avatarHtml}
+             <div class="drawer-avatar-overlay"><i class="fas fa-camera"></i> <span>${escapeHtml(t('chats.change_group_picture'))}</span></div>
+             <input type="file" id="group-avatar-upload-input" accept="image/*" style="display:none;" onchange="handleGroupAvatarUpload(this)">
+           </div>`
+        : `<div class="drawer-avatar-wrapper">${avatarHtml}</div>`;
+
+      const titleHtml = canEdit
+        ? `<div class="drawer-title-container" id="drawer-group-title-container">
+             <h3 class="drawer-title" id="drawer-group-title-text">${escapeHtml(info.name || 'Group')}</h3>
+             <button class="drawer-title-edit-btn" onclick="enableGroupNameEdit()" title="${escapeAttr(t('chats.edit_group_name'))}"><i class="fas fa-pen"></i></button>
+           </div>`
+        : `<h3 class="drawer-title">${escapeHtml(info.name || 'Group')}</h3>`;
+
       body.innerHTML = `
         <div class="drawer-profile">
-          <div class="drawer-avatar-wrapper">${avatarHtml}</div>
-          <h3 class="drawer-title">${escapeHtml(info.name || 'Group')}</h3>
+          ${avatarWrapperHtml}
+          ${titleHtml}
           <p class="drawer-subtitle">Group · ${info.participantsCount || 0} participants</p>
         </div>
 
@@ -1554,6 +1570,117 @@ async function openChatInfoDrawer() {
   }
 }
 
+function triggerGroupAvatarChange() {
+  const inp = document.getElementById('group-avatar-upload-input');
+  if (inp) inp.click();
+}
+
+async function handleGroupAvatarUpload(input) {
+  if (!input.files || !input.files[0] || !activeChatJid) return;
+  const file = input.files[0];
+  input.value = '';
+  showToast(t('chats.uploading'), 'info');
+
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const dataUrl = reader.result;
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (typeof apiToken !== 'undefined' && apiToken) {
+        headers['X-Auth-Token'] = apiToken;
+      }
+      const resp = await fetch(basePath + 'api/groups/picture', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          number: activeChatJid,
+          picture: dataUrl,
+          session_id: currentSession,
+        }),
+      });
+      const data = await resp.json();
+      if (resp.ok && (data.status === 'picture_updated' || data.success)) {
+        showToast(t('chats.group_picture_updated'), 'success');
+        avatarCache[activeChatJid] = dataUrl;
+        updateAvatarElements(activeChatJid, dataUrl);
+      } else {
+        showToast(data.detail || t('chats.group_picture_failed'), 'danger');
+      }
+    } catch {
+      showToast(t('chats.group_picture_failed'), 'danger');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function enableGroupNameEdit() {
+  const container = document.getElementById('drawer-group-title-container');
+  if (!container) return;
+  const currentName = activeChatName || '';
+  container.innerHTML = `
+    <form class="drawer-title-edit-form" onsubmit="saveGroupNameSubmit(event)">
+      <input type="text" id="drawer-title-edit-input" class="drawer-title-input" value="${escapeAttr(currentName)}" autocomplete="off">
+      <button type="submit" class="btn btn-primary btn-sm" style="padding:4px 8px;" title="Save"><i class="fas fa-check"></i></button>
+      <button type="button" class="btn btn-ghost btn-sm" style="padding:4px 8px;" onclick="cancelGroupNameEdit()" title="Cancel"><i class="fas fa-times"></i></button>
+    </form>
+  `;
+  const inp = document.getElementById('drawer-title-edit-input');
+  if (inp) {
+    inp.focus();
+    inp.select();
+  }
+}
+
+function cancelGroupNameEdit() {
+  const container = document.getElementById('drawer-group-title-container');
+  if (!container) return;
+  container.innerHTML = `
+    <h3 class="drawer-title" id="drawer-group-title-text">${escapeHtml(activeChatName || 'Group')}</h3>
+    <button class="drawer-title-edit-btn" onclick="enableGroupNameEdit()" title="${escapeAttr(t('chats.edit_group_name'))}"><i class="fas fa-pen"></i></button>
+  `;
+}
+
+async function saveGroupNameSubmit(e) {
+  if (e) e.preventDefault();
+  const inp = document.getElementById('drawer-title-edit-input');
+  if (!inp) return;
+  const newName = inp.value.trim();
+  if (!newName) {
+    showToast(t('chats.group_name_empty'), 'warning');
+    return;
+  }
+  if (!activeChatJid) return;
+
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (typeof apiToken !== 'undefined' && apiToken) {
+      headers['X-Auth-Token'] = apiToken;
+    }
+    const resp = await fetch(basePath + 'groups/subject', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        number: activeChatJid,
+        subject: newName,
+        session_id: currentSession,
+      }),
+    });
+    const data = await resp.json();
+    if (resp.ok && (data.status === 'subject_updated' || data.success)) {
+      showToast(t('chats.group_name_updated'), 'success');
+      activeChatName = newName;
+      const headerName = document.getElementById('active-chat-name');
+      if (headerName) headerName.textContent = newName;
+      cancelGroupNameEdit();
+      loadChats();
+    } else {
+      showToast(data.detail || t('chats.group_name_failed'), 'danger');
+    }
+  } catch (err) {
+    showToast(t('chats.group_name_failed'), 'danger');
+  }
+}
+
 function closeChatInfoDrawer() {
   const drawer = document.getElementById('chat-info-drawer');
   if (drawer) drawer.style.display = 'none';
@@ -1594,4 +1721,9 @@ if (typeof window !== 'undefined') {
   window.navigateToTelegramMapping = navigateToTelegramMapping;
   window.switchNewChatTab = switchNewChatTab;
   window.createNewGroupSubmit = createNewGroupSubmit;
+  window.triggerGroupAvatarChange = triggerGroupAvatarChange;
+  window.handleGroupAvatarUpload = handleGroupAvatarUpload;
+  window.enableGroupNameEdit = enableGroupNameEdit;
+  window.cancelGroupNameEdit = cancelGroupNameEdit;
+  window.saveGroupNameSubmit = saveGroupNameSubmit;
 }

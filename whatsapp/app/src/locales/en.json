@@ -245,7 +245,14 @@
     "forward": "Forward",
     "delete_for_me": "Delete for me",
     "contact_jid": "Contact JID",
-    "jid_details": "JID details"
+    "jid_details": "JID details",
+    "change_group_picture": "Change group picture",
+    "group_picture_updated": "Group picture updated successfully",
+    "group_picture_failed": "Failed to update group picture",
+    "edit_group_name": "Edit group name",
+    "group_name_updated": "Group name updated successfully",
+    "group_name_failed": "Failed to update group name",
+    "group_name_empty": "Group name cannot be empty"
   },
   "moderation": {
     "title": "WhatsApp Group Moderation & Security Shield",

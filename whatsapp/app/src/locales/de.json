@@ -248,6 +248,13 @@
     "poll_multiple_choice": "Mehrfachauswahl",
     "poll_single_choice": "Einzelauswahl",
     "live_location": "Live-Standort",
+    "change_group_picture": "Gruppenbild ändern",
+    "group_picture_updated": "Gruppenbild erfolgreich aktualisiert",
+    "group_picture_failed": "Fehler beim Aktualisieren des Gruppenbildes",
+    "edit_group_name": "Gruppennamen bearbeiten",
+    "group_name_updated": "Gruppenname erfolgreich aktualisiert",
+    "group_name_failed": "Fehler beim Aktualisieren des Gruppennamens",
+    "group_name_empty": "Gruppenname darf nicht leer sein",
     "open_in_google_maps": "In Google Maps öffnen",
     "image": "Bild",
     "no_participants": "Keine Teilnehmer-Details",
@@ -650,7 +657,7 @@
     "lang_it_opt": "Italienisch"
   },
   "telegram": {
-    "title": "WhatsApp & Telegram Native Bridge",
+    "title": "WhatsApp & Telegram Chat-Brücke",
     "subtitle": "Bi-direktionale Nachrichtenspiegelung, Medien-Sync & Thread-Zitate",
     "bot_config": "Telegram Bots Konfiguration",
     "add_bot": "Telegram Bot hinzufügen",

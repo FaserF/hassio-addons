@@ -521,6 +521,22 @@ export function registerUiApiRoutes(app) {
             info.description = metadata.desc ? metadata.desc.toString() : '';
             info.owner = metadata.owner;
             info.creation = metadata.creation;
+            info.restrict = !!metadata.restrict;
+            info.announce = !!metadata.announce;
+            const botJidRaw = session.sock?.user?.id;
+            let isBotAdmin = false;
+            if (botJidRaw && metadata.participants) {
+              const cleanBotId = botJidRaw.split('@')[0].split(':')[0];
+              const botPart = metadata.participants.find((p) => {
+                const cleanPId = p.id.split('@')[0].split(':')[0];
+                return cleanPId === cleanBotId;
+              });
+              if (botPart && (botPart.admin === 'admin' || botPart.admin === 'superadmin')) {
+                isBotAdmin = true;
+              }
+            }
+            info.isBotAdmin = isBotAdmin;
+            info.canEditGroupInfo = !metadata.restrict || isBotAdmin;
             info.participantsCount = metadata.participants ? metadata.participants.length : 0;
             info.participants = (metadata.participants || []).map((p) => {
               let pName = p.id.split('@')[0];

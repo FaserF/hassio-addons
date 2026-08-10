@@ -1,4 +1,4 @@
-import { authMiddleware } from '../../middleware.js';
+import { authMiddleware, anyAuthMiddleware } from '../../middleware.js';
 import { getReqSession } from '../../session.js';
 import { getJid } from '../../utils/jid.js';
 import { ensureConnected, asyncHandler } from './helpers.js';
@@ -247,7 +247,7 @@ export function registerGroupRoutes(app) {
 
   app.post(
     '/groups/subject',
-    authMiddleware,
+    anyAuthMiddleware,
     asyncHandler(async (req, res) => {
       try {
         const session = getReqSession(req);
@@ -261,6 +261,42 @@ export function registerGroupRoutes(app) {
         const jid = getJid(number);
         await session.sock.groupUpdateSubject(jid, subject);
         res.json({ status: 'subject_updated', jid, subject });
+      } catch (err) {
+        res.status(500).json({ detail: err.message });
+      }
+    })
+  );
+
+  app.post(
+    '/groups/picture',
+    anyAuthMiddleware,
+    asyncHandler(async (req, res) => {
+      try {
+        const session = getReqSession(req);
+        const { number, jid: reqJid, picture } = req.body;
+        const targetNumber = number || reqJid;
+        if (!targetNumber || !picture) {
+          return res.status(400).json({ detail: 'Missing number/jid or picture data' });
+        }
+
+        const connected = await ensureConnected(session);
+        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+        const jid = getJid(targetNumber);
+        let imgBuffer;
+        if (typeof picture === 'string' && picture.startsWith('data:')) {
+          const base64Data = picture.replace(/^data:image\/\w+;base64,/, '');
+          imgBuffer = Buffer.from(base64Data, 'base64');
+        } else if (typeof picture === 'string') {
+          imgBuffer = Buffer.from(picture, 'base64');
+        } else if (Buffer.isBuffer(picture)) {
+          imgBuffer = picture;
+        } else {
+          return res.status(400).json({ detail: 'Invalid picture format' });
+        }
+
+        await session.sock.updateProfilePicture(jid, imgBuffer);
+        res.json({ status: 'picture_updated', jid });
       } catch (err) {
         res.status(500).json({ detail: err.message });
       }
