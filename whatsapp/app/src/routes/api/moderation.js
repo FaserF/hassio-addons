@@ -672,10 +672,24 @@ export function registerModerationRoutes(app) {
       },
     ];
 
-    const targetUserRaw = target_user || '';
-    const cleanTargetUser = targetUserRaw.trim();
-    const targetDigits = cleanTargetUser.replace(/\D/g, '');
-    const effectiveTargetDigits = targetDigits || '491700000001';
+    let targetDigits = (target_user || '').trim().replace(/\D/g, '');
+
+    if (!targetDigits && group_id && session.sock) {
+      try {
+        const metadata = await session.sock.groupMetadata(group_id);
+        const botJidRaw = session.sock?.user?.id || '';
+        const cleanBotId = botJidRaw ? botJidRaw.split('@')[0].split(':')[0] : '';
+        const realMember = (metadata.participants || []).find((p) => {
+          const cleanPId = p.id.split('@')[0].split(':')[0];
+          return cleanPId !== cleanBotId;
+        });
+        if (realMember) {
+          targetDigits = realMember.id.split('@')[0].split(':')[0];
+        }
+      } catch (_e) {}
+    }
+
+    const effectiveTargetDigits = targetDigits || '491761234567';
     const effectiveTargetJid = `${effectiveTargetDigits}@s.whatsapp.net`;
     const effectiveTargetMention = `@${effectiveTargetDigits}`;
 
