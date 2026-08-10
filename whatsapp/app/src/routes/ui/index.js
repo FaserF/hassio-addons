@@ -137,7 +137,7 @@ export function renderDashboard(sessionId) {
   <div class="app-layout">
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo" style="cursor:pointer;" onclick="toggleSidebar(event)">
+            <div class="logo">
                 <i class="fab fa-whatsapp logo-icon" id="sidebar-logo-icon"></i>
                 <div class="logo-text">
                     <span class="logo-title">WhatsApp Gateway</span>
@@ -738,7 +738,9 @@ export function renderDashboard(sessionId) {
     try {
         if (sidebar && window.innerWidth > 768 && localStorage.getItem('sidebarCollapsed') === '1') {
             sidebar.classList.add('collapsed');
-            sidebar.style.width = '72px';
+            sidebar.style.setProperty('width', '72px', 'important');
+            sidebar.style.setProperty('min-width', '72px', 'important');
+            sidebar.style.setProperty('max-width', '72px', 'important');
         }
     } catch (e) {}
 
