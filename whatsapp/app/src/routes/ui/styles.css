@@ -180,31 +180,36 @@ body {
 }
 
 .sidebar.collapsed .nav-menu {
-  padding: 16px 8px !important;
-  align-items: center !important;
+  padding: 24px 16px !important;
+  align-items: stretch !important;
   width: 100% !important;
   box-sizing: border-box !important;
 }
 
 .sidebar.collapsed .nav-item {
-  padding: 0 !important;
+  padding: 12px 16px !important;
   display: flex !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   align-items: center !important;
-  width: 56px !important;
-  height: 48px !important;
-  min-height: 48px !important;
-  gap: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 44px !important;
+  gap: 14px !important;
   position: relative !important;
-  border-radius: 12px !important;
-  margin: 0 auto !important;
+  border-radius: var(--border-radius-sm) !important;
+  margin: 0 !important;
   box-sizing: border-box !important;
 }
 
-.sidebar.collapsed .nav-item .nav-icon,
+.sidebar.collapsed .nav-item .nav-icon {
+  margin: 0 !important;
+  width: 20px !important;
+  min-width: 20px !important;
+  text-align: center !important;
+}
+
 .sidebar.collapsed .sidebar-toggle-btn i {
   margin: 0 !important;
-  width: 100% !important;
   text-align: center !important;
 }
 
@@ -714,6 +719,68 @@ body {
     height: 100% !important;
     min-height: 0 !important;
     overflow: hidden !important;
+  }
+
+  /* Mobile Top Header: Responsive controls */
+  .top-header {
+    height: auto !important;
+    min-height: 50px !important;
+    padding: 8px 12px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .header-left {
+    gap: 8px !important;
+  }
+
+  .header-title {
+    font-size: 15px !important;
+  }
+
+  .header-actions {
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+    margin-left: auto;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .session-selector-container {
+    max-width: 150px !important;
+    padding: 4px 8px !important;
+    display: flex !important;
+  }
+
+  .session-label {
+    display: none !important;
+  }
+
+  .session-select {
+    max-width: 120px !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    font-size: 11px !important;
+    padding: 4px !important;
+  }
+
+  .language-selector-container {
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .language-selector-container select {
+    font-size: 11px !important;
+    padding: 4px 6px !important;
+    min-width: 65px !important;
+  }
+
+  .theme-toggle {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 14px !important;
+    display: flex !important;
   }
 
   .content-body {
