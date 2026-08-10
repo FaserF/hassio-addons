@@ -158,13 +158,16 @@ body {
   width: 100% !important;
 }
 
+.sidebar.collapsed .sidebar-header .logo,
 .sidebar.collapsed .logo,
-.sidebar.collapsed .logo-icon {
+.sidebar.collapsed .logo-icon,
+.sidebar.collapsed .logo-text {
   display: none !important;
 }
 
 .sidebar.collapsed .sidebar-toggle-btn {
   padding: 0 !important;
+  display: flex !important;
   justify-content: center !important;
   align-items: center !important;
   width: 48px !important;
