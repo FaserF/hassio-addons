@@ -325,12 +325,19 @@ export function registerModerationRoutes(app) {
       }
       const isSafeOnly = Boolean(safe_only);
 
-      res.setHeader('Content-Type', 'application/x-ndjson');
-      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
       res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no');
+      if (typeof res.flushHeaders === 'function') {
+        res.flushHeaders();
+      }
 
       const sendEvent = (obj) => {
         res.write(JSON.stringify(obj) + '\n');
+        if (typeof res.flush === 'function') {
+          res.flush();
+        }
       };
 
       const botUserId = session.sock?.user?.id
