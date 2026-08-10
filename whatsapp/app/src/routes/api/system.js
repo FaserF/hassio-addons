@@ -1,6 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { authMiddleware, uiAuthMiddleware, uiLimiter, apiLimiter, anyAuthMiddleware } from '../../middleware.js';
+import {
+  authMiddleware,
+  uiAuthMiddleware,
+  uiLimiter,
+  apiLimiter,
+  anyAuthMiddleware,
+} from '../../middleware.js';
 import {
   getSession,
   sessions,
