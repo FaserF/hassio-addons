@@ -130,7 +130,10 @@ async function purgeSessions() {
 }
 
 async function clearLogs() {
-  const ok = await showConfirm(t('dashboard.clear_logs_confirm_title'), t('dashboard.clear_logs_confirm_msg'));
+  const ok = await showConfirm(
+    t('dashboard.clear_logs_confirm_title'),
+    t('dashboard.clear_logs_confirm_msg')
+  );
   if (!ok) return;
 
   try {

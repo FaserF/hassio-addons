@@ -284,10 +284,7 @@ async function submitImportFederation() {
   // Handle either direct federation object or wrapped export structure
   const fedObj = importedData?.federation || importedData;
   if (!fedObj || typeof fedObj !== 'object' || !fedObj.name) {
-    return showToast(
-      t('moderation.invalid_json'),
-      'danger'
-    );
+    return showToast(t('moderation.invalid_json'), 'danger');
   }
 
   // Ensure unique ID

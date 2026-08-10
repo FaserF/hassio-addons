@@ -354,7 +354,6 @@ async function updateDashboard() {
   }
 }
 
-
 // System Logs, Session Management & Backups
 
 async function loadLogs() {
@@ -487,7 +486,10 @@ async function purgeSessions() {
 }
 
 async function clearLogs() {
-  const ok = await showConfirm(t('dashboard.clear_logs_confirm_title'), t('dashboard.clear_logs_confirm_msg'));
+  const ok = await showConfirm(
+    t('dashboard.clear_logs_confirm_title'),
+    t('dashboard.clear_logs_confirm_msg')
+  );
   if (!ok) return;
 
   try {
@@ -518,7 +520,6 @@ function switchSession(id) {
   }
   updateDashboard();
 }
-
 
 // Update & Dependency Modals
 
@@ -718,7 +719,6 @@ function closeDependencyModal() {
   const modal = document.getElementById('dependency-info-modal');
   if (modal) modal.classList.remove('show');
 }
-
 
 // Moderation Core (Store, Group Selector, Rules, Greetings, Captcha, Warns, Commands)
 
@@ -1526,8 +1526,7 @@ async function selectModerationGroup(groupId) {
   if (customCmdsList) {
     const customCmds = config.commands?.custom_commands || [];
     if (!customCmds.length) {
-      customCmdsList.innerHTML =
-        `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">${t('moderation.no_custom_cmds')}</div>`;
+      customCmdsList.innerHTML = `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">${t('moderation.no_custom_cmds')}</div>`;
     } else {
       const typeLabel = (t) => {
         if (t === 'webhook')
@@ -1614,8 +1613,7 @@ async function selectModerationGroup(groupId) {
       ([, data]) => !data.until || data.until > Date.now()
     );
     if (!entries.length) {
-      mutedList.innerHTML =
-        `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:6px 0;">${t('moderation.no_muted_users')}</div>`;
+      mutedList.innerHTML = `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:6px 0;">${t('moderation.no_muted_users')}</div>`;
     } else {
       mutedList.innerHTML = entries
         .map(([userKey, data]) => {
@@ -1669,8 +1667,7 @@ async function selectModerationGroup(groupId) {
   if (blTags) {
     const words = config.blacklist?.words || [];
     if (!words.length) {
-      blTags.innerHTML =
-        `<span style="color:var(--text-muted);font-size:12px;">${t('moderation.no_blacklist_words')}</span>`;
+      blTags.innerHTML = `<span style="color:var(--text-muted);font-size:12px;">${t('moderation.no_blacklist_words')}</span>`;
     } else {
       blTags.innerHTML = words
         .map(
@@ -1689,8 +1686,7 @@ async function selectModerationGroup(groupId) {
   if (filtersList) {
     const filters = config.filters || [];
     if (!filters.length) {
-      filtersList.innerHTML =
-        `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">${t('moderation.no_filters')}</div>`;
+      filtersList.innerHTML = `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">${t('moderation.no_filters')}</div>`;
     } else {
       filtersList.innerHTML = filters
         .map(
@@ -1735,7 +1731,10 @@ async function toggleGroupModeration(enabled) {
   try {
     const res = await fetch(url, { method: 'POST' });
     if (res.ok) {
-      showToast(enabled ? t('moderation.group_enabled') : t('moderation.group_disabled'), 'success');
+      showToast(
+        enabled ? t('moderation.group_enabled') : t('moderation.group_disabled'),
+        'success'
+      );
       loadModerationConfig();
     }
   } catch (e) {
@@ -1899,7 +1898,13 @@ async function toggleUserCaptchaVerification(userId, verified) {
     );
     const json = await res.json();
     if (json.success) {
-      showToast(t('moderation.user_verification_updated', { user: userId, status: verified ? t('moderation.verified') : t('moderation.unverified') }), 'success');
+      showToast(
+        t('moderation.user_verification_updated', {
+          user: userId,
+          status: verified ? t('moderation.verified') : t('moderation.unverified'),
+        }),
+        'success'
+      );
       loadCaptchaUsers();
     } else {
       showToast(json.error || t('moderation.user_verification_failed'), 'error');
@@ -2202,7 +2207,6 @@ async function unmuteUserInUi(userId) {
     showToast(t('moderation.unmute_failed'), 'danger');
   }
 }
-
 
 // Moderation Security (Content Locks, Anti-Spam / Anti-Raid, Blacklist)
 
@@ -2814,7 +2818,6 @@ window.clearAutoTestLogs = clearAutoTestLogs;
 window.exportAutoTestLogs = exportAutoTestLogs;
 window.copyAutoTestLogs = copyAutoTestLogs;
 
-
 // Moderation Intelligence (AI Auto-Reply, Sentiment, System Prompt, Filters)
 
 async function addFilterRule() {
@@ -2831,7 +2834,10 @@ async function addFilterRule() {
   document.getElementById('mod-filter-response').value = '';
 
   await saveGroupConfig(groupConfig);
-  showToast(t('moderation.filter_rule_added', { type: type === 'faq' ? 'FAQ' : 'Auto-reply' }), 'success');
+  showToast(
+    t('moderation.filter_rule_added', { type: type === 'faq' ? 'FAQ' : 'Auto-reply' }),
+    'success'
+  );
   selectModerationGroup(currentModGroup);
   setTimeout(() => {
     const el = document.getElementById('mod-filter-trigger');
@@ -2895,7 +2901,6 @@ async function saveGroupAiConfig() {
     showToast(t('moderation.ai_settings_save_failed'), 'danger');
   }
 }
-
 
 // Moderation Federation & Import/Export
 
@@ -3183,10 +3188,7 @@ async function submitImportFederation() {
   // Handle either direct federation object or wrapped export structure
   const fedObj = importedData?.federation || importedData;
   if (!fedObj || typeof fedObj !== 'object' || !fedObj.name) {
-    return showToast(
-      t('moderation.invalid_json'),
-      'danger'
-    );
+    return showToast(t('moderation.invalid_json'), 'danger');
   }
 
   // Ensure unique ID
@@ -3222,7 +3224,6 @@ async function submitImportFederation() {
     showToast(t('moderation.federation_saved'), 'danger');
   }
 }
-
 
 // Telegram Bridge Dashboard UI Logic
 
@@ -4044,10 +4045,7 @@ async function runTelegramBridgeTest() {
 
   // Pre-flight: check WhatsApp connection status before launching
   if (typeof isConnected !== 'undefined' && !isConnected) {
-    showToast(
-      t('chats.not_connected'),
-      'danger'
-    );
+    showToast(t('chats.not_connected'), 'danger');
     return;
   }
 
@@ -4241,7 +4239,6 @@ window.selectAllTgSubtests = selectAllTgSubtests;
 window.copyTgTestLogs = copyTgTestLogs;
 window.pollTelegramTestResults = pollTelegramTestResults;
 window.toggleTgTestSuiteUI = toggleTgTestSuiteUI;
-
 
 // Global Window Exports
 window.isNewerVersion = isNewerVersion;

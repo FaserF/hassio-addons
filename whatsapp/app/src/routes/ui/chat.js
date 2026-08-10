@@ -1350,8 +1350,7 @@ async function openChatInfoDrawer() {
   if (!drawer || !body) return;
 
   drawer.style.display = 'flex';
-  body.innerHTML =
-    `<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> ${t('chats.loading_info')}</div>`;
+  body.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> ${t('chats.loading_info')}</div>`;
 
   try {
     const res = await fetch(

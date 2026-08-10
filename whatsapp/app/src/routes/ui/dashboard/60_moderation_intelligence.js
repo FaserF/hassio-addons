@@ -14,7 +14,10 @@ async function addFilterRule() {
   document.getElementById('mod-filter-response').value = '';
 
   await saveGroupConfig(groupConfig);
-  showToast(t('moderation.filter_rule_added', { type: type === 'faq' ? 'FAQ' : 'Auto-reply' }), 'success');
+  showToast(
+    t('moderation.filter_rule_added', { type: type === 'faq' ? 'FAQ' : 'Auto-reply' }),
+    'success'
+  );
   selectModerationGroup(currentModGroup);
   setTimeout(() => {
     const el = document.getElementById('mod-filter-trigger');

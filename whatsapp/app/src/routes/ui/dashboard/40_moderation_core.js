@@ -804,8 +804,7 @@ async function selectModerationGroup(groupId) {
   if (customCmdsList) {
     const customCmds = config.commands?.custom_commands || [];
     if (!customCmds.length) {
-      customCmdsList.innerHTML =
-        `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">${t('moderation.no_custom_cmds')}</div>`;
+      customCmdsList.innerHTML = `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">${t('moderation.no_custom_cmds')}</div>`;
     } else {
       const typeLabel = (t) => {
         if (t === 'webhook')
@@ -892,8 +891,7 @@ async function selectModerationGroup(groupId) {
       ([, data]) => !data.until || data.until > Date.now()
     );
     if (!entries.length) {
-      mutedList.innerHTML =
-        `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:6px 0;">${t('moderation.no_muted_users')}</div>`;
+      mutedList.innerHTML = `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:6px 0;">${t('moderation.no_muted_users')}</div>`;
     } else {
       mutedList.innerHTML = entries
         .map(([userKey, data]) => {
@@ -947,8 +945,7 @@ async function selectModerationGroup(groupId) {
   if (blTags) {
     const words = config.blacklist?.words || [];
     if (!words.length) {
-      blTags.innerHTML =
-        `<span style="color:var(--text-muted);font-size:12px;">${t('moderation.no_blacklist_words')}</span>`;
+      blTags.innerHTML = `<span style="color:var(--text-muted);font-size:12px;">${t('moderation.no_blacklist_words')}</span>`;
     } else {
       blTags.innerHTML = words
         .map(
@@ -967,8 +964,7 @@ async function selectModerationGroup(groupId) {
   if (filtersList) {
     const filters = config.filters || [];
     if (!filters.length) {
-      filtersList.innerHTML =
-        `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">${t('moderation.no_filters')}</div>`;
+      filtersList.innerHTML = `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">${t('moderation.no_filters')}</div>`;
     } else {
       filtersList.innerHTML = filters
         .map(
@@ -1013,7 +1009,10 @@ async function toggleGroupModeration(enabled) {
   try {
     const res = await fetch(url, { method: 'POST' });
     if (res.ok) {
-      showToast(enabled ? t('moderation.group_enabled') : t('moderation.group_disabled'), 'success');
+      showToast(
+        enabled ? t('moderation.group_enabled') : t('moderation.group_disabled'),
+        'success'
+      );
       loadModerationConfig();
     }
   } catch (e) {
@@ -1177,7 +1176,13 @@ async function toggleUserCaptchaVerification(userId, verified) {
     );
     const json = await res.json();
     if (json.success) {
-      showToast(t('moderation.user_verification_updated', { user: userId, status: verified ? t('moderation.verified') : t('moderation.unverified') }), 'success');
+      showToast(
+        t('moderation.user_verification_updated', {
+          user: userId,
+          status: verified ? t('moderation.verified') : t('moderation.unverified'),
+        }),
+        'success'
+      );
       loadCaptchaUsers();
     } else {
       showToast(json.error || t('moderation.user_verification_failed'), 'error');
