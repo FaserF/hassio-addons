@@ -128,7 +128,7 @@ export async function syncWhatsAppDeleteToTelegram(waMsgId, waJid) {
         );
 
   for (const mapping of listToProcess) {
-    if (mapping.sync_deletes === false) continue;
+    if (mapping.sync_deletions === false || mapping.sync_deletes === false) continue;
     const bot = getTelegramBotClient(mapping.bot_id);
     if (bot) {
       try {

@@ -672,7 +672,7 @@
     "lang_it_opt": "Italienisch"
   },
   "telegram": {
-    "title": "WhatsApp & Telegram Chat-Brücke",
+    "title": "WhatsApp & Telegram Bridge",
     "subtitle": "Bi-direktionale Nachrichtenspiegelung, Medien-Sync & Thread-Zitate",
     "bot_config": "Telegram Bots Konfiguration",
     "add_bot": "Telegram Bot hinzufügen",
@@ -815,8 +815,8 @@
     "toggle_sidebar": "Seitenleiste umschalten",
     "integration_repo": "Integrations-Repo",
     "ha_app_repo": "HA App-Repo",
-    "raw_connection_logs": "Rohverbindungsprotokolle",
-    "full_system_logs": "Vollständige Systemprotokolle",
+    "raw_connection_logs": "Systemprotokolle",
+    "full_system_logs": "Erweiterte System-Logs",
     "system_properties": "Systemeigenschaften",
     "addon": "Addon:",
     "integration": "Integration:",
