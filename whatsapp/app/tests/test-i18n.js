@@ -213,8 +213,98 @@ async function runI18nTests() {
     `Automated JS String Scanner: zero hardcoded showToast/showConfirm string literals (found: ${hardcodedToastAlerts.length > 0 ? hardcodedToastAlerts.join('; ') : 'none'})`
   );
 
+  // Test 9: bot_replies namespace completeness — ensures all group bot reply keys exist in all locales
+  const BOT_REPLY_REQUIRED_KEYS = [
+    'bot_replies.muted',
+    'bot_replies.banned_dm',
+    'bot_replies.cannot_action_admin',
+    'bot_replies.kick_ban_done',
+    'bot_replies.user_not_member',
+    'bot_replies.action_rate_limited',
+    'bot_replies.action_failed',
+    'bot_replies.warning_issued',
+    'bot_replies.moderation_bypassed_whitelist',
+    'bot_replies.moderation_bypassed_admin',
+    'bot_replies.federation_deleted',
+    'bot_replies.captcha_verified_dm',
+    'bot_replies.captcha_verified_group',
+    'bot_replies.content_lock_deleted',
+    'bot_replies.antispam_link_deleted',
+    'bot_replies.blacklist_deleted',
+    'bot_replies.ai_guard_deleted',
+    'bot_replies.group_rules',
+    'bot_replies.ai_assistant',
+    'bot_replies.ai_harmful_deleted',
+    'bot_replies.captcha_verified_via_dm',
+    'bot_replies.anti_raid_activated',
+    'bot_replies.join_ban_enforced_dm',
+    'bot_replies.join_ban_enforced_group',
+    'bot_replies.captcha_timeout',
+    'bot_replies.faq_hint',
+    'bot_replies.warning_max_reached',
+    'bot_replies.welcome_group_info',
+  ];
+  const enKeysForBotReplies = new Set(getAllKeys(enDict));
+  const missingBotReplyKeys = BOT_REPLY_REQUIRED_KEYS.filter((k) => !enKeysForBotReplies.has(k));
+  assertTest(
+    missingBotReplyKeys.length === 0,
+    `bot_replies namespace: all ${BOT_REPLY_REQUIRED_KEYS.length} required keys present in [en] (missing: ${missingBotReplyKeys.length > 0 ? missingBotReplyKeys.join(', ') : 'none'})`
+  );
+  for (const [code, dict] of localesMap.entries()) {
+    if (code === 'en') continue;
+    const langKeysSet = new Set(getAllKeys(dict));
+    const missingInLang = BOT_REPLY_REQUIRED_KEYS.filter((k) => !langKeysSet.has(k));
+    assertTest(
+      missingInLang.length === 0,
+      `bot_replies namespace: all required keys present in [${code}] (missing: ${missingInLang.length > 0 ? missingInLang.join(', ') : 'none'})`
+    );
+  }
+
+  // Test 10: engine.js groupId extraction — ensures event.from is used for group messages (not event.sender)
+  const enginePath = path.resolve(__dirname, '../src/whatsapp/moderation/engine.js');
+  if (fs.existsSync(enginePath)) {
+    const engineContent = fs.readFileSync(enginePath, 'utf8');
+    const usesEventFrom = /groupId\s*=\s*isGroup\s*\?\s*\(?\s*event\.from/.test(engineContent);
+    assertTest(
+      usesEventFrom,
+      'engine.js: groupId uses event.from for group messages (not event.sender) — prevents blacklist/FAQ skip bug'
+    );
+    const doesNotUseRawSender = !/const groupId\s*=\s*event\.sender\s*;/.test(engineContent);
+    assertTest(
+      doesNotUseRawSender,
+      'engine.js: groupId is NOT assigned directly from event.sender (regression guard)'
+    );
+  }
+
+  // Test 11: engine.js bot reply localization — ensures gt() helper is used, not hardcoded English reply strings
+  if (fs.existsSync(enginePath)) {
+    const engineContent = fs.readFileSync(enginePath, 'utf8');
+    // Must import t() from locales
+    const importsT = /import\s*\{[^}]*\bt\b[^}]*\}\s*from\s*['"].*locales\/loader\.js['"]/.test(engineContent);
+    assertTest(importsT, 'engine.js: imports t() from locales/loader.js for bot reply translation');
+    // Must define the gt() helper
+    const definesGt = /function gt\s*\(/.test(engineContent);
+    assertTest(definesGt, 'engine.js: defines gt(config, key, params) translation helper');
+    // Must NOT contain hardcoded English ban/blacklist/warning phrases in reply strings
+    const hardcodedPhrases = [
+      'Banned from Group',
+      'Blacklist:* Message from',
+      'Warning Issued to',
+      'Anti-Spam Link:* Invite link',
+      'Content Lock:* Message from',
+      'ANTI-RAID SHIELD ACTIVATED',
+      'FAQ Hint / Automated Help',
+    ];
+    const hardcodedInReplies = hardcodedPhrases.filter((phrase) => engineContent.includes(phrase));
+    assertTest(
+      hardcodedInReplies.length === 0,
+      `engine.js: no hardcoded English bot-reply phrases found (found: ${hardcodedInReplies.length > 0 ? hardcodedInReplies.join(', ') : 'none'})`
+    );
+  }
+
   if (failed > 0) {
     throw new Error(`i18n unit tests failed with ${failed} error(s)`);
+
   }
   console.log('======================================================');
   console.log('✅ ALL i18N TESTS PASSED SUCCESSFULLY\n');

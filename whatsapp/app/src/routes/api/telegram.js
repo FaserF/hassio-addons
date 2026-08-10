@@ -652,7 +652,7 @@ export function registerTelegramRoutes(app) {
                 null,
                 mapping.tg_thread_id || null
               );
-            } catch (pErr) {
+            } catch (_pErr) {
               // 1x1 transparent PNG fallback buffer if external URL fails
               const transparentPng = Buffer.from(
                 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
@@ -908,11 +908,11 @@ export function registerTelegramRoutes(app) {
             await session.sock.sendMessage(mapping.wa_jid, { text: editNotice });
             log('STEP_13', 'Dispatched WhatsApp Message Edit update notice', 'success');
           } else {
-            if (textMsgRef && textMsgRef.message_id) {
+            if (tgTextMsgRef && tgTextMsgRef.message_id) {
               const editedText = `🧪 [Bridge Test 1/16: EDITED] <b>Bold Edited</b> &amp; <i>Italic Edited</i> (${new Date().toLocaleTimeString()})`;
               await bot.request('editMessageText', {
                 chat_id: mapping.tg_chat_id,
-                message_id: textMsgRef.message_id,
+                message_id: tgTextMsgRef.message_id,
                 text: editedText,
                 parse_mode: 'HTML',
               });

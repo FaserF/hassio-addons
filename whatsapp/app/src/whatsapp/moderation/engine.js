@@ -7,15 +7,22 @@ import {
 import { processAiModeration } from './ai.js';
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
+import { t } from '../../locales/loader.js';
 import {
   resolveCanonicalUserKey,
   resolveUserDisplayName,
   normalizeJid,
-  isAdmin,
   isSameUser,
 } from '../../utils/security.js';
 
 // In-memory sliding window trackers
+
+/** Translate a bot-reply key using the group's configured language (fallback: 'en') */
+function gt(config, key, params = {}) {
+  const lang = config?.language || 'en';
+  return t(lang, key, params);
+}
+
 const userFloodMap = new Map(); // key: groupId:userId -> array of timestamps
 const groupJoinMap = new Map(); // key: groupId -> array of timestamps
 const pendingCaptchas = new Map(); // key: groupId:userId -> { answer, mode, timeoutHandle, timestamp }
@@ -173,7 +180,7 @@ export function clearPendingCaptcha(groupId, userId, session = null) {
   }
 }
 
-export function isUserVerified(groupId, userId, session = null, rawMsg = null) {
+export function isUserVerified(groupId, userId, session = null, _rawMsg = null) {
   if (!groupId || !userId) return false;
   const config = getGroupModerationConfig(groupId);
   const verifiedUsers = config.verified_users || {};
@@ -341,7 +348,7 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         session,
         groupId,
         {
-          text: `⚠️ @${userId} has been muted. Reason: ${reason || 'Moderation penalty'}`,
+          text: gt(config, 'bot_replies.muted', { user: userId, reason: reason || 'Moderation penalty' }),
           mentions: [`${userId}@s.whatsapp.net`],
         },
         rawMsg
@@ -356,9 +363,11 @@ export async function executePenalty(session, groupId, userId, action, reason = 
           : `${userId}@s.whatsapp.net`;
       const targetDisplayId = cleanDigits || userId.split('@')[0];
 
+      // Load config once at kick/ban level — used by both inner persistence blocks and gt() reply calls below
+      const config = getGroupModerationConfig(groupId);
+
       if (action === 'ban') {
         const store = loadModerationStore();
-        const config = getGroupModerationConfig(groupId);
         config.banned_users = config.banned_users || {};
         config.banned_users[targetDisplayId] = {
           timestamp: Date.now(),
@@ -370,7 +379,7 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         // Send private chat notification with explanation before kicking
         try {
           await session.sock.sendMessage(userJid, {
-            text: `🚫 *Banned from Group*\n\nYou have been permanently banned from the group \`${groupId.split('@')[0]}\`.\n\n*Reason:* ${reason || 'Violation of group rules'}\n\nIf you attempt to rejoin, you will be automatically removed.`,
+            text: gt(config, 'bot_replies.banned_dm', { group: groupId.split('@')[0], reason: reason || 'Violation of group rules' }),
           });
         } catch (dmErr) {
           logger.warn({ error: dmErr.message }, `Failed to send DM ban notification to ${userJid}`);
@@ -378,7 +387,6 @@ export async function executePenalty(session, groupId, userId, action, reason = 
       } else if (action === 'kick') {
         // Persist kick to kick_log for UI history
         const store = loadModerationStore();
-        const config = getGroupModerationConfig(groupId);
         config.kick_log = Array.isArray(config.kick_log) ? config.kick_log : [];
         config.kick_log.unshift({
           userId: targetDisplayId,
@@ -429,7 +437,7 @@ export async function executePenalty(session, groupId, userId, action, reason = 
           session,
           groupId,
           {
-            text: `⚠️ Cannot ${action} ${displayName}.\n\n*Reason:* Target user is a Group Administrator or Superadmin. WhatsApp does not allow bots to kick group admins.`,
+            text: gt(config, 'bot_replies.cannot_action_admin', { action, name: displayName }),
             mentions: [userJid],
           },
           rawMsg
@@ -498,7 +506,7 @@ export async function executePenalty(session, groupId, userId, action, reason = 
           session,
           groupId,
           {
-            text: `🚫 ${displayName} was ${action === 'ban' ? 'banned' : 'kicked'} from the group.`,
+            text: gt(config, 'bot_replies.kick_ban_done', { name: displayName, action: action === 'ban' ? 'banned' : 'kicked' }),
             mentions: [userJid],
           },
           rawMsg
@@ -530,7 +538,7 @@ export async function executePenalty(session, groupId, userId, action, reason = 
             session,
             groupId,
             {
-              text: `ℹ️ ${displayName} is no longer a member of this group.`,
+              text: gt(config, 'bot_replies.user_not_member', { name: displayName }),
               mentions: [userJid],
             },
             rawMsg
@@ -544,7 +552,7 @@ export async function executePenalty(session, groupId, userId, action, reason = 
             session,
             groupId,
             {
-              text: `⏳ Action ${action} for ${displayName} failed due to WhatsApp rate limiting. Please try again in a few moments.`,
+              text: gt(config, 'bot_replies.action_rate_limited', { action, name: displayName }),
               mentions: [userJid],
             },
             rawMsg
@@ -555,7 +563,7 @@ export async function executePenalty(session, groupId, userId, action, reason = 
             session,
             groupId,
             {
-              text: `❌ Could not ${action} ${displayName}.\n\n*Reason:* ${e.message || 'Unknown WhatsApp protocol error'}`,
+              text: gt(config, 'bot_replies.action_failed', { action, name: displayName, reason: e.message || 'Unknown WhatsApp protocol error' }),
               mentions: [userJid],
             },
             rawMsg
@@ -624,10 +632,7 @@ export async function issueUserWarning(session, groupId, rawUserId, reason, rawM
       session,
       groupId,
       {
-        text:
-          `⚠️ *Warning Issued to ${userDisplay}* (${warnCount}/${maxWarns})\n` +
-          `Reason: ${reason}\n\n` +
-          `🚨 *Maximum warnings (${maxWarns}) reached! Executing penalty: ${penaltyAction.toUpperCase()}*`,
+        text: gt(config, 'bot_replies.warning_max_reached', { user: userDisplay, count: warnCount, max: maxWarns, reason, action: penaltyAction.toUpperCase() }),
         mentions: [`${userKey}@s.whatsapp.net`],
       },
       rawMsg
@@ -646,7 +651,7 @@ export async function issueUserWarning(session, groupId, rawUserId, reason, rawM
       session,
       groupId,
       {
-        text: `⚠️ *Warning Issued to ${userDisplay}* (${warnCount}/${maxWarns})\nReason: ${reason}`,
+        text: gt(config, 'bot_replies.warning_issued', { user: userDisplay, count: warnCount, max: maxWarns, reason }),
         mentions: [`${userKey}@s.whatsapp.net`],
       },
       rawMsg
@@ -781,7 +786,7 @@ export async function handleModerationMessage(session, event) {
           session,
           groupId,
           {
-            text: `ℹ️ *Moderation Bypassed:* Action *${bypassedReason}* was ignored because the sender is on the Approved Users Whitelist.`,
+            text: gt(config, 'bot_replies.moderation_bypassed_whitelist', { reason: bypassedReason }),
           },
           rawMsg,
           { skipSpamGuard: true }
@@ -822,7 +827,7 @@ export async function handleModerationMessage(session, event) {
       if (isMatch) {
         const isFaq = filter.type === 'faq';
         const replyText = isFaq
-          ? `💡 *FAQ Hint / Automated Help:*\n_The following information from our FAQ might help answer your question:_\n\n${filter.response}`
+          ? gt(config, 'bot_replies.faq_hint', { response: filter.response })
           : filter.response;
 
         await reply(session, groupId, { text: replyText }, rawMsg);
@@ -903,7 +908,7 @@ export async function handleModerationMessage(session, event) {
           session,
           groupId,
           {
-            text: `ℹ️ *Moderation Bypassed:* Action *${bypassedReason}* was ignored because the sender is a Group Admin.`,
+            text: gt(config, 'bot_replies.moderation_bypassed_admin', { reason: bypassedReason }),
           },
           rawMsg,
           { skipSpamGuard: true }
@@ -976,7 +981,7 @@ export async function handleModerationMessage(session, event) {
                 session,
                 groupId,
                 {
-                  text: `🚫 *Security Federation:* Prohibited pattern from @${userId} was automatically deleted.\n\n📋 *Reason:* Blacklisted pattern "${pat}" detected.`,
+                  text: gt(config, 'bot_replies.federation_deleted', { user: userId, pattern: pat }),
                   mentions: [`${userId}@s.whatsapp.net`],
                 },
                 rawMsg
@@ -1063,7 +1068,7 @@ export async function handleModerationMessage(session, event) {
               session,
               groupId,
               {
-                text: `\u2705 @${userId} has been successfully verified.`,
+                text: gt(config, 'bot_replies.captcha_verified_dm', { user: userId }),
                 mentions: [`${userId}@s.whatsapp.net`],
               },
               rawMsg
@@ -1083,7 +1088,7 @@ export async function handleModerationMessage(session, event) {
               session,
               groupId,
               {
-                text: `\u2705 Captcha verified! Welcome @${userId}.`,
+                text: gt(config, 'bot_replies.captcha_verified_group', { user: userId }),
                 mentions: [`${userId}@s.whatsapp.net`],
               },
               rawMsg
@@ -1140,7 +1145,7 @@ export async function handleModerationMessage(session, event) {
           session,
           groupId,
           {
-            text: `🔒 *Content Lock:* Message from @${userId} was deleted (${lockTitle} are locked).`,
+            text: gt(config, 'bot_replies.content_lock_deleted', { user: userId, type: lockTitle }),
             mentions: [`${userId}@s.whatsapp.net`],
           },
           rawMsg
@@ -1234,7 +1239,7 @@ export async function handleModerationMessage(session, event) {
           session,
           groupId,
           {
-            text: `🚫 *Anti-Spam Link:* Invite link from @${userId} was automatically deleted.\n\n📋 *Reason:* Unauthorized invite link detected.`,
+            text: gt(config, 'bot_replies.antispam_link_deleted', { user: userId }),
             mentions: [`${userId}@s.whatsapp.net`],
           },
           rawMsg
@@ -1293,7 +1298,7 @@ export async function handleModerationMessage(session, event) {
             session,
             groupId,
             {
-              text: `🚫 *Blacklist:* Message from @${userId} was deleted (Blacklisted word/pattern detected).`,
+              text: gt(config, 'bot_replies.blacklist_deleted', { user: userId }),
               mentions: [`${userId}@s.whatsapp.net`],
             },
             rawMsg
@@ -1327,7 +1332,7 @@ export async function handleModerationMessage(session, event) {
       await reply(
         session,
         groupId,
-        { text: `🛡️ *AI Guard Alert:* Message deleted due to detected scam/phishing intent.` },
+        { text: gt(config, 'bot_replies.ai_guard_deleted') },
         rawMsg
       );
       await executePenalty(
@@ -1381,7 +1386,7 @@ export async function handleModerationMessage(session, event) {
     // Check Rules trigger
     if (text.toLowerCase() === '!rules' || text.toLowerCase() === '#rules') {
       const rulesText = config.rules?.text || 'No rules configured for this group.';
-      await reply(session, groupId, { text: `📜 *Group Rules:*\n\n${rulesText}` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.group_rules', { rules: rulesText }) }, rawMsg);
       return true;
     }
   }
@@ -1390,7 +1395,7 @@ export async function handleModerationMessage(session, event) {
   if (config.ai?.enabled && config.ai?.faq_auto_reply && text) {
     const aiReply = await processAiModeration(text, config.ai, store.gemini_api_key);
     if (aiReply) {
-      await reply(session, groupId, { text: `🤖 *AI Assistant:*\n${aiReply}` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.ai_assistant', { reply: aiReply }) }, rawMsg);
       return true;
     }
   }
@@ -1417,7 +1422,7 @@ export async function handleModerationMessage(session, event) {
           session,
           groupId,
           {
-            text: `🛡️ Message removed: Detected as potentially harmful content.`,
+            text: gt(config, 'bot_replies.ai_harmful_deleted'),
           },
           rawMsg
         );
@@ -1536,7 +1541,7 @@ export async function handlePrivateCaptchaMessage(session, event) {
     try {
       const userLabel = resolveUserDisplayName(userId, session, config.greetings);
       await reply(session, targetGroupId, {
-        text: `✅ ${userLabel} has completed Captcha verification via DM. Welcome!`,
+        text: gt(config, 'bot_replies.captcha_verified_via_dm', { user: userLabel }),
         mentions: [`${userId.replace(/\D/g, '')}@s.whatsapp.net`],
       });
     } catch (_e) {
@@ -1673,7 +1678,7 @@ export async function handleModerationParticipantUpdate(session, update) {
           session,
           groupId,
           {
-            text: `🚨 *ANTI-RAID SHIELD ACTIVATED!* High-velocity join detection triggered.`,
+            text: gt(config, 'bot_replies.anti_raid_activated'),
           },
           rawMsg
         );
@@ -1735,7 +1740,7 @@ export async function handleModerationParticipantUpdate(session, update) {
         }
         try {
           await session.sock.sendMessage(participantJid, {
-            text: `🚫 *Group Ban Enforced*\n\nYou attempted to join *${groupTitle}*, but you are banned from this group.\n\n*Reason:* ${banInfo.reason || 'Banned by group moderation'}\n\nYou have been automatically removed.`,
+            text: gt(config, 'bot_replies.join_ban_enforced_dm', { group: groupTitle, reason: banInfo.reason || 'Banned by group moderation' }),
           });
         } catch (dmErr) {
           logger.warn({ error: dmErr.message }, `Failed to send join ban DM to ${participantJid}`);
@@ -1762,7 +1767,7 @@ export async function handleModerationParticipantUpdate(session, update) {
               session,
               groupId,
               {
-                text: `🚫 Banned user @${cleanDigits || userId} attempted to join and was automatically removed.`,
+                text: gt(config, 'bot_replies.join_ban_enforced_group', { user: cleanDigits || userId }),
                 mentions: [participantJid],
               },
               rawMsg,
@@ -1995,7 +2000,7 @@ export async function handleModerationParticipantUpdate(session, update) {
               session,
               groupId,
               {
-                text: `⏳ Captcha verification timed out for ${userLabel}. Executing removal.`,
+                text: gt(config, 'bot_replies.captcha_timeout', { user: userLabel }),
                 mentions: [mentionJid],
               },
               rawMsg
@@ -2053,7 +2058,7 @@ export async function handleModerationParticipantUpdate(session, update) {
         if (targetMode === 'private' && targetPrivateJid) {
           try {
             await reply(session, targetPrivateJid, {
-              text: `👥 *${groupMeta?.subject || 'Group'}*\n\n${fullText}`,
+              text: gt(config, 'bot_replies.welcome_group_info', { group: groupMeta?.subject || 'Group', text: fullText }),
             });
             sentViaDM = true; // Only mark as sent if the DM actually succeeded
           } catch (dmErr) {
