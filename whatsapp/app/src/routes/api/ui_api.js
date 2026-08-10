@@ -483,7 +483,7 @@ export function registerUiApiRoutes(app) {
       const sessionId = sanitizeSessionId(req.query.session_id || 'default');
       const session = getSession(sessionId);
       const jid = req.query.jid;
-      if (!jid || !session.sock) return res.status(404).json({ error: 'No session or JID' });
+      if (!jid || !session.sock) return res.json({ success: false, url: null });
 
       try {
         let url = null;
@@ -493,11 +493,11 @@ export function registerUiApiRoutes(app) {
           url = await session.sock.profilePictureUrl(jid, 'image');
         }
         if (url) {
-          return res.json({ url });
+          return res.json({ success: true, url });
         }
-        res.status(404).json({ error: 'No picture' });
+        res.json({ success: false, url: null });
       } catch (err) {
-        res.status(404).json({ error: 'Not found' });
+        res.json({ success: false, url: null });
       }
     })
   );

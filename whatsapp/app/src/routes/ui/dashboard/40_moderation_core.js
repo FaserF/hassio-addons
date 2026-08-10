@@ -2,6 +2,7 @@
 
 let modStoreCache = null;
 let currentModGroup = '';
+let currentModSubTab = 'core';
 let builtinCommandsCache = [];
 
 // ── Dirty / Unsaved-Changes Tracking ─────────────────────────────────────────

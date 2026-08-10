@@ -49,9 +49,9 @@ export default () => `
 
     <!-- Mappings Section -->
     <div class="card mod-settings-card" style="margin-top: 20px; padding: 20px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
-            <div style="display:flex; align-items:center; gap:14px;">
-                <div style="font-size: 22px; color: var(--primary); background: rgba(37, 211, 102, 0.12); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:14px; flex:1; min-width:260px; margin-right:12px;">
+                <div style="font-size: 22px; color: var(--primary); background: rgba(37, 211, 102, 0.12); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink:0;">
                     <i class="fas fa-exchange-alt"></i>
                 </div>
                 <div>
@@ -64,7 +64,7 @@ export default () => `
                     <p style="color:var(--text-muted); margin:2px 0 0; font-size:13px;" data-i18n="telegram.mappings_desc">Manage active message synchronization routes between WhatsApp &amp; Telegram chats.</p>
                 </div>
             </div>
-            <button class="btn btn-primary btn-sm" style="height:38px; padding:0 16px; border-radius:8px; font-weight:600; display:flex; align-items:center; gap:8px;" onclick="openAddTelegramMappingModal()">
+            <button class="btn btn-primary btn-sm" style="height:38px; padding:0 16px; border-radius:8px; font-weight:600; display:flex; align-items:center; gap:8px; flex-shrink:0; white-space:nowrap;" onclick="openAddTelegramMappingModal()">
                 <i class="fas fa-plus-circle"></i> <span data-i18n="telegram.add_mapping">Add New Mapping</span>
             </button>
         </div>
