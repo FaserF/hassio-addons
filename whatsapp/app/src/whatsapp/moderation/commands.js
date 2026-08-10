@@ -1554,7 +1554,8 @@ registry.register(
     const store = loadModerationStore();
     const c = store.groups[groupId] || getGroupModerationConfig(groupId);
     const canonicalTarget = resolveCanonicalUserKey(targetJid, session) || targetId;
-    let warns = c.warnings?.user_warns?.[targetId] || c.warnings?.user_warns?.[canonicalTarget] || [];
+    let warns =
+      c.warnings?.user_warns?.[targetId] || c.warnings?.user_warns?.[canonicalTarget] || [];
     if (!warns.length && c.warnings?.user_warns) {
       for (const [wKey, wList] of Object.entries(c.warnings.user_warns)) {
         if (isSameUser(wKey, targetJid, session)) {
