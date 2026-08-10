@@ -1,5 +1,4 @@
 // Dashboard Overview & Status Polling
-var t = (key, params) => (window.t ? window.t(key, params) : key);
 
 function isNewerVersion(curr, latest) {
   if (!curr || !latest) return false;

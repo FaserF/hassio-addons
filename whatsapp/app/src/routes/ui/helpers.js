@@ -281,6 +281,7 @@ function t(keyPath, params = {}) {
   }
   return text;
 }
+window.t = t;
 
 function applyI18nDOM() {
   document.querySelectorAll('[data-i18n]').forEach((el) => {
