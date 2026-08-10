@@ -1050,6 +1050,9 @@ async function selectModerationGroup(groupId) {
   // _guardDirty() will diff against this snapshot on every subtab switch.
   _captureSnapshot();
   updateModerationDisabledState();
+  if (typeof populateAutoTestMemberSelect === 'function') {
+    populateAutoTestMemberSelect(groupId);
+  }
 }
 
 async function toggleGroupModeration(enabled) {
@@ -1084,6 +1087,10 @@ function _doSwitchModSubTab(subTab) {
   if (activeP) {
     activeP.style.display = 'block';
     activeP.classList.add('active');
+  }
+
+  if (subTab === 'ai' && typeof populateAutoTestMemberSelect === 'function' && currentModGroup) {
+    populateAutoTestMemberSelect(currentModGroup);
   }
 
   // Update active button state
