@@ -273,6 +273,7 @@
     "subtitle": "Automatische Spam-Abwehr, Inhalts-Sperren, Anti-Raid & Community-Verwaltung",
     "active_groups": "Konfigurierte Gruppen",
     "select_group": "Gruppe zur Konfiguration auswählen",
+    "global_toggle_tooltip": "EIN: Moderation ist bei einzeln aktivierten Gruppen aktiv.\nAUS: Moderation ist global für ALLE Gruppen ausgeschaltet.",
     "no_groups": "Noch keine Gruppen konfiguriert. Füge deinen Bot einer WhatsApp-Gruppe hinzu.",
     "tabs": {
       "core": "Allgemein & Regeln",

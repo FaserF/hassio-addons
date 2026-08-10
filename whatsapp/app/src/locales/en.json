@@ -259,6 +259,7 @@
     "subtitle": "Automated spam protection, content locks, anti-raid & community management",
     "active_groups": "Configured Groups",
     "select_group": "Select a Group to Configure",
+    "global_toggle_tooltip": "ON: Moderation is active for individually enabled groups.\nOFF: Moderation is globally disabled for ALL groups.",
     "no_groups": "No groups configured yet. Add your bot to a WhatsApp group to get started.",
     "tabs": {
       "core": "General & Rules",

@@ -3300,3 +3300,68 @@ body.tab-chats-active .footer-info {
   flex-shrink: 0 !important;
   background: transparent !important;
 }
+
+/* ── Moderation Subpanel & Blacklist Spacious Modern Layout ── */
+.mod-subpanel {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
+  padding: 8px 4px !important;
+}
+
+.mod-feature-header {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 16px !important;
+  margin-bottom: 12px !important;
+  padding-bottom: 16px !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.mod-field-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  margin-bottom: 20px !important;
+  padding: 16px !important;
+  background: var(--bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--border-radius-sm, 10px) !important;
+}
+
+.mod-input-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin: 16px 0 !important;
+  flex-wrap: wrap !important;
+}
+
+.mod-input-row .mod-input {
+  flex: 1 1 280px !important;
+  min-width: 200px !important;
+  padding: 10px 14px !important;
+}
+
+.mod-tag-cloud {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  min-height: 56px !important;
+  padding: 16px !important;
+  background: var(--bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--border-radius-sm, 10px) !important;
+  margin-bottom: 20px !important;
+  align-items: center !important;
+}
+
+.mod-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+  margin-top: 20px !important;
+  padding-top: 16px !important;
+  border-top: 1px solid var(--border-color) !important;
+}

@@ -360,7 +360,13 @@ async function loadModerationConfig() {
           preserved = restoreGroup;
         }
       }
-      let opts = `<option value="">${window.t('moderation.select_group')}</option>`;
+      const selectLabel =
+        window.t && window.t('moderation.select_group') !== 'moderation.select_group'
+          ? window.t('moderation.select_group')
+          : window.currentLang === 'en'
+            ? 'Select a Group to Configure'
+            : 'Gruppe zur Konfiguration auswählen';
+      let opts = `<option value="" data-i18n="moderation.select_group">${selectLabel}</option>`;
       groups.forEach((g) => {
         opts += `<option value="${g.id}"${g.id === preserved ? ' selected' : ''}>${g.name}</option>`;
       });

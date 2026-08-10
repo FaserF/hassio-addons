@@ -12,7 +12,11 @@ export default () => `
                     </div>
                     <div class="mod-hero-controls">
                         <div class="mod-toggle-row">
-                            <span class="mod-toggle-label"><i class="fas fa-power-off"></i> <span data-i18n="moderation.global">Global</span></span>
+                            <span class="mod-toggle-label">
+                                <i class="fas fa-power-off"></i> 
+                                <span data-i18n="moderation.global">Global</span> 
+                                <i class="fas fa-info-circle" style="color:var(--primary); cursor:pointer; font-size:13px; margin-left:4px;" data-i18n-title="moderation.global_toggle_tooltip" title="EIN: Moderation ist bei einzeln aktivierten Gruppen aktiv.&#10;AUS: Moderation ist global für ALLE Gruppen ausgeschaltet."></i>
+                            </span>
                             <label class="mod-toggle-switch">
                                 <input type="checkbox" id="mod-global-toggle" onchange="toggleGlobalModeration(this.checked)">
                                 <span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span>
