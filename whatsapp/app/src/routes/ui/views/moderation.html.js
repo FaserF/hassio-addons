@@ -358,7 +358,7 @@ export default () => `
                             <span class="mod-option-label" data-i18n="moderation.enable_notify_bypassed">Notify in group when moderation is bypassed for admins</span>
                         </div>
 
-                        <div class="mod-actions" style="margin-top:16px;"><button class="btn btn-primary btn-sm" onclick="saveGroupAntiSpam()"><i class="fas fa-save"></i> <span data-i18n="moderation.save_antispam">Save Anti-Spam Config</span></button></div>
+                        <div class="mod-actions" style="margin-top:16px;"><button class="btn btn-primary btn-sm" onclick="saveGroupAntispam()"><i class="fas fa-save"></i> <span data-i18n="moderation.save_antispam">Save Anti-Spam Config</span></button></div>
                     </div>
 
                     <!-- FEDERATION -->
@@ -394,7 +394,7 @@ export default () => `
                             </div>
                             <div id="mod-fed-blacklist-tags" class="mod-tag-cloud"></div>
                         </div>
-                        <div class="mod-actions" style="margin-top:16px;"><button class="btn btn-primary btn-sm" onclick="saveFederationSettings()"><i class="fas fa-save"></i> <span data-i18n="moderation.save_fed_settings">Save Federation Settings</span></button></div>
+                        <div class="mod-actions" style="margin-top:16px;"><button class="btn btn-primary btn-sm" onclick="saveGroupFederation()"><i class="fas fa-save"></i> <span data-i18n="moderation.save_fed_settings">Save Federation Settings</span></button></div>
                     </div>
 
                     <!-- AI / GEMINI -->
@@ -438,7 +438,7 @@ export default () => `
                                 <option value="auto" data-i18n="moderation.trans_mode_auto">Auto (Translate all incoming messages)</option>
                             </select>
                         </div>
-                        <div class="mod-actions" style="margin-top:16px;"><button class="btn btn-primary btn-sm" onclick="saveGroupAiSettings()"><i class="fas fa-save"></i> <span data-i18n="moderation.save_ai_settings">Save AI &amp; Translation Settings</span></button></div>
+                        <div class="mod-actions" style="margin-top:16px;"><button class="btn btn-primary btn-sm" onclick="saveGroupAiConfig()"><i class="fas fa-save"></i> <span data-i18n="moderation.save_ai_settings">Save AI &amp; Translation Settings</span></button></div>
                     </div>
                     <!-- COMMANDS -->
                     <div id="mod-subpanel-commands" class="mod-subpanel" style="display:none;">

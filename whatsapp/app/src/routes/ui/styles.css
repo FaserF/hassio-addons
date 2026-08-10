@@ -373,6 +373,7 @@ body {
 .nav-item {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 14px;
   background: none;
   border: none;
@@ -383,11 +384,13 @@ body {
   font-weight: 500;
   border-radius: var(--border-radius-sm);
   cursor: pointer;
-  text-align: left;
+  text-align: left !important;
   transition: all var(--transition-speed) ease;
   width: 100%;
   text-decoration: none;
   overflow: hidden;
+  min-height: unset;
+  box-sizing: border-box;
 }
 
 .nav-item:hover {
@@ -3079,6 +3082,7 @@ html[data-theme='light'] .data-table tbody tr:hover {
 }
 
 /* ── Modern Custom Select Styling (WhatsApp Gateway Theme) ── */
+select,
 .mod-select,
 select.mod-select,
 .form-control select,
@@ -3105,18 +3109,21 @@ select.form-control {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
 }
 
+select:hover,
 .mod-select:hover,
 select.mod-select:hover {
   border-color: var(--primary) !important;
   background-color: var(--bg-hover) !important;
 }
 
+select:focus,
 .mod-select:focus,
 select.mod-select:focus {
   border-color: var(--primary) !important;
   box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.25) !important;
 }
 
+select option,
 .mod-select option,
 select.mod-select option {
   background-color: var(--bg-card) !important;
