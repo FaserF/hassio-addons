@@ -3562,7 +3562,7 @@ async function deleteTelegramBot(botId) {
 
   let confirmMsg = t('telegram.delete_bot_confirm_msg');
   if (count > 0) {
-    let choicesHtml = '';
+    let choicesHtml;
     if (otherBots.length > 0) {
       const botOptionsHtml = otherBots
         .map(

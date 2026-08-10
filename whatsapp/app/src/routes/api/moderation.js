@@ -945,7 +945,7 @@ export function registerModerationRoutes(app) {
                 typeof testItem.payload === 'string'
                   ? testItem.payload
                   : JSON.stringify(testItem.payload);
-              details = `Lock rule [${lockName}] evaluated against sample payload`;
+              details = `Lock rule [${lockName}] evaluated against sample payload "${samplePayload.slice(0, 25)}"`;
             }
             // --- 5. Blacklist & Regex Word Filters ---
             else if (testItem.type === 'filter') {

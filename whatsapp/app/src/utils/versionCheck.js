@@ -53,7 +53,7 @@ function fetchJson(url) {
 
 export async function getLatestReleases(
   forceRefresh = false,
-  currentAddonVer = null,
+  _currentAddonVer = null,
   currentIntVer = null
 ) {
   const now = Date.now();

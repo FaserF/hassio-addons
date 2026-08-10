@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { authMiddleware, uiAuthMiddleware, uiLimiter } from '../../middleware.js';
+import { authMiddleware, uiAuthMiddleware, uiLimiter, apiLimiter, anyAuthMiddleware } from '../../middleware.js';
 import {
   getSession,
   sessions,
@@ -32,7 +32,7 @@ import { getAvailableLanguages, getLocaleDictionary } from '../../locales/loader
 
 export function registerSystemRoutes(app) {
   // POST /api/system/prepare_update — Mark addon as updating before restart
-  app.post('/api/system/prepare_update', (req, res) => {
+  app.post('/api/system/prepare_update', apiLimiter, anyAuthMiddleware, (req, res) => {
     try {
       const flagPath = path.join(DATA_DIR, 'updating.flag');
       fs.writeFileSync(flagPath, String(Date.now()));
