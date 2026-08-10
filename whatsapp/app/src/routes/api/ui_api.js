@@ -439,8 +439,14 @@ export function registerUiApiRoutes(app) {
       if (!groupJid || !participantJid) {
         return res.status(400).json({ detail: 'Missing groupJid or participantJid' });
       }
-      const cleanParticipant = participantJid.includes('@') ? participantJid : participantJid + '@s.whatsapp.net';
-      const result = await session.sock.groupParticipantsUpdate(groupJid, [cleanParticipant], 'add');
+      const cleanParticipant = participantJid.includes('@')
+        ? participantJid
+        : participantJid + '@s.whatsapp.net';
+      const result = await session.sock.groupParticipantsUpdate(
+        groupJid,
+        [cleanParticipant],
+        'add'
+      );
       res.json({ success: true, result });
     } catch (err) {
       res.status(500).json({ detail: err.message });
@@ -458,8 +464,14 @@ export function registerUiApiRoutes(app) {
       if (!groupJid || !participantJid) {
         return res.status(400).json({ detail: 'Missing groupJid or participantJid' });
       }
-      const cleanParticipant = participantJid.includes('@') ? participantJid : participantJid + '@s.whatsapp.net';
-      const result = await session.sock.groupParticipantsUpdate(groupJid, [cleanParticipant], 'remove');
+      const cleanParticipant = participantJid.includes('@')
+        ? participantJid
+        : participantJid + '@s.whatsapp.net';
+      const result = await session.sock.groupParticipantsUpdate(
+        groupJid,
+        [cleanParticipant],
+        'remove'
+      );
       res.json({ success: true, result });
     } catch (err) {
       res.status(500).json({ detail: err.message });
