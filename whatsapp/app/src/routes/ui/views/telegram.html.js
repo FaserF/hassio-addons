@@ -25,9 +25,9 @@ export default () => `
 
     <!-- Bot Token / Multi-Bot Management Card -->
     <div class="card mod-settings-card" style="margin-top: 16px; padding: 20px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
-            <div style="display:flex; align-items:center; gap:14px;">
-                <div style="font-size: 26px; color: #0088cc; background: rgba(0, 136, 204, 0.12); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:14px; min-width:220px; flex:1;">
+                <div style="font-size: 26px; color: #0088cc; background: rgba(0, 136, 204, 0.12); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink:0;">
                     <i class="fab fa-telegram-plane"></i>
                 </div>
                 <div>
@@ -37,7 +37,7 @@ export default () => `
                     </p>
                 </div>
             </div>
-            <button class="btn btn-primary btn-sm" style="height:36px; padding:0 14px; border-radius:8px; font-weight:600; display:flex; align-items:center; gap:6px;" onclick="openAddTelegramBotModal()">
+            <button class="btn btn-primary btn-sm" style="height:36px; padding:0 14px; border-radius:8px; font-weight:600; display:flex; align-items:center; gap:6px; white-space:nowrap; flex-shrink:0;" onclick="openAddTelegramBotModal()">
                 <i class="fas fa-plus"></i> <span data-i18n="telegram.add_bot">Add Telegram Bot</span>
             </button>
         </div>

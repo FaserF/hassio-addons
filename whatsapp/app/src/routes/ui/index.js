@@ -632,8 +632,9 @@ export function renderDashboard(sessionId) {
         }
         var sb = document.querySelector('.sidebar');
         if (!sb) return;
+        var isMobile = window.innerWidth <= 768;
         var isCollapsed = sb.classList.toggle('collapsed');
-        if (isCollapsed) {
+        if (isCollapsed && !isMobile) {
             sb.style.setProperty('width', '72px', 'important');
             sb.style.setProperty('min-width', '72px', 'important');
             sb.style.setProperty('max-width', '72px', 'important');
@@ -643,7 +644,7 @@ export function renderDashboard(sessionId) {
             sb.style.removeProperty('max-width');
         }
         try {
-            localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
+            if (!isMobile) localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
         } catch (err) {}
     }
     window.toggleSidebar = toggleSidebar;
@@ -687,10 +688,10 @@ export function renderDashboard(sessionId) {
         }
     });
 
-    // Restore sidebar state from last visit (default: expanded)
+    // Restore sidebar state from last visit (default: expanded on desktop)
     var sidebar = document.querySelector('.sidebar');
     try {
-        if (sidebar && localStorage.getItem('sidebarCollapsed') === '1') {
+        if (sidebar && window.innerWidth > 768 && localStorage.getItem('sidebarCollapsed') === '1') {
             sidebar.classList.add('collapsed');
             sidebar.style.width = '72px';
         }

@@ -56,21 +56,21 @@ function renderTelegramBots(bots) {
   container.innerHTML = bots
     .map(
       (b) => `
-    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:8px;">
-      <div style="display:flex; align-items:center; gap:12px;">
-        <div style="font-size: 20px; color: #0088cc; background: rgba(0, 136, 204, 0.15); width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding:12px 16px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:8px;">
+      <div style="display:flex; align-items:center; gap:12px; min-width:180px;">
+        <div style="font-size: 20px; color: #0088cc; background: rgba(0, 136, 204, 0.15); width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink:0;">
           <i class="fas fa-robot"></i>
         </div>
         <div>
-          <div style="font-weight:600; font-size:14px;">${escapeHtml(b.name || '@' + b.username)}</div>
-          <div style="font-size:12px; color:var(--text-muted); font-family:monospace;">
+          <div style="font-weight:600; font-size:14px; word-break:break-word;">${escapeHtml(b.name || '@' + b.username)}</div>
+          <div style="font-size:12px; color:var(--text-muted); font-family:monospace; word-break:break-all;">
             Username: @${escapeHtml(b.username || 'unknown')}
           </div>
         </div>
       </div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <button class="btn btn-secondary btn-sm" onclick="editTelegramBot('${b.id}')" title="Edit Bot"><i class="fas fa-edit"></i> Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteTelegramBot('${b.id}')" title="Delete Bot"><i class="fas fa-trash"></i></button>
+      <div style="display:flex; align-items:center; gap:8px; flex-shrink:0; margin-left:auto;">
+        <button class="btn btn-secondary btn-sm" style="white-space:nowrap;" onclick="editTelegramBot('${b.id}')" title="Edit Bot"><i class="fas fa-edit"></i> Edit</button>
+        <button class="btn btn-danger btn-sm" style="white-space:nowrap;" onclick="deleteTelegramBot('${b.id}')" title="Delete Bot"><i class="fas fa-trash"></i></button>
       </div>
     </div>
   `

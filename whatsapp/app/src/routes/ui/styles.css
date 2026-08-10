@@ -594,7 +594,9 @@ body {
     flex-direction: column;
   }
 
-  .sidebar {
+  /* Mobile Sidebar: Prevent collapsed 72px width bug */
+  .sidebar,
+  .sidebar.collapsed {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
@@ -604,34 +606,51 @@ body {
     padding: 0 !important;
   }
 
+  /* Restore text hidden by .collapsed on desktop */
+  .sidebar.collapsed .logo-text {
+    display: block !important;
+  }
+
   .sidebar-header {
-    height: 54px !important;
-    padding: 0 16px !important;
+    height: 52px !important;
+    padding: 0 12px !important;
   }
 
   .nav-menu {
     flex-direction: row !important;
-    padding: 4px 8px !important;
+    padding: 6px 8px !important;
     gap: 4px !important;
     width: 100% !important;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .nav-item {
-    flex: 1;
-    justify-content: center;
-    padding: 10px 8px !important;
+  .sidebar.collapsed .nav-menu {
+    padding: 6px 8px !important;
+    align-items: stretch !important;
+  }
+
+  .nav-item,
+  .sidebar.collapsed .nav-item {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    height: 40px !important;
+    padding: 8px 12px !important;
     font-size: 0.85rem !important;
     gap: 6px !important;
-    min-height: 44px;
+    min-height: 40px;
+    border-radius: 8px !important;
   }
 
-  .nav-item span {
-    display: none;
+  .nav-item span,
+  .sidebar.collapsed .nav-item > span {
+    display: inline-block !important;
+    white-space: nowrap !important;
+    font-size: 12px !important;
   }
 
-  .nav-menu a.nav-item {
-    display: none !important;
+  .sidebar.collapsed .logo-icon {
+    font-size: 20px !important;
   }
 
   .sidebar-footer {
@@ -642,19 +661,85 @@ body {
     height: 100% !important;
   }
 
+  /* Mobile Top Header: Responsive controls */
   .top-header {
-    height: 50px !important;
-    padding: 0 16px !important;
+    height: auto !important;
+    min-height: 50px !important;
+    padding: 8px 12px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .header-left {
+    gap: 8px !important;
   }
 
   .header-title {
-    font-size: 16px !important;
+    font-size: 15px !important;
+  }
+
+  .header-actions {
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+    margin-left: auto;
+  }
+
+  .session-selector-container {
+    max-width: 150px !important;
+    padding: 4px 8px !important;
+  }
+
+  .session-label {
+    display: none !important;
+  }
+
+  .session-select {
+    max-width: 120px !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    font-size: 11px !important;
+    padding: 4px !important;
+  }
+
+  .language-selector-container select {
+    font-size: 11px !important;
+    padding: 4px 6px !important;
+    min-width: 65px !important;
+  }
+
+  .theme-toggle {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 14px !important;
   }
 
   .content-body {
-    padding: 12px !important;
-    gap: 16px !important;
+    padding: 10px !important;
+    gap: 12px !important;
   }
+
+  /* Prevent button text wrapping / overflow across cards */
+  .btn,
+  .btn-sm,
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger {
+    white-space: nowrap !important;
+    word-break: normal !important;
+    flex-shrink: 0 !important;
+    font-size: 12px !important;
+  }
+
+  /* Hero & Card Headers wrap cleanly on mobile */
+  .mod-hero,
+  .mod-hero-left,
+  .mod-settings-card > div[style*="justify-content:space-between"],
+  .card > div[style*="justify-content:space-between"] {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+}
 
   /* Mobile Chat Layout: Fullscreen Toggle */
   .chat-container-layout {
@@ -1281,7 +1366,8 @@ code {
   text-align: center;
   box-sizing: border-box;
   max-width: 100%;
-  white-space: normal;
+  white-space: nowrap;
+  flex-shrink: 0;
   word-break: break-word;
 }
 
