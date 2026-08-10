@@ -643,9 +643,20 @@ body {
     padding: 0 !important;
   }
 
-  /* Restore text hidden by .collapsed on desktop */
+  /* Restore logo & text hidden by desktop .collapsed mode */
+  .sidebar.collapsed .sidebar-header .logo,
+  .sidebar.collapsed .logo {
+    display: flex !important;
+  }
+
+  .sidebar.collapsed .logo-icon {
+    display: flex !important;
+    font-size: 20px !important;
+  }
+
   .sidebar.collapsed .logo-text {
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .sidebar-header {
@@ -699,65 +710,19 @@ body {
   }
 
   .main-content {
+    flex: 1 1 auto !important;
     height: 100% !important;
-  }
-
-  /* Mobile Top Header: Responsive controls */
-  .top-header {
-    height: auto !important;
-    min-height: 50px !important;
-    padding: 8px 12px !important;
-    flex-wrap: wrap !important;
-    gap: 8px !important;
-  }
-
-  .header-left {
-    gap: 8px !important;
-  }
-
-  .header-title {
-    font-size: 15px !important;
-  }
-
-  .header-actions {
-    gap: 6px !important;
-    flex-wrap: wrap !important;
-    margin-left: auto;
-  }
-
-  .session-selector-container {
-    max-width: 150px !important;
-    padding: 4px 8px !important;
-  }
-
-  .session-label {
-    display: none !important;
-  }
-
-  .session-select {
-    max-width: 120px !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+    min-height: 0 !important;
     overflow: hidden !important;
-    font-size: 11px !important;
-    padding: 4px !important;
-  }
-
-  .language-selector-container select {
-    font-size: 11px !important;
-    padding: 4px 6px !important;
-    min-width: 65px !important;
-  }
-
-  .theme-toggle {
-    width: 32px !important;
-    height: 32px !important;
-    font-size: 14px !important;
   }
 
   .content-body {
     padding: 10px !important;
+    padding-bottom: 10px !important;
     gap: 12px !important;
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    max-height: 100% !important;
   }
 
   /* Prevent button text wrapping / overflow across cards */

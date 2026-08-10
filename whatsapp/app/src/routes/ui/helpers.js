@@ -274,6 +274,7 @@ function t(keyPath, params = {}) {
 
 function applyI18nDOM() {
   document.querySelectorAll('[data-i18n]').forEach((el) => {
+    if (el.id === 'status-badge') return;
     const key = el.getAttribute('data-i18n');
     if (key) {
       el.textContent = t(key);
@@ -296,6 +297,9 @@ function applyI18nDOM() {
 async function setAppLanguage(lang) {
   try {
     await initI18n(lang);
+    if (typeof window.updateDashboard === 'function') {
+      window.updateDashboard();
+    }
     const langName = lang === 'de' ? '🇩🇪 Deutsch' : '🇬🇧 English';
     showToast(t('common.language_switched', { lang: langName }), 'success');
   } catch (err) {
