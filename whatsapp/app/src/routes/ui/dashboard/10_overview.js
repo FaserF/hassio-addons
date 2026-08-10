@@ -214,7 +214,9 @@ async function updateDashboard() {
     // Metadata details
     const whStatus = document.getElementById('webhook-status');
     if (whStatus) {
-      whStatus.textContent = data.webhookEnabled ? t('dashboard.webhook_enabled') : t('dashboard.webhook_disabled');
+      whStatus.textContent = data.webhookEnabled
+        ? t('dashboard.webhook_enabled')
+        : t('dashboard.webhook_disabled');
       whStatus.style.color = data.webhookEnabled ? 'var(--primary)' : 'var(--danger)';
     }
     setElText('webhook-url', data.webhookUrl || t('dashboard.not_configured'));

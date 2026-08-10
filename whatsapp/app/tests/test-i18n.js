@@ -280,7 +280,9 @@ async function runI18nTests() {
   if (fs.existsSync(enginePath)) {
     const engineContent = fs.readFileSync(enginePath, 'utf8');
     // Must import t() from locales
-    const importsT = /import\s*\{[^}]*\bt\b[^}]*\}\s*from\s*['"].*locales\/loader\.js['"]/.test(engineContent);
+    const importsT = /import\s*\{[^}]*\bt\b[^}]*\}\s*from\s*['"].*locales\/loader\.js['"]/.test(
+      engineContent
+    );
     assertTest(importsT, 'engine.js: imports t() from locales/loader.js for bot reply translation');
     // Must define the gt() helper
     const definesGt = /function gt\s*\(/.test(engineContent);
@@ -304,7 +306,6 @@ async function runI18nTests() {
 
   if (failed > 0) {
     throw new Error(`i18n unit tests failed with ${failed} error(s)`);
-
   }
   console.log('======================================================');
   console.log('✅ ALL i18N TESTS PASSED SUCCESSFULLY\n');

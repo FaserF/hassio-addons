@@ -348,7 +348,10 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         session,
         groupId,
         {
-          text: gt(config, 'bot_replies.muted', { user: userId, reason: reason || 'Moderation penalty' }),
+          text: gt(config, 'bot_replies.muted', {
+            user: userId,
+            reason: reason || 'Moderation penalty',
+          }),
           mentions: [`${userId}@s.whatsapp.net`],
         },
         rawMsg
@@ -379,7 +382,10 @@ export async function executePenalty(session, groupId, userId, action, reason = 
         // Send private chat notification with explanation before kicking
         try {
           await session.sock.sendMessage(userJid, {
-            text: gt(config, 'bot_replies.banned_dm', { group: groupId.split('@')[0], reason: reason || 'Violation of group rules' }),
+            text: gt(config, 'bot_replies.banned_dm', {
+              group: groupId.split('@')[0],
+              reason: reason || 'Violation of group rules',
+            }),
           });
         } catch (dmErr) {
           logger.warn({ error: dmErr.message }, `Failed to send DM ban notification to ${userJid}`);
@@ -506,7 +512,10 @@ export async function executePenalty(session, groupId, userId, action, reason = 
           session,
           groupId,
           {
-            text: gt(config, 'bot_replies.kick_ban_done', { name: displayName, action: action === 'ban' ? 'banned' : 'kicked' }),
+            text: gt(config, 'bot_replies.kick_ban_done', {
+              name: displayName,
+              action: action === 'ban' ? 'banned' : 'kicked',
+            }),
             mentions: [userJid],
           },
           rawMsg
@@ -563,7 +572,11 @@ export async function executePenalty(session, groupId, userId, action, reason = 
             session,
             groupId,
             {
-              text: gt(config, 'bot_replies.action_failed', { action, name: displayName, reason: e.message || 'Unknown WhatsApp protocol error' }),
+              text: gt(config, 'bot_replies.action_failed', {
+                action,
+                name: displayName,
+                reason: e.message || 'Unknown WhatsApp protocol error',
+              }),
               mentions: [userJid],
             },
             rawMsg
@@ -632,7 +645,13 @@ export async function issueUserWarning(session, groupId, rawUserId, reason, rawM
       session,
       groupId,
       {
-        text: gt(config, 'bot_replies.warning_max_reached', { user: userDisplay, count: warnCount, max: maxWarns, reason, action: penaltyAction.toUpperCase() }),
+        text: gt(config, 'bot_replies.warning_max_reached', {
+          user: userDisplay,
+          count: warnCount,
+          max: maxWarns,
+          reason,
+          action: penaltyAction.toUpperCase(),
+        }),
         mentions: [`${userKey}@s.whatsapp.net`],
       },
       rawMsg
@@ -651,7 +670,12 @@ export async function issueUserWarning(session, groupId, rawUserId, reason, rawM
       session,
       groupId,
       {
-        text: gt(config, 'bot_replies.warning_issued', { user: userDisplay, count: warnCount, max: maxWarns, reason }),
+        text: gt(config, 'bot_replies.warning_issued', {
+          user: userDisplay,
+          count: warnCount,
+          max: maxWarns,
+          reason,
+        }),
         mentions: [`${userKey}@s.whatsapp.net`],
       },
       rawMsg
@@ -706,7 +730,7 @@ export async function handleModerationMessage(session, event) {
 
   // For group messages, event.sender is the participant JID (@s.whatsapp.net),
   // while event.from is the group JID (@g.us). Use the group JID as groupId.
-  const groupId = isGroup ? (event.from || event.sender) : event.sender;
+  const groupId = isGroup ? event.from || event.sender : event.sender;
   if (!groupId || !groupId.endsWith('@g.us')) return false;
 
   const config = getGroupModerationConfig(groupId);
@@ -786,7 +810,9 @@ export async function handleModerationMessage(session, event) {
           session,
           groupId,
           {
-            text: gt(config, 'bot_replies.moderation_bypassed_whitelist', { reason: bypassedReason }),
+            text: gt(config, 'bot_replies.moderation_bypassed_whitelist', {
+              reason: bypassedReason,
+            }),
           },
           rawMsg,
           { skipSpamGuard: true }
@@ -981,7 +1007,10 @@ export async function handleModerationMessage(session, event) {
                 session,
                 groupId,
                 {
-                  text: gt(config, 'bot_replies.federation_deleted', { user: userId, pattern: pat }),
+                  text: gt(config, 'bot_replies.federation_deleted', {
+                    user: userId,
+                    pattern: pat,
+                  }),
                   mentions: [`${userId}@s.whatsapp.net`],
                 },
                 rawMsg
@@ -1329,12 +1358,7 @@ export async function handleModerationMessage(session, event) {
           await session.sock.sendMessage(groupId, { delete: rawMsg.key });
         } catch (e) {}
       }
-      await reply(
-        session,
-        groupId,
-        { text: gt(config, 'bot_replies.ai_guard_deleted') },
-        rawMsg
-      );
+      await reply(session, groupId, { text: gt(config, 'bot_replies.ai_guard_deleted') }, rawMsg);
       await executePenalty(
         session,
         groupId,
@@ -1386,7 +1410,12 @@ export async function handleModerationMessage(session, event) {
     // Check Rules trigger
     if (text.toLowerCase() === '!rules' || text.toLowerCase() === '#rules') {
       const rulesText = config.rules?.text || 'No rules configured for this group.';
-      await reply(session, groupId, { text: gt(config, 'bot_replies.group_rules', { rules: rulesText }) }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.group_rules', { rules: rulesText }) },
+        rawMsg
+      );
       return true;
     }
   }
@@ -1395,7 +1424,12 @@ export async function handleModerationMessage(session, event) {
   if (config.ai?.enabled && config.ai?.faq_auto_reply && text) {
     const aiReply = await processAiModeration(text, config.ai, store.gemini_api_key);
     if (aiReply) {
-      await reply(session, groupId, { text: gt(config, 'bot_replies.ai_assistant', { reply: aiReply }) }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.ai_assistant', { reply: aiReply }) },
+        rawMsg
+      );
       return true;
     }
   }
@@ -1740,7 +1774,10 @@ export async function handleModerationParticipantUpdate(session, update) {
         }
         try {
           await session.sock.sendMessage(participantJid, {
-            text: gt(config, 'bot_replies.join_ban_enforced_dm', { group: groupTitle, reason: banInfo.reason || 'Banned by group moderation' }),
+            text: gt(config, 'bot_replies.join_ban_enforced_dm', {
+              group: groupTitle,
+              reason: banInfo.reason || 'Banned by group moderation',
+            }),
           });
         } catch (dmErr) {
           logger.warn({ error: dmErr.message }, `Failed to send join ban DM to ${participantJid}`);
@@ -1767,7 +1804,9 @@ export async function handleModerationParticipantUpdate(session, update) {
               session,
               groupId,
               {
-                text: gt(config, 'bot_replies.join_ban_enforced_group', { user: cleanDigits || userId }),
+                text: gt(config, 'bot_replies.join_ban_enforced_group', {
+                  user: cleanDigits || userId,
+                }),
                 mentions: [participantJid],
               },
               rawMsg,
@@ -2058,7 +2097,10 @@ export async function handleModerationParticipantUpdate(session, update) {
         if (targetMode === 'private' && targetPrivateJid) {
           try {
             await reply(session, targetPrivateJid, {
-              text: gt(config, 'bot_replies.welcome_group_info', { group: groupMeta?.subject || 'Group', text: fullText }),
+              text: gt(config, 'bot_replies.welcome_group_info', {
+                group: groupMeta?.subject || 'Group',
+                text: fullText,
+              }),
             });
             sentViaDM = true; // Only mark as sent if the DM actually succeeded
           } catch (dmErr) {
