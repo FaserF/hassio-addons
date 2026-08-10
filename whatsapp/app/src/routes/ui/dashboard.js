@@ -2737,7 +2737,10 @@ async function runAutonomousModerationTest() {
   if (logStream) logStream.style.display = 'block';
   if (progressContainer) progressContainer.style.display = 'block';
   if (progressBar) progressBar.style.width = '0%';
-  if (logContent) logContent.innerHTML = '';
+  if (logContent) {
+    logContent.removeAttribute('data-i18n');
+    logContent.innerHTML = '';
+  }
   if (runBtn) {
     runBtn.disabled = true;
     runBtn.innerHTML =

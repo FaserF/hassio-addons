@@ -742,7 +742,7 @@ export default () => `
                                 <div id="mod-autotest-progress-bar-container" style="display:none; height:4px; background:#374151; border-radius:2px; margin-bottom:8px; overflow:hidden;">
                                     <div id="mod-autotest-progress-bar" style="height:100%; width:0%; background:#38bdf8; transition:width 0.2s;"></div>
                                 </div>
-                                <div id="mod-autotest-log-content" style="color:#38bdf8;" data-i18n="moderation.autotest.console_ready">Console Ready. Select features above and click "Start Auto-Test" to stream real-time logs.</div>
+                                <div id="mod-autotest-log-content" style="color:#38bdf8;"><span data-i18n="moderation.autotest.console_ready">Console Ready. Select features above and click "Start Auto-Test" to stream real-time logs.</span></div>
                             </div>
 
                             <p style="font-size:13px; color:var(--text-muted); margin:4px 0;" data-i18n="moderation.autotest.ready_commands_desc">
