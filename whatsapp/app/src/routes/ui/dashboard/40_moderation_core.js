@@ -620,16 +620,19 @@ async function selectModerationGroup(groupId) {
           const timeStr = info.timestamp ? new Date(info.timestamp).toLocaleString() : 'N/A';
           const reasonText = escapeHtml(info.reason || t('moderation.reason_banned_default'));
           return `
-        <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <strong style="color:#e74c3c;">🚫 @${escapeHtml(u)}</strong>
-              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
-                ${t('moderation.reason_label_fmt', { reason: reasonText })} &middot; <span style="font-size:10px;opacity:0.8;">${timeStr}</span>
-              </div>
+        <div class="history-item" style="padding:12px 14px;margin-bottom:10px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;flex-direction:column;gap:3px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <i class="fas fa-user-slash" style="color:#ef4444;font-size:13px;"></i>
+              <strong style="color:var(--text-main);font-size:14px;font-weight:600;">@${escapeHtml(u)}</strong>
             </div>
-            <button class="btn btn-secondary btn-sm" style="padding:2px 8px;" onclick="unbanUserInUi('${escapeHtml(u)}')"><i class="fas fa-unlock"></i> ${t('moderation.unban_btn')}</button>
+            <div style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
+              <span>${t('moderation.reason_label_fmt', { reason: reasonText })}</span>
+              <span>&middot;</span>
+              <span style="opacity:0.8;font-size:11px;">${timeStr}</span>
+            </div>
           </div>
+          <button class="btn btn-secondary btn-sm" style="padding:5px 12px;font-size:12px;display:inline-flex;align-items:center;gap:6px;" onclick="unbanUserInUi('${escapeHtml(u)}')"><i class="fas fa-unlock"></i> ${t('moderation.unban_btn')}</button>
         </div>`;
         })
         .join('');
@@ -648,16 +651,19 @@ async function selectModerationGroup(groupId) {
           const timeStr = k.timestamp ? new Date(k.timestamp).toLocaleString() : 'N/A';
           const reasonText = escapeHtml(k.reason || t('moderation.reason_kick_default'));
           return `
-        <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <strong style="color:var(--warning);">👢 @${escapeHtml(k.userId)}</strong>
-              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
-                ${t('moderation.reason_label_fmt', { reason: reasonText })} &middot; <span style="font-size:10px;opacity:0.8;">${timeStr}</span>
-              </div>
+        <div class="history-item" style="padding:12px 14px;margin-bottom:10px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;flex-direction:column;gap:3px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <i class="fas fa-user-minus" style="color:#f59e0b;font-size:13px;"></i>
+              <strong style="color:var(--text-main);font-size:14px;font-weight:600;">@${escapeHtml(k.userId)}</strong>
             </div>
-            <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="clearKickLogInUi('${escapeHtml(k.userId)}')"><i class="fas fa-trash"></i> ${t('moderation.remove_btn')}</button>
+            <div style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
+              <span>${t('moderation.reason_label_fmt', { reason: reasonText })}</span>
+              <span>&middot;</span>
+              <span style="opacity:0.8;font-size:11px;">${timeStr}</span>
+            </div>
           </div>
+          <button class="btn btn-secondary btn-sm" style="color:#ef4444;border-color:rgba(239,68,68,0.3);padding:5px 12px;font-size:12px;display:inline-flex;align-items:center;gap:6px;" onclick="clearKickLogInUi('${escapeHtml(k.userId)}')"><i class="fas fa-trash-alt"></i> ${t('moderation.remove_btn')}</button>
         </div>`;
         })
         .join('');
@@ -676,17 +682,17 @@ async function selectModerationGroup(groupId) {
         .reverse()
         .map(
           (r) => `
-        <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <div>
-              <span class="badge ${r.status === 'resolved' ? 'badge-success' : 'badge-danger'}" style="font-size:10px;padding:2px 6px;text-transform:uppercase;">${r.status || 'open'}</span>
-              <strong style="color:var(--text-main);margin-left:6px;">Reporter: @${escapeHtml(r.reporter_id)}</strong>
-              ${r.target_id ? ` &rarr; <span style="color:#e74c3c;">Target: @${escapeHtml(r.target_id)}</span>` : ''}
+        <div class="history-item" style="padding:12px 14px;margin-bottom:10px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="badge ${r.status === 'resolved' ? 'badge-success' : 'badge-danger'}" style="font-size:10px;padding:3px 8px;border-radius:12px;text-transform:uppercase;">${r.status || 'open'}</span>
+              <strong style="color:var(--text-main);font-size:13px;">Reporter: @${escapeHtml(r.reporter_id)}</strong>
+              ${r.target_id ? `<span style="color:#ef4444;font-size:13px;">&rarr; Target: @${escapeHtml(r.target_id)}</span>` : ''}
             </div>
             ${
               r.status !== 'resolved'
-                ? `<button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;" onclick="resolveReportInUi('${escapeHtml(r.id)}')"><i class="fas fa-check"></i> Resolve</button>`
-                : `<span style="font-size:11px;color:var(--text-muted);"><i class="fas fa-check-circle" style="color:#2ecc71;"></i> Resolved</span>`
+                ? `<button class="btn btn-secondary btn-sm" style="padding:4px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px;" onclick="resolveReportInUi('${escapeHtml(r.id)}')"><i class="fas fa-check"></i> Resolve</button>`
+                : `<span style="font-size:11px;color:var(--text-muted);display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-check-circle" style="color:#10b981;"></i> Resolved</span>`
             }
           </div>
           <div style="font-size:12px;color:var(--text-main);margin-top:4px;">
