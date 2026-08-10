@@ -3196,8 +3196,11 @@ async function executeSingleCommandLine(
         },
         msg
       );
+      return true; // admin was notified of unknown command
     }
-    return true;
+    // Non-admin typed a command-like string that doesn't exist — do NOT mark as handled
+    // so the moderation engine (blacklist, FAQ auto-responder) still gets to evaluate the message.
+    return false;
   }
 
   // Check if built-in default command is disabled in this group

@@ -75,6 +75,8 @@
     "webhook": "Webhook-Einstellungen",
     "webhook_active": "Aktiver Status",
     "webhook_url": "Ziel-URL",
+    "webhook_enabled": "Aktiviert ✅",
+    "webhook_disabled": "Deaktiviert ❌",
     "connected_account": "Verbundenes Konto",
     "account_name": "Kontoname",
     "phone_number": "Telefonnummer",

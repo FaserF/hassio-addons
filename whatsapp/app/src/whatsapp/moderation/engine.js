@@ -699,7 +699,9 @@ export async function handleModerationMessage(session, event) {
     return await handlePrivateCaptchaMessage(session, event);
   }
 
-  const groupId = event.sender;
+  // For group messages, event.sender is the participant JID (@s.whatsapp.net),
+  // while event.from is the group JID (@g.us). Use the group JID as groupId.
+  const groupId = isGroup ? (event.from || event.sender) : event.sender;
   if (!groupId || !groupId.endsWith('@g.us')) return false;
 
   const config = getGroupModerationConfig(groupId);
