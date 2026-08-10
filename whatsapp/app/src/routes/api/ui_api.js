@@ -134,12 +134,12 @@ export function registerUiApiRoutes(app) {
               c.preview = '[Message]';
             }
             if (myJidClean && c.jid === myJidClean) {
-              c.name = 'Me / Self (Bot Account)';
+              c.name = '__ME_SELF_BOT__';
             } else if (c.jid.endsWith('@g.us')) {
               if (session.groupCache && session.groupCache.has(c.jid)) {
                 c.name = session.groupCache.get(c.jid);
               } else {
-                c.name = `Group (${c.jid.split('@')[0].split('-')[0]})`;
+                c.name = `__GROUP_FALLBACK__:${c.jid.split('@')[0].split('-')[0]}`;
                 // Background fetch metadata without blocking response
                 if (session.sock) {
                   session.sock
@@ -537,18 +537,26 @@ export function registerUiApiRoutes(app) {
           }
         } else {
           let displayName = jid.split('@')[0];
+          let username = null;
           if (session.contactCache && session.contactCache.has(jid)) {
             const c = session.contactCache.get(jid);
             displayName = c.name || c.notify || displayName;
+            username = c.notify || c.verifiedName || null;
             info.status = c.status || '';
           }
-          if (displayName === jid.split('@')[0] && session.messageStore) {
+          if (session.messageStore) {
             const lastWithPushName = Array.from(session.messageStore.values()).find(
               (m) => m.key?.remoteJid === jid && m.pushName
             );
-            if (lastWithPushName) displayName = lastWithPushName.pushName;
+            if (lastWithPushName) {
+              username = username || lastWithPushName.pushName;
+              if (displayName === jid.split('@')[0]) displayName = lastWithPushName.pushName;
+            }
           }
           info.name = displayName;
+          info.username = username;
+          const phoneDigits = jid.split('@')[0].replace(/\D/g, '');
+          info.phone = phoneDigits ? `+${phoneDigits}` : null;
           if (session.sock) {
             try {
               const st = await session.sock.fetchStatus(jid);

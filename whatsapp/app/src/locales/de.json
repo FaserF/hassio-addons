@@ -238,6 +238,7 @@
     "message_sent": "Nachricht gesendet",
     "message_send_failed": "Nachricht konnte nicht gesendet werden",
     "network_error_send": "Netzwerkfehler beim Senden der Nachricht",
+    "me_self": "Ich / Eigenes Konto (Bot-Konto)",
     "no_matching": "Keine passenden Chats gefunden",
     "no_messages": "Noch keine Nachrichten in dieser Unterhaltung",
     "no_messages_conversation": "Noch keine Nachrichten in dieser Unterhaltung",

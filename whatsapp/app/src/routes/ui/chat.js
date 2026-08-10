@@ -281,8 +281,24 @@ function navigateToTelegramMapping(event, jid, mappingId) {
     window.switchTab('telegram');
   }
   setTimeout(() => {
-    if (window.editTelegramMapping && mappingId) {
+    if (mappingId && window.editTelegramMapping) {
       window.editTelegramMapping(mappingId);
+    } else if (window.openAddTelegramMappingModal) {
+      window.openAddTelegramMappingModal();
+      setTimeout(() => {
+        const waSelect = document.getElementById('tg-modal-wa-select');
+        const waJidEl = document.getElementById('tg-modal-wa-jid');
+        if (waSelect && jid) {
+          if (Array.from(waSelect.options).some((o) => o.value === jid)) {
+            waSelect.value = jid;
+            if (window.onTgWaSelectChange) window.onTgWaSelectChange(jid);
+          } else {
+            waSelect.value = '__custom__';
+            if (window.onTgWaSelectChange) window.onTgWaSelectChange('__custom__');
+            if (waJidEl) waJidEl.value = jid;
+          }
+        }
+      }, 150);
     }
   }, 120);
 }
@@ -364,14 +380,21 @@ function renderChatList(chats) {
           ? `<span class="chat-badges">${modBadgeHtml}${tgBadgeHtml}</span>`
           : '';
 
+      const displayName =
+        c.name === '__ME_SELF_BOT__'
+          ? t('chats.me_self')
+          : c.name?.startsWith('__GROUP_FALLBACK__:')
+            ? `${t('common.group')} (${c.name.split(':')[1]})`
+            : c.name;
+
       return `
-            <div class="chat-item ${isActive}" onclick="selectChat('${c.jid}', '${escapeHtml(c.name)}')">
+            <div class="chat-item ${isActive}" onclick="selectChat('${c.jid}', '${escapeHtml(displayName)}')">
                 <div class="chat-avatar" data-avatar-jid="${c.jid}">
                     ${avatarHtml}
                 </div>
                 <div class="chat-info">
                     <div class="chat-meta">
-                        <span class="chat-name">${escapeHtml(c.name)}${badgesContainer}</span>
+                        <span class="chat-name" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</span>${badgesContainer}
                         <span class="chat-time">${timeStr}</span>
                     </div>
                     <div class="chat-last-msg">${escapeHtml(c.preview || t('chats.no_messages'))}</div>
@@ -470,7 +493,13 @@ function selectChat(jid, name) {
   }
   fetchAvatar(jid);
 
-  document.getElementById('active-chat-name').textContent = name;
+  const finalDisplayName =
+    name === '__ME_SELF_BOT__'
+      ? t('chats.me_self')
+      : name?.startsWith('__GROUP_FALLBACK__:')
+        ? `${t('common.group')} (${name.split(':')[1]})`
+        : name;
+  document.getElementById('active-chat-name').textContent = finalDisplayName;
   const jidText = document.getElementById('active-chat-jid-text');
   if (jidText) jidText.textContent = jid;
 
@@ -1370,6 +1399,58 @@ async function openChatInfoDrawer() {
       ? `<img src="${avatarSrc}" class="drawer-avatar-img">`
       : `<div class="drawer-avatar-fallback"><i class="fas ${info.isGroup ? 'fa-users' : 'fa-user'}"></i></div>`;
 
+    // Check active states for Telegram & Moderation buttons
+    let hasModActive = false;
+    if (activeChatJid.endsWith('@g.us') && chatModConfigCache) {
+      const modData = chatModConfigCache.data || chatModConfigCache;
+      const globalEnabled = modData.global_enabled !== false;
+      if (globalEnabled) {
+        const groups = modData.groups || {};
+        const groupEntry = Object.entries(groups).find(([gKey, gVal]) => {
+          if (matchJid(gKey, activeChatJid, activeChatName)) return true;
+          if (gVal?.jid && matchJid(gVal.jid, activeChatJid, activeChatName)) return true;
+          if (gVal?.name && matchJid(gVal.name, activeChatJid, activeChatName)) return true;
+          return false;
+        });
+        if (groupEntry && groupEntry[1]?.enabled !== false) {
+          hasModActive = true;
+        }
+      }
+    }
+
+    let activeMapping = null;
+    if (chatTgConfigCache) {
+      const tgData = chatTgConfigCache.data || chatTgConfigCache;
+      const tgEnabled = tgData.enabled !== false;
+      const mappings = tgData.mappings || [];
+      if (tgEnabled && Array.isArray(mappings)) {
+        activeMapping = mappings.find((m) => {
+          if (m.enabled === false) return false;
+          if (matchJid(m.wa_jid, activeChatJid, activeChatName)) return true;
+          if (m.wa_name && matchJid(m.wa_name, activeChatJid, activeChatName)) return true;
+          return false;
+        });
+      }
+    }
+
+    const tgActionBtn = activeMapping
+      ? `<button class="btn btn-secondary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;color:#0088cc;border-color:rgba(0,136,204,0.3);" onclick="navigateToTelegramMapping(event, '${activeChatJid}', '${activeMapping.id}')"><i class="fab fa-telegram-plane"></i> Manage Telegram Bridge</button>`
+      : `<button class="btn btn-primary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="navigateToTelegramMapping(event, '${activeChatJid}', null)"><i class="fab fa-telegram-plane"></i> Setup Telegram Bridge</button>`;
+
+    const modActionBtn = info.isGroup
+      ? hasModActive
+        ? `<button class="btn btn-secondary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--primary);border-color:rgba(37,211,102,0.3);" onclick="navigateToModerationGroup(event, '${activeChatJid}')"><i class="fas fa-shield-alt"></i> Manage Moderation Features</button>`
+        : `<button class="btn btn-primary btn-sm" style="width:100%;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="navigateToModerationGroup(event, '${activeChatJid}')"><i class="fas fa-shield-alt"></i> Setup Moderation Features</button>`
+      : '';
+
+    const actionButtonsHtml = `
+      <div class="drawer-section" style="border-top:1px solid var(--border-color);padding-top:14px;margin-top:14px;">
+        <label class="drawer-label" style="margin-bottom:8px;display:block;">Integration Actions</label>
+        ${tgActionBtn}
+        ${modActionBtn}
+      </div>
+    `;
+
     if (info.isGroup) {
       const createdDate = info.creation
         ? new Date(info.creation * 1000).toLocaleDateString()
@@ -1406,9 +1487,16 @@ async function openChatInfoDrawer() {
         }
 
         <div class="drawer-section">
+          <label class="drawer-label">WhatsApp JID</label>
+          <div class="drawer-value" style="font-family:monospace;font-size:12px;user-select:all;">${escapeHtml(info.jid)}</div>
+        </div>
+
+        <div class="drawer-section">
           <label class="drawer-label">Created</label>
           <div class="drawer-value">${createdDate}</div>
         </div>
+
+        ${actionButtonsHtml}
 
         <div class="drawer-section">
           <label class="drawer-label">Participants (${info.participantsCount || 0})</label>
@@ -1420,7 +1508,32 @@ async function openChatInfoDrawer() {
         <div class="drawer-profile">
           <div class="drawer-avatar-wrapper">${avatarHtml}</div>
           <h3 class="drawer-title">${escapeHtml(info.name)}</h3>
-          <p class="drawer-subtitle">${escapeHtml(info.jid)}</p>
+          <p class="drawer-subtitle" style="font-family:monospace;font-size:12px;user-select:all;">${escapeHtml(info.jid)}</p>
+        </div>
+
+        ${
+          info.username
+            ? `
+        <div class="drawer-section">
+          <label class="drawer-label">WhatsApp Username</label>
+          <div class="drawer-value">${escapeHtml(info.username)}</div>
+        </div>`
+            : ''
+        }
+
+        ${
+          info.phone
+            ? `
+        <div class="drawer-section">
+          <label class="drawer-label">WhatsApp Phone Number</label>
+          <div class="drawer-value" style="font-family:monospace;user-select:all;">${escapeHtml(info.phone)}</div>
+        </div>`
+            : ''
+        }
+
+        <div class="drawer-section">
+          <label class="drawer-label">WhatsApp JID</label>
+          <div class="drawer-value" style="font-family:monospace;font-size:12px;user-select:all;">${escapeHtml(info.jid)}</div>
         </div>
 
         ${
@@ -1433,10 +1546,7 @@ async function openChatInfoDrawer() {
             : ''
         }
 
-        <div class="drawer-section">
-          <label class="drawer-label">Phone / JID</label>
-          <div class="drawer-value">${escapeHtml(info.jid)}</div>
-        </div>
+        ${actionButtonsHtml}
       `;
     }
   } catch (e) {
