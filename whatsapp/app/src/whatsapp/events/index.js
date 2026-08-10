@@ -604,9 +604,6 @@ export function handleIncomingMessages(session) {
           trackSent(session, senderDisplay, displayText);
         } else {
           trackReceived(session, senderDisplay, displayText);
-          session.stats.last_received_message = maskData(displayText);
-          session.stats.last_received_sender = maskData(senderDisplay);
-          session.stats.last_received_time = Date.now();
         }
 
         const senderCandidates = [

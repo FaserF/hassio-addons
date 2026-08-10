@@ -167,10 +167,6 @@ export async function reply(session, jid, content, quotedMsg = null, options = {
     const text = contentObj.text || '[Mixed Content]';
     const target = jid.includes('@g.us') ? jid : jid.split('@')[0].split(':')[0];
 
-    session.stats.sent += 1;
-    session.stats.last_sent_message = maskData(text);
-    session.stats.last_sent_target = maskData(target);
-    session.stats.last_sent_time = Date.now();
     trackSent(session, target, text);
     return result;
   } catch (err) {
@@ -193,6 +189,14 @@ export function trackSent(session, target, message) {
     message: maskData(message),
   });
   if (session.recentSent.length > 5) session.recentSent.pop();
+
+  // Update session stats for sent counter and attributes
+  if (session.stats) {
+    session.stats.sent = (session.stats.sent || 0) + 1;
+    session.stats.last_sent_message = maskData(message);
+    session.stats.last_sent_target = maskData(displayTarget);
+    session.stats.last_sent_time = Date.now();
+  }
 }
 
 export function trackReceived(session, sender, message) {
@@ -204,6 +208,14 @@ export function trackReceived(session, sender, message) {
     message: maskData(message),
   });
   if (session.recentReceived.length > 5) session.recentReceived.pop();
+
+  // Update session stats for received counter and attributes
+  if (session.stats) {
+    session.stats.received = (session.stats.received || 0) + 1;
+    session.stats.last_received_message = maskData(message);
+    session.stats.last_received_sender = maskData(displaySender);
+    session.stats.last_received_time = Date.now();
+  }
 }
 
 export function trackFailure(session, target, message, reason) {
