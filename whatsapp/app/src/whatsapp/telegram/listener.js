@@ -1043,7 +1043,8 @@ export async function processTelegramUpdates() {
                 isGroupChat ? mapping.include_sender_name : false
               );
           const cleanHeader = rawHeader.replace(/<\/?b>/g, '');
-          const formattedTgText = mapping.convert_formatting !== false ? telegramToWaFormatting(tgText) : tgText;
+          const formattedTgText =
+            mapping.convert_formatting !== false ? telegramToWaFormatting(tgText) : tgText;
           const outboundWaText = `${cleanHeader}${tgQuoteSnippet}${formattedTgText}`;
 
           let session = getSession('default');

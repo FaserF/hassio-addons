@@ -6,7 +6,8 @@ export function registerReactionListener(session) {
       if (!stored) continue;
       if (!stored._reactions) stored._reactions = [];
 
-      let rawSender = key.participant || key.participantAlt || key.remoteJidAlt || key.remoteJid || '';
+      let rawSender =
+        key.participant || key.participantAlt || key.remoteJidAlt || key.remoteJid || '';
       if (key.fromMe) {
         const selfUser = session.sock?.user?.id;
         const selfPn = selfUser ? selfUser.split(':')[0] : session.stats?.my_number;
