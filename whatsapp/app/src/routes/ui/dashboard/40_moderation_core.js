@@ -181,7 +181,9 @@ function _guardDirty(proceedFn) {
   _dirty.onProceed = proceedFn;
   const modal = document.getElementById('unsaved-changes-modal');
   const nameEl = document.getElementById('unsaved-panel-name');
-  if (nameEl) nameEl.textContent = _dirty.panelLabel || (window.t ? window.t('moderation.this_section') : 'this section');
+  if (nameEl)
+    nameEl.textContent =
+      _dirty.panelLabel || (window.t ? window.t('moderation.this_section') : 'this section');
   if (modal) modal.classList.add('show');
   return false;
 }
@@ -1266,7 +1268,9 @@ window.filterDefaultCommands = function filterDefaultCommands(query) {
         'grid-column:1/-1; color:var(--text-muted); font-size:12px; padding:8px 4px;';
       grid.appendChild(emptyEl);
     }
-    emptyEl.textContent = window.t ? window.t('moderation.no_matching_commands', { query }) : `No commands matching "${query}"`;
+    emptyEl.textContent = window.t
+      ? window.t('moderation.no_matching_commands', { query })
+      : `No commands matching "${query}"`;
     emptyEl.style.display = '';
   } else if (emptyEl) {
     emptyEl.style.display = 'none';

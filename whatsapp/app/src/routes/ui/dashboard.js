@@ -31,7 +31,9 @@ async function updateDashboard() {
       const badge = document.getElementById('status-badge');
       if (badge) {
         badge.className = 'status-badge disconnected';
-        badge.textContent = window.t ? window.t('dashboard.status_connection_error') : 'Connection Error ⚠️';
+        badge.textContent = window.t
+          ? window.t('dashboard.status_connection_error')
+          : 'Connection Error ⚠️';
       }
       return;
     }
@@ -43,9 +45,13 @@ async function updateDashboard() {
       if (badge) {
         badge.className = 'status-badge disconnected';
         if (response.status === 403) {
-          badge.textContent = window.t ? window.t('dashboard.status_access_blocked') : 'Access Blocked (403) ⛔';
+          badge.textContent = window.t
+            ? window.t('dashboard.status_access_blocked')
+            : 'Access Blocked (403) ⛔';
         } else {
-          badge.textContent = window.t ? window.t('dashboard.status_api_error', { status: response.status }) : 'API Error (' + response.status + ') ⚠️';
+          badge.textContent = window.t
+            ? window.t('dashboard.status_api_error', { status: response.status })
+            : 'API Error (' + response.status + ') ⚠️';
         }
       }
       return;
@@ -62,8 +68,12 @@ async function updateDashboard() {
     if (footerSessionId) footerSessionId.textContent = data.sessionId || currentSession;
     if (footerSessionStatus)
       footerSessionStatus.textContent = data.isConnected
-        ? (window.t ? window.t('dashboard.connected') : 'Connected')
-        : (window.t ? window.t('dashboard.disconnected') : 'Disconnected');
+        ? window.t
+          ? window.t('dashboard.connected')
+          : 'Connected'
+        : window.t
+          ? window.t('dashboard.disconnected')
+          : 'Disconnected';
 
     // Version elements
     const setElText = (id, text) => {
@@ -110,23 +120,31 @@ async function updateDashboard() {
     const hostUriLabel = document.getElementById('label-host-uri');
     if (hostUriLabel) {
       hostUriLabel.textContent = data.isStandalone
-        ? (window.t ? window.t('dashboard.gateway_host_domain') : 'Gateway Host / Domain URI')
-        : (window.t ? window.t('dashboard.addon_host_uri') : 'Addon Host URI');
+        ? window.t
+          ? window.t('dashboard.gateway_host_domain')
+          : 'Gateway Host / Domain URI'
+        : window.t
+          ? window.t('dashboard.addon_host_uri')
+          : 'Addon Host URI';
     }
     const setupCardTitle = document.getElementById('setup-card-title');
     if (setupCardTitle) {
       setupCardTitle.innerHTML = data.isStandalone
-        ? '<i class="fas fa-network-wired"></i> ' + (window.t ? window.t('dashboard.connection_setup') : 'Connection Setup')
-        : '<i class="fas fa-home"></i> ' + (window.t ? window.t('dashboard.ha_setup') : 'Home Assistant Setup');
+        ? '<i class="fas fa-network-wired"></i> ' +
+          (window.t ? window.t('dashboard.connection_setup') : 'Connection Setup')
+        : '<i class="fas fa-home"></i> ' +
+          (window.t ? window.t('dashboard.ha_setup') : 'Home Assistant Setup');
     }
     if (data.isStandalone) {
       document.title = 'WhatsApp Gateway';
       const subtitle = document.getElementById('logo-subtitle');
-      if (subtitle) subtitle.textContent = window.t ? window.t('dashboard.standalone') : 'Standalone';
+      if (subtitle)
+        subtitle.textContent = window.t ? window.t('dashboard.standalone') : 'Standalone';
       const haRepoLink = document.getElementById('ha-repo-link');
       if (haRepoLink) {
         const span = haRepoLink.querySelector('span');
-        if (span) span.textContent = window.t ? window.t('dashboard.project_repo') : 'Project Repository';
+        if (span)
+          span.textContent = window.t ? window.t('dashboard.project_repo') : 'Project Repository';
       }
     }
 
@@ -176,21 +194,33 @@ async function updateDashboard() {
               ? 'waiting'
               : 'disconnected');
       badge.textContent = data.isConnected
-        ? (window.t ? window.t('dashboard.status_connected') : 'Connected \u2705')
+        ? window.t
+          ? window.t('dashboard.status_connected')
+          : 'Connected \u2705'
         : data.currentQR
-          ? (window.t ? window.t('dashboard.status_scan_qr') : 'Scan QR Code \uD83D\uDCF1')
+          ? window.t
+            ? window.t('dashboard.status_scan_qr')
+            : 'Scan QR Code \uD83D\uDCF1'
           : data.isConnecting
-            ? (window.t ? window.t('dashboard.status_connecting') : 'Connecting... \u23F3')
+            ? window.t
+              ? window.t('dashboard.status_connecting')
+              : 'Connecting... \u23F3'
             : data.disconnectReason === 'logged_out'
-              ? (window.t ? window.t('dashboard.status_logged_out') : 'Logged Out \uD83D\uDEAB')
-              : (window.t ? window.t('dashboard.status_disconnected') : 'Disconnected \u274C');
+              ? window.t
+                ? window.t('dashboard.status_logged_out')
+                : 'Logged Out \uD83D\uDEAB'
+              : window.t
+                ? window.t('dashboard.status_disconnected')
+                : 'Disconnected \u274C';
     }
     const discReason = document.getElementById('disconnect-reason');
     if (discReason) {
       discReason.textContent = data.currentQR
         ? ''
         : data.disconnectReason
-          ? (window.t ? window.t('dashboard.reason_label', { reason: data.disconnectReason }) : 'Reason: ' + data.disconnectReason)
+          ? window.t
+            ? window.t('dashboard.reason_label', { reason: data.disconnectReason })
+            : 'Reason: ' + data.disconnectReason
           : '';
     }
 
@@ -240,7 +270,9 @@ async function updateDashboard() {
       if (statusEl) {
         statusEl.textContent = data.deviceInfo.status
           ? `"${data.deviceInfo.status}"`
-          : (window.t ? window.t('dashboard.no_profile_status') : 'No profile status set');
+          : window.t
+            ? window.t('dashboard.no_profile_status')
+            : 'No profile status set';
       }
     }
 
@@ -363,7 +395,6 @@ async function updateDashboard() {
     }
   }
 }
-
 
 // System Logs, Session Management & Backups
 
@@ -532,7 +563,6 @@ function switchSession(id) {
   updateDashboard();
 }
 
-
 // Update & Dependency Modals
 
 function openUpdateModal(type) {
@@ -577,9 +607,18 @@ function openUpdateModal(type) {
       ? window.isNewerVersion(currentVersion, latestVersion)
       : latestVersion && latestVersion !== currentVersion;
 
-  if (title) title.textContent = isNewer ? (window.t ? window.t('dashboard.update_available_title', { name: compName }) : `${compName} Update Available`) : (window.t ? window.t('dashboard.info_title', { name: compName }) : `${compName} Info`);
+  if (title)
+    title.textContent = isNewer
+      ? window.t
+        ? window.t('dashboard.update_available_title', { name: compName })
+        : `${compName} Update Available`
+      : window.t
+        ? window.t('dashboard.info_title', { name: compName })
+        : `${compName} Info`;
   if (currVer) currVer.textContent = currentVersion;
-  if (newVer) newVer.textContent = latestVersion || (window.t ? window.t('dashboard.up_to_date') : 'Up to date');
+  if (newVer)
+    newVer.textContent =
+      latestVersion || (window.t ? window.t('dashboard.up_to_date') : 'Up to date');
 
   if (newVerPill) {
     if (!isNewer) {
@@ -596,11 +635,15 @@ function openUpdateModal(type) {
   if (actionBtn) {
     if (isNewer) {
       actionBtn.href = directUpdateUrl;
-      actionBtn.innerHTML = '<i class="fas fa-download"></i> ' + (window.t ? window.t('dashboard.update_now') : 'Update Now');
+      actionBtn.innerHTML =
+        '<i class="fas fa-download"></i> ' +
+        (window.t ? window.t('dashboard.update_now') : 'Update Now');
       actionBtn.style.display = 'inline-flex';
     } else {
       actionBtn.href = repoUrl;
-      actionBtn.innerHTML = '<i class="fab fa-github"></i> ' + (window.t ? window.t('dashboard.view_repo') : 'View Repository');
+      actionBtn.innerHTML =
+        '<i class="fab fa-github"></i> ' +
+        (window.t ? window.t('dashboard.view_repo') : 'View Repository');
       actionBtn.style.display = 'inline-flex';
     }
     actionBtn.target = '_blank';
@@ -669,14 +712,21 @@ function openDependencyModal(depName) {
       ? window.isNewerVersion(data.addonVersion, data.latestAddonVersion)
       : false;
 
-  if (title) title.textContent = window.t ? window.t('dashboard.dep_info_title', { depName }) : `${depName} Dependency Info`;
+  if (title)
+    title.textContent = window.t
+      ? window.t('dashboard.dep_info_title', { depName })
+      : `${depName} Dependency Info`;
   if (currVer) currVer.textContent = info.version;
   if (roleDesc) roleDesc.textContent = info.role;
 
   if (addonStatus) {
     addonStatus.textContent = hasAddonUpdate
-      ? (window.t ? window.t('dashboard.update_available_ver', { version: data.latestAddonVersion }) : `Update Available (${data.latestAddonVersion})`)
-      : (window.t ? window.t('dashboard.addon_up_to_date') : 'Addon Up to date');
+      ? window.t
+        ? window.t('dashboard.update_available_ver', { version: data.latestAddonVersion })
+        : `Update Available (${data.latestAddonVersion})`
+      : window.t
+        ? window.t('dashboard.addon_up_to_date')
+        : 'Addon Up to date';
   }
 
   if (addonStatusPill) {
@@ -694,14 +744,25 @@ function openDependencyModal(depName) {
       rationaleBox.className = 'update-rationale-box';
       rationaleIcon.className = 'fas fa-arrow-alt-circle-up rationale-icon';
       rationaleIcon.style.color = 'var(--primary)';
-      rationaleTitle.textContent = window.t ? window.t('dashboard.addon_update_pending') : 'Addon Update Pending';
-      rationaleDesc.textContent = window.t ? window.t('dashboard.addon_update_pending_desc', { version: data.latestAddonVersion, depName }) : `A newer Addon release (${data.latestAddonVersion}) is ready! Updating your Addon will automatically upgrade ${depName}.`;
+      rationaleTitle.textContent = window.t
+        ? window.t('dashboard.addon_update_pending')
+        : 'Addon Update Pending';
+      rationaleDesc.textContent = window.t
+        ? window.t('dashboard.addon_update_pending_desc', {
+            version: data.latestAddonVersion,
+            depName,
+          })
+        : `A newer Addon release (${data.latestAddonVersion}) is ready! Updating your Addon will automatically upgrade ${depName}.`;
     } else {
       rationaleBox.className = 'update-rationale-box warning';
       rationaleIcon.className = 'fas fa-info-circle rationale-icon';
       rationaleIcon.style.color = 'var(--warning)';
-      rationaleTitle.textContent = window.t ? window.t('dashboard.bundled_dep_mgmt') : 'Bundled Dependency Management';
-      rationaleDesc.textContent = window.t ? window.t('dashboard.bundled_dep_mgmt_desc', { depName }) : `${depName} is bundled inside the WhatsApp Addon container and is updated with each Addon release.`;
+      rationaleTitle.textContent = window.t
+        ? window.t('dashboard.bundled_dep_mgmt')
+        : 'Bundled Dependency Management';
+      rationaleDesc.textContent = window.t
+        ? window.t('dashboard.bundled_dep_mgmt_desc', { depName })
+        : `${depName} is bundled inside the WhatsApp Addon container and is updated with each Addon release.`;
     }
   }
 
@@ -711,14 +772,18 @@ function openDependencyModal(depName) {
   if (actionBtn) {
     if (hasAddonUpdate) {
       actionBtn.className = 'btn btn-primary btn-sm';
-      actionBtn.innerHTML = '<i class="fas fa-download"></i> ' + (window.t ? window.t('dashboard.update_addon_now') : 'Update Addon Now');
+      actionBtn.innerHTML =
+        '<i class="fas fa-download"></i> ' +
+        (window.t ? window.t('dashboard.update_addon_now') : 'Update Addon Now');
       actionBtn.href = data.isStandalone
         ? data.addonReleaseUrl || 'https://github.com/FaserF/hassio-addons/releases'
         : 'https://my.home-assistant.io/redirect/supervisor_addon/?addon=whatsapp';
       actionBtn.target = '_blank';
     } else {
       actionBtn.className = 'btn btn-secondary btn-sm';
-      actionBtn.innerHTML = '<i class="fab fa-github"></i> ' + (window.t ? window.t('dashboard.report_issue') : 'Report Vulnerability / Issue');
+      actionBtn.innerHTML =
+        '<i class="fab fa-github"></i> ' +
+        (window.t ? window.t('dashboard.report_issue') : 'Report Vulnerability / Issue');
       actionBtn.href = 'https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml';
       actionBtn.target = '_blank';
     }
@@ -731,7 +796,6 @@ function closeDependencyModal() {
   const modal = document.getElementById('dependency-info-modal');
   if (modal) modal.classList.remove('show');
 }
-
 
 // Moderation Core (Store, Group Selector, Rules, Greetings, Captcha, Warns, Commands)
 
@@ -916,7 +980,9 @@ function _guardDirty(proceedFn) {
   _dirty.onProceed = proceedFn;
   const modal = document.getElementById('unsaved-changes-modal');
   const nameEl = document.getElementById('unsaved-panel-name');
-  if (nameEl) nameEl.textContent = _dirty.panelLabel || (window.t ? window.t('moderation.this_section') : 'this section');
+  if (nameEl)
+    nameEl.textContent =
+      _dirty.panelLabel || (window.t ? window.t('moderation.this_section') : 'this section');
   if (modal) modal.classList.add('show');
   return false;
 }
@@ -2001,7 +2067,9 @@ window.filterDefaultCommands = function filterDefaultCommands(query) {
         'grid-column:1/-1; color:var(--text-muted); font-size:12px; padding:8px 4px;';
       grid.appendChild(emptyEl);
     }
-    emptyEl.textContent = window.t ? window.t('moderation.no_matching_commands', { query }) : `No commands matching "${query}"`;
+    emptyEl.textContent = window.t
+      ? window.t('moderation.no_matching_commands', { query })
+      : `No commands matching "${query}"`;
     emptyEl.style.display = '';
   } else if (emptyEl) {
     emptyEl.style.display = 'none';
@@ -2220,7 +2288,6 @@ async function unmuteUserInUi(userId) {
     showToast(t('moderation.unmute_failed'), 'danger');
   }
 }
-
 
 // Moderation Security (Content Locks, Anti-Spam / Anti-Raid, Blacklist)
 
@@ -2670,7 +2737,9 @@ async function runAutonomousModerationTest() {
   if (logContent) logContent.innerHTML = '';
   if (runBtn) {
     runBtn.disabled = true;
-    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (window.t ? window.t('moderation.running_test') : 'Running...');
+    runBtn.innerHTML =
+      '<i class="fas fa-spinner fa-spin"></i> ' +
+      (window.t ? window.t('moderation.running_test') : 'Running...');
   }
 
   const appendLog = (msg, styleType = 'normal') => {
@@ -2812,7 +2881,9 @@ async function runAutonomousModerationTest() {
   } finally {
     if (runBtn) {
       runBtn.disabled = false;
-      runBtn.innerHTML = '<i class="fas fa-play"></i> ' + (window.t ? window.t('moderation.start_auto_test') : 'Start Auto-Test');
+      runBtn.innerHTML =
+        '<i class="fas fa-play"></i> ' +
+        (window.t ? window.t('moderation.start_auto_test') : 'Start Auto-Test');
     }
   }
 }
@@ -2831,7 +2902,6 @@ window.runAutonomousModerationTest = runAutonomousModerationTest;
 window.clearAutoTestLogs = clearAutoTestLogs;
 window.exportAutoTestLogs = exportAutoTestLogs;
 window.copyAutoTestLogs = copyAutoTestLogs;
-
 
 // Moderation Intelligence (AI Auto-Reply, Sentiment, System Prompt, Filters)
 
@@ -2916,7 +2986,6 @@ async function saveGroupAiConfig() {
     showToast(t('moderation.ai_settings_save_failed'), 'danger');
   }
 }
-
 
 // Moderation Federation & Import/Export
 
@@ -3241,7 +3310,6 @@ async function submitImportFederation() {
   }
 }
 
-
 // Telegram Bridge Dashboard UI Logic
 
 let cachedTelegramBots = [];
@@ -3403,7 +3471,10 @@ async function toggleTelegramBridge(enabled) {
 
 function openAddTelegramBotModal() {
   const title = document.getElementById('tg-bot-modal-title');
-  if (title) title.innerHTML = '<i class="fas fa-robot"></i> ' + (window.t ? window.t('telegram.add_bot_modal_title') : 'Add Telegram Bot');
+  if (title)
+    title.innerHTML =
+      '<i class="fas fa-robot"></i> ' +
+      (window.t ? window.t('telegram.add_bot_modal_title') : 'Add Telegram Bot');
 
   const idEl = document.getElementById('tg-bot-modal-id');
   if (idEl) idEl.value = '';
@@ -3421,7 +3492,10 @@ function editTelegramBot(botId) {
   if (!bot) return;
 
   const title = document.getElementById('tg-bot-modal-title');
-  if (title) title.innerHTML = '<i class="fas fa-edit"></i> ' + (window.t ? window.t('telegram.edit_bot_modal_title') : 'Edit Telegram Bot');
+  if (title)
+    title.innerHTML =
+      '<i class="fas fa-edit"></i> ' +
+      (window.t ? window.t('telegram.edit_bot_modal_title') : 'Edit Telegram Bot');
 
   const idEl = document.getElementById('tg-bot-modal-id');
   if (idEl) idEl.value = bot.id;
@@ -3691,7 +3765,10 @@ function hasTgMappingUnsavedChanges() {
 
 function openAddTelegramMappingModal() {
   const title = document.getElementById('tg-modal-title');
-  if (title) title.innerHTML = '<i class="fas fa-link"></i> ' + (window.t ? window.t('telegram.add_mapping_modal_title') : 'Add Telegram Chat Mapping');
+  if (title)
+    title.innerHTML =
+      '<i class="fas fa-link"></i> ' +
+      (window.t ? window.t('telegram.add_mapping_modal_title') : 'Add Telegram Chat Mapping');
   const idEl = document.getElementById('tg-modal-id');
   if (idEl) idEl.value = '';
 
@@ -3743,7 +3820,10 @@ async function editTelegramMapping(id) {
     if (!mapping) return;
 
     const title = document.getElementById('tg-modal-title');
-    if (title) title.innerHTML = '<i class="fas fa-edit"></i> ' + (window.t ? window.t('telegram.edit_mapping_modal_title') : 'Edit Telegram Chat Mapping');
+    if (title)
+      title.innerHTML =
+        '<i class="fas fa-edit"></i> ' +
+        (window.t ? window.t('telegram.edit_mapping_modal_title') : 'Edit Telegram Chat Mapping');
 
     const idEl = document.getElementById('tg-modal-id');
     if (idEl) idEl.value = mapping.id;
@@ -4068,7 +4148,9 @@ async function runTelegramBridgeTest() {
 
   if (runBtn) {
     runBtn.disabled = true;
-    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (window.t ? window.t('telegram.testing_button') : 'Testing...');
+    runBtn.innerHTML =
+      '<i class="fas fa-spinner fa-spin"></i> ' +
+      (window.t ? window.t('telegram.testing_button') : 'Testing...');
   }
 
   if (panel) panel.style.display = 'block';
@@ -4081,8 +4163,14 @@ async function runTelegramBridgeTest() {
     const label = window.t('telegram.test_progress_label') || 'Progress';
     progressText.textContent = `${label}: 0 / ${selected_subtests.length} steps`;
   }
-  if (runIdEl) runIdEl.textContent = window.t ? window.t('telegram.run_id_initializing') : 'Run ID: Initializing...';
-  if (logOutput) logOutput.textContent = window.t ? window.t('telegram.starting_test_log') : 'Starting integration test...\n';
+  if (runIdEl)
+    runIdEl.textContent = window.t
+      ? window.t('telegram.run_id_initializing')
+      : 'Run ID: Initializing...';
+  if (logOutput)
+    logOutput.textContent = window.t
+      ? window.t('telegram.starting_test_log')
+      : 'Starting integration test...\n';
 
   try {
     const res = await fetch('api/telegram/test', {
@@ -4101,7 +4189,9 @@ async function runTelegramBridgeTest() {
       showToast(data.error || t('telegram.mapping_add_failed'), 'danger');
       if (runBtn) {
         runBtn.disabled = false;
-        runBtn.innerHTML = '<i class="fas fa-play"></i> ' + (window.t ? window.t('telegram.run_test') : 'Run Integration Test');
+        runBtn.innerHTML =
+          '<i class="fas fa-play"></i> ' +
+          (window.t ? window.t('telegram.run_test') : 'Run Integration Test');
       }
       if (statusBadge) {
         statusBadge.style.background = '#dc3545';
@@ -4256,7 +4346,6 @@ window.selectAllTgSubtests = selectAllTgSubtests;
 window.copyTgTestLogs = copyTgTestLogs;
 window.pollTelegramTestResults = pollTelegramTestResults;
 window.toggleTgTestSuiteUI = toggleTgTestSuiteUI;
-
 
 // Global Window Exports
 window.isNewerVersion = isNewerVersion;

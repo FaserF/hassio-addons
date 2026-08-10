@@ -446,7 +446,9 @@ async function runAutonomousModerationTest() {
   if (logContent) logContent.innerHTML = '';
   if (runBtn) {
     runBtn.disabled = true;
-    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (window.t ? window.t('moderation.running_test') : 'Running...');
+    runBtn.innerHTML =
+      '<i class="fas fa-spinner fa-spin"></i> ' +
+      (window.t ? window.t('moderation.running_test') : 'Running...');
   }
 
   const appendLog = (msg, styleType = 'normal') => {
@@ -588,7 +590,9 @@ async function runAutonomousModerationTest() {
   } finally {
     if (runBtn) {
       runBtn.disabled = false;
-      runBtn.innerHTML = '<i class="fas fa-play"></i> ' + (window.t ? window.t('moderation.start_auto_test') : 'Start Auto-Test');
+      runBtn.innerHTML =
+        '<i class="fas fa-play"></i> ' +
+        (window.t ? window.t('moderation.start_auto_test') : 'Start Auto-Test');
     }
   }
 }

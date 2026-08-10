@@ -444,7 +444,10 @@ async function runI18nTests() {
       let content = fs.readFileSync(path.join(viewsDir, f), 'utf8');
 
       // Strip elements that have data-i18n attributes (including their inner HTML)
-      content = content.replace(/<([a-z1-6]+)(?:\s+[^>]*?)?\bdata-i18n(?:-placeholder|-title)?=["'][^"']+["'][^>]*>[\s\S]*?<\/\1>/gi, '');
+      content = content.replace(
+        /<([a-z1-6]+)(?:\s+[^>]*?)?\bdata-i18n(?:-placeholder|-title)?=["'][^"']+["'][^>]*>[\s\S]*?<\/\1>/gi,
+        ''
+      );
 
       const leafTagRegex = /<([a-z1-6]+)(?:\s+[^>]*?)?>([^<]+)<\/\1>/gi;
       let match;
