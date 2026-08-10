@@ -368,12 +368,11 @@ export function registerTelegramRoutes(app) {
 
       const isBiDirectional = direction === 'bidirectional';
       const isWaToTg = direction === 'wa_to_tg';
-      const directionText =
-        isBiDirectional
-          ? 'Bi-directional (WhatsApp ↔ Telegram)'
-          : isWaToTg
-            ? 'WhatsApp ➔ Telegram'
-            : 'Telegram ➔ WhatsApp';
+      const directionText = isBiDirectional
+        ? 'Bi-directional (WhatsApp ↔ Telegram)'
+        : isWaToTg
+          ? 'WhatsApp ➔ Telegram'
+          : 'Telegram ➔ WhatsApp';
 
       /** Helper to determine if step i (1-indexed) should originate from WhatsApp */
       const shouldStepBeWa = (stepIndex) => {
@@ -762,7 +761,10 @@ export function registerTelegramRoutes(app) {
 
         // STEP 10: Stickers (static & animated WebP) Test
         try {
-          log('STEP_10', `Executing Step 10/16: Stickers (${shouldStepBeWa(10) ? 'WA -> TG' : 'TG -> WA'})`);
+          log(
+            'STEP_10',
+            `Executing Step 10/16: Stickers (${shouldStepBeWa(10) ? 'WA -> TG' : 'TG -> WA'})`
+          );
           const stickerUrl = 'https://raw.githubusercontent.com/faserf/ha-whatsapp/main/icon.png';
           if (shouldStepBeWa(10)) {
             await session.sock
