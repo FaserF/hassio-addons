@@ -304,6 +304,7 @@ function applyI18nDOM() {
     }
   });
 }
+window.applyI18nDOM = applyI18nDOM;
 
 async function setAppLanguage(lang) {
   try {

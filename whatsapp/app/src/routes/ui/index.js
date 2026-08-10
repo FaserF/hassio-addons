@@ -647,6 +647,10 @@ export function renderDashboard(sessionId) {
             } else {
                 document.body.classList.remove('chat-open');
             }
+
+            if (typeof window.applyI18nDOM === 'function') {
+                window.applyI18nDOM();
+            }
         } finally {
             _isSwitchingTab = false;
         }

@@ -3136,7 +3136,35 @@ html[data-theme='light'] .data-table tbody tr:hover {
   word-break: break-word;
 }
 
-/* ── Modern Custom Select Styling (WhatsApp Gateway Theme) ── */
+/* ── Modern Custom Select & Group Picker Styling (WhatsApp Gateway Theme) ── */
+.mod-group-picker {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  background: var(--bg-card) !important;
+  border: 1.5px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  padding: 4px 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.mod-group-picker:hover,
+.mod-group-picker:focus-within {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2), 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+.mod-group-picker select,
+.mod-group-picker .mod-select {
+  border: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  padding: 6px 28px 6px 4px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
 select,
 .mod-select,
 select.mod-select,
@@ -3147,21 +3175,21 @@ select.form-control {
   -moz-appearance: none !important;
   background-color: var(--bg-input) !important;
   color: var(--text-main) !important;
-  border: 1px solid var(--border-color) !important;
-  border-radius: 8px !important;
+  border: 1.5px solid var(--border-color) !important;
+  border-radius: 10px !important;
   padding: 8px 36px 8px 12px !important;
   font-size: 13px !important;
-  font-weight: 500 !important;
+  font-weight: 600 !important;
   font-family: inherit !important;
   line-height: 1.4 !important;
   cursor: pointer !important;
   outline: none !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2325d366' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  transition: all 0.2s ease !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300a884' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
-  background-position: right 10px center !important;
+  background-position: right 12px center !important;
   background-size: 14px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
 }
 
 select:hover,
@@ -3181,10 +3209,11 @@ select.mod-select:focus {
 select option,
 .mod-select option,
 select.mod-select option {
-  background-color: var(--bg-card) !important;
-  color: var(--text-main) !important;
+  background-color: #111b21 !important;
+  color: #e9edef !important;
   padding: 10px !important;
   font-size: 13px !important;
+  font-weight: 500 !important;
 }
 
 .mod-select-sm {
