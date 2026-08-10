@@ -267,7 +267,7 @@
 .mod-two-col-tight {
   gap: 10px;
 }
-@media (max-width: 640px) {
+@media (max-width: 900px) {
   .mod-two-col {
     grid-template-columns: 1fr;
   }

@@ -589,12 +589,15 @@ async function selectModerationGroup(groupId) {
             )
             .join('');
           return `
-        <div class="history-item" style="padding:10px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <div><strong style="color:var(--primary);">@${escapeHtml(u)}</strong> <span class="badge badge-warning" style="font-size:11px;padding:2px 6px;">${t('moderation.warn_badge', { count: warns.length })}</span></div>
-            <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="clearUserWarnInUi('${escapeHtml(u)}')">${t('moderation.clear_all_warns')}</button>
+        <div class="history-item" style="padding:12px 14px;margin-bottom:10px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <strong style="color:var(--primary);font-size:14px;">@${escapeHtml(u)}</strong>
+              <span class="badge badge-warning" style="font-size:11px;padding:3px 8px;border-radius:12px;margin-left:8px;">${t('moderation.warn_badge', { count: warns.length })}</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="color:#e74c3c;border-color:rgba(231,76,60,0.3);padding:3px 10px;font-size:12px;" onclick="clearUserWarnInUi('${escapeHtml(u)}')">${t('moderation.clear_all_warns')}</button>
           </div>
-          <div style="border-top:1px solid var(--border-color);padding-top:4px;">
+          <div style="border-top:1px solid var(--border-color);padding-top:6px;margin-top:6px;">
             ${items}
           </div>
         </div>`;

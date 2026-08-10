@@ -118,9 +118,9 @@ export default () => `
                             <div class="mod-feature-block">
                                 <div class="mod-block-label"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-welcome-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span data-i18n="moderation.welcome_msg_title">Welcome Message</span></div>
                                 <input type="text" id="mod-welcome-msg" class="mod-input" placeholder="Welcome {user} to {group}!" data-i18n-placeholder="moderation.welcome_msg_ph" style="margin-bottom:8px;">
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <label class="mod-field-label" style="margin:0; font-size:11px; white-space:nowrap;" data-i18n="moderation.destination_label">Destination:</label>
-                                    <select id="mod-welcome-target" class="mod-select mod-select-sm">
+                                <div style="display:flex; flex-direction:column; gap:4px; margin-top:6px;">
+                                    <label class="mod-field-label" style="margin:0; font-size:11px;" data-i18n="moderation.destination_label">Destination:</label>
+                                    <select id="mod-welcome-target" class="mod-select mod-select-sm" style="width:100%;">
                                         <option value="private" selected data-i18n="moderation.dest_private_join">Private Chat (DM to joining user)</option>
                                         <option value="group" data-i18n="moderation.dest_group">Group Chat</option>
                                     </select>
@@ -129,9 +129,9 @@ export default () => `
                             <div class="mod-feature-block">
                                 <div class="mod-block-label"><label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-goodbye-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label><span data-i18n="moderation.goodbye_msg_title">Goodbye Message</span></div>
                                 <input type="text" id="mod-goodbye-msg" class="mod-input" placeholder="Goodbye {user}!" data-i18n-placeholder="moderation.goodbye_msg_ph" style="margin-bottom:8px;">
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <label class="mod-field-label" style="margin:0; font-size:11px; white-space:nowrap;" data-i18n="moderation.destination_label">Destination:</label>
-                                    <select id="mod-goodbye-target" class="mod-select mod-select-sm">
+                                <div style="display:flex; flex-direction:column; gap:4px; margin-top:6px;">
+                                    <label class="mod-field-label" style="margin:0; font-size:11px;" data-i18n="moderation.destination_label">Destination:</label>
+                                    <select id="mod-goodbye-target" class="mod-select mod-select-sm" style="width:100%;">
                                         <option value="private" selected data-i18n="moderation.dest_private_leave">Private Chat (DM to leaving user)</option>
                                         <option value="group" data-i18n="moderation.dest_group">Group Chat</option>
                                     </select>
@@ -202,10 +202,22 @@ export default () => `
                             <div class="mod-feature-icon-wrap mod-color-warning"><i class="fas fa-exclamation-triangle"></i></div>
                             <div><div class="mod-feature-title" data-i18n="moderation.warn_system.title">Warning System</div><div class="mod-feature-desc" data-i18n="moderation.warn_system.desc">Issue warnings and auto-punish repeat offenders.</div></div>
                         </div>
-                        <div class="mod-inline-controls">
-                            <div class="mod-number-group"><span class="mod-number-unit" data-i18n="moderation.warn_system.max_warns">Max warnings</span><input type="number" id="mod-max-warns" class="mod-number-input" value="3" min="1" max="20"></div>
-                            <div class="mod-field-group"><label class="mod-field-label" data-i18n="moderation.warn_system.penalty">Penalty after max</label><select id="mod-warn-action" class="mod-select mod-select-sm"><option value="mute" data-i18n="moderation.warn_action_mute">Mute User</option><option value="kick" data-i18n="moderation.warn_action_kick">Kick User</option><option value="ban" data-i18n="moderation.warn_action_ban">Ban User</option></select></div>
-                            <button class="btn btn-primary btn-sm" onclick="saveGroupWarnings()"><i class="fas fa-save"></i> <span data-i18n="common.save">Save</span></button>
+                        <div class="mod-inline-controls" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+                            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.warn_system.max_warns">Max warnings:</label>
+                                    <input type="number" id="mod-max-warns" class="mod-number-input" value="3" min="1" max="20" style="width:65px;">
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.warn_system.penalty">Penalty after max:</label>
+                                    <select id="mod-warn-action" class="mod-select mod-select-sm" style="min-width:140px;">
+                                        <option value="mute" data-i18n="moderation.warn_action_mute">Mute User</option>
+                                        <option value="kick" data-i18n="moderation.warn_action_kick">Kick User</option>
+                                        <option value="ban" data-i18n="moderation.warn_action_ban">Ban User</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-sm" style="height:36px; padding:0 14px; border-radius:8px; display:flex; align-items:center; gap:6px;" onclick="saveGroupWarnings()"><i class="fas fa-save"></i> <span data-i18n="common.save">Save Settings</span></button>
                         </div>
                         <div class="mod-divider"></div>
                         <p class="mod-section-label"><i class="fas fa-list-ul"></i> <span data-i18n="moderation.active_warnings">Active Warnings</span></p>
