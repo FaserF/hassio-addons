@@ -106,6 +106,7 @@ export function saveModerationStore(data) {
 export function getDefaultGroupConfig() {
   return {
     enabled: false,
+    language: 'en',
     rules: {
       text: '',
       show_on_join: false,
@@ -255,6 +256,7 @@ export function getGroupModerationConfig(groupId) {
   return {
     ...def,
     ...existing,
+    language: existing.language || def.language || 'en',
     rules: { ...def.rules, ...(existing.rules || {}), text: rulesText },
     greetings: { ...def.greetings, ...(existing.greetings || {}) },
     warnings: { ...def.warnings, ...(existing.warnings || {}) },

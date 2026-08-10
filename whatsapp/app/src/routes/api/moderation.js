@@ -563,6 +563,7 @@ export function registerModerationRoutes(app) {
             name: 'Welcome Greeting Template Formatting',
             type: 'welcome_captcha',
             sub: 'welcome_template',
+            template: 'Welcome {user} to {group}!',
           },
           {
             name: 'Captcha Code Mode Generation',

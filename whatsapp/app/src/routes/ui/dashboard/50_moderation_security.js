@@ -555,6 +555,33 @@ async function runAutonomousModerationTest() {
         }
       }
     }
+
+    if (buffer && buffer.trim()) {
+      try {
+        const event = JSON.parse(buffer.trim());
+        if (event.type === 'log') {
+          appendLog(
+            event.message,
+            event.level === 'category_start'
+              ? 'category'
+              : event.level === 'error'
+                ? 'error'
+                : 'normal'
+          );
+        } else if (event.type === 'complete') {
+          if (progressBar) progressBar.style.width = '100%';
+          appendLog(`----------------------------------------`, 'header');
+          appendLog(
+            `✅ Auto-test completed! Passed: ${event.data.passed}/${event.data.total} in ${(event.data.duration_ms / 1000).toFixed(2)}s`,
+            'success'
+          );
+          appendLog(`📩 Markdown summary report delivered to WhatsApp group!`, 'header');
+          showToast('Auto-test completed successfully!', 'success');
+        }
+      } catch (_e) {
+        appendLog(buffer.trim(), 'normal');
+      }
+    }
   } catch (err) {
     appendLog(`❌ Auto-test error: ${err.message}`, 'error');
     showToast('Auto-test failed: ' + err.message, 'danger');

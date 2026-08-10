@@ -466,6 +466,8 @@ async function selectModerationGroup(groupId) {
   if (rulesText) rulesText.value = config.rules?.text || '';
   const rulesShow = document.getElementById('mod-rules-show-on-join');
   if (rulesShow) rulesShow.checked = Boolean(config.rules?.show_on_join);
+  const groupLang = document.getElementById('mod-group-language-select');
+  if (groupLang) groupLang.value = config.language || 'en';
 
   // Greetings
   const welcE = document.getElementById('mod-welcome-enabled');
@@ -1050,13 +1052,15 @@ async function saveGroupRules() {
   if (!currentModGroup) return showToast('Please select a group', 'warning');
   const text = document.getElementById('mod-rules-text')?.value || '';
   const showOnJoin = Boolean(document.getElementById('mod-rules-show-on-join')?.checked);
+  const lang = document.getElementById('mod-group-language-select')?.value || 'en';
 
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.rules = { text, show_on_join: showOnJoin };
+  groupConfig.language = lang;
 
   await saveGroupConfig(groupConfig);
   markClean();
-  showToast('Group rules saved!', 'success');
+  showToast('Group rules & language saved!', 'success');
 }
 
 async function saveGroupGreetings() {

@@ -64,7 +64,7 @@
     "addon_host_uri": "Addon-Host-URI",
     "api_bearer_token": "API Bearer Token",
     "static_local_address": "Statische lokale Adresse",
-    "ha_setup_hint": "Geben Sie entweder die Host-URI oder die statische IP mit dem Bearer Token in Ihrem Home Assistant Integrations-Einrichtungsfenster ein.",
+    "ha_setup_hint": "Gib entweder die Host-URI oder die statische IP mit dem Bearer Token in deinem Home Assistant Integrations-Einrichtungsfenster ein.",
     "webhook": "Webhook-Einstellungen",
     "webhook_active": "Aktiver Status",
     "webhook_url": "Ziel-URL",
@@ -118,7 +118,7 @@
     "subtitle": "Automatische Spam-Abwehr, Inhalts-Sperren, Anti-Raid & Community-Verwaltung",
     "active_groups": "Konfigurierte Gruppen",
     "select_group": "Gruppe zur Konfiguration ausw\u00e4hlen",
-    "no_groups": "Noch keine Gruppen konfiguriert. F\u00fcgen Sie Ihren Bot einer WhatsApp-Gruppe hinzu.",
+    "no_groups": "Noch keine Gruppen konfiguriert. F\u00fcge deinen Bot einer WhatsApp-Gruppe hinzu.",
     "tabs": {
       "core": "Allgemein & Anti-Spam",
       "locks": "Inhalts-Sperren",

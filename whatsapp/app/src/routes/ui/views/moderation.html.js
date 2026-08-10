@@ -93,6 +93,14 @@ export default () => `
                             <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-rules-show-on-join"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
                             <span class="mod-option-label">Include group rules inside the welcome message when a new member joins</span>
                         </div>
+                        <div class="mod-option-row" style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+                            <i class="fas fa-language" style="color:var(--primary); font-size:16px;"></i>
+                            <span class="mod-option-label" data-i18n="moderation.language_setting.title">Group Bot Response Language:</span>
+                            <select id="mod-group-language-select" class="mod-select mod-select-sm" style="width:140px;">
+                                <option value="en">🇬🇧 English (Default)</option>
+                                <option value="de">🇩🇪 Deutsch</option>
+                            </select>
+                        </div>
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupRules()"><i class="fas fa-save"></i> <span data-i18n="common.save">Save Rules</span></button></div>
                     </div>
 
@@ -660,7 +668,7 @@ export default () => `
                                                 <span>ms</span>
                                             </div>
                                         </div>
-                                        <button id="btn-run-autotest" class="btn btn-primary btn-sm" style="font-weight:700; padding:6px 18px; display:flex; align-items:center; gap:6px;" onclick="runAutonomousModerationTest()"><i class="fas fa-play"></i> Start Auto-Test</button>
+                                        <button id="btn-run-autotest" class="btn btn-primary btn-sm" style="font-weight:700; padding:8px 18px; display:inline-flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap; flex-shrink:0;" onclick="runAutonomousModerationTest()"><i class="fas fa-play"></i> Start Auto-Test</button>
                                     </div>
                                     
                                     <!-- Subtest Selection Matrix -->

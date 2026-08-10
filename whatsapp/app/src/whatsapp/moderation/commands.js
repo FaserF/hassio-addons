@@ -2061,20 +2061,26 @@ registry.register(
     const lang = args[0].toLowerCase();
     const store = loadModerationStore();
     const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+    c.language = lang;
     if (!c.translation) c.translation = {};
     c.translation.target_lang = lang;
     c.translation.enabled = true;
+    store.groups[groupId] = c;
     saveModerationStore(store);
+    const langMsg =
+      lang === 'de'
+        ? `🌐 Botsprache für diese Gruppe wurde auf \`${lang}\` (Deutsch) gesetzt.`
+        : `🌐 Bot language for this group set to \`${lang}\`.`;
     await reply(
       session,
       groupId,
       {
-        text: `🌐 Translation language set to \`${lang}\` and enabled.`,
+        text: langMsg,
       },
       rawMsg
     );
   },
-  { adminOnly: true, help: 'Set the translation target language' }
+  { adminOnly: true, help: 'Set the group bot response language (e.g. en, de)' }
 );
 
 registry.register(
