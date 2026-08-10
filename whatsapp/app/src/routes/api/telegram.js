@@ -1107,7 +1107,22 @@ export function registerTelegramRoutes(app) {
         }
 
         try {
-          const plainSummary = summaryText.replace(/<[^>]*>/g, '');
+          const stripHtmlTags = (str) => {
+            if (typeof str !== 'string') return '';
+            let res = '';
+            let inTag = false;
+            for (let i = 0; i < str.length; i++) {
+              if (str[i] === '<') {
+                inTag = true;
+              } else if (str[i] === '>') {
+                inTag = false;
+              } else if (!inTag) {
+                res += str[i];
+              }
+            }
+            return res;
+          };
+          const plainSummary = stripHtmlTags(summaryText);
           await session.sock.sendMessage(mapping.wa_jid, { text: plainSummary });
           log('DISPATCH', 'Dispatched Markdown test summary report to WhatsApp chat', 'info');
         } catch (e) {

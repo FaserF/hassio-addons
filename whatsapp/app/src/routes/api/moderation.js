@@ -812,9 +812,12 @@ export function registerModerationRoutes(app) {
         for (const testItem of suite.tests) {
           currentStep++;
           const testStartTime = Date.now();
-          if (currentStep > 1 && delay > 0) {
-            const safeDelay = Math.min(delay, 10000);
-            await new Promise((r) => setTimeout(r, safeDelay));
+          if (currentStep > 1) {
+            const parsedDelay = Number(delay) || 0;
+            if (parsedDelay > 0) {
+              const safeDelay = Math.max(0, Math.min(parsedDelay, 5000));
+              await new Promise((r) => setTimeout(r, safeDelay));
+            }
           }
 
           let status = 'PASSED';
