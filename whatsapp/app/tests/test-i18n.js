@@ -458,7 +458,7 @@ async function runI18nTests() {
         if (['style', 'script', 'code', 'pre', 'svg', 'option'].includes(tagName)) continue;
         if (innerText.includes('${')) continue;
         if (/^&(?:times|bull|middot|nbsp|amp|lt|gt);$/i.test(innerText)) continue;
-        if (/^(?:ms|s|m|h|px|%|\d+)+$/i.test(innerText)) continue;
+        if (/^[smhpx%\d]+$/i.test(innerText)) continue;
         if (!/[a-zA-Z]{2,}/.test(innerText)) continue;
 
         untranslatedHtmlElements.push(`${f}: <${tagName}>${innerText}</${tagName}>`);

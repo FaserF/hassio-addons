@@ -592,6 +592,8 @@ export function renderDashboard(sessionId) {
         const queryString = queryParts.length > 0 ? '?' + queryParts.join('&') : '';
         const newHash = '#' + tabId + queryString;
 
+        if (window.location.hash === newHash) return;
+
         if (window.history && typeof window.history.replaceState === 'function') {
             try {
                 window.history.replaceState(null, '', newHash);
@@ -601,41 +603,48 @@ export function renderDashboard(sessionId) {
     window.updateUrlState = updateUrlState;
     window.parseUrlState = parseUrlState;
 
+    var _isSwitchingTab = false;
     function _doSwitchTab(tabId, updateHistory = true) {
-        if (!validTabs.includes(tabId)) tabId = 'dashboard';
+        if (_isSwitchingTab) return;
+        _isSwitchingTab = true;
+        try {
+            if (!validTabs.includes(tabId)) tabId = 'dashboard';
 
-        navItems.forEach(nav => nav.classList.remove('active'));
-        tabPanels.forEach(panel => panel.classList.remove('active'));
-        
-        const activeNav = document.querySelector('.nav-item[data-tab="' + tabId + '"]');
-        const activePanel = document.getElementById('tab-' + tabId);
-        
-        if (activeNav && activePanel) {
-            activeNav.classList.add('active');
-            activePanel.classList.add('active');
-            if (pageTitle) pageTitle.innerText = tabId.charAt(0).toUpperCase() + tabId.slice(1);
-        }
-
-        const contentBody = document.querySelector('.content-body');
-        if (contentBody) contentBody.scrollTop = 0;
-
-        if (updateHistory) {
-            const currentState = parseUrlState();
-            if (currentState.tab !== tabId) {
-                updateUrlState(tabId, {});
+            navItems.forEach(nav => nav.classList.remove('active'));
+            tabPanels.forEach(panel => panel.classList.remove('active'));
+            
+            const activeNav = document.querySelector('.nav-item[data-tab="' + tabId + '"]');
+            const activePanel = document.getElementById('tab-' + tabId);
+            
+            if (activeNav && activePanel) {
+                activeNav.classList.add('active');
+                activePanel.classList.add('active');
+                if (pageTitle) pageTitle.innerText = tabId.charAt(0).toUpperCase() + tabId.slice(1);
             }
-        }
 
-        isChatTabActive = (tabId === 'chats');
-        document.body.classList.toggle('tab-chats-active', isChatTabActive);
-        if (isChatTabActive) {
-            loadChats();
-        } else if (tabId === 'moderation') {
-            loadModerationConfig();
-        } else if (tabId === 'telegram') {
-            loadTelegramBridgeData();
-        } else {
-            document.body.classList.remove('chat-open');
+            const contentBody = document.querySelector('.content-body');
+            if (contentBody) contentBody.scrollTop = 0;
+
+            if (updateHistory) {
+                const currentState = parseUrlState();
+                if (currentState.tab !== tabId) {
+                    updateUrlState(tabId, {});
+                }
+            }
+
+            isChatTabActive = (tabId === 'chats');
+            document.body.classList.toggle('tab-chats-active', isChatTabActive);
+            if (isChatTabActive) {
+                loadChats();
+            } else if (tabId === 'moderation') {
+                loadModerationConfig();
+            } else if (tabId === 'telegram') {
+                loadTelegramBridgeData();
+            } else {
+                document.body.classList.remove('chat-open');
+            }
+        } finally {
+            _isSwitchingTab = false;
         }
     }
 

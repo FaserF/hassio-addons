@@ -283,7 +283,10 @@ function updateModerationDisabledState() {
   }
 }
 
+let _isLoadingModConfig = false;
 async function loadModerationConfig() {
+  if (_isLoadingModConfig) return;
+  _isLoadingModConfig = true;
   try {
     const [modRes, chatsRes, cmdsRes] = await Promise.all([
       fetch(basePath + 'api/moderation/config'),
@@ -385,6 +388,8 @@ async function loadModerationConfig() {
     updateFedBlacklistTagsInUi();
   } catch (e) {
     console.error('Failed to load moderation config:', e);
+  } finally {
+    _isLoadingModConfig = false;
   }
 }
 

@@ -1107,7 +1107,7 @@ export function registerTelegramRoutes(app) {
         }
 
         try {
-          const plainSummary = summaryText.replace(/<\/?[^>]+(>|$)/g, '');
+          const plainSummary = summaryText.replace(/<[^>]*>/g, '');
           await session.sock.sendMessage(mapping.wa_jid, { text: plainSummary });
           log('DISPATCH', 'Dispatched Markdown test summary report to WhatsApp chat', 'info');
         } catch (e) {

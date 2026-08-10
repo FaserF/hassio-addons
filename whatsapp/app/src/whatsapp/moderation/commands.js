@@ -2348,19 +2348,46 @@ registry.register(
     const threats = [];
 
     for (const url of urlMatches) {
+      let parsedUrl;
+      try {
+        parsedUrl = new URL(url);
+      } catch (e) {
+        parsedUrl = null;
+      }
+
+      const hostname = parsedUrl ? parsedUrl.hostname.toLowerCase() : '';
+      const pathname = parsedUrl ? parsedUrl.pathname.toLowerCase() : '';
       const lower = url.toLowerCase();
-      if (
+
+      const isSuspiciousExt =
+        pathname.endsWith('.exe') ||
+        pathname.endsWith('.scr') ||
+        pathname.endsWith('.bat') ||
+        pathname.endsWith('.vbs') ||
+        pathname.endsWith('.zip') ||
         lower.includes('.exe') ||
         lower.includes('.scr') ||
         lower.includes('.bat') ||
         lower.includes('.vbs') ||
-        lower.includes('.zip') ||
-        lower.includes('bit.ly') ||
-        lower.includes('tinyurl.com')
-      ) {
+        lower.includes('.zip');
+
+      const isShortener =
+        hostname === 'bit.ly' ||
+        hostname.endsWith('.bit.ly') ||
+        hostname === 'tinyurl.com' ||
+        hostname.endsWith('.tinyurl.com');
+
+      if (isSuspiciousExt || isShortener) {
         threats.push(`Suspicious link/extension: \`${url}\``);
       }
-      if (lower.includes('t.me/') || lower.includes('chat.whatsapp.com/')) {
+
+      const isInviteLink =
+        hostname === 't.me' ||
+        hostname.endsWith('.t.me') ||
+        hostname === 'chat.whatsapp.com' ||
+        hostname.endsWith('.chat.whatsapp.com');
+
+      if (isInviteLink) {
         threats.push(`Invite link detected: \`${url}\``);
       }
     }

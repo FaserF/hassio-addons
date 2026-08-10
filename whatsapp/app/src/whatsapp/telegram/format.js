@@ -45,8 +45,12 @@ export function telegramToWaFormatting(text) {
   out = out.replace(/<code>([\s\S]*?)<\/code>/gi, '```$1```');
   out = out.replace(/<pre>([\s\S]*?)<\/pre>/gi, '```$1```');
 
-  // Strip remaining HTML tags if any
-  out = out.replace(/<[^>]+>/g, '');
+  // Strip remaining HTML tags iteratively until no more tags remain
+  let prev;
+  do {
+    prev = out;
+    out = out.replace(/<[^>]+>/g, '');
+  } while (out !== prev);
 
   return out;
 }
