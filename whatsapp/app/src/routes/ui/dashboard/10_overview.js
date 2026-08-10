@@ -20,7 +20,10 @@ function isNewerVersion(curr, latest) {
   return false;
 }
 
+let _isUpdatingDashboard = false;
 async function updateDashboard() {
+  if (_isUpdatingDashboard) return;
+  _isUpdatingDashboard = true;
   try {
     let response;
     try {
@@ -394,5 +397,7 @@ async function updateDashboard() {
       badge.className = 'status-badge disconnected';
       badge.textContent = window.t ? window.t('dashboard.ui_render_error') : 'UI Render Error ⚠️';
     }
+  } finally {
+    _isUpdatingDashboard = false;
   }
 }

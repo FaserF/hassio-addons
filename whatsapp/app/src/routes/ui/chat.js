@@ -232,8 +232,10 @@ function updateChatHeaderBadges(jid, chatName = '') {
   headerBadgesEl.innerHTML = `${modBtn}${tgBtn}`;
 }
 
+let _isLoadingChats = false;
 async function loadChats() {
-  if (!isChatTabActive) return;
+  if (!isChatTabActive || _isLoadingChats) return;
+  _isLoadingChats = true;
   try {
     await fetchChatBadgesConfig();
     const response = await fetch(basePath + 'api/chats?session_id=' + currentSession);
@@ -261,6 +263,8 @@ async function loadChats() {
     }
   } catch (e) {
     console.error('Failed to load chats:', e);
+  } finally {
+    _isLoadingChats = false;
   }
 }
 

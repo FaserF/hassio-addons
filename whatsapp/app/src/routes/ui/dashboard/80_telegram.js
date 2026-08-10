@@ -19,7 +19,10 @@ function updateTelegramBridgeDisabledState(enabled) {
   });
 }
 
+let _isLoadingTgData = false;
 async function loadTelegramBridgeData() {
+  if (_isLoadingTgData) return;
+  _isLoadingTgData = true;
   try {
     const res = await fetch(basePath + 'api/telegram/config');
     const data = await res.json();
@@ -50,6 +53,8 @@ async function loadTelegramBridgeData() {
     }
   } catch (err) {
     console.error('Failed to load Telegram bridge config', err);
+  } finally {
+    _isLoadingTgData = false;
   }
 }
 

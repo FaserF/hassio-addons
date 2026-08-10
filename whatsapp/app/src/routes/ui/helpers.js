@@ -23,7 +23,7 @@ window.onerror = function (message, source, lineno, colno, error) {
   }
 };
 window.addEventListener('unhandledrejection', function (event) {
-  console.error('💥 Unhandled promise rejection:', event.reason);
+  console.error('💥 Unhandled promise rejection:', event.reason, event.reason?.stack);
   try {
     const container = document.getElementById('toast-container');
     if (container) {
@@ -49,7 +49,13 @@ window.addEventListener('unhandledrejection', function (event) {
 if (typeof window !== 'undefined' && window.fetch && !window._fetchAuthPatched) {
   window._fetchAuthPatched = 1;
   const _origFetch = window.fetch;
-  window.fetch = function (input, init = {}) {
+  window.fetch = function (input, init) {
+    if (init && init._authPatched) {
+      return _origFetch.call(this, input, init);
+    }
+    init = init || {};
+    init._authPatched = true;
+
     let url = typeof input === 'string' ? input : input instanceof URL ? input.href : input?.url;
     if (
       url &&
@@ -61,7 +67,6 @@ if (typeof window !== 'undefined' && window.fetch && !window._fetchAuthPatched) 
         url.startsWith('send_message') ||
         url.startsWith('send_reaction'))
     ) {
-      init = init || {};
       init.headers = init.headers || {};
       if (typeof apiToken !== 'undefined' && apiToken) {
         if (init.headers instanceof Headers) {
