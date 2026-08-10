@@ -26,6 +26,7 @@ import { registerPresenceListener } from './presence.js';
 import {
   syncWhatsAppToTelegram,
   syncWhatsAppGroupEventToTelegram,
+  syncWhatsAppDeleteToTelegram,
   startTelegramPolling,
 } from '../telegram/listener.js';
 
@@ -328,6 +329,31 @@ export function handleIncomingMessages(session) {
             },
             'ℹ️ Group messageStubType received (not mapped to add/remove action)'
           );
+        }
+      }
+
+      // Check for incoming REVOKE / message deletion protocol nodes
+      const unwrapProtocolNode = (m) => {
+        if (!m) return null;
+        if (m.protocolMessage) return m.protocolMessage;
+        if (m.ephemeralMessage?.message) return unwrapProtocolNode(m.ephemeralMessage.message);
+        if (m.viewOnceMessage?.message) return unwrapProtocolNode(m.viewOnceMessage.message);
+        if (m.viewOnceMessageV2?.message) return unwrapProtocolNode(m.viewOnceMessageV2.message);
+        return null;
+      };
+      const protNode = unwrapProtocolNode(msg.message);
+      if (
+        protNode &&
+        (protNode.type === 0 || protNode.type === 'REVOKE' || String(protNode.type) === '0')
+      ) {
+        const deletedId = protNode.key?.id;
+        const targetJid = protNode.key?.remoteJid || msg.key?.remoteJid;
+        if (deletedId && targetJid) {
+          logger.info(
+            { deletedId, targetJid },
+            '🗑️ Detected WhatsApp message deletion (protocolMessage REVOKE)'
+          );
+          syncWhatsAppDeleteToTelegram(deletedId, targetJid);
         }
       }
     }
@@ -965,6 +991,55 @@ export function handleIncomingMessages(session) {
     const resolvedEvents = await Promise.all(events);
     session.eventQueue.push(...resolvedEvents);
   });
+
+  if (session.sock?.ev) {
+    session.sock.ev.on('messages.delete', async (item) => {
+      try {
+        const keys = Array.isArray(item) ? item : item?.keys || (item?.key ? [item.key] : []);
+        for (const key of keys) {
+          if (key && key.id && key.remoteJid) {
+            logger.info(
+              { id: key.id, remoteJid: key.remoteJid },
+              '🗑️ Received messages.delete event from Baileys'
+            );
+            syncWhatsAppDeleteToTelegram(key.id, key.remoteJid);
+          }
+        }
+      } catch (err) {
+        logger.debug({ error: err.message }, 'Error handling messages.delete event');
+      }
+    });
+
+    session.sock.ev.on('messages.update', async (updates) => {
+      try {
+        const unwrapProtocol = (m) => {
+          if (!m) return null;
+          if (m.protocolMessage) return m.protocolMessage;
+          if (m.ephemeralMessage?.message) return unwrapProtocol(m.ephemeralMessage.message);
+          if (m.viewOnceMessage?.message) return unwrapProtocol(m.viewOnceMessage.message);
+          return null;
+        };
+        for (const item of updates || []) {
+          const update = item.update || {};
+          const key = item.key || update.key;
+          const prot = unwrapProtocol(update.message);
+          if (prot && (prot.type === 0 || prot.type === 'REVOKE' || String(prot.type) === '0')) {
+            const deletedId = prot.key?.id || key?.id;
+            const targetJid = prot.key?.remoteJid || key?.remoteJid;
+            if (deletedId && targetJid) {
+              logger.info(
+                { deletedId, targetJid },
+                '🗑️ Received messages.update (REVOKE) event from Baileys'
+              );
+              syncWhatsAppDeleteToTelegram(deletedId, targetJid);
+            }
+          }
+        }
+      } catch (err) {
+        logger.debug({ error: err.message }, 'Error handling messages.update event');
+      }
+    });
+  }
 }
 
 export function getQuotedMessage(session, quotedMessageId) {

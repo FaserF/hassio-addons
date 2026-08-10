@@ -5,7 +5,7 @@ import { getJid } from '../../utils/jid.js';
 import { trackSent } from '../../whatsapp/actions.js';
 import { getQuotedMessage } from '../../whatsapp/events/index.js';
 import { ensureConnected, asyncHandler } from './helpers.js';
-import { generateMessageID } from '../../utils/security.js';
+import { syncWhatsAppDeleteToTelegram } from '../../whatsapp/telegram/listener.js';
 
 export function registerMessagingRoutes(app) {
   app.post(
@@ -315,6 +315,7 @@ export function registerMessagingRoutes(app) {
         await session.sock.sendMessage(jid, {
           delete: { remoteJid: jid, fromMe: true, id: messageId },
         });
+        syncWhatsAppDeleteToTelegram(messageId, jid);
         res.json({ status: 'revoked' });
       } catch (err) {
         res.status(500).json({ detail: err.message });

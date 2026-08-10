@@ -102,6 +102,48 @@ export async function syncWhatsAppGroupEventToTelegram(
   }
 }
 
+export async function syncWhatsAppDeleteToTelegram(waMsgId, waJid) {
+  if (!waMsgId) return;
+  const store = loadTelegramStore();
+  if (!store.enabled) return;
+
+  const mapped = resolveTgMsgFromWa(waMsgId);
+  if (!mapped || !mapped.tgMsgId || !mapped.tgChatId) return;
+
+  const mappings = (store.mappings || []).filter(
+    (m) =>
+      m.enabled &&
+      (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound')
+  );
+
+  const targetMappings = mappings.filter(
+    (m) =>
+      (m.wa_jid && m.wa_jid.toLowerCase() === (waJid || '').toLowerCase()) ||
+      String(m.tg_chat_id) === String(mapped.tgChatId)
+  );
+
+  const listToProcess = targetMappings.length > 0 ? targetMappings : (store.mappings || []).filter((m) => m.enabled && String(m.tg_chat_id) === String(mapped.tgChatId));
+
+  for (const mapping of listToProcess) {
+    if (mapping.sync_deletes === false) continue;
+    const bot = getTelegramBotClient(mapping.bot_id);
+    if (bot) {
+      try {
+        await bot.deleteMessage(mapped.tgChatId, mapped.tgMsgId);
+        logger.info(
+          { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+          '🗑️ Successfully mirrored WhatsApp message deletion to Telegram'
+        );
+      } catch (err) {
+        logger.debug(
+          { error: err.message, waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+          'Failed to delete Telegram message for revoked WhatsApp message'
+        );
+      }
+    }
+  }
+}
+
 export async function syncWhatsAppToTelegram(
   msg,
   waJid,
