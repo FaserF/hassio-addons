@@ -318,8 +318,11 @@ export function registerModerationRoutes(app) {
 
       const config = getGroupModerationConfig(group_id);
       const prefix = config.commands?.prefix || '!';
-      const maxCap = 10000;
-      const delay = Math.min(Math.max(50, parseInt(delay_ms, 10) || 500), maxCap);
+      let delay = 500;
+      const parsedReqDelay = parseInt(delay_ms, 10);
+      if (Number.isInteger(parsedReqDelay) && parsedReqDelay >= 50 && parsedReqDelay <= 2000) {
+        delay = parsedReqDelay;
+      }
       const isSafeOnly = Boolean(safe_only);
 
       res.setHeader('Content-Type', 'application/x-ndjson');
@@ -813,11 +816,8 @@ export function registerModerationRoutes(app) {
           currentStep++;
           const testStartTime = Date.now();
           if (currentStep > 1) {
-            const parsedDelay = Number(delay) || 0;
-            if (parsedDelay > 0) {
-              const safeDelay = Math.max(0, Math.min(parsedDelay, 5000));
-              await new Promise((r) => setTimeout(r, safeDelay));
-            }
+            const stepDelayMs = Math.min(Math.max(50, Number(delay) || 500), 2000);
+            await new Promise((r) => setTimeout(r, stepDelayMs));
           }
 
           let status = 'PASSED';
