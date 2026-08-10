@@ -681,12 +681,19 @@ export default () => `
 
                                 <div id="mod-autotest-options" style="display:flex; flex-direction:column; gap:12px; width:100%; border-top:1px solid var(--border-color); padding-top:12px;">
                                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                                        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
-                                            <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer; font-weight:600;">
+                                        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; flex:1;">
+                                            <div style="display:flex; align-items:center; gap:8px; background:var(--bg-card); padding:5px 10px; border-radius:6px; border:1px solid var(--border-color); flex-wrap:wrap; flex:1;">
+                                                <label style="font-weight:600; white-space:nowrap; color:var(--text-main); font-size:12px;"><i class="fas fa-user-check" style="color:var(--primary);"></i> Target Test Member:</label>
+                                                <select id="mod-autotest-member-select" class="mod-select mod-select-sm" style="flex:1; min-width:180px; background:var(--bg-input); padding:4px 8px; border-radius:6px; border:1px solid var(--border-color); font-size:12px;" onchange="onAutoTestMemberSelectChange(this.value)">
+                                                    <option value="">Select Group Member (excluding Bot)...</option>
+                                                </select>
+                                                <input type="text" id="mod-autotest-target-input" class="mod-input" style="width:130px; padding:4px 8px; font-size:12px;" placeholder="@491761234567" oninput="onAutoTestTargetInput(this.value)">
+                                            </div>
+                                            <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer; font-weight:600; white-space:nowrap;">
                                                 <input type="checkbox" id="mod-autotest-safe-only" checked>
                                                 <span data-i18n="moderation.autotest.safe_only"><i class="fas fa-shield-alt" style="color:var(--success);"></i> Safe-Only Commands</span>
                                             </label>
-                                            <div style="display:flex; align-items:center; gap:6px; font-size:12px;">
+                                            <div style="display:flex; align-items:center; gap:6px; font-size:12px; white-space:nowrap;">
                                                 <span style="font-weight:600;" data-i18n="moderation.autotest.delay_label">Delay:</span>
                                                 <input type="number" id="mod-autotest-delay" class="mod-number-input" value="500" min="50" max="10000" style="width:70px; height:32px; font-weight:600;">
                                                 <span>ms</span>

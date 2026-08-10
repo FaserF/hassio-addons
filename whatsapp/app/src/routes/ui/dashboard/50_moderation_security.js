@@ -154,12 +154,14 @@ async function generateGroupTestCommandsModal() {
     );
     if (chatInfoRes.ok) {
       const chatInfo = await chatInfoRes.json();
-      const botJidRaw = chatInfo.botJidRaw || '';
+      const botJidRaw = chatInfo.botJidRaw || chatInfo.botUserNum || '';
       const cleanBotId = botJidRaw ? botJidRaw.split('@')[0].split(':')[0] : '';
       const allParts = chatInfo.participants || [];
       participants = allParts.filter((p) => {
+        if (p.isBot) return false;
         const cleanPId = p.id.split('@')[0].split(':')[0];
-        return cleanPId !== cleanBotId;
+        if (cleanBotId && cleanPId === cleanBotId) return false;
+        return true;
       });
     }
   } catch (_e) {
@@ -391,7 +393,7 @@ async function testActionWarnUser(userJid) {
   config.user_warns[cleanUser].push({ reason: 'Manual UI Test Warning', timestamp: Date.now() });
   await saveGroupConfig(config);
   selectModerationGroup(currentModGroup);
-  showToast(`Issued test warning to @${cleanUser}`, 'success');
+  showToast(t('moderation.test_warn_success', { user: cleanUser }), 'success');
   generateGroupTestCommandsModal();
 }
 
@@ -414,12 +416,17 @@ async function testActionKickUser(userJid) {
     );
     const data = await res.json();
     if (data.success) {
-      showToast(`Kicked test user @${cleanJid} from group`, 'success');
+      showToast(t('moderation.test_kick_success', { user: cleanJid }), 'success');
     } else {
-      showToast(`Kick failed: ${data.detail || 'Check bot admin permissions'}`, 'error');
+      showToast(
+        t('moderation.test_kick_failed', {
+          detail: data.detail || 'Check bot admin permissions',
+        }),
+        'error'
+      );
     }
   } catch (err) {
-    showToast(`Error: ${err.message}`, 'error');
+    showToast(t('moderation.test_action_error', { error: err.message }), 'error');
   }
 }
 
@@ -442,12 +449,17 @@ async function testActionAddUser(userJid) {
     );
     const data = await res.json();
     if (data.success) {
-      showToast(`Re-added test user @${cleanJid} to group`, 'success');
+      showToast(t('moderation.test_add_success', { user: cleanJid }), 'success');
     } else {
-      showToast(`Re-add failed: ${data.detail || 'Check bot admin permissions'}`, 'error');
+      showToast(
+        t('moderation.test_add_failed', {
+          detail: data.detail || 'Check bot admin permissions',
+        }),
+        'error'
+      );
     }
   } catch (err) {
-    showToast(`Error: ${err.message}`, 'error');
+    showToast(t('moderation.test_action_error', { error: err.message }), 'error');
   }
 }
 
@@ -469,10 +481,7 @@ async function testActionRevertState(userJid) {
   // 3. Ensure user is in group (Attempt Re-add)
   await testActionAddUser(userJid);
 
-  showToast(
-    `✅ Test state reverted for @${cleanUser}. All warnings cleared and user restored.`,
-    'success'
-  );
+  showToast(t('moderation.test_revert_success', { user: cleanUser }), 'success');
   generateGroupTestCommandsModal();
 }
 
@@ -549,6 +558,66 @@ function toggleAutoTestModeUI(enabled) {
   if (!enabled && logStream) {
     logStream.style.display = 'none';
   }
+  if (enabled && typeof currentModGroup !== 'undefined' && currentModGroup) {
+    populateAutoTestMemberSelect(currentModGroup);
+  }
+}
+
+async function populateAutoTestMemberSelect(groupId) {
+  const select = document.getElementById('mod-autotest-member-select');
+  if (!select) return;
+  if (!groupId) {
+    select.innerHTML = `<option value="">Select Group Member (excluding Bot)...</option>`;
+    return;
+  }
+  try {
+    const res = await fetch(
+      (typeof basePath !== 'undefined' ? basePath : '') +
+        'api/chat_info?session_id=' +
+        encodeURIComponent(typeof currentSession !== 'undefined' ? currentSession : 'default') +
+        '&jid=' +
+        encodeURIComponent(groupId)
+    );
+    if (!res.ok) return;
+    const chatInfo = await res.json();
+    const botJidRaw = chatInfo.botJidRaw || chatInfo.botUserNum || '';
+    const cleanBotId = botJidRaw ? botJidRaw.split('@')[0].split(':')[0] : '';
+    const allParts = chatInfo.participants || [];
+    const participants = allParts.filter((p) => {
+      if (p.isBot) return false;
+      const cleanPId = p.id.split('@')[0].split(':')[0];
+      if (cleanBotId && cleanPId === cleanBotId) return false;
+      return true;
+    });
+
+    const currentTarget =
+      document.getElementById('mod-autotest-target-input')?.value ||
+      (typeof testTargetUser !== 'undefined' ? testTargetUser : '') ||
+      '';
+
+    select.innerHTML =
+      `<option value="">Custom / Manual Input...</option>` +
+      participants
+        .map((p) => {
+          const userNum = p.id.split('@')[0].split(':')[0];
+          const displayName =
+            p.name && p.name !== userNum ? `${p.name} (@${userNum})` : `@${userNum}`;
+          const val = `@${userNum}`;
+          const isSelected = currentTarget === val || currentTarget === userNum;
+          return `<option value="${escapeHtml(val)}" ${isSelected ? 'selected' : ''}>${escapeHtml(displayName)} ${p.admin ? '(Admin)' : ''}</option>`;
+        })
+        .join('');
+  } catch (_e) {}
+}
+
+function onAutoTestMemberSelectChange(val) {
+  const input = document.getElementById('mod-autotest-target-input');
+  if (input) input.value = val ? val.trim() : '';
+  if (typeof testTargetUser !== 'undefined') testTargetUser = val ? val.trim() : '';
+}
+
+function onAutoTestTargetInput(val) {
+  if (typeof testTargetUser !== 'undefined') testTargetUser = val ? val.trim() : '';
 }
 
 function selectAllModSubtests(select) {
@@ -593,6 +662,10 @@ async function runAutonomousModerationTest() {
 
   const safeOnly = Boolean(document.getElementById('mod-autotest-safe-only')?.checked);
   const delayMs = parseInt(document.getElementById('mod-autotest-delay')?.value, 10) || 500;
+  const targetUser =
+    document.getElementById('mod-autotest-target-input')?.value?.trim() ||
+    (typeof testTargetUser !== 'undefined' ? testTargetUser : '') ||
+    '';
   const runBtn = document.getElementById('btn-run-autotest');
   const logStream = document.getElementById('mod-autotest-log-stream');
   const logContent = document.getElementById('mod-autotest-log-content');
@@ -662,6 +735,7 @@ async function runAutonomousModerationTest() {
         },
         body: JSON.stringify({
           group_id: currentModGroup,
+          target_user: targetUser,
           safe_only: safeOnly,
           delay_ms: delayMs,
           selected_subtests,

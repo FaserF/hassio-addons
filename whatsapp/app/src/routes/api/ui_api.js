@@ -574,10 +574,10 @@ export function registerUiApiRoutes(app) {
             info.creation = metadata.creation;
             info.restrict = !!metadata.restrict;
             info.announce = !!metadata.announce;
-            const botJidRaw = session.sock?.user?.id;
+            const botJidRaw = session.sock?.user?.id || '';
+            const cleanBotId = botJidRaw ? botJidRaw.split('@')[0].split(':')[0] : '';
             let isBotAdmin = false;
             if (botJidRaw && metadata.participants) {
-              const cleanBotId = botJidRaw.split('@')[0].split(':')[0];
               const botPart = metadata.participants.find((p) => {
                 const cleanPId = p.id.split('@')[0].split(':')[0];
                 return cleanPId === cleanBotId;
@@ -586,6 +586,8 @@ export function registerUiApiRoutes(app) {
                 isBotAdmin = true;
               }
             }
+            info.botJidRaw = botJidRaw;
+            info.botUserNum = cleanBotId;
             info.isBotAdmin = isBotAdmin;
             info.canEditGroupInfo = !metadata.restrict || isBotAdmin;
             info.participantsCount = metadata.participants ? metadata.participants.length : 0;
@@ -595,7 +597,9 @@ export function registerUiApiRoutes(app) {
                 const c = session.contactCache.get(p.id);
                 pName = c.name || c.notify || pName;
               }
-              return { id: p.id, name: pName, admin: p.admin };
+              const cleanPId = p.id.split('@')[0].split(':')[0];
+              const isBot = Boolean(cleanBotId && cleanPId === cleanBotId);
+              return { id: p.id, name: pName, admin: p.admin, isBot };
             });
           } catch (err) {
             if (session.groupCache && session.groupCache.has(jid)) {
