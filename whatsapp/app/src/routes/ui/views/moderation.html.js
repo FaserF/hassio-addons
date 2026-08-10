@@ -6,8 +6,8 @@ export default () => `
                     <div class="mod-hero-left">
                         <div class="mod-hero-icon"><i class="fas fa-shield-alt"></i></div>
                         <div>
-                            <h2 class="mod-hero-title">Group Moderation Engine</h2>
-                            <p class="mod-hero-sub">Group defender &middot; Rules enforcement &middot; Anti-raid shield &middot; Automated moderation</p>
+                            <h2 class="mod-hero-title" data-i18n="moderation.title">Group Moderation Engine</h2>
+                            <p class="mod-hero-sub" data-i18n="moderation.subtitle">Group defender &middot; Rules enforcement &middot; Anti-raid shield &middot; Automated moderation</p>
                         </div>
                     </div>
                     <div class="mod-hero-controls">
@@ -21,7 +21,7 @@ export default () => `
                         <div class="mod-group-picker">
                             <i class="fas fa-users" style="color:var(--text-muted);font-size:13px;"></i>
                             <select id="mod-group-select" class="mod-select" onchange="selectModerationGroup(this.value)">
-                                <option value="">Select a group…</option>
+                                <option value="" data-i18n="moderation.select_group">Select a group…</option>
                             </select>
                         </div>
                     </div>
@@ -46,7 +46,7 @@ export default () => `
                     </div>
 
                     <div class="mod-actions" style="display:flex; justify-content:flex-end;">
-                        <button class="btn btn-primary btn-sm" onclick="saveGlobalRulesInline()"><i class="fas fa-save"></i> Save Global Default Rules</button>
+                        <button class="btn btn-primary btn-sm" onclick="saveGlobalRulesInline()"><i class="fas fa-save"></i> <span data-i18n="common.save">Save Settings</span></button>
                     </div>
                 </div>
 
@@ -67,17 +67,17 @@ export default () => `
                         </div>
                         <!-- Subtab Pills -->
                         <div class="mod-subtab-bar">
-                            <button class="mod-pill active" data-subtab="rules" onclick="switchModSubTab('rules')"><i class="fas fa-scroll"></i> Rules</button>
-                            <button class="mod-pill" data-subtab="greetings" onclick="switchModSubTab('greetings')"><i class="fas fa-user-plus"></i> Greetings</button>
+                            <button class="mod-pill active" data-subtab="rules" onclick="switchModSubTab('rules')"><i class="fas fa-scroll"></i> <span data-i18n="moderation.tabs.core">Rules</span></button>
+                            <button class="mod-pill" data-subtab="greetings" onclick="switchModSubTab('greetings')"><i class="fas fa-user-plus"></i> <span data-i18n="moderation.tabs.greetings">Greetings</span></button>
                             <button class="mod-pill" data-subtab="warnings" onclick="switchModSubTab('warnings')"><i class="fas fa-exclamation-triangle"></i> Warnings</button>
                             <button class="mod-pill" data-subtab="reports" onclick="switchModSubTab('reports')"><i class="fas fa-flag"></i> Reports</button>
-                            <button class="mod-pill" data-subtab="locks" onclick="switchModSubTab('locks')"><i class="fas fa-lock"></i> Locks</button>
-                            <button class="mod-pill" data-subtab="blacklist" onclick="switchModSubTab('blacklist')"><i class="fas fa-ban"></i> Blacklist</button>
+                            <button class="mod-pill" data-subtab="locks" onclick="switchModSubTab('locks')"><i class="fas fa-lock"></i> <span data-i18n="moderation.tabs.locks">Locks</span></button>
+                            <button class="mod-pill" data-subtab="blacklist" onclick="switchModSubTab('blacklist')"><i class="fas fa-ban"></i> <span data-i18n="moderation.blacklist.title">Blacklist</span></button>
                             <button class="mod-pill" data-subtab="filters" onclick="switchModSubTab('filters')"><i class="fas fa-robot"></i> Filters</button>
                             <button class="mod-pill" data-subtab="antispam" onclick="switchModSubTab('antispam')"><i class="fas fa-bolt"></i> Anti-Spam</button>
                             <button class="mod-pill" data-subtab="federation" onclick="switchModSubTab('federation')"><i class="fas fa-network-wired"></i> Federation</button>
-                            <button class="mod-pill" data-subtab="commands" onclick="switchModSubTab('commands')"><i class="fas fa-terminal"></i> Commands</button>
-                            <button class="mod-pill" data-subtab="ai" onclick="switchModSubTab('ai')"><i class="fas fa-brain"></i> Gemini AI</button>
+                            <button class="mod-pill" data-subtab="commands" onclick="switchModSubTab('commands')"><i class="fas fa-terminal"></i> <span data-i18n="moderation.tabs.commands">Commands</span></button>
+                            <button class="mod-pill" data-subtab="ai" onclick="switchModSubTab('ai')"><i class="fas fa-brain"></i> <span data-i18n="moderation.tabs.intelligence">Gemini AI</span></button>
                             <button class="mod-pill" data-subtab="migration" onclick="switchModSubTab('migration')"><i class="fas fa-file-export"></i> Import/Export</button>
                         </div>
                     </div>
@@ -93,7 +93,7 @@ export default () => `
                             <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-rules-show-on-join"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
                             <span class="mod-option-label">Include group rules inside the welcome message when a new member joins</span>
                         </div>
-                        <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupRules()"><i class="fas fa-save"></i> Save Rules</button></div>
+                        <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupRules()"><i class="fas fa-save"></i> <span data-i18n="common.save">Save Rules</span></button></div>
                     </div>
 
                     <!-- GREETINGS -->

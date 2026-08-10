@@ -220,7 +220,10 @@ export function registerUiApiRoutes(app) {
           const participant = msg.key.participant || msg.participant;
           const senderName = msg.key.fromMe
             ? 'You'
-            : msg.pushName || (participant ? participant.split('@')[0] : targetJid.split('@')[0]);
+            : msg.pushName
+              ? msg.pushName
+              : resolveCanonicalUserKey(participant || targetJid, session) ||
+                (participant || targetJid ? (participant || targetJid).split('@')[0] : 'Unknown');
 
           let buttons = [];
           let rawMsg = msg.message;

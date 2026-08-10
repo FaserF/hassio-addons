@@ -8,8 +8,8 @@ export default () => `
                 <i class="fab fa-telegram-plane"></i>
             </div>
             <div>
-                <h2 class="mod-hero-title">WhatsApp &amp; Telegram Native Bridge</h2>
-                <p class="mod-hero-sub">Bi-directional message mirroring &middot; Media sync &middot; Intelligent thread quotes</p>
+                <h2 class="mod-hero-title" data-i18n="telegram.title">WhatsApp &amp; Telegram Native Bridge</h2>
+                <p class="mod-hero-sub" data-i18n="telegram.subtitle">Bi-directional message mirroring &middot; Media sync &middot; Intelligent thread quotes</p>
             </div>
         </div>
         <div class="mod-hero-controls">
@@ -31,14 +31,14 @@ export default () => `
                     <i class="fab fa-telegram-plane"></i>
                 </div>
                 <div>
-                    <h3 style="margin: 0; font-weight: 600; font-size:16px;">Telegram Bots Configuration</h3>
+                    <h3 style="margin: 0; font-weight: 600; font-size:16px;" data-i18n="telegram.bot_config">Telegram Bots Configuration</h3>
                     <p style="color: var(--text-muted); margin: 2px 0 0; font-size: 13px;">
                         Manage multiple Telegram Bots (from <code style="background:var(--bg-card); padding:2px 6px; border-radius:4px; color:#0088cc;">@BotFather</code>) to route chats across different bots.
                     </p>
                 </div>
             </div>
             <button class="btn btn-primary btn-sm" style="height:36px; padding:0 14px; border-radius:8px; font-weight:600; display:flex; align-items:center; gap:6px;" onclick="openAddTelegramBotModal()">
-                <i class="fas fa-plus"></i> Add Telegram Bot
+                <i class="fas fa-plus"></i> <span data-i18n="telegram.add_bot">Add Telegram Bot</span>
             </button>
         </div>
 
@@ -56,7 +56,7 @@ export default () => `
                 </div>
                 <div>
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <h3 style="margin:0; font-weight:600; font-size:16px;">Active Chat &amp; Group Mappings</h3>
+                        <h3 style="margin:0; font-weight:600; font-size:16px;" data-i18n="telegram.mappings">Active Chat &amp; Group Mappings</h3>
                         <a href="https://faserf.github.io/ha-whatsapp/telegram.html" target="_blank" class="btn btn-secondary btn-sm" style="padding: 2px 8px; border-radius: 12px; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;" title="View Telegram Bridge Documentation">
                             <i class="fas fa-info-circle"></i> Docs
                         </a>
@@ -65,7 +65,7 @@ export default () => `
                 </div>
             </div>
             <button class="btn btn-primary btn-sm" style="height:38px; padding:0 16px; border-radius:8px; font-weight:600; display:flex; align-items:center; gap:8px;" onclick="openAddTelegramMappingModal()">
-                <i class="fas fa-plus-circle"></i> Add New Mapping
+                <i class="fas fa-plus-circle"></i> <span data-i18n="telegram.add_mapping">Add New Mapping</span>
             </button>
         </div>
 
@@ -74,20 +74,20 @@ export default () => `
             <table class="data-table" id="tg-mappings-table" style="width:100%; min-width:850px;">
                 <thead>
                     <tr>
-                        <th style="width:70px;">Status</th>
+                        <th style="width:70px;" data-i18n="common.status">Status</th>
                         <th>Mapping Name</th>
                         <th><i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp Chat</th>
                         <th><i class="fab fa-telegram" style="color:#0088cc;"></i> Telegram Target</th>
-                        <th>Direction</th>
+                        <th data-i18n="telegram.direction">Direction</th>
                         <th>Settings &amp; Options</th>
-                        <th style="text-align:right;">Actions</th>
+                        <th style="text-align:right;" data-i18n="common.actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="tg-mappings-tbody">
                     <tr>
                         <td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px;">
                             <i class="fas fa-link" style="font-size:32px; opacity:0.3; margin-bottom:8px; display:block;"></i>
-                            No active chat mappings configured. Click "Add New Mapping" to start bridging.
+                            No active chat mappings configured. Click "<span data-i18n="telegram.add_mapping">Add New Mapping</span>" to start bridging.
                         </td>
                     </tr>
                 </tbody>
@@ -97,7 +97,7 @@ export default () => `
 
     <!-- Bridge Integration Test Card (At the bottom) -->
     <div class="card mod-settings-card" style="margin-top: 20px; padding: 20px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:16px;">
             <div style="display:flex; align-items:center; gap:14px;">
                 <div style="font-size: 22px; color: #ff9800; background: rgba(255, 152, 0, 0.12); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink:0;">
                     <i class="fas fa-vial"></i>
@@ -112,7 +112,7 @@ export default () => `
                     </p>
                 </div>
             </div>
-            <button class="btn btn-primary" style="height:42px; padding:0 24px; font-weight:700; font-size:14px; display:flex; align-items:center; gap:8px; background:linear-gradient(135deg, #ff9800 0%, #f57c00 100%); border:none; box-shadow:0 4px 12px rgba(255,152,0,0.3);" id="tg-run-test-btn" onclick="runTelegramBridgeTest()">
+            <button class="btn btn-primary" style="height:42px; padding:0 16px; font-weight:700; font-size:13px; display:flex; align-items:center; gap:6px; white-space:nowrap; flex-shrink:0; background:linear-gradient(135deg, #ff9800 0%, #f57c00 100%); border:none; box-shadow:0 4px 12px rgba(255,152,0,0.3);" id="tg-run-test-btn" onclick="runTelegramBridgeTest()">
                 <i class="fas fa-play"></i> <span data-i18n="telegram.run_test">Run Integration Test</span>
             </button>
         </div>
@@ -121,13 +121,13 @@ export default () => `
             <!-- Controls Row: Target Mapping + Direction -->
             <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; margin-bottom:16px; background:rgba(255,152,0,0.06); border:1px solid rgba(255,152,0,0.25); padding:16px; border-radius:10px;">
                 <div style="flex:1; min-width:240px;">
-                    <label class="mod-field-label" style="font-weight:700; color:#ff9800;"><i class="fas fa-link"></i> Select Target Chat / Group Mapping to Test</label>
+                    <label class="mod-field-label" style="font-weight:700; color:#ff9800;"><i class="fas fa-link"></i> <span data-i18n="telegram.test_mapping">Select Target Chat / Group Mapping to Test</span></label>
                     <select id="tg-test-mapping-select" class="mod-select" style="width:100%; height:40px; font-weight:600;">
                         <option value="">Loading active mappings...</option>
                     </select>
                 </div>
                 <div style="flex:1; min-width:220px;">
-                    <label class="mod-field-label" style="font-weight:700; color:#ff9800;"><i class="fas fa-exchange-alt"></i> Sync Direction</label>
+                    <label class="mod-field-label" style="font-weight:700; color:#ff9800;"><i class="fas fa-exchange-alt"></i> <span data-i18n="telegram.test_direction">Sync Direction</span></label>
                     <select id="tg-test-direction-select" class="mod-select" style="width:100%; height:40px; font-weight:600;">
                         <option value="bidirectional" selected>Bi-directional (WhatsApp ↔ Telegram)</option>
                         <option value="wa_to_tg">Outbound Only (WhatsApp ➔ Telegram)</option>
@@ -169,11 +169,11 @@ export default () => `
             <div id="tg-test-results-panel" style="display:block; background:#111827; border:1px solid #374151; border-radius:10px; padding:16px; margin-top:14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #374151; padding-bottom:8px;">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span id="tg-test-status-badge" class="badge" style="background:#4b5563; color:#fff; font-size:12px; padding:4px 10px; border-radius:12px;">READY</span>
+                        <span id="tg-test-status-badge" class="badge" style="background:#4b5563; color:#fff; font-size:12px; padding:4px 10px; border-radius:12px;" data-i18n="common.ready">READY</span>
                         <strong id="tg-test-progress-text" style="font-size:14px; color:#e5e7eb;">Progress: Ready to execute</strong>
                     </div>
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:11px;" onclick="copyTgTestLogs()"><i class="fas fa-copy"></i> Copy All</button>
+                        <button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:11px;" onclick="copyTgTestLogs()"><i class="fas fa-copy"></i> <span data-i18n="telegram.copy_log">Copy All</span></button>
                         <div style="font-size:12px; color:#9ca3af;" id="tg-test-run-id"><i class="fas fa-terminal"></i> Live Bridge Test Console</div>
                     </div>
                 </div>

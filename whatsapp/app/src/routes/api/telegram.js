@@ -4,7 +4,7 @@ import {
   getTelegramBotClient,
   sanitizeTelegramToken,
 } from '../../whatsapp/telegram/bot.js';
-import { getReqSession } from '../../session.js';
+import { getReqSession, sessions } from '../../session.js';
 import { ensureConnected } from './helpers.js';
 
 export function registerTelegramRoutes(app) {
@@ -288,7 +288,18 @@ export function registerTelegramRoutes(app) {
         .json({ success: false, error: 'Telegram Bot client not configured or disabled' });
     }
 
-    const session = getReqSession(req);
+    // Resolve the WhatsApp session — use the same fallback logic as the dashboard:
+    // 1. Try the session_id from the request body
+    // 2. Fall back to any connected session
+    // 3. Fall back to first available session
+    let session = getReqSession(req);
+    if (!session.isConnected) {
+      // Try to find any connected session as fallback
+      const connectedSession = Array.from(sessions.values()).find((s) => s.isConnected);
+      if (connectedSession) {
+        session = connectedSession;
+      }
+    }
     const connected = await ensureConnected(session, 8000);
     if (!connected) {
       return res.status(400).json({

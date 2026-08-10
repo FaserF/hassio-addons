@@ -152,27 +152,27 @@ export function renderDashboard(sessionId) {
         <nav class="nav-menu">
             <button class="nav-item active" data-tab="dashboard" data-tooltip="Dashboard" onclick="switchTab('dashboard')">
                 <i class="fas fa-chart-pie nav-icon"></i>
-                <span>Dashboard</span>
+                <span data-i18n="nav.status">Dashboard</span>
             </button>
             <button class="nav-item" data-tab="logs" data-tooltip="Daemon Logs" onclick="switchTab('logs')">
                 <i class="fas fa-terminal nav-icon"></i>
-                <span>Daemon Logs</span>
+                <span data-i18n="nav.logs">Daemon Logs</span>
             </button>
             <button class="nav-item" data-tab="chats" data-tooltip="Chats" onclick="switchTab('chats')">
                 <i class="fas fa-comments nav-icon"></i>
-                <span>Chats</span>
+                <span data-i18n="nav.chats">Chats</span>
             </button>
             <button class="nav-item" data-tab="moderation" data-tooltip="Group Moderation" onclick="switchTab('moderation')">
                 <i class="fas fa-shield-alt nav-icon"></i>
-                <span>Moderation</span>
+                <span data-i18n="nav.moderation">Moderation</span>
             </button>
             <button class="nav-item" data-tab="telegram" data-tooltip="Telegram Bridge" onclick="switchTab('telegram')">
                 <i class="fab fa-telegram-plane nav-icon"></i>
-                <span>Telegram Bridge</span>
+                <span data-i18n="nav.telegram">Telegram Bridge</span>
             </button>
             <a href="https://faserf.github.io/ha-whatsapp/" target="_blank" class="nav-item" data-tooltip="Documentation">
                 <i class="fas fa-book nav-icon"></i>
-                <span>Documentation</span>
+                <span data-i18n="nav.docs">Documentation</span>
             </a>
             <a href="https://github.com/FaserF/ha-whatsapp" target="_blank" class="nav-item" data-tooltip="Integration Repo">
                 <i class="fas fa-puzzle-piece nav-icon"></i>

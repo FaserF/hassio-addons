@@ -386,8 +386,6 @@ body {
   display: none;
 }
 
-
-
 /* Chat Info Drawer Styles */
 .chat-info-drawer {
   width: 360px;
@@ -1709,7 +1707,9 @@ code {
   border-radius: 50%;
   font-size: 10px;
   cursor: pointer;
-  transition: transform 0.15s ease, filter 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
   user-select: none;
 }
 .chat-badge-icon:hover {
@@ -1840,7 +1840,9 @@ code {
 .msg-bubble-row {
   display: flex;
   width: 100%;
+  max-width: 100%;
   margin-bottom: 2px;
+  box-sizing: border-box;
 }
 .msg-bubble-row.outbound {
   justify-content: flex-end;
@@ -1850,16 +1852,17 @@ code {
 }
 
 .msg-bubble {
-  max-width: 68%;
+  max-width: 75%;
   min-width: 0;
   padding: 6px 10px 5px 11px;
   border-radius: 12px;
   position: relative;
   box-shadow: var(--shadow-bubble);
   word-break: break-word;
+  overflow-wrap: break-word;
   animation: bubbleIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   display: inline-block;
-  width: fit-content;
+  box-sizing: border-box;
 }
 @keyframes bubbleIn {
   from {
@@ -1889,8 +1892,10 @@ code {
   font-size: 14px;
   line-height: 1.4;
   word-break: break-word;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
-  display: inline;
+  display: inline-block;
+  max-width: 100%;
 }
 .msg-bubble-time {
   font-size: 10px;
@@ -2286,9 +2291,15 @@ code {
 }
 
 @keyframes badgePulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.06); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .modal-card.modal-lg {
@@ -2426,8 +2437,14 @@ code {
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .btn-danger {
@@ -2451,7 +2468,10 @@ code {
   cursor: pointer;
   font-size: 13px;
   color: var(--text-muted);
-  transition: border-color .15s, background .15s, color .15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    color 0.15s;
   width: 100%;
 }
 .mod-file-upload-label:hover {
@@ -2604,7 +2624,9 @@ html[data-theme='light'] .data-table tbody tr:hover {
   padding: 10px;
   margin: 4px 0;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
   min-width: 220px;
 }
 .msg-location-card:hover {
@@ -2740,7 +2762,9 @@ html[data-theme='light'] .data-table tbody tr:hover {
   pointer-events: none !important;
   user-select: none !important;
   filter: grayscale(0.5);
-  transition: opacity 0.25s ease, filter 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    filter 0.25s ease;
 }
 
 .disabled-section input,
@@ -2757,19 +2781,20 @@ html[data-theme='light'] .data-table tbody tr:hover {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 16px !important;
-  border: none !important;
+  font-size: 15px !important;
+  border: 1px solid var(--border-color) !important;
   border-radius: 50% !important;
   cursor: pointer !important;
   color: var(--text-main, #e9edef) !important;
-  background: var(--bg-input, rgba(255, 255, 255, 0.08)) !important;
-  opacity: 0.9 !important;
+  background: var(--bg-card, rgba(255, 255, 255, 0.08)) !important;
+  opacity: 1 !important;
   transition: all 0.2s ease;
   flex-shrink: 0 !important;
 }
 .chat-header-btn:hover {
-  background-color: rgba(255, 255, 255, 0.18) !important;
-  opacity: 1 !important;
+  background-color: var(--bg-input, rgba(255, 255, 255, 0.18)) !important;
+  color: var(--primary, #25d366) !important;
+  border-color: var(--primary) !important;
 }
 .chat-header-btn i {
   font-weight: 900 !important;
@@ -2796,7 +2821,3 @@ html[data-theme='light'] .data-table tbody tr:hover {
   max-width: 80%;
   word-break: break-word;
 }
-
-
-
-
