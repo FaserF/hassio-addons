@@ -955,6 +955,8 @@
     "unapproved_users": "✅ Removed approval for {count} user(s).",
     "current_welcome": "Current welcome message:\n\n{text}",
     "current_goodbye": "Current goodbye message:\n\n{text}",
+    "id_info": "Group ID: `{groupId}`\nYour ID: `{userId}`",
+    "mod_test_header": "🛡️ *WhatsApp Moderation Tests for Group: \"{groupName}\"*\n📌 *Group ID:* `{groupId}`\n⚙️ *Prefix:* `{prefix}`\n\n_Below are separate copy & paste ready test messages for each category. You can copy an entire block or single lines to test in \"{groupName}\":_",
     "usage_save": "⚠️ Usage: `{prefix}save <notename> <content>`",
     "note_saved": "✅ Saved note `{name}`\nRetrieve it with `{prefix}get {name}` or `#{name}`",
     "usage_get": "⚠️ Usage: `{prefix}get <notename>`",

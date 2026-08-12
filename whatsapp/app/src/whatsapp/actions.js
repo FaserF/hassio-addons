@@ -8,6 +8,7 @@ import { markUserAsSeen } from '../state.js';
 import { sessions, enqueue } from '../session.js';
 import { sendHANotification } from '../ha.js';
 import { getGroupModerationConfig, loadModerationStore } from './moderation/store.js';
+import { gt } from './moderation/engine.js';
 
 // Sliding window store for bot outbound message rate limiting
 // Map<jid, Array<timestamp>>
@@ -420,7 +421,11 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
             // Intro Header Message for this Group
             await delay(1000);
             await reply(session, targetJid, {
-              text: `🛡️ *WhatsApp Moderation Tests for Group: "${groupName}"*\n📌 *Group ID:* \`${groupId}\`\n⚙️ *Prefix:* \`${prefix}\`\n\n_Below are separate copy & paste ready test messages for each category. You can copy an entire block or single lines to test in "${groupName}":_`,
+              text: gt(cfg, 'bot_replies.mod_test_header', {
+                groupName,
+                groupId,
+                prefix,
+              }),
             });
 
             // Built-in commands list

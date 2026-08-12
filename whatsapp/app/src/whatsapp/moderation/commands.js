@@ -427,13 +427,14 @@ registry.register(
 
     // 2. Private direct message to admins
     const groupSubject = groupMeta?.subject || groupId.split('@')[0];
-    const dmText =
-      `🚨 *NEW REPORT IN GROUP: ${groupSubject}*\n\n` +
-      `👤 *Reporter:* @${userId}\n` +
-      `${targetId ? `🎯 *Target User:* @${targetId}\n` : ''}` +
-      `📝 *Reason:* ${reasonText}\n` +
-      `⏰ *Timestamp:* ${new Date(reportItem.timestamp).toLocaleString()}\n` +
-      `👥 *Group ID:* \`${groupId}\``;
+    const dmText = gt(config, 'bot_replies.report_dm', {
+      group: groupSubject,
+      reporter: userId,
+      targetText: targetId ? `🎯 *Target User:* @${targetId}\n` : '',
+      reason: reasonText,
+      time: new Date(reportItem.timestamp).toLocaleString(),
+      groupId,
+    });
 
     for (const adminJid of targetAdmins) {
       // Don't DM the bot itself if there are other human admins
@@ -870,14 +871,17 @@ registry.register(
 
 registry.register(
   'id',
-  async (session, groupId, userId, _a, _c, _ia, rawMsg) => {
+  async (session, groupId, userId, _a, config, _ia, rawMsg) => {
     const cleanGroupId = groupId.split('@')[0] + '@g.us';
     const cleanUserId = userId.split('@')[0];
     await reply(
       session,
       groupId,
       {
-        text: `Group ID: \`${cleanGroupId}\`\nYour ID: \`${cleanUserId}\``,
+        text: gt(config, 'bot_replies.id_info', {
+          groupId: cleanGroupId,
+          userId: cleanUserId,
+        }),
       },
       rawMsg
     );
