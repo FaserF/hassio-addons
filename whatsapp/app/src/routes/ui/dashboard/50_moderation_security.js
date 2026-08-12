@@ -681,6 +681,9 @@ async function runAutonomousModerationTest() {
     return;
   }
 
+  const modal = document.getElementById('test-commands-modal');
+  if (modal) modal.style.display = 'flex';
+
   if (logStream) logStream.style.display = 'block';
   if (progressContainer) progressContainer.style.display = 'block';
   if (progressBar) progressBar.style.width = '0%';

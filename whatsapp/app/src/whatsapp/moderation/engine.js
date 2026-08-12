@@ -300,17 +300,19 @@ export async function executePenalty(session, groupId, userId, action, reason = 
   );
 
   try {
-    if (action === 'delete') {
-      if (rawMsg?.key?.id && session?.sock) {
-        try {
-          await session.sock.sendMessage(groupId, { delete: rawMsg.key });
-        } catch (e) {
-          logger.warn(
-            { groupId, userId, err: e?.message },
-            'executePenalty: message delete failed'
-          );
-        }
+    // Always attempt to delete the triggering message for moderation enforcement
+    if (rawMsg?.key?.id && session?.sock) {
+      try {
+        await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+      } catch (e) {
+        logger.warn(
+          { groupId, userId, err: e?.message },
+          'executePenalty: message delete failed (bot may not be group admin)'
+        );
       }
+    }
+
+    if (action === 'delete') {
       return;
     } else if (action === 'warn') {
       await issueUserWarning(
@@ -1370,7 +1372,7 @@ export async function handleModerationMessage(session, event) {
     timestamps.push(now);
     userFloodMap.set(key, timestamps);
 
-    if (timestamps.length > (floodConfig.max_messages || 5)) {
+    if (timestamps.length >= (floodConfig.max_messages || 5)) {
       await executePenalty(
         session,
         groupId,
