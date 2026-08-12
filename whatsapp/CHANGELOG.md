@@ -3,6 +3,7 @@
 ## 2.0.0 (2026-08-10)
 
 ### ✨ Features
+
 - push config_updated event to notify HA when Web UI toggles moderation or telegram bridge ([`82617c61`](https://github.com/FaserF/hassio-addons/commit/82617c61649c2614be64c24c6b8a06a7c7a866ea))
 - prevent i18n applyTranslations from overwriting live autotest log stream ([`ec32f710`](https://github.com/FaserF/hassio-addons/commit/ec32f710a0dae9206c9979686be04dfcaf3607b1))
 - add prepare_update endpoint and updating.flag check to report updating status during addon updates ([`120bf67f`](https://github.com/FaserF/hassio-addons/commit/120bf67fdbd9b602d44fcf41dd42ee663fd393e8))
@@ -20,6 +21,7 @@
 - add F5 page reload state persistence and responsive mobile text overflow layout ([`d91e6c7d`](https://github.com/FaserF/hassio-addons/commit/d91e6c7de17f9f337b5d32f0e0ac05c43093165d))
 
 ### 🐛 Bug Fixes
+
 - use unescaped mapping name in summaryText and decode HTML entities in stripHtmlTags ([`9504ad26`](https://github.com/FaserF/hassio-addons/commit/9504ad26856b783a29e22237d126adbd2d01c726))
 - ESLint CI linter issues ([`38ea420f`](https://github.com/FaserF/hassio-addons/commit/38ea420f1db3927f24df558cb5d4f0f8924eb055))
 - handle incoming delete notices from bridge and revoke target message on WhatsApp ([`49f2a2fa`](https://github.com/FaserF/hassio-addons/commit/49f2a2fad6889f63c85009ae226d01f818ec5029))
@@ -37,18 +39,22 @@
 - normalize URL hash comparison using decodeURIComponent and fix inline onclick escaping ([`4aacf964`](https://github.com/FaserF/hassio-addons/commit/4aacf9645a6f6c9316a83a17e56f49416ff9aa93))
 
 ### 📦 Dependencies
+
 - ⬆️ Update dependency eslint to v10.8.1 (#962) ([`dd949edf`](https://github.com/FaserF/hassio-addons/commit/dd949edf0e437344ed938c60c4d991cb733fa0a2))
 - Update engine.js ([`29178cd6`](https://github.com/FaserF/hassio-addons/commit/29178cd6003b8f5a1dc7a67cc11aec8b13fb9700))
 - logging(moderation): log group participant join and leave update events ([`9eafb0c4`](https://github.com/FaserF/hassio-addons/commit/9eafb0c49e4f4a212e485934e234ba63d45dca53))
 - ⬆️ Update dependency express-rate-limit to v8.6.2 (#956) ([`f94ec5e4`](https://github.com/FaserF/hassio-addons/commit/f94ec5e4a35feef9f13d3962a61654daf01fc96b))
 
 ### 🔧 Configuration
+
 - expand CI route validation to 54 HA endpoints including groups ([`4335ec07`](https://github.com/FaserF/hassio-addons/commit/4335ec07e7a57dd288e546f3afd3b4ff9cd1c335))
 
 ### 📝 Documentation
+
 - document moderation engine, 37 group commands reference, and AI capabilities ([`d1e65e02`](https://github.com/FaserF/hassio-addons/commit/d1e65e02ac347a9118c591d0e428c80b79955f89))
 
 ### 🎨 Style
+
 - improved checkbox UI ([`6676a493`](https://github.com/FaserF/hassio-addons/commit/6676a493d776c1418f3d1e4d8f95acb95772319c))
 - enforce strict display none on sidebar logo elements when collapsed ([`fbaddc56`](https://github.com/FaserF/hassio-addons/commit/fbaddc56da0063b8174bab551639ae11066795c3))
 - convert unsaved changes prompt and confirm dialogs to custom WA Gateway modal style ([`601b0c90`](https://github.com/FaserF/hassio-addons/commit/601b0c90332720170c1242f0822c3803e7b092b7))
@@ -58,6 +64,7 @@
 - modularize run script and ui views ([`d32fac93`](https://github.com/FaserF/hassio-addons/commit/d32fac936d34e3b03bdafaff868dc8df19699ab3))
 
 ### 🚀 Other
+
 - small fix ([`61ac2789`](https://github.com/FaserF/hassio-addons/commit/61ac2789fd8b3e7a0172e0e95cbeb20c8f37f01e))
 - small fix ([`08e2a15b`](https://github.com/FaserF/hassio-addons/commit/08e2a15b751aa17ac45b164d705f911bc6c79d7c))
 - small fix ([`5a9aa318`](https://github.com/FaserF/hassio-addons/commit/5a9aa3189d112233ff76ea494c0d0a2cc93318ef))
@@ -70,8 +77,8 @@
 - document group moderation and defender engine in addon docs ([`cf1120e0`](https://github.com/FaserF/hassio-addons/commit/cf1120e06aed2d33996a134ca6a7eec95cca45b8))
 
 ### 📌 Release Note
-- Read the full announcement here: https://github.com/FaserF/ha-whatsapp/discussions/85
 
+- Read the full announcement here: <https://github.com/FaserF/ha-whatsapp/discussions/85>
 
 ## 1.8.2 (2026-08-04)
 
