@@ -28,20 +28,23 @@ This add-on is equipped with a self-managed integration system. When the add-on 
 
 This feature ensures that you always have the correct version of the integration to work with the add-on's API.
 
-## 🌐 Network & Integration Setup
+## 🌐 Network & Home Assistant Auto-Discovery
 
-### Network Mode
+This add-on runs with **`host_network: true`** by default.
 
-- **Bridge Network (Default)**: Runs in standard container isolation with port `8092` exposed and Ingress enabled.
-- **Host Network (Optional)**: Can be enabled if you want local mDNS multicast discovery (`_ha-db_infoscreen._tcp.local.`) across your physical subnet.
+### Why is Host Network used?
+- **mDNS / Zeroconf Multicast**: Home Assistant auto-discovery uses multicast UDP (`224.0.0.251:5353` for `_ha-db_infoscreen._tcp.local.`).
+- **Instant Discovery**: With host networking, the add-on's built-in mDNS broadcaster allows Home Assistant to automatically detect the local DBF server and display a ready-to-configure tile in **Settings ➔ Devices & Services**.
+- **Port Usage**: The local DBF web server listens on port `8092`.
 
 ### 1-Click Home Assistant Integration Setup
-
-1. Go to **Settings ➔ Devices & Services ➔ Add Integration** and search for **DB Infoscreen**.
-2. The integration's config flow automatically queries the Supervisor to discover your local DBF Add-on and pre-fills the server URL.
+1. Look for the automatically discovered **DBF (DB-Infoscreen)** tile in **Settings ➔ Devices & Services** (or click **Add Integration** and search for **DB Infoscreen**).
+2. The integration automatically connects to your local DBF Add-on and pre-fills the server URL.
 3. Select your station to start using your departure board.
 
 ## ⚙️ Configuration
+
+
 
 The app can be configured via the **Configuration** tab in the App page.
 
