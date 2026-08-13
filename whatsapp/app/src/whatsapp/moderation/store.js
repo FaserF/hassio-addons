@@ -156,6 +156,13 @@ export function getDefaultGroupConfig() {
     kick_log: [], // [{ userId, reason, timestamp, by }]
     notes: {}, // noteName -> content
     muted_users: {}, // userId -> { until (timestamp or null), reason }
+    security_scan: {
+      enabled: true,
+      engine: 'local', // 'local' | 'virustotal' | 'hybrid'
+      trigger: 'auto', // 'auto' | 'command'
+      quiet_mode: true,
+      scan_files: true,
+    },
     translation: {
       enabled: false,
       target_lang: 'en',

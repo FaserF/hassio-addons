@@ -1438,13 +1438,19 @@ export async function handleModerationMessage(session, event) {
       transResult?.translation &&
       transResult.translation.trim().toLowerCase() !== text.trim().toLowerCase()
     ) {
-      const srcCode = (transResult.sourceLang || '?').toUpperCase();
-      const dstCode = targetLang.toUpperCase();
-      const header =
-        targetLang === 'de'
-          ? `🌐 *Automatische Übersetzung (${srcCode} → ${dstCode}):*`
-          : `🌐 *Auto Translation (${srcCode} → ${dstCode}):*`;
-      await reply(session, groupId, { text: `${header}\n\n"${transResult.translation}"` }, rawMsg);
+      const srcCode = (transResult.sourceLang || '?').toLowerCase();
+      const dstCode = targetLang.toLowerCase();
+
+      // Skip translation if detected source language is already the target language
+      if (srcCode !== '?' && srcCode === dstCode) {
+        logger.debug({ srcCode, dstCode }, 'Skipping auto-translation: source language matches target language');
+      } else {
+        const header =
+          targetLang === 'de'
+            ? `🌐 *Automatische Übersetzung (${srcCode.toUpperCase()} → ${dstCode.toUpperCase()}):*`
+            : `🌐 *Auto Translation (${srcCode.toUpperCase()} → ${dstCode.toUpperCase()}):*`;
+        await reply(session, groupId, { text: `${header}\n\n"${transResult.translation}"` }, rawMsg);
+      }
     }
   }
 

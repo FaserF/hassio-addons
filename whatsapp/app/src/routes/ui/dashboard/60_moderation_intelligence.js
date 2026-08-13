@@ -56,6 +56,7 @@ async function saveGroupAiConfig() {
       'You are an intelligent, friendly, and professional WhatsApp Group Moderator AI. Your goals are to assist group members with accurate information, enforce group etiquette, keep responses concise, polite, and well-formatted for WhatsApp, and maintain a constructive community atmosphere.',
   };
   groupConfig.stt_enabled = Boolean(document.getElementById('mod-stt-enabled')?.checked);
+  groupConfig.stt_engine = document.getElementById('mod-stt-engine')?.value || 'auto';
   groupConfig.translation = {
     enabled: true,
     target_lang:
@@ -65,6 +66,13 @@ async function saveGroupAiConfig() {
       )?.value || 'en',
     mode: document.getElementById('mod-trans-mode')?.value || 'manual',
     provider: document.getElementById('mod-trans-provider')?.value || 'auto',
+  };
+  groupConfig.security_scan = {
+    enabled: Boolean(document.getElementById('mod-sec-scan-enabled')?.checked),
+    scan_files: Boolean(document.getElementById('mod-sec-scan-files')?.checked),
+    engine: document.getElementById('mod-sec-scan-engine')?.value || 'local',
+    trigger: document.getElementById('mod-sec-scan-trigger')?.value || 'auto',
+    quiet_mode: true,
   };
 
   const apiKey = document.getElementById('mod-ai-key')?.value || '';

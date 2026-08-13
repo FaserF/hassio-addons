@@ -55,74 +55,10 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
 
     let transcribedText = null;
     let failureReason = null;
+    const sttEngine = config.stt_engine || 'auto';
 
-    if (apiKey) {
-      try {
-        const isGemini =
-          apiKey.startsWith('AIza') || store.gemini_api_key || process.env.GEMINI_API_KEY;
-        if (isGemini) {
-          // Gemini 1.5 Flash Audio Inline Transcribe
-          const base64Audio = stream.toString('base64');
-          const mimeType = audioMsg.mimetype || 'audio/ogg; codecs=opus';
-          const prompt = isDe
-            ? 'Transkribiere diese Audionachricht/Sprachnachricht exakt ins Deutsche. Gib NUR den transkribierten Text zurück, ohne Kommentare.'
-            : 'Transcribe this audio message accurately. Return ONLY the transcribed text without commentary.';
-
-          const model = config.ai?.model || 'gemini-1.5-flash';
-          const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [
-                  {
-                    parts: [
-                      { inline_data: { mime_type: mimeType.split(';')[0], data: base64Audio } },
-                      { text: prompt },
-                    ],
-                  },
-                ],
-              }),
-            }
-          );
-          if (res.ok) {
-            const data = await res.json();
-            transcribedText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-          } else {
-            failureReason = `Gemini Audio API status ${res.status}`;
-          }
-        } else {
-          // OpenAI Whisper STT API
-          const FormData = (await import('form-data')).default;
-          const formData = new FormData();
-          formData.append('file', stream, {
-            filename: 'voice.ogg',
-            contentType: audioMsg.mimetype || 'audio/ogg',
-          });
-          formData.append('model', 'whisper-1');
-          if (isDe) formData.append('language', 'de');
-
-          const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-              ...formData.getHeaders(),
-            },
-            body: formData,
-          });
-          if (res.ok) {
-            const data = await res.json();
-            transcribedText = data.text?.trim();
-          } else {
-            failureReason = `OpenAI Whisper API status ${res.status}`;
-          }
-        }
-      } catch (err) {
-        failureReason = err.message;
-      }
-    } else {
-      // Fallback: Free Web Speech Recognition Endpoint (Google Speech API free tier)
+    if (sttEngine === 'auto' || !apiKey) {
+      // 1. Try Free Web Speech Recognition Endpoint
       try {
         const targetLang = isDe ? 'de-DE' : 'en-US';
         const url = `https://www.google.com/speech-api/v1/recognize?xjerr=1&client=chromium&lang=${targetLang}`;
@@ -136,13 +72,76 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           const hyp = data.hypotheses?.[0]?.utterance;
           if (hyp) transcribedText = hyp;
         }
-      } catch (e) {}
-
-      if (!transcribedText) {
-        failureReason = isDe
-          ? 'Kein Gemini/OpenAI API-Key konfiguriert. Füge optional einen Schlüssel in den Moderations-Einstellungen ein.'
-          : 'No Gemini or OpenAI API key configured. Optional: Add a key in Moderation settings.';
+      } catch (e) {
+        logger.debug({ error: e.message }, 'Free Web STT API call failed');
       }
+    }
+
+    if (!transcribedText && apiKey) {
+      // 2. Try Gemini 1.5 Multimodal Audio API
+      if (sttEngine === 'gemini' || (sttEngine === 'auto' && (store.gemini_api_key || process.env.GEMINI_API_KEY))) {
+        try {
+          const gKey = store.gemini_api_key || process.env.GEMINI_API_KEY || apiKey;
+          const base64Audio = stream.toString('base64');
+          const promptText = isDe
+            ? 'Transkribiere dieses Audiosignal exakt in Text. Gib NUR den transkribierten Text ohne Erklärung zurück.'
+            : 'Transcribe this audio message exactly into text. Return ONLY the transcribed text without commentary.';
+          const geminiModel = config.ai?.model || 'gemini-1.5-flash';
+          const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${gKey}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [
+                  {
+                    parts: [
+                      { inline_data: { mime_type: 'audio/ogg', data: base64Audio } },
+                      { text: promptText },
+                    ],
+                  },
+                ],
+              }),
+            }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            transcribedText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          }
+        } catch (e) {
+          logger.debug({ error: e.message }, 'Gemini STT failed');
+        }
+      }
+
+      // 3. Try OpenAI Whisper API
+      if (!transcribedText && (sttEngine === 'openai' || process.env.OPENAI_API_KEY)) {
+        try {
+          const oaKey = config.ai?.openai_api_key || process.env.OPENAI_API_KEY || apiKey;
+          const formData = new Blob([stream], { type: 'audio/ogg' });
+          const body = new FormData();
+          body.append('file', formData, 'audio.ogg');
+          body.append('model', 'whisper-1');
+          if (isDe) body.append('language', 'de');
+
+          const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${oaKey}` },
+            body,
+          });
+          if (res.ok) {
+            const data = await res.json();
+            transcribedText = data.text?.trim();
+          }
+        } catch (e) {
+          logger.debug({ error: e.message }, 'Whisper STT failed');
+        }
+      }
+    }
+
+    if (!transcribedText) {
+      failureReason = isDe
+        ? 'Audiosignal konnte nicht transkribiert werden. (Optional: KI-Schlüssel in Moderations-Einstellungen eintragen)'
+        : 'Could not transcribe audio message. (Optional: Set AI key in Moderation settings)';
     }
 
     if (transcribedText) {

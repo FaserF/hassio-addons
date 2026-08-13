@@ -911,6 +911,18 @@ async function selectModerationGroup(groupId) {
   // Speech-to-Text (STT)
   const sttEnabled = document.getElementById('mod-stt-enabled');
   if (sttEnabled) sttEnabled.checked = Boolean(config.stt_enabled);
+  const sttEngine = document.getElementById('mod-stt-engine');
+  if (sttEngine) sttEngine.value = config.stt_engine || 'auto';
+
+  // Security Scanner
+  const secEnabled = document.getElementById('mod-sec-scan-enabled');
+  if (secEnabled) secEnabled.checked = config.security_scan?.enabled !== false;
+  const secFiles = document.getElementById('mod-sec-scan-files');
+  if (secFiles) secFiles.checked = config.security_scan?.scan_files !== false;
+  const secEngine = document.getElementById('mod-sec-scan-engine');
+  if (secEngine) secEngine.value = config.security_scan?.engine || 'local';
+  const secTrigger = document.getElementById('mod-sec-scan-trigger');
+  if (secTrigger) secTrigger.value = config.security_scan?.trigger || 'auto';
 
   // Anti-Spam & Anti-Raid
   const floodE = document.getElementById('mod-flood-enabled');
