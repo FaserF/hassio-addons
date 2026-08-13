@@ -3035,8 +3035,7 @@ registry.register(
   async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
     const prefix = config.commands?.prefix || '!';
     const isGroup = groupId && groupId.endsWith('@g.us');
-    const isDe =
-      config.language === 'de' || (process.env.LANG || '').toLowerCase().includes('de');
+    const isDe = config.language === 'de' || (process.env.LANG || '').toLowerCase().includes('de');
 
     if (isGroup) {
       const groupSubject = session?.groupCache?.get(groupId) || 'Group';
