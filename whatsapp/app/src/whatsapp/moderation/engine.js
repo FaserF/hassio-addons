@@ -5,6 +5,7 @@ import {
   clearModerationStoreCache,
 } from './store.js';
 import { processAiModeration } from './ai.js';
+import { translateTextFreeWithReason } from '../../utils/freeTranslator.js';
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
 import { t } from '../../locales/loader.js';
@@ -1424,7 +1425,20 @@ export async function handleModerationMessage(session, event) {
     }
   }
 
-  // 8. Sentiment Moderation via AI
+  // 8. Auto Translation Engine (Translates messages if enabled and not already target language)
+  if (config.translation?.mode === 'auto' && text && text.trim().length > 2) {
+    const targetLang = config.translation?.target_lang || 'en';
+    const freeRes = await translateTextFreeWithReason(text, targetLang);
+    if (
+      freeRes.translation &&
+      freeRes.translation.trim().toLowerCase() !== text.trim().toLowerCase()
+    ) {
+      const header = targetLang === 'de' ? '🌐 *Automatische Übersetzung:*' : '🌐 *Auto Translation:*';
+      await reply(session, groupId, { text: `${header}\n\n"${freeRes.translation}"` }, rawMsg);
+    }
+  }
+
+  // 9. Sentiment Moderation via AI
   if (config.ai?.enabled && config.ai?.sentiment_moderation && text && text.length > 10) {
     const apiKey = store.gemini_api_key || process.env.GEMINI_API_KEY;
     if (apiKey) {

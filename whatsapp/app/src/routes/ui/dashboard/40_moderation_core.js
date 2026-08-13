@@ -88,6 +88,7 @@ const TRACKED_FIELD_IDS = [
   'mod-ai-sentiment',
   'mod-ai-prompt',
   'mod-ai-key',
+  'mod-stt-enabled',
   'mod-trans-lang',
   'mod-trans-mode',
   'mod-fed-select',
@@ -896,10 +897,14 @@ async function selectModerationGroup(groupId) {
     aiPrompt.value =
       config.ai?.system_prompt ||
       'You are an intelligent, friendly, and professional WhatsApp Group Moderator AI. Your goals are to assist group members with accurate information, enforce group etiquette, keep responses concise, polite, and well-formatted for WhatsApp, and maintain a constructive community atmosphere.';
-  const transLang = document.getElementById('mod-trans-lang');
+  const transLang = document.getElementById('mod-trans-lang') || document.getElementById('mod-trans-target-lang');
   if (transLang) transLang.value = config.translation?.target_lang || 'en';
   const transMode = document.getElementById('mod-trans-mode');
   if (transMode) transMode.value = config.translation?.mode || 'manual';
+
+  // Speech-to-Text (STT)
+  const sttEnabled = document.getElementById('mod-stt-enabled');
+  if (sttEnabled) sttEnabled.checked = config.stt_enabled !== false;
 
   // Anti-Spam & Anti-Raid
   const floodE = document.getElementById('mod-flood-enabled');
@@ -1348,6 +1353,41 @@ window.filterDefaultCommands = function filterDefaultCommands(query) {
   }
 };
 window.toggleAllDefaultCommands = toggleAllDefaultCommands;
+
+window.filterModerationSettings = function filterModerationSettings(query) {
+  const q = (query || '').trim().toLowerCase();
+  const modPanel = document.getElementById('tab-moderation');
+  if (!modPanel) return;
+
+  if (!q) {
+    // Show all elements when search query is empty
+    modPanel.querySelectorAll('.mod-subpanel, .mod-field-group, .mod-option-row, .mod-inline-controls, .mod-feature-header').forEach((el) => {
+      el.style.display = '';
+    });
+    // Restore current active subtab
+    _doSwitchModSubTab(currentModSubTab || 'rules');
+    return;
+  }
+
+  // When searching, reveal all subpanels so matching settings can be highlighted
+  modPanel.querySelectorAll('.mod-subpanel').forEach((panel) => {
+    panel.style.display = 'block';
+  });
+
+  let totalMatches = 0;
+  modPanel.querySelectorAll('.mod-field-group, .mod-option-row, .mod-inline-controls').forEach((group) => {
+    const text = group.textContent.toLowerCase();
+    const inputs = Array.from(group.querySelectorAll('input, select, textarea')).map((i) => (i.id || '').toLowerCase() + ' ' + (i.placeholder || '').toLowerCase());
+    const matches = text.includes(q) || inputs.some((i) => i.includes(q));
+
+    if (matches) {
+      group.style.display = '';
+      totalMatches++;
+    } else {
+      group.style.display = 'none';
+    }
+  });
+};
 
 async function addCustomCommandRule() {
   const nameInp = document.getElementById('mod-cmd-name');

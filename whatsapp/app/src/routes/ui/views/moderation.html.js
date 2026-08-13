@@ -11,6 +11,10 @@ export default () => `
                         </div>
                     </div>
                     <div class="mod-hero-controls">
+                        <div class="mod-hero-search" style="position:relative; width:220px;">
+                            <i class="fas fa-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:12px; pointer-events:none;"></i>
+                            <input type="text" id="mod-settings-search" class="mod-input" placeholder="Search settings..." data-i18n-placeholder="moderation.search_settings_ph" oninput="filterModerationSettings(this.value)" style="padding-left:30px; height:34px; font-size:12px; border-radius:8px; background:var(--bg-input, rgba(0,0,0,0.2)); width:100%; box-sizing:border-box;">
+                        </div>
                         <div class="mod-toggle-row">
                             <span class="mod-toggle-label">
                                 <i class="fas fa-power-off"></i> 
@@ -439,6 +443,18 @@ export default () => `
                         <div class="mod-field-group" style="margin-bottom:16px;">
                             <label class="mod-field-label" data-i18n="moderation.ai_prompt_label">AI System Persona Prompt</label>
                             <textarea id="mod-ai-prompt" class="mod-textarea" style="height:80px;" placeholder="You are an intelligent, friendly, and professional WhatsApp Group Moderator AI..." data-i18n-placeholder="moderation.ai_prompt_ph"></textarea>
+                        </div>
+                        <div class="mod-divider"></div>
+                        <div class="mod-feature-header">
+                            <div class="mod-feature-icon-wrap mod-color-primary"><i class="fas fa-microphone"></i></div>
+                            <div>
+                                <div class="mod-feature-title" data-i18n="moderation.stt_settings_title">Speech-to-Text (STT) Voice Note Transcriber</div>
+                                <div class="mod-feature-desc" data-i18n="moderation.stt_settings_desc">Automatically convert audio messages & voice notes into readable text.</div>
+                            </div>
+                        </div>
+                        <div class="mod-inline-controls" style="margin-bottom:12px;">
+                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-stt-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
+                            <span class="mod-option-label" data-i18n="moderation.enable_stt">Enable Speech-to-Text (STT) for incoming voice messages</span>
                         </div>
                         <div class="mod-divider"></div>
                         <div class="mod-feature-header">

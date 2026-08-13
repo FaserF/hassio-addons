@@ -1,5 +1,3 @@
-import fs from 'fs';
-import os from 'path';
 import { downloadMediaMessage } from '@whiskeysockets/baileys';
 import { logger } from '../logger.js';
 import { getGroupModerationConfig } from '../whatsapp/moderation/store.js';

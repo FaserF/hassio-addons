@@ -54,9 +54,10 @@ async function saveGroupAiConfig() {
       document.getElementById('mod-ai-prompt')?.value ||
       'You are an intelligent, friendly, and professional WhatsApp Group Moderator AI. Your goals are to assist group members with accurate information, enforce group etiquette, keep responses concise, polite, and well-formatted for WhatsApp, and maintain a constructive community atmosphere.',
   };
+  groupConfig.stt_enabled = Boolean(document.getElementById('mod-stt-enabled')?.checked);
   groupConfig.translation = {
     enabled: true,
-    target_lang: document.getElementById('mod-trans-lang')?.value || 'en',
+    target_lang: (document.getElementById('mod-trans-lang') || document.getElementById('mod-trans-target-lang'))?.value || 'en',
     mode: document.getElementById('mod-trans-mode')?.value || 'manual',
   };
 
