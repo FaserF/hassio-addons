@@ -188,6 +188,8 @@ export async function syncTelegramDeleteToWhatsApp(tgChatId, tgMsgId) {
 }
 
 const recentWaEditEvents = new Map();
+const ignoreWaEditEchoes = new Set();
+const ignoreTgEditEchoes = new Set();
 
 export async function syncWhatsAppEditToTelegram(
   waMsgId,
@@ -197,6 +199,12 @@ export async function syncWhatsAppEditToTelegram(
   senderName = ''
 ) {
   if (!waMsgId || !newText) return;
+  if (ignoreWaEditEchoes.has(waMsgId)) {
+    ignoreWaEditEchoes.delete(waMsgId);
+    logger.debug({ waMsgId }, 'Ignoring WhatsApp edit event echo from Telegram bridge');
+    return;
+  }
+
   const dedupKey = `${waMsgId}:${newText}`;
   const now = Date.now();
   if (recentWaEditEvents.has(dedupKey) && now - recentWaEditEvents.get(dedupKey) < 10000) {
@@ -245,6 +253,7 @@ export async function syncWhatsAppEditToTelegram(
     let editSucceeded = false;
     if (mapped && mapped.tgMsgId && mapped.tgChatId) {
       try {
+        ignoreTgEditEchoes.add(String(mapped.tgMsgId));
         await bot.editMessageText(mapped.tgChatId, mapped.tgMsgId, fullText);
         editSucceeded = true;
         logger.info(
@@ -252,6 +261,7 @@ export async function syncWhatsAppEditToTelegram(
           '✏️ Successfully mirrored WhatsApp message edit natively to Telegram'
         );
       } catch (err) {
+        ignoreTgEditEchoes.delete(String(mapped.tgMsgId));
         logger.info(
           { error: err.message, waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
           'Native Telegram editMessageText failed (e.g. >48h old or media), attempting reply fallback'
@@ -274,6 +284,7 @@ export async function syncWhatsAppEditToTelegram(
       try {
         const sentTgMsg = await bot.sendMessage(tgChatId, fallbackText, sendOpts);
         if (sentTgMsg && sentTgMsg.message_id) {
+          ignoreTgEditEchoes.add(String(sentTgMsg.message_id));
           recordMessageMap(waMsgId, tgChatId, sentTgMsg.message_id, waJid, false);
         }
         logger.info(
@@ -991,6 +1002,12 @@ export async function processTelegramUpdates() {
           update.edited_channel_post;
         if (!msg || !msg.chat) continue;
 
+        if (isEdit && ignoreTgEditEchoes.has(String(msg.message_id))) {
+          ignoreTgEditEchoes.delete(String(msg.message_id));
+          logger.debug({ tgMsgId: msg.message_id }, 'Ignoring Telegram edit event echo from WhatsApp bridge');
+          continue;
+        }
+
         updateCachedChat(msg.chat, botConfig.id);
 
         const tgChatId = String(msg.chat.id);
@@ -1236,8 +1253,11 @@ export async function processTelegramUpdates() {
                 isGroupChat ? mapping.include_sender_name : false
               );
           const cleanHeader = rawHeader.replace(/<\/?b>/g, '');
+          const entities = msg.entities || msg.caption_entities || null;
           const formattedTgText =
-            mapping.convert_formatting !== false ? telegramToWaFormatting(tgText) : tgText;
+            mapping.convert_formatting !== false
+              ? telegramToWaFormatting(tgText, entities)
+              : tgText;
           const outboundWaText = `${cleanHeader}${tgQuoteSnippet}${formattedTgText}`;
 
           let session = getSession('default');
@@ -1256,6 +1276,7 @@ export async function processTelegramUpdates() {
                 const mapped = resolveWaMsgFromTg(tgChatId, String(msg.message_id));
                 if (mapped && mapped.waMsgId && mapped.waJid) {
                   try {
+                    ignoreWaEditEchoes.add(mapped.waMsgId);
                     await session.sock.sendMessage(mapping.wa_jid, {
                       text: outboundWaText,
                       edit: {
@@ -1270,6 +1291,7 @@ export async function processTelegramUpdates() {
                       '✏️ Mirrored Telegram message edit natively to WhatsApp'
                     );
                   } catch (editErr) {
+                    ignoreWaEditEchoes.delete(mapped.waMsgId);
                     logger.info(
                       { err: editErr?.message, waMsgId: mapped.waMsgId },
                       'Native WhatsApp edit failed (e.g. >15m old), falling back to contextual update message'
