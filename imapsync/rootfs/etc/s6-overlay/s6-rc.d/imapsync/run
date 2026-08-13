@@ -26,7 +26,7 @@ _show_app_banner() {
     local REPO="$MAINTAINER/hassio-addons"
 
     # Restart Loop Protection (Max 3 consecutive failed starts)
-    if [ -z "$_BOOT_LOOP_CHECKED" ] && [ -d "/data" ]; then
+    if [ -z "${_BOOT_LOOP_CHECKED:-}" ] && [ -d "/data" ]; then
         export _BOOT_LOOP_CHECKED=1
         local STATE_FILE="/data/.boot_loop_protection"
         local LAST_VER=""

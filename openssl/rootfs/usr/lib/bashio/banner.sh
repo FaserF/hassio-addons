@@ -15,7 +15,7 @@ bashio::app.print_banner() {
 	bashio::log.blue "-----------------------------------------------------------\n"
 
 	# Restart Loop Protection (Max 3 consecutive failed starts)
-	if [ -z "$_BOOT_LOOP_CHECKED" ] && [ -d "/data" ]; then
+	if [ -z "${_BOOT_LOOP_CHECKED:-}" ] && [ -d "/data" ]; then
 		export _BOOT_LOOP_CHECKED=1
 		local STATE_FILE="/data/.boot_loop_protection"
 		local LAST_VER=""
