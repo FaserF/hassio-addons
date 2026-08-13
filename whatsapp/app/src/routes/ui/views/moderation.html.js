@@ -378,6 +378,41 @@ export default () => `
                             <span class="mod-option-label" data-i18n="moderation.enable_notify_bypassed">Notify in group when moderation is bypassed for admins</span>
                         </div>
 
+                        <!-- URL & File Security Scanner -->
+                        <div class="mod-divider"></div>
+                        <div class="mod-feature-header">
+                            <div class="mod-feature-icon-wrap mod-color-danger"><i class="fas fa-shield-virus"></i></div>
+                            <div>
+                                <div class="mod-feature-title" data-i18n="moderation.sec_scan_title">URL &amp; File Security Scanner</div>
+                                <div class="mod-feature-desc" data-i18n="moderation.sec_scan_desc">Scan links, documents, executables and attachments for malware, phishing, and threats.</div>
+                            </div>
+                        </div>
+                        <div class="mod-inline-controls" style="margin-bottom:12px;">
+                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-sec-scan-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
+                            <span class="mod-option-label" data-i18n="moderation.enable_sec_scan">Enable Security Scanner for links &amp; files</span>
+                        </div>
+                        <div class="mod-inline-controls" style="margin-bottom:12px;">
+                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-sec-scan-files"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
+                            <span class="mod-option-label" data-i18n="moderation.enable_sec_files">Scan file attachments &amp; documents</span>
+                        </div>
+                        <div class="mod-inline-controls" style="flex-wrap:wrap; gap:16px; margin-bottom:12px;">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.sec_engine_label">Scan Engine:</label>
+                                <select id="mod-sec-scan-engine" class="mod-select mod-select-sm">
+                                    <option value="local" data-i18n="moderation.sec_engine_local">🛡️ Local Heuristics &amp; Signatures (Offline, Default)</option>
+                                    <option value="virustotal" data-i18n="moderation.sec_engine_vt">🌐 VirusTotal Cloud API</option>
+                                    <option value="hybrid" data-i18n="moderation.sec_engine_hybrid">⚡ Hybrid (Local Heuristics + VirusTotal Cloud)</option>
+                                </select>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.sec_trigger_label">Scan Trigger:</label>
+                                <select id="mod-sec-scan-trigger" class="mod-select mod-select-sm">
+                                    <option value="auto" data-i18n="moderation.sec_trigger_auto">⚡ Every Message / Link / File (Default)</option>
+                                    <option value="command" data-i18n="moderation.sec_trigger_command">🔍 On !scan Command Only</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="mod-actions" style="margin-top:16px;"><button class="btn btn-primary btn-sm" onclick="saveGroupAntispam()"><i class="fas fa-save"></i> <span data-i18n="moderation.save_antispam">Save Anti-Spam Config</span></button></div>
                     </div>
 
@@ -496,39 +531,6 @@ export default () => `
                                     <option value="lingva" data-i18n="moderation.trans_prov_lingva">🛡️ Lingva Translate (Free Privacy API)</option>
                                     <option value="mymemory" data-i18n="moderation.trans_prov_mymemory">💾 MyMemory (Free)</option>
                                     <option value="ai" data-i18n="moderation.trans_prov_ai">🧠 Gemini / OpenAI Model (Requires API Key)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mod-divider"></div>
-                        <div class="mod-feature-header">
-                            <div class="mod-feature-icon-wrap mod-color-danger"><i class="fas fa-shield-virus"></i></div>
-                            <div>
-                                <div class="mod-feature-title" data-i18n="moderation.sec_scan_title">URL &amp; File Security Scanner</div>
-                                <div class="mod-feature-desc" data-i18n="moderation.sec_scan_desc">Scan links, documents, executables and attachments for malware, phishing, and threats.</div>
-                            </div>
-                        </div>
-                        <div class="mod-inline-controls" style="margin-bottom:12px;">
-                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-sec-scan-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
-                            <span class="mod-option-label" data-i18n="moderation.enable_sec_scan">Enable Security Scanner for links &amp; files</span>
-                        </div>
-                        <div class="mod-inline-controls" style="margin-bottom:12px;">
-                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-sec-scan-files"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
-                            <span class="mod-option-label" data-i18n="moderation.enable_sec_files">Scan file attachments &amp; documents</span>
-                        </div>
-                        <div class="mod-inline-controls" style="flex-wrap:wrap; gap:16px; margin-bottom:12px;">
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.sec_engine_label">Scan Engine:</label>
-                                <select id="mod-sec-scan-engine" class="mod-select mod-select-sm">
-                                    <option value="local" data-i18n="moderation.sec_engine_local">🛡️ Local Heuristics &amp; Signatures (Offline, Default)</option>
-                                    <option value="virustotal" data-i18n="moderation.sec_engine_vt">🌐 VirusTotal Cloud API</option>
-                                    <option value="hybrid" data-i18n="moderation.sec_engine_hybrid">⚡ Hybrid (Local Heuristics + VirusTotal Cloud)</option>
-                                </select>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.sec_trigger_label">Scan Trigger:</label>
-                                <select id="mod-sec-scan-trigger" class="mod-select mod-select-sm">
-                                    <option value="auto" data-i18n="moderation.sec_trigger_auto">⚡ Every Message / Link / File (Default)</option>
-                                    <option value="command" data-i18n="moderation.sec_trigger_command">🔍 On !scan Command Only</option>
                                 </select>
                             </div>
                         </div>

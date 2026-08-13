@@ -104,6 +104,13 @@ async function saveGroupAntispam() {
   groupConfig.anti_spam_links_enabled = Boolean(
     document.getElementById('mod-antispam-links-enabled')?.checked
   );
+  groupConfig.security_scan = {
+    enabled: Boolean(document.getElementById('mod-sec-scan-enabled')?.checked),
+    scan_files: Boolean(document.getElementById('mod-sec-scan-files')?.checked),
+    engine: document.getElementById('mod-sec-scan-engine')?.value || 'local',
+    trigger: document.getElementById('mod-sec-scan-trigger')?.value || 'auto',
+    quiet_mode: true,
+  };
   await saveGroupConfig(groupConfig);
   markClean();
   showToast(t('moderation.antispam_antiraid_saved'), 'success');

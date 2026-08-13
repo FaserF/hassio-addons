@@ -1494,6 +1494,39 @@ export async function handleModerationMessage(session, event) {
     }
   }
 
+  // 10. Security Scanner (Local Heuristics + Signatures + VirusTotal Cloud)
+  const secScan = config.security_scan || { enabled: true, engine: 'local', trigger: 'auto' };
+  if (secScan.enabled !== false && secScan.trigger !== 'command') {
+    const { performSecurityScan } = await import('./securityScanner.js');
+    const scanResult = await performSecurityScan(rawMsg, secScan, store.gemini_api_key);
+    if (scanResult?.is_malicious) {
+      const threatLabel = scanResult.threats?.[0]?.value || 'Malware/Phishing Link';
+      if (rawMsg?.key?.id) {
+        try {
+          await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+        } catch (e) {
+          /* ignore */
+        }
+      }
+      await reply(
+        session,
+        groupId,
+        {
+          text: `🛡️ *Security Shield Alert*\n\n⚠️ Malicious link/file detected and deleted: \`${threatLabel}\``,
+        },
+        rawMsg
+      );
+      await issueUserWarning(
+        session,
+        groupId,
+        userId,
+        `Security Threat Detected (${threatLabel})`,
+        rawMsg
+      );
+      return true;
+    }
+  }
+
   return false;
 }
 
