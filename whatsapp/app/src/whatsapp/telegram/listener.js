@@ -261,13 +261,7 @@ export async function syncWhatsAppEditToTelegram(
       try {
         const sentTgMsg = await bot.sendMessage(tgChatId, fallbackText, sendOpts);
         if (sentTgMsg && sentTgMsg.message_id) {
-          recordMessageMap(
-            waMsgId,
-            tgChatId,
-            sentTgMsg.message_id,
-            waJid,
-            false
-          );
+          recordMessageMap(waMsgId, tgChatId, sentTgMsg.message_id, waJid, false);
         }
         logger.info(
           { waMsgId, tgChatId, newTgMsgId: sentTgMsg?.message_id },
