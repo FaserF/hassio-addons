@@ -90,7 +90,7 @@ COPY rootfs /
 
 # Ensure scripts are executable and have Unix line endings
 RUN find /usr/bin/dbf-* /etc/s6-overlay/s6-rc.d /etc/periodic -type f -exec sed -i 's/\r$//' {} + \
-    && chmod a+x /usr/bin/dbf-update-data /usr/bin/dbf-integration-manager \
+    && chmod a+x /usr/bin/dbf-update-data /usr/bin/dbf-integration-manager /usr/bin/dbf-mdns.pl \
         /etc/s6-overlay/s6-rc.d/dbf/run \
         /etc/s6-overlay/s6-rc.d/dbf-periodic/run \
         /etc/periodic/daily/dbf-update-data \

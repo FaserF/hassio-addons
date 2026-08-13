@@ -301,6 +301,12 @@ fi
 # Run integration manager (install/update integration)
 /usr/bin/dbf-integration-manager
 
+# Start mDNS broadcaster in background for Home Assistant Discovery
+if [ -f "/usr/bin/dbf-mdns.pl" ]; then
+    bashio::log.info "Starting mDNS Discovery Broadcaster..."
+    perl /usr/bin/dbf-mdns.pl &
+fi
+
 bashio::log.info "Starting DBF (DB-Infoscreen)..."
 
 # Change directory to app root
@@ -308,3 +314,4 @@ cd /app || exit 1
 
 # Start Hypnotoad in foreground
 exec hypnotoad -f index.pl
+
