@@ -1007,7 +1007,10 @@ export async function processTelegramUpdates() {
 
         if (isEdit && ignoreTgEditEchoes.has(String(msg.message_id))) {
           ignoreTgEditEchoes.delete(String(msg.message_id));
-          logger.debug({ tgMsgId: msg.message_id }, 'Ignoring Telegram edit event echo from WhatsApp bridge');
+          logger.debug(
+            { tgMsgId: msg.message_id },
+            'Ignoring Telegram edit event echo from WhatsApp bridge'
+          );
           continue;
         }
 
