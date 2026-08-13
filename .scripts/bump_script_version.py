@@ -63,7 +63,7 @@ def main():
                 return None
             data = yaml.safe_load(content)
             return data.get("scriptVersion")
-        except (yaml.YAMLError, OSError, ValueError):
+        except yaml.YAMLError, OSError, ValueError:
             return None
 
     old_version = get_version_at(base)

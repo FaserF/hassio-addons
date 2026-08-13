@@ -43,7 +43,7 @@ bashio::app.print_banner() {
 			bashio::log.error "💡 Update the App or fix configuration issues to try again."
 			bashio::log.error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-			printf "%s\n0\n" "$App_version" > "$STATE_FILE" 2>/dev/null
+			printf "%s\n0\n" "$App_version" >"$STATE_FILE" 2>/dev/null
 
 			if type bashio::addon.stop >/dev/null 2>&1; then
 				bashio::addon.stop 2>/dev/null || true
@@ -54,12 +54,12 @@ bashio::app.print_banner() {
 			exit 0
 		fi
 
-		printf "%s\n%s\n" "$App_version" "$FAIL_COUNT" > "$STATE_FILE" 2>/dev/null
+		printf "%s\n%s\n" "$App_version" "$FAIL_COUNT" >"$STATE_FILE" 2>/dev/null
 
 		(
 			sleep 120
 			if [ -d "/data" ]; then
-				printf "%s\n0\n" "$App_version" > "/data/.boot_loop_protection" 2>/dev/null
+				printf "%s\n0\n" "$App_version" >"/data/.boot_loop_protection" 2>/dev/null
 			fi
 		) &
 	fi

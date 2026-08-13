@@ -33,6 +33,7 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ```yaml
 ai_provider: gemini
+auto_install_integration: true
 database:
   type: sqlite
 debug: false
