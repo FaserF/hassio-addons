@@ -31,10 +31,12 @@ This feature ensures that you always have the correct version of the integration
 ## 🌐 Network & Integration Setup
 
 ### Network Mode
+
 - **Bridge Network (Default)**: Runs in standard container isolation with port `8092` exposed and Ingress enabled.
 - **Host Network (Optional)**: Can be enabled if you want local mDNS multicast discovery (`_ha-db_infoscreen._tcp.local.`) across your physical subnet.
 
 ### 1-Click Home Assistant Integration Setup
+
 1. Go to **Settings ➔ Devices & Services ➔ Add Integration** and search for **DB Infoscreen**.
 2. The integration's config flow automatically queries the Supervisor to discover your local DBF Add-on and pre-fills the server URL.
 3. Select your station to start using your departure board.

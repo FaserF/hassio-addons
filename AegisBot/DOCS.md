@@ -148,19 +148,20 @@ debug: true
 ## 🌐 Network & Integration Setup
 
 ### Network Mode
+
 - **Bridge Network (Default)**: By default, the Add-on runs in an isolated Docker bridge network with exposed port `8077` and Ingress enabled.
 - **Host Network (Optional)**: If you want Zeroconf / mDNS discovery broadcasts (`_ha-aegisbot._tcp.local.`) to reach your local LAN for automatic mDNS device detection, `host_network: true` can be enabled. In WhatsApp, `host_network: true` is enabled by default for this purpose.
 
 ### 1-Click Home Assistant Integration Setup
+
 Even in standard bridge mode without host networking:
+
 1. Go to **Settings ➔ Devices & Services ➔ Add Integration** and search for **AegisBot**.
 2. The integration's config flow automatically queries the Supervisor API to detect your running Add-on (`http://edfe50eb-aegisbot:8077`).
 3. The secure API token generated at `/data/.api_token` is automatically pre-filled.
 4. Click **Submit** to connect instantly.
 
-
 ## 📂 Folder Usage
-
 
 This app uses the following folders:
 

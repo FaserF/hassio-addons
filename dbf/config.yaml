@@ -12,7 +12,6 @@ ingress_port: 8092
 ingress_entry: "/"
 panel_icon: "mdi:train"
 
-
 discovery:
   - db_infoscreen
 map:
