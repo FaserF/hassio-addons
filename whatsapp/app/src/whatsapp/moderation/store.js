@@ -287,6 +287,7 @@ export function getGroupModerationConfig(groupId) {
       },
     },
     ai: { ...def.ai, ...(existing.ai || {}) },
+    translation: { ...def.translation, ...(existing.translation || {}) },
   };
 }
 

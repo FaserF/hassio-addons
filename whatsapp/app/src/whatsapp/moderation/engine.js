@@ -704,15 +704,18 @@ export function clearUserWarnings(groupId, rawUserId, session = null) {
 
 export async function handleModerationMessage(session, event) {
   const store = loadModerationStore();
-  if (!store.global_enabled) {
-    logger.debug('Skipping moderation: global_enabled is false');
+  const isGroup = event.is_group ?? event.sender?.endsWith('@g.us');
+  const groupId = isGroup ? event.from || event.sender : event.sender;
+  const config = getGroupModerationConfig(groupId);
+
+  const isGroupConfigured = config.enabled || config.translation?.mode === 'auto' || config.stt_enabled !== false;
+  if (!store.global_enabled || !isGroupConfigured) {
+    logger.debug('Skipping moderation: global_enabled is false or group features not configured');
     return false;
   }
 
   // Never moderate or auto-respond to outgoing bot messages (prevents self-loop)
   if (event.raw?.key?.fromMe) return false;
-
-  const isGroup = event.is_group ?? event.sender?.endsWith('@g.us');
 
   // Handle Private Chat (DM) messages for pending Captchas
   if (!isGroup) {
@@ -721,17 +724,7 @@ export async function handleModerationMessage(session, event) {
 
   // For group messages, event.sender is the participant JID (@s.whatsapp.net),
   // while event.from is the group JID (@g.us). Use the group JID as groupId.
-  const groupId = isGroup ? event.from || event.sender : event.sender;
   if (!groupId || !groupId.endsWith('@g.us')) return false;
-
-  const config = getGroupModerationConfig(groupId);
-  if (!config.enabled) {
-    logger.info(
-      { groupId },
-      '⚠️ Skipping moderation: group moderation config is not enabled for this group'
-    );
-    return false;
-  }
 
   const rawMsg = event.raw;
   let userId = event.sender_number;
@@ -1428,13 +1421,28 @@ export async function handleModerationMessage(session, event) {
   // 8. Auto Translation Engine (Translates messages if enabled and not already target language)
   if (config.translation?.mode === 'auto' && text && text.trim().length > 2) {
     const targetLang = config.translation?.target_lang || 'en';
-    const freeRes = await translateTextFreeWithReason(text, targetLang);
+    const provider = config.translation?.provider || 'auto';
+
+    const transResult =
+      provider === 'ai'
+        ? await (async () => {
+            const { processAiModeration } = await import('./ai.js');
+            return processAiModeration(
+              text,
+              config.ai || {},
+              store.gemini_api_key,
+              'translate',
+              { targetLang }
+            );
+          })()
+        : await translateTextFreeWithReason(text, targetLang, provider);
+
     if (
-      freeRes.translation &&
-      freeRes.translation.trim().toLowerCase() !== text.trim().toLowerCase()
+      transResult?.translation &&
+      transResult.translation.trim().toLowerCase() !== text.trim().toLowerCase()
     ) {
       const header = targetLang === 'de' ? '🌐 *Automatische Übersetzung:*' : '🌐 *Auto Translation:*';
-      await reply(session, groupId, { text: `${header}\n\n"${freeRes.translation}"` }, rawMsg);
+      await reply(session, groupId, { text: `${header}\n\n"${transResult.translation}"` }, rawMsg);
     }
   }
 

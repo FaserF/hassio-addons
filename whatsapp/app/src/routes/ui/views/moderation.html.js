@@ -461,14 +461,28 @@ export default () => `
                             <div class="mod-feature-icon-wrap mod-color-primary"><i class="fas fa-language"></i></div>
                             <div><div class="mod-feature-title" data-i18n="moderation.trans_settings_title">Translation Settings</div></div>
                         </div>
-                        <div class="mod-inline-controls">
-                            <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.target_lang_label">Target Language:</label>
-                            <select id="mod-trans-target-lang" class="mod-select mod-select-sm"><option value="en" data-i18n="moderation.lang_en_opt">English</option><option value="de" data-i18n="moderation.lang_de_opt">German</option><option value="es" data-i18n="moderation.lang_es_opt">Spanish</option><option value="fr" data-i18n="moderation.lang_fr_opt">French</option><option value="it" data-i18n="moderation.lang_it_opt">Italian</option></select>
-                            <label class="mod-field-label" style="margin:0; margin-left:12px; white-space:nowrap;" data-i18n="moderation.trans_mode_label">Translation Mode:</label>
-                            <select id="mod-trans-mode" class="mod-select mod-select-sm">
-                                <option value="manual" data-i18n="moderation.trans_mode_manual">Manual (via !translate command)</option>
-                                <option value="auto" data-i18n="moderation.trans_mode_auto">Auto (Translate all incoming messages)</option>
-                            </select>
+                        <div class="mod-inline-controls" style="flex-wrap:wrap; gap:12px;">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.target_lang_label">Target Language:</label>
+                                <select id="mod-trans-target-lang" class="mod-select mod-select-sm"><option value="en" data-i18n="moderation.lang_en_opt">English</option><option value="de" data-i18n="moderation.lang_de_opt">German</option><option value="es" data-i18n="moderation.lang_es_opt">Spanish</option><option value="fr" data-i18n="moderation.lang_fr_opt">French</option><option value="it" data-i18n="moderation.lang_it_opt">Italian</option></select>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.trans_mode_label">Translation Mode:</label>
+                                <select id="mod-trans-mode" class="mod-select mod-select-sm">
+                                    <option value="manual" data-i18n="moderation.trans_mode_manual">Manual (via !translate command)</option>
+                                    <option value="auto" data-i18n="moderation.trans_mode_auto">Auto (Translate all incoming messages)</option>
+                                </select>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.trans_provider_label">Translation Engine:</label>
+                                <select id="mod-trans-provider" class="mod-select mod-select-sm">
+                                    <option value="auto" data-i18n="moderation.trans_prov_auto">⚡ Free Auto-Failover (Google → Lingva → MyMemory)</option>
+                                    <option value="google" data-i18n="moderation.trans_prov_google">🌐 Google Translate (Free)</option>
+                                    <option value="lingva" data-i18n="moderation.trans_prov_lingva">🛡️ Lingva Translate (Free Privacy API)</option>
+                                    <option value="mymemory" data-i18n="moderation.trans_prov_mymemory">💾 MyMemory (Free)</option>
+                                    <option value="ai" data-i18n="moderation.trans_prov_ai">🧠 Gemini / OpenAI Model (Requires API Key)</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="mod-actions" style="margin-top:16px;"><button class="btn btn-primary btn-sm" onclick="saveGroupAiConfig()"><i class="fas fa-save"></i> <span data-i18n="moderation.save_ai_settings">Save AI &amp; Translation Settings</span></button></div>
                     </div>

@@ -59,6 +59,7 @@ async function saveGroupAiConfig() {
     enabled: true,
     target_lang: (document.getElementById('mod-trans-lang') || document.getElementById('mod-trans-target-lang'))?.value || 'en',
     mode: document.getElementById('mod-trans-mode')?.value || 'manual',
+    provider: document.getElementById('mod-trans-provider')?.value || 'auto',
   };
 
   const apiKey = document.getElementById('mod-ai-key')?.value || '';

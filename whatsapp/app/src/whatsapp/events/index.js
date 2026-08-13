@@ -37,6 +37,7 @@ import {
   handleModerationParticipantUpdate,
   isSelfParticipant,
 } from '../moderation/engine.js';
+import { handleWhatsAppVoiceSTT } from '../sttHandler.js';
 import { processCommand } from '../moderation/commands.js';
 
 export { bindStore } from './store.js';
@@ -923,6 +924,9 @@ export function handleIncomingMessages(session) {
 
         // 2. Process via Moderation Engine if not a handled command
         if (!handledAsCommand) {
+          if (messageType === 'audioMessage') {
+            await handleWhatsAppVoiceSTT(session, senderJid, msg);
+          }
           await handleModerationMessage(session, event);
         }
 

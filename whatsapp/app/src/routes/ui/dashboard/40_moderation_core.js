@@ -901,6 +901,8 @@ async function selectModerationGroup(groupId) {
   if (transLang) transLang.value = config.translation?.target_lang || 'en';
   const transMode = document.getElementById('mod-trans-mode');
   if (transMode) transMode.value = config.translation?.mode || 'manual';
+  const transProv = document.getElementById('mod-trans-provider');
+  if (transProv) transProv.value = config.translation?.provider || 'auto';
 
   // Speech-to-Text (STT)
   const sttEnabled = document.getElementById('mod-stt-enabled');
