@@ -1,5 +1,12 @@
 import express from 'express';
-import { requestOtpCode, verifyOtpCode, destroySessionToken, getSessionTokenFromReq, loadRbacConfig, saveRbacConfig } from '../../rbac.js';
+import {
+  requestOtpCode,
+  verifyOtpCode,
+  destroySessionToken,
+  getSessionTokenFromReq,
+  loadRbacConfig,
+  saveRbacConfig,
+} from '../../rbac.js';
 import { getSession } from '../../session.js';
 import { logger } from '../../logger.js';
 
@@ -17,11 +24,15 @@ router.post('/request-otp', async (req, res) => {
   // Attempt to send WhatsApp message via default active session
   const defaultSession = getSession('default');
   if (!defaultSession || !defaultSession.isConnected || !defaultSession.sock) {
-    logger.warn({ phone: result.phone }, '⚠️ Failed to send OTP code: WhatsApp Gateway session is disconnected.');
+    logger.warn(
+      { phone: result.phone },
+      '⚠️ Failed to send OTP code: WhatsApp Gateway session is disconnected.'
+    );
     return res.status(503).json({
       success: false,
       error: 'session_disconnected',
-      message: 'WhatsApp Gateway ist aktuell nicht verbunden. Bitte den Administrator kontaktieren.',
+      message:
+        'WhatsApp Gateway ist aktuell nicht verbunden. Bitte den Administrator kontaktieren.',
     });
   }
 
@@ -34,7 +45,10 @@ router.post('/request-otp', async (req, res) => {
       message: 'Code wurde erfolgreich per WhatsApp gesendet.',
     });
   } catch (err) {
-    logger.error({ phone: result.phone, error: err.message }, 'Failed to send WhatsApp OTP message');
+    logger.error(
+      { phone: result.phone, error: err.message },
+      'Failed to send WhatsApp OTP message'
+    );
     return res.status(500).json({
       success: false,
       error: 'send_failed',
@@ -74,14 +88,18 @@ router.get('/me', (req, res) => {
 // Manage RBAC Config (Super Admin Only)
 router.get('/rbac/config', (req, res) => {
   if (!req.userRole?.isSuperAdmin) {
-    return res.status(403).json({ error: 'Forbidden', message: 'Super Admin Rechte erforderlich.' });
+    return res
+      .status(403)
+      .json({ error: 'Forbidden', message: 'Super Admin Rechte erforderlich.' });
   }
   return res.json(loadRbacConfig());
 });
 
 router.post('/rbac/config', (req, res) => {
   if (!req.userRole?.isSuperAdmin) {
-    return res.status(403).json({ error: 'Forbidden', message: 'Super Admin Rechte erforderlich.' });
+    return res
+      .status(403)
+      .json({ error: 'Forbidden', message: 'Super Admin Rechte erforderlich.' });
   }
   const updated = saveRbacConfig(req.body);
   return res.json({ success: true, config: updated });

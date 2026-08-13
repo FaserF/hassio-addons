@@ -16,7 +16,7 @@ const sessionStore = new Map();
 
 export const DEFAULT_RBAC_CONFIG = {
   superadmin_numbers: [], // List of phone numbers mapped to Super Admin e.g. ["491761234567"]
-  blocked_numbers: [],    // Numbers that issued /stoplogin or !stoplogin
+  blocked_numbers: [], // Numbers that issued /stoplogin or !stoplogin
 };
 
 export function loadRbacConfig() {
@@ -38,10 +38,14 @@ export function saveRbacConfig(config) {
   try {
     const cleanConfig = {
       superadmin_numbers: Array.isArray(config.superadmin_numbers)
-        ? [...new Set(config.superadmin_numbers.map((n) => String(n).replace(/\D/g, '')))].filter(Boolean)
+        ? [...new Set(config.superadmin_numbers.map((n) => String(n).replace(/\D/g, '')))].filter(
+            Boolean
+          )
         : [],
       blocked_numbers: Array.isArray(config.blocked_numbers)
-        ? [...new Set(config.blocked_numbers.map((n) => String(n).replace(/\D/g, '')))].filter(Boolean)
+        ? [...new Set(config.blocked_numbers.map((n) => String(n).replace(/\D/g, '')))].filter(
+            Boolean
+          )
         : [],
     };
     fs.writeFileSync(RBAC_FILE, JSON.stringify(cleanConfig, null, 2), 'utf8');
@@ -110,7 +114,8 @@ export function determineUserRole(req) {
       session.lastSeen = Date.now();
       // Re-verify if phone is still mapped to superadmin in latest rbac config
       const rbacConfig = loadRbacConfig();
-      const isMappedSuperAdmin = session.phone && rbacConfig.superadmin_numbers.includes(session.phone);
+      const isMappedSuperAdmin =
+        session.phone && rbacConfig.superadmin_numbers.includes(session.phone);
 
       return {
         role: isMappedSuperAdmin ? 'superadmin' : 'user',
@@ -224,27 +229,47 @@ export function requestOtpCode(phone) {
 export function verifyOtpCode(phone, code) {
   const cleanPhone = normalizePhoneNumber(phone);
   if (!cleanPhone || !code) {
-    return { success: false, error: 'invalid_input', message: 'Telefonnummer und Code erforderlich.' };
+    return {
+      success: false,
+      error: 'invalid_input',
+      message: 'Telefonnummer und Code erforderlich.',
+    };
   }
 
   const entry = otpStore.get(cleanPhone);
   if (!entry) {
-    return { success: false, error: 'no_otp', message: 'Kein aktiver Anmeldecode für diese Nummer gefunden.' };
+    return {
+      success: false,
+      error: 'no_otp',
+      message: 'Kein aktiver Anmeldecode für diese Nummer gefunden.',
+    };
   }
 
   if (Date.now() > entry.expiresAt) {
     otpStore.delete(cleanPhone);
-    return { success: false, error: 'expired', message: 'Der Anmeldecode ist abgelaufen. Bitte erstelle einen neuen Code.' };
+    return {
+      success: false,
+      error: 'expired',
+      message: 'Der Anmeldecode ist abgelaufen. Bitte erstelle einen neuen Code.',
+    };
   }
 
   entry.attempts += 1;
   if (entry.attempts > 3) {
     otpStore.delete(cleanPhone);
-    return { success: false, error: 'too_many_attempts', message: 'Zu viele fehlerhafte Versuche. Bitte fordere einen neuen Code an.' };
+    return {
+      success: false,
+      error: 'too_many_attempts',
+      message: 'Zu viele fehlerhafte Versuche. Bitte fordere einen neuen Code an.',
+    };
   }
 
   if (String(code).trim() !== entry.code) {
-    return { success: false, error: 'invalid_code', message: 'Ungültiger Anmeldecode. Bitte überprüfe deine Eingabe.' };
+    return {
+      success: false,
+      error: 'invalid_code',
+      message: 'Ungültiger Anmeldecode. Bitte überprüfe deine Eingabe.',
+    };
   }
 
   // Code correct! Consume OTP
@@ -273,7 +298,10 @@ export function handleOptOutCommand(senderJid) {
     saveRbacConfig(rbacConfig);
     // Clear active OTP
     otpStore.delete(cleanPhone);
-    logger.info({ phone: cleanPhone }, '🚫 Phone number opted out from login notifications via /stoplogin');
+    logger.info(
+      { phone: cleanPhone },
+      '🚫 Phone number opted out from login notifications via /stoplogin'
+    );
     return true;
   }
   return false;

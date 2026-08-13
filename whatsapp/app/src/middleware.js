@@ -40,7 +40,7 @@ export const ipFilterMiddleware = (req, res, next) => {
     { ip, headers: req.headers },
     '[SECURITY] Blocked external unauthenticated access attempt'
   );
-  
+
   if (req.originalUrl.startsWith('/api/')) {
     return res.status(401).json({ error: 'Unauthorized', redirect: '/login' });
   }
@@ -134,8 +134,6 @@ export const httpLoggerMiddleware = (req, res, next) => {
 
   next();
 };
-
-
 
 export const uiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,

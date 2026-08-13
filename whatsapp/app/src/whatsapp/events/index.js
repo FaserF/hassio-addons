@@ -186,12 +186,21 @@ export function handleIncomingMessages(session) {
     for (const msg of m.messages) {
       if (!msg.key?.fromMe && msg.message) {
         const text = extractEditedText(msg.message).trim().toLowerCase();
-        if (text === '/stoplogin' || text === '!stoplogin' || text === '/blocklogin' || text === '/optout') {
+        if (
+          text === '/stoplogin' ||
+          text === '!stoplogin' ||
+          text === '/blocklogin' ||
+          text === '/optout'
+        ) {
           const senderJid = msg.key.participant || msg.key.remoteJid;
           const optedOut = handleOptOutCommand(senderJid);
           if (optedOut && session.sock) {
             try {
-              await reply(session, msg, '🚫 Du wurdest erfolgreich von weiteren Login-Benachrichtigungen des WhatsApp Gateways gesperrt.');
+              await reply(
+                session,
+                msg,
+                '🚫 Du wurdest erfolgreich von weiteren Login-Benachrichtigungen des WhatsApp Gateways gesperrt.'
+              );
             } catch (_e) {}
           }
         }

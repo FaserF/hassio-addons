@@ -22,7 +22,9 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     }
   }
 
-  const isDe = (rawMsg.key?.remoteJid || '').includes('de') || (process.env.LANG || '').toLowerCase().includes('de');
+  const isDe =
+    (rawMsg.key?.remoteJid || '').includes('de') ||
+    (process.env.LANG || '').toLowerCase().includes('de');
 
   try {
     // 1. Download media stream from WhatsApp (Baileys)
@@ -53,7 +55,9 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     const sttResult = await translateTextFreeWithReason(textToTranscribe, targetLang);
 
     if (sttResult.translation) {
-      const header = isDe ? '🎙️ *Sprachnachricht zu Text (STT)*' : '🎙️ *Voice Message to Text (STT)*';
+      const header = isDe
+        ? '🎙️ *Sprachnachricht zu Text (STT)*'
+        : '🎙️ *Voice Message to Text (STT)*';
       const disclaimer = isDe
         ? '\n\n_⚠️ Hinweis: Automatische Transkription – kann Fehler enthalten._'
         : '\n\n_⚠️ Note: Automated transcription – may contain errors._';
@@ -64,7 +68,9 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     } else {
       const header = isDe ? '❌ *Speech-to-Text Fehler*' : '❌ *Speech-to-Text Error*';
       const reasonLabel = isDe ? '*Grund:*' : '*Reason:*';
-      const detail = sttResult.reason || (isDe ? 'Keine Sprache erkannt.' : 'Could not transcribe speech from audio.');
+      const detail =
+        sttResult.reason ||
+        (isDe ? 'Keine Sprache erkannt.' : 'Could not transcribe speech from audio.');
       const errText = `${header}\n\n${reasonLabel} ${detail}`;
 
       await reply(session, groupId, { text: errText }, rawMsg);

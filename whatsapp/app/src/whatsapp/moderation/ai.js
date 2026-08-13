@@ -62,7 +62,10 @@ export async function processAiModeration(
         }
       } catch (err) {
         aiErrorReason = `AI Provider error: ${err.message}`;
-        logger.debug({ error: err.message }, 'AI translation failed, switching to free translator fallback');
+        logger.debug(
+          { error: err.message },
+          'AI translation failed, switching to free translator fallback'
+        );
       }
     }
 
@@ -70,7 +73,8 @@ export async function processAiModeration(
     const freeRes = await translateTextFreeWithReason(text, targetLang);
     if (freeRes.translation) return { translation: freeRes.translation, reason: null };
 
-    const finalReason = freeRes.reason || aiErrorReason || 'Unknown error occurred during translation.';
+    const finalReason =
+      freeRes.reason || aiErrorReason || 'Unknown error occurred during translation.';
     return { translation: null, reason: finalReason };
   }
 
@@ -142,4 +146,3 @@ export async function processAiModeration(
     return null;
   }
 }
-
