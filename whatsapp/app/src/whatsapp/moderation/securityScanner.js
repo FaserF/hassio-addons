@@ -41,9 +41,19 @@ async function scanUrl(url, engine, vtApiKey) {
   if (engine === 'local' || engine === 'hybrid') {
     const urlLower = url.toLowerCase();
     const maliciousPatterns = [
-      'malicious', 'phishing', 'scam', 'virus', 'eicar',
-      'free-crypto', 'gift-card', 'urgent-verify', 'account-locked',
-      'login-verify', 'secure-update', 'free-telegram-premium', 'claim-reward',
+      'malicious',
+      'phishing',
+      'scam',
+      'virus',
+      'eicar',
+      'free-crypto',
+      'gift-card',
+      'urgent-verify',
+      'account-locked',
+      'login-verify',
+      'secure-update',
+      'free-telegram-premium',
+      'claim-reward',
     ];
     if (maliciousPatterns.some((p) => urlLower.includes(p))) {
       logger.info({ url }, 'Flagged malicious URL via local heuristic pattern');
@@ -89,7 +99,18 @@ async function scanUrl(url, engine, vtApiKey) {
 
 async function scanFilenameAndMetadata(filename) {
   const fname = (filename || '').toLowerCase();
-  const dangerousExts = ['.exe', '.scr', '.pif', '.bat', '.cmd', '.vbs', '.js', '.ps1', '.hta', '.apk'];
+  const dangerousExts = [
+    '.exe',
+    '.scr',
+    '.pif',
+    '.bat',
+    '.cmd',
+    '.vbs',
+    '.js',
+    '.ps1',
+    '.hta',
+    '.apk',
+  ];
   if (dangerousExts.some((ext) => fname.endsWith(ext))) {
     logger.info({ filename }, 'Flagged dangerous executable file extension');
     return true;

@@ -1443,13 +1443,21 @@ export async function handleModerationMessage(session, event) {
 
       // Skip translation if detected source language is already the target language
       if (srcCode !== '?' && srcCode === dstCode) {
-        logger.debug({ srcCode, dstCode }, 'Skipping auto-translation: source language matches target language');
+        logger.debug(
+          { srcCode, dstCode },
+          'Skipping auto-translation: source language matches target language'
+        );
       } else {
         const header =
           targetLang === 'de'
             ? `🌐 *Automatische Übersetzung (${srcCode.toUpperCase()} → ${dstCode.toUpperCase()}):*`
             : `🌐 *Auto Translation (${srcCode.toUpperCase()} → ${dstCode.toUpperCase()}):*`;
-        await reply(session, groupId, { text: `${header}\n\n"${transResult.translation}"` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `${header}\n\n"${transResult.translation}"` },
+          rawMsg
+        );
       }
     }
   }

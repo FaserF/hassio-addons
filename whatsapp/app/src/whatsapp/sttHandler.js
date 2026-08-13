@@ -79,7 +79,10 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
 
     if (!transcribedText && apiKey) {
       // 2. Try Gemini 1.5 Multimodal Audio API
-      if (sttEngine === 'gemini' || (sttEngine === 'auto' && (store.gemini_api_key || process.env.GEMINI_API_KEY))) {
+      if (
+        sttEngine === 'gemini' ||
+        (sttEngine === 'auto' && (store.gemini_api_key || process.env.GEMINI_API_KEY))
+      ) {
         try {
           const gKey = store.gemini_api_key || process.env.GEMINI_API_KEY || apiKey;
           const base64Audio = stream.toString('base64');

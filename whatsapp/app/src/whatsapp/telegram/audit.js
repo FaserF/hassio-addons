@@ -15,8 +15,6 @@ export const BRIDGE_DEFAULT_DESCRIPTION =
 export const BRIDGE_DEFAULT_SHORT_DESCRIPTION =
   'WhatsApp <-> Telegram Bridge Bot. https://faserf.github.io/ha-whatsapp/';
 
-
-
 export async function runTelegramBridgeAudit(bot) {
   const checks = [];
 
@@ -127,7 +125,8 @@ export async function runTelegramBridgeAudit(bot) {
     key: 'group_privacy',
     title: 'Telegram Group Privacy Mode',
     status: 'warning',
-    message: 'To relay messages from Telegram group chats to WhatsApp, Group Privacy MUST be turned OFF in BotFather.',
+    message:
+      'To relay messages from Telegram group chats to WhatsApp, Group Privacy MUST be turned OFF in BotFather.',
     fixable_via_api: false,
     manual_instructions:
       `1. Open @BotFather on Telegram.\n` +
@@ -154,7 +153,10 @@ export async function executeTelegramBridgeFix(bot, fixKeys = null) {
   if (keysToFix.includes('commands')) {
     try {
       await bot.request('setMyCommands', { commands: BRIDGE_DEFAULT_COMMANDS });
-      results.commands = { success: true, message: 'Updated bridge commands in BotFather (/status, /ping, /help, /sync).' };
+      results.commands = {
+        success: true,
+        message: 'Updated bridge commands in BotFather (/status, /ping, /help, /sync).',
+      };
     } catch (e) {
       results.commands = { success: false, error: e.message };
     }
@@ -171,8 +173,13 @@ export async function executeTelegramBridgeFix(bot, fixKeys = null) {
 
   if (keysToFix.includes('short_description')) {
     try {
-      await bot.request('setMyShortDescription', { short_description: BRIDGE_DEFAULT_SHORT_DESCRIPTION });
-      results.short_description = { success: true, message: 'Updated bot short description (About).' };
+      await bot.request('setMyShortDescription', {
+        short_description: BRIDGE_DEFAULT_SHORT_DESCRIPTION,
+      });
+      results.short_description = {
+        success: true,
+        message: 'Updated bot short description (About).',
+      };
     } catch (e) {
       results.short_description = { success: false, error: e.message };
     }

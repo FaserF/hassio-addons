@@ -154,7 +154,6 @@ export function registerTelegramRoutes(app) {
     }
   });
 
-
   // GET /api/telegram/chats
   app.get('/api/telegram/chats', async (req, res) => {
     const store = loadTelegramStore();

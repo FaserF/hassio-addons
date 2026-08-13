@@ -44,7 +44,6 @@ const ALLOWED_METHODS = new Map([
   ['getUserProfilePhotos', 'getUserProfilePhotos'],
 ]);
 
-
 export class TelegramBotClient {
   constructor(token) {
     this.token = sanitizeTelegramToken(token);
