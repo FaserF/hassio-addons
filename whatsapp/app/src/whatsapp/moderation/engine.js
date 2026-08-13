@@ -1500,7 +1500,7 @@ export async function handleModerationMessage(session, event) {
     const { performSecurityScan } = await import('./securityScanner.js');
     const scanResult = await performSecurityScan(rawMsg, secScan, store.gemini_api_key);
     if (scanResult?.is_malicious) {
-      const threatLabel = scanResult.threats?.[0]?.value || 'Malware/Phishing Link';
+      const threatType = scanResult.threats?.[0]?.type?.toUpperCase() || 'MALWARE / PHISHING LINK';
       if (rawMsg?.key?.id) {
         try {
           await session.sock.sendMessage(groupId, { delete: rawMsg.key });
@@ -1512,7 +1512,7 @@ export async function handleModerationMessage(session, event) {
         session,
         groupId,
         {
-          text: `🛡️ *Security Shield Alert*\n\n⚠️ Malicious link/file detected and deleted: \`${threatLabel}\``,
+          text: `🛡️ *Security Shield Alert*\n\n⚠️ Malicious ${threatType} detected and neutralized.`,
         },
         rawMsg
       );
@@ -1520,7 +1520,7 @@ export async function handleModerationMessage(session, event) {
         session,
         groupId,
         userId,
-        `Security Threat Detected (${threatLabel})`,
+        `Security Threat Detected (${threatType})`,
         rawMsg
       );
       return true;

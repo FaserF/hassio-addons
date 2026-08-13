@@ -43,6 +43,8 @@ RUN \
     npm \
     unzip \
     ffmpeg \
+    ffmpeg-dev \
+    pkgconf \
     jq && \
     # Verify Node.js version
     node --version && \
