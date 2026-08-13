@@ -389,7 +389,7 @@ export function handleIncomingMessages(session) {
       .filter((msg) => {
         if (msg.key.remoteJid === 'status@broadcast') return false;
         if (msg.messageStubType) return false; // Skip system notifications (member join/leave/promotions) from moderation processing
-        if (unwrapProtocolNode(msg.message)) return false; // Skip protocol control nodes (edits & deletes) from raw text forwarding
+        if (unwrapProtocolNode(msg.message) || msg.message?.protocolMessage || msg.message?.editedMessage) return false; // Skip protocol control nodes (edits & deletes) from raw text forwarding
         if (msg.key.fromMe) {
           // Allow outgoing messages if they are to an admin (usually to self) OR in a group
           const isToAdminPrimary = isAdmin(msg.key.remoteJid, session);
@@ -452,7 +452,14 @@ export function handleIncomingMessages(session) {
             if (!obj || depth > 5) return [];
             let found = [];
             if (typeof obj === 'string') {
-              if (obj.trim()) found.push(obj.trim());
+              const trimmed = obj.trim();
+              if (
+                trimmed &&
+                !/^[0-9A-F]{16,32}$/i.test(trimmed) &&
+                !/@(g\.us|s\.whatsapp\.net|lid)$/i.test(trimmed)
+              ) {
+                found.push(trimmed);
+              }
             } else if (typeof obj === 'object') {
               for (const key of Object.keys(obj)) {
                 // Skip keys that hold raw binary buffers, keys, or IDs
@@ -478,6 +485,7 @@ export function handleIncomingMessages(session) {
                     'protocolMessage',
                     'editedMessage',
                     'key',
+                    'id',
                     'remoteJid',
                     'participant',
                     'remoteJidAlt',
