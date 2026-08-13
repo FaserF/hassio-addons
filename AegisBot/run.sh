@@ -847,7 +847,6 @@ elif ! python3 -c "import zeroconf" 2>/dev/null; then
 	python3 -m pip install --no-cache-dir "zeroconf>=0.130.0" || true
 fi
 
-
 # Start Uvicorn in background
 python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --proxy-headers --forwarded-allow-ips="*" --log-level "$(echo "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" &
 BACKEND_PID=$!
