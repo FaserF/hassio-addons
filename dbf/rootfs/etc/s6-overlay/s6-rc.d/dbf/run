@@ -37,12 +37,12 @@ _show_app_banner() {
             LAST_VER=$(head -n 1 "$STATE_FILE" 2>/dev/null)
             FAIL_COUNT=$(sed -n '2p' "$STATE_FILE" 2>/dev/null)
             FAIL_COUNT="${FAIL_COUNT//[!0-9]/}"
-            [ -z "$FAIL_COUNT" ] && FAIL_COUNT=0
+            [ -z "${FAIL_COUNT:-}" ] && FAIL_COUNT=0
         fi
 
-        if [ "$VERSION" != "$LAST_VER" ]; then
+        if [ "${VERSION:-}" != "${LAST_VER:-}" ]; then
             FAIL_COUNT=0
-            LAST_VER="$VERSION"
+            LAST_VER="${VERSION:-}"
         fi
 
         FAIL_COUNT=$((FAIL_COUNT + 1))
