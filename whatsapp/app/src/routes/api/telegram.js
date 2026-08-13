@@ -115,6 +115,46 @@ export function registerTelegramRoutes(app) {
     res.json({ success: true, data: store.bots });
   });
 
+  // GET /api/telegram/bots/:id/audit
+  app.get('/api/telegram/bots/:id/audit', async (req, res) => {
+    const store = loadTelegramStore();
+    const { id } = req.params;
+    const botRecord = (store.bots || []).find((b) => b.id === id);
+    if (!botRecord || !botRecord.token) {
+      return res.status(404).json({ success: false, error: 'Bot instance not found' });
+    }
+    try {
+      const { TelegramBotClient } = await import('../../whatsapp/telegram/bot.js');
+      const { runTelegramBridgeAudit } = await import('../../whatsapp/telegram/audit.js');
+      const bot = new TelegramBotClient(botRecord.token);
+      const report = await runTelegramBridgeAudit(bot);
+      res.json({ success: true, data: report });
+    } catch (e) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+  // POST /api/telegram/bots/:id/fix
+  app.post('/api/telegram/bots/:id/fix', async (req, res) => {
+    const store = loadTelegramStore();
+    const { id } = req.params;
+    const { fix_keys } = req.body || {};
+    const botRecord = (store.bots || []).find((b) => b.id === id);
+    if (!botRecord || !botRecord.token) {
+      return res.status(404).json({ success: false, error: 'Bot instance not found' });
+    }
+    try {
+      const { TelegramBotClient } = await import('../../whatsapp/telegram/bot.js');
+      const { executeTelegramBridgeFix } = await import('../../whatsapp/telegram/audit.js');
+      const bot = new TelegramBotClient(botRecord.token);
+      const results = await executeTelegramBridgeFix(bot, fix_keys);
+      res.json({ success: true, data: results, message: 'Automated bridge fixes executed' });
+    } catch (e) {
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+
   // GET /api/telegram/chats
   app.get('/api/telegram/chats', async (req, res) => {
     const store = loadTelegramStore();

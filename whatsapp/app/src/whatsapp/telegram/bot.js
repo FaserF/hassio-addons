@@ -33,7 +33,17 @@ const ALLOWED_METHODS = new Map([
   ['stopMessageLiveLocation', 'stopMessageLiveLocation'],
   ['pinChatMessage', 'pinChatMessage'],
   ['unpinChatMessage', 'unpinChatMessage'],
+  ['getMyCommands', 'getMyCommands'],
+  ['setMyCommands', 'setMyCommands'],
+  ['getChatMenuButton', 'getChatMenuButton'],
+  ['setChatMenuButton', 'setChatMenuButton'],
+  ['getMyDescription', 'getMyDescription'],
+  ['setMyDescription', 'setMyDescription'],
+  ['getMyShortDescription', 'getMyShortDescription'],
+  ['setMyShortDescription', 'setMyShortDescription'],
+  ['getUserProfilePhotos', 'getUserProfilePhotos'],
 ]);
+
 
 export class TelegramBotClient {
   constructor(token) {
