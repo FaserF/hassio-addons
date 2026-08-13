@@ -665,6 +665,7 @@
     "import_url_ph": "https://example.com/federation_config.json",
     "import_from_file": "Option B: Upload JSON File",
     "choose_json_file": "Click to choose a .json file…",
+    "choose_config_json_file": "Click to upload or drag & drop a .json file…",
     "import_fed_btn": "Import Federation",
     "unsaved_changes_in": "You have unsaved changes in",
     "save_before_switch": "Would you like to save them before switching?",

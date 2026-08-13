@@ -98,9 +98,37 @@ async function exportGroupModerationConfig() {
   }
 }
 
+async function handleModConfigFileUpload(inputEl) {
+  const file = inputEl?.files?.[0];
+  const filenameEl = document.getElementById('mod-import-config-filename');
+  if (filenameEl) {
+    filenameEl.textContent = file ? file.name : t('moderation.choose_config_json_file');
+  }
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const txtArea = document.getElementById('mod-import-text');
+    if (txtArea) txtArea.value = text;
+  } catch (err) {
+    showToast(t('moderation.invalid_json'), 'danger');
+  }
+}
+
 async function importGroupModerationConfig() {
   if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
-  const txt = document.getElementById('mod-import-text')?.value.trim();
+  let txt = document.getElementById('mod-import-text')?.value.trim();
+
+  const fileInp = document.getElementById('mod-import-config-file');
+  const file = fileInp?.files?.[0];
+
+  if (!txt && file) {
+    try {
+      txt = await file.text();
+    } catch (err) {
+      return showToast(t('moderation.invalid_json'), 'danger');
+    }
+  }
+
   if (!txt) return showToast(t('moderation.invalid_json'), 'warning');
 
   try {

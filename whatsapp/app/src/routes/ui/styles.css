@@ -3402,3 +3402,26 @@ body.tab-chats-active .footer-info {
   padding-top: 16px !important;
   border-top: 1px solid var(--border-color) !important;
 }
+
+.mod-file-upload-label {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  padding: 16px 20px !important;
+  border: 2px dashed var(--primary) !important;
+  border-radius: 10px !important;
+  background: rgba(0, 168, 132, 0.05) !important;
+  color: var(--primary) !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  text-align: center !important;
+}
+
+.mod-file-upload-label:hover {
+  background: rgba(0, 168, 132, 0.12) !important;
+  border-color: var(--primary-hover, var(--primary)) !important;
+  transform: translateY(-1px);
+}
+

@@ -639,7 +639,20 @@ export default () => `
                         </div>
                         <div class="mod-actions mod-actions-split" style="margin-bottom:20px;"><button class="btn btn-secondary btn-sm" onclick="exportGroupModerationConfig()"><i class="fas fa-download"></i> <span data-i18n="moderation.export_config">Export Group Config (JSON)</span></button></div>
                         <div class="mod-divider"></div>
-                        <div class="mod-field-group"><label class="mod-field-label" data-i18n="moderation.import_config_label">Import JSON Configuration</label><textarea id="mod-import-text" class="mod-textarea" style="height:100px;" placeholder="Paste moderation JSON configuration here…" data-i18n-placeholder="moderation.import_config_ph"></textarea></div>
+                        <div class="mod-field-group">
+                            <label class="mod-field-label" data-i18n="moderation.import_config_label">Import JSON Configuration</label>
+                            <textarea id="mod-import-text" class="mod-textarea" style="height:100px;" placeholder="Paste moderation JSON configuration here…" data-i18n-placeholder="moderation.import_config_ph"></textarea>
+                            <div style="display:flex; align-items:center; gap:12px; margin:12px 0;">
+                                <div style="flex:1; height:1px; background:var(--border-color);"></div>
+                                <span style="font-size:11px; font-weight:600; color:var(--text-muted); letter-spacing:.5px;" data-i18n="common.or">OR</span>
+                                <div style="flex:1; height:1px; background:var(--border-color);"></div>
+                            </div>
+                            <label class="mod-file-upload-label" for="mod-import-config-file">
+                                <i class="fas fa-cloud-upload-alt" style="font-size:18px;"></i>
+                                <span id="mod-import-config-filename" data-i18n="moderation.choose_config_json_file">Click to upload or drag &amp; drop a .json file&hellip;</span>
+                                <input type="file" id="mod-import-config-file" accept=".json" style="display:none;" onchange="handleModConfigFileUpload(this)">
+                            </label>
+                        </div>
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="importGroupModerationConfig()"><i class="fas fa-upload"></i> <span data-i18n="moderation.import_config_btn">Import Config</span></button></div>
                     </div>
                 </div>

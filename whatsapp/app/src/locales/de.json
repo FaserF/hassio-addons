@@ -679,6 +679,7 @@
     "import_url_ph": "https://example.com/federation_config.json",
     "import_from_file": "Option B: JSON-Datei hochladen",
     "choose_json_file": "Klicken, um eine .json-Datei auszuwählen…",
+    "choose_config_json_file": "Klicken oder .json-Datei per Drag & Drop hochladen…",
     "import_fed_btn": "Föderation importieren",
     "unsaved_changes_in": "Du hast ungespeicherte Änderungen in",
     "save_before_switch": "Möchtest du diese vor dem Wechseln speichern?",
