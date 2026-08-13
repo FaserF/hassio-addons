@@ -145,17 +145,22 @@ database:
 debug: true
 ```
 
-## 🌐 Network & Home Assistant Auto-Discovery
+## 🌐 Network & Integration Setup
 
-This Add-on uses **`host_network: true`** by default.
+### Network Mode
+- **Bridge Network (Default)**: By default, the Add-on runs in an isolated Docker bridge network with exposed port `8077` and Ingress enabled.
+- **Host Network (Optional)**: If you want Zeroconf / mDNS discovery broadcasts (`_ha-aegisbot._tcp.local.`) to reach your local LAN for automatic mDNS device detection, `host_network: true` can be enabled. In WhatsApp, `host_network: true` is enabled by default for this purpose.
 
-### Why is Host Network used?
+### 1-Click Home Assistant Integration Setup
+Even in standard bridge mode without host networking:
+1. Go to **Settings ➔ Devices & Services ➔ Add Integration** and search for **AegisBot**.
+2. The integration's config flow automatically queries the Supervisor API to detect your running Add-on (`http://edfe50eb-aegisbot:8077`).
+3. The secure API token generated at `/data/.api_token` is automatically pre-filled.
+4. Click **Submit** to connect instantly.
 
-- **mDNS / Zeroconf Multicast**: Home Assistant auto-discovery relies on link-local mDNS multicast packets (`224.0.0.251:5353` for `_ha-aegisbot._tcp.local.`).
-- **Zero-Configuration Pairing**: Docker Bridge networks isolate multicast traffic from the Home Assistant host. By using host networking, AegisBot can announce its presence on the local network so Home Assistant immediately detects it as a discovered device tile under **Settings ➔ Devices & Services**.
-- **Port Usage**: The web interface and REST API listen on port `8077` (HTTP) and `8001` (Internal Uvicorn backend).
 
 ## 📂 Folder Usage
+
 
 This app uses the following folders:
 
