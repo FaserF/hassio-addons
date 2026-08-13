@@ -43,7 +43,11 @@ export async function processAiModeration(
               try {
                 const parsed = JSON.parse(rawContent);
                 if (parsed.translation) {
-                  return { translation: parsed.translation, sourceLang: parsed.sourceLang || null, reason: null };
+                  return {
+                    translation: parsed.translation,
+                    sourceLang: parsed.sourceLang || null,
+                    reason: null,
+                  };
                 }
               } catch (e) {
                 return { translation: rawContent, sourceLang: null, reason: null };
@@ -70,7 +74,11 @@ export async function processAiModeration(
               try {
                 const parsed = JSON.parse(cleanJson);
                 if (parsed.translation) {
-                  return { translation: parsed.translation, sourceLang: parsed.sourceLang || null, reason: null };
+                  return {
+                    translation: parsed.translation,
+                    sourceLang: parsed.sourceLang || null,
+                    reason: null,
+                  };
                 }
               } catch (e) {
                 return { translation: rawContent, sourceLang: null, reason: null };
