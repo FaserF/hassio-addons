@@ -1,0 +1,57 @@
+name: WhatsApp HA Integration Live End-to-End Test
+
+on:
+  pull_request:
+    branches: [ master ]
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'whatsapp/**'
+      - '.github/workflows/whatsapp-ha-integration-test.yaml'
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  whatsapp-live-integration-test:
+    name: WhatsApp Addon App <-> HA Integration Live Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout hassio-addons
+        uses: actions/checkout@v7
+
+      - name: Checkout ha-whatsapp Integration
+        uses: actions/checkout@v7
+        with:
+          repository: 'FaserF/ha-whatsapp'
+          path: 'ha-whatsapp'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Start WhatsApp Addon Service (Background)
+        run: |
+          cd whatsapp/app
+          npm ci || npm install
+          nohup npm start > whatsapp_app.log 2>&1 &
+          sleep 5
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14.7'
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy pyyaml pytest pytest-asyncio pytest-cov homeassistant aiohttp pytest-homeassistant-custom-component beautifulsoup4
+
+      - name: Run ha-whatsapp Integration Tests Against Live Addon App
+        run: |
+          cd ha-whatsapp
+          WHATSAPP_TEST_SERVER_URL="http://127.0.0.1:8066" PYTHONPATH=. pytest tests/
+
+      - name: Service Log Output (Debugging)
+        if: always()
+        run: |
+          if [ -f whatsapp/app/whatsapp_app.log ]; then cat whatsapp/app/whatsapp_app.log; fi
