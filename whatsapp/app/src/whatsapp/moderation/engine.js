@@ -708,7 +708,8 @@ export async function handleModerationMessage(session, event) {
   const groupId = isGroup ? event.from || event.sender : event.sender;
   const config = getGroupModerationConfig(groupId);
 
-  const isGroupConfigured = config.enabled || config.translation?.mode === 'auto' || config.stt_enabled !== false;
+  const isGroupConfigured =
+    config.enabled || config.translation?.mode === 'auto' || config.stt_enabled !== false;
   if (!store.global_enabled || !isGroupConfigured) {
     logger.debug('Skipping moderation: global_enabled is false or group features not configured');
     return false;
@@ -1427,13 +1428,9 @@ export async function handleModerationMessage(session, event) {
       provider === 'ai'
         ? await (async () => {
             const { processAiModeration } = await import('./ai.js');
-            return processAiModeration(
-              text,
-              config.ai || {},
-              store.gemini_api_key,
-              'translate',
-              { targetLang }
-            );
+            return processAiModeration(text, config.ai || {}, store.gemini_api_key, 'translate', {
+              targetLang,
+            });
           })()
         : await translateTextFreeWithReason(text, targetLang, provider);
 
@@ -1441,7 +1438,8 @@ export async function handleModerationMessage(session, event) {
       transResult?.translation &&
       transResult.translation.trim().toLowerCase() !== text.trim().toLowerCase()
     ) {
-      const header = targetLang === 'de' ? '🌐 *Automatische Übersetzung:*' : '🌐 *Auto Translation:*';
+      const header =
+        targetLang === 'de' ? '🌐 *Automatische Übersetzung:*' : '🌐 *Auto Translation:*';
       await reply(session, groupId, { text: `${header}\n\n"${transResult.translation}"` }, rawMsg);
     }
   }

@@ -47,14 +47,19 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     // 2. Perform STT transcription using Gemini Multimodal Audio API or OpenAI Whisper API
     const config = getGroupModerationConfig(groupId) || {};
     const store = (await import('./moderation/store.js')).loadModerationStore();
-    const apiKey = store.gemini_api_key || config.ai?.api_key || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
+    const apiKey =
+      store.gemini_api_key ||
+      config.ai?.api_key ||
+      process.env.GEMINI_API_KEY ||
+      process.env.OPENAI_API_KEY;
 
     let transcribedText = null;
     let failureReason = null;
 
     if (apiKey) {
       try {
-        const isGemini = apiKey.startsWith('AIza') || store.gemini_api_key || process.env.GEMINI_API_KEY;
+        const isGemini =
+          apiKey.startsWith('AIza') || store.gemini_api_key || process.env.GEMINI_API_KEY;
         if (isGemini) {
           // Gemini 1.5 Flash Audio Inline Transcribe
           const base64Audio = stream.toString('base64');
@@ -91,7 +96,10 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           // OpenAI Whisper STT API
           const FormData = (await import('form-data')).default;
           const formData = new FormData();
-          formData.append('file', stream, { filename: 'voice.ogg', contentType: audioMsg.mimetype || 'audio/ogg' });
+          formData.append('file', stream, {
+            filename: 'voice.ogg',
+            contentType: audioMsg.mimetype || 'audio/ogg',
+          });
           formData.append('model', 'whisper-1');
           if (isDe) formData.append('language', 'de');
 
@@ -133,7 +141,9 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     } else {
       const header = isDe ? '❌ *Speech-to-Text Fehler*' : '❌ *Speech-to-Text Error*';
       const reasonLabel = isDe ? '*Grund:*' : '*Reason:*';
-      const detail = failureReason || (isDe ? 'Keine Sprache erkannt.' : 'Could not transcribe speech from audio.');
+      const detail =
+        failureReason ||
+        (isDe ? 'Keine Sprache erkannt.' : 'Could not transcribe speech from audio.');
       const errText = `${header}\n\n${reasonLabel} ${detail}`;
 
       await reply(session, groupId, { text: errText }, rawMsg);

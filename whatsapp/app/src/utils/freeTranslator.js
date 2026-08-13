@@ -8,7 +8,11 @@ const cooldowns = new Map();
  * Failover chain: Google Translate -> Lingva -> MyMemory
  * Features: Rate-limit (429) cooldowns (5 min), 5s AbortSignal timeout, 1000 char truncation, in-memory caching.
  */
-export async function translateTextFreeWithReason(text, targetLang = 'en', preferredProvider = 'auto') {
+export async function translateTextFreeWithReason(
+  text,
+  targetLang = 'en',
+  preferredProvider = 'auto'
+) {
   if (!text || !text.trim()) {
     return { translation: null, reason: 'Empty or blank text provided for translation.' };
   }
@@ -42,29 +46,29 @@ export async function translateTextFreeWithReason(text, targetLang = 'en', prefe
         const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(
           targetLang
         )}&dt=t&q=${encodeURIComponent(cleanText)}`;
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const res = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeoutId);
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
 
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data[0]) {
-          const translated = data[0].map((part) => part[0] || '').join('');
-          if (translated) {
-            saveCache(translated);
-            return { translation: translated, reason: null };
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data[0]) {
+            const translated = data[0].map((part) => part[0] || '').join('');
+            if (translated) {
+              saveCache(translated);
+              return { translation: translated, reason: null };
+            }
           }
+        } else if (res.status === 429) {
+          logger.warn('Google Translate API rate-limited (429). Cooldown 5 minutes.');
+          cooldowns.set('google', now + 300000);
         }
-      } else if (res.status === 429) {
-        logger.warn('Google Translate API rate-limited (429). Cooldown 5 minutes.');
-        cooldowns.set('google', now + 300000);
+      } catch (err) {
+        logger.debug({ error: err.message }, 'Google Translate fallback failed');
       }
-    } catch (err) {
-      logger.debug({ error: err.message }, 'Google Translate fallback failed');
     }
-  }
 
     if (prov === 'lingva') {
       try {
@@ -97,28 +101,28 @@ export async function translateTextFreeWithReason(text, targetLang = 'en', prefe
         const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
           cleanText
         )}&langpair=autodetect|${encodeURIComponent(targetLang)}`;
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const res = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeoutId);
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
 
-      if (res.ok) {
-        const data = await res.json();
-        const translated = data?.responseData?.translatedText;
-        if (translated && !translated.toUpperCase().includes('MYMEMORY WARNING')) {
-          saveCache(translated);
-          return { translation: translated, reason: null };
+        if (res.ok) {
+          const data = await res.json();
+          const translated = data?.responseData?.translatedText;
+          if (translated && !translated.toUpperCase().includes('MYMEMORY WARNING')) {
+            saveCache(translated);
+            return { translation: translated, reason: null };
+          }
+        } else if (res.status === 429) {
+          logger.warn('MyMemory API rate-limited (429). Cooldown 5 minutes.');
+          cooldowns.set('mymemory', now + 300000);
         }
-      } else if (res.status === 429) {
-        logger.warn('MyMemory API rate-limited (429). Cooldown 5 minutes.');
-        cooldowns.set('mymemory', now + 300000);
+      } catch (err) {
+        logger.debug({ error: err.message }, 'MyMemory fallback failed');
       }
-    } catch (err) {
-      logger.debug({ error: err.message }, 'MyMemory fallback failed');
     }
   }
-}
 
   return {
     translation: null,

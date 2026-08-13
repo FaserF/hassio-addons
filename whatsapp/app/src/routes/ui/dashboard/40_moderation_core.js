@@ -897,7 +897,8 @@ async function selectModerationGroup(groupId) {
     aiPrompt.value =
       config.ai?.system_prompt ||
       'You are an intelligent, friendly, and professional WhatsApp Group Moderator AI. Your goals are to assist group members with accurate information, enforce group etiquette, keep responses concise, polite, and well-formatted for WhatsApp, and maintain a constructive community atmosphere.';
-  const transLang = document.getElementById('mod-trans-lang') || document.getElementById('mod-trans-target-lang');
+  const transLang =
+    document.getElementById('mod-trans-lang') || document.getElementById('mod-trans-target-lang');
   if (transLang) transLang.value = config.translation?.target_lang || 'en';
   const transMode = document.getElementById('mod-trans-mode');
   if (transMode) transMode.value = config.translation?.mode || 'manual';
@@ -1363,9 +1364,13 @@ window.filterModerationSettings = function filterModerationSettings(query) {
 
   if (!q) {
     // Show all elements when search query is empty
-    modPanel.querySelectorAll('.mod-subpanel, .mod-field-group, .mod-option-row, .mod-inline-controls, .mod-feature-header').forEach((el) => {
-      el.style.display = '';
-    });
+    modPanel
+      .querySelectorAll(
+        '.mod-subpanel, .mod-field-group, .mod-option-row, .mod-inline-controls, .mod-feature-header'
+      )
+      .forEach((el) => {
+        el.style.display = '';
+      });
     // Restore current active subtab
     _doSwitchModSubTab(currentModSubTab || 'rules');
     return;
@@ -1377,18 +1382,22 @@ window.filterModerationSettings = function filterModerationSettings(query) {
   });
 
   let totalMatches = 0;
-  modPanel.querySelectorAll('.mod-field-group, .mod-option-row, .mod-inline-controls').forEach((group) => {
-    const text = group.textContent.toLowerCase();
-    const inputs = Array.from(group.querySelectorAll('input, select, textarea')).map((i) => (i.id || '').toLowerCase() + ' ' + (i.placeholder || '').toLowerCase());
-    const matches = text.includes(q) || inputs.some((i) => i.includes(q));
+  modPanel
+    .querySelectorAll('.mod-field-group, .mod-option-row, .mod-inline-controls')
+    .forEach((group) => {
+      const text = group.textContent.toLowerCase();
+      const inputs = Array.from(group.querySelectorAll('input, select, textarea')).map(
+        (i) => (i.id || '').toLowerCase() + ' ' + (i.placeholder || '').toLowerCase()
+      );
+      const matches = text.includes(q) || inputs.some((i) => i.includes(q));
 
-    if (matches) {
-      group.style.display = '';
-      totalMatches++;
-    } else {
-      group.style.display = 'none';
-    }
-  });
+      if (matches) {
+        group.style.display = '';
+        totalMatches++;
+      } else {
+        group.style.display = 'none';
+      }
+    });
 };
 
 async function addCustomCommandRule() {
