@@ -190,7 +190,11 @@ export class TelegramBotClient {
         parse_mode: 'HTML',
       });
     } catch (err) {
-      if (err.message && (err.message.includes('no text in the message') || err.message.includes('message text is empty'))) {
+      if (
+        err.message &&
+        (err.message.includes('no text in the message') ||
+          err.message.includes('message text is empty'))
+      ) {
         try {
           return await this.request('editMessageCaption', {
             chat_id: chatId,

@@ -410,7 +410,12 @@ export function handleIncomingMessages(session) {
       .filter((msg) => {
         if (msg.key.remoteJid === 'status@broadcast') return false;
         if (msg.messageStubType) return false; // Skip system notifications (member join/leave/promotions) from moderation processing
-        if (unwrapProtocolNode(msg.message) || msg.message?.protocolMessage || msg.message?.editedMessage) return false; // Skip protocol control nodes (edits & deletes) from raw text forwarding
+        if (
+          unwrapProtocolNode(msg.message) ||
+          msg.message?.protocolMessage ||
+          msg.message?.editedMessage
+        )
+          return false; // Skip protocol control nodes (edits & deletes) from raw text forwarding
         if (msg.key.fromMe) {
           // Allow outgoing messages if they are to an admin (usually to self) OR in a group
           const isToAdminPrimary = isAdmin(msg.key.remoteJid, session);
