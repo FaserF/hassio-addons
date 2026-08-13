@@ -4,27 +4,143 @@
 # ==============================================================================
 # AegisBot Integration Manager
 # ==============================================================================
-# This script manages the AegisBot integration in Home Assistant.
-# It downloads the integration zip from the ha-aegisbot releases.
+# Manages automatic installation, version comparison, release download,
+# and supervisor discovery registration for the AegisBot Home Assistant integration.
 # ==============================================================================
 
-# Constants
+# Helper function to compare semantic versions
+version_gt() {
+	test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"
+}
+
 DOMAIN="aegisbot"
-INTEGRATION_PATH="/config/custom_components/$DOMAIN"
+REPO="FaserF/ha-aegisbot"
 
-bashio::log.info "Checking AegisBot integration..."
+# Detect Home Assistant configuration root directory (/homeassistant or /config)
+HA_CONFIG_ROOT=""
+for path in "/config" "/homeassistant"; do
+	if [ -d "$path" ]; then
+		HA_CONFIG_ROOT="$path"
+		break
+	fi
+done
 
-# Ensure directory exists
-if ! mkdir -p "$INTEGRATION_PATH" 2>/dev/null; then
-	bashio::log.error "Could not create integration directory at $INTEGRATION_PATH"
-	exit 0
+if [ -z "$HA_CONFIG_ROOT" ]; then
+	bashio::log.warning "Could not find Home Assistant configuration directory in /config or /homeassistant. Defaulting to /config."
+	HA_CONFIG_ROOT="/config"
 fi
 
+INTEGRATION_DIR="${HA_CONFIG_ROOT}/custom_components/${DOMAIN}"
+
+# Check option flag: auto_install_integration (Default: true)
+AUTO_INSTALL="true"
+if bashio::config.false 'auto_install_integration'; then
+	AUTO_INSTALL="false"
+fi
+
+# Retrieve optional GitHub token for rate limit prevention
+GITHUB_TOKEN=""
+if bashio::config.has_value 'github_token'; then
+	GITHUB_TOKEN=$(bashio::config 'github_token')
+fi
+
+# Function to download and extract/install integration
+install_integration() {
+	local TAG_NAME="$1"
+	local IS_UPDATE="$2"
+
+	bashio::log.info "Installing AegisBot integration version: ${TAG_NAME:-Default Branch}..."
+
+	local TMP_BUILD="/tmp/ha-aegisbot_install"
+	rm -rf "$TMP_BUILD" 2>/dev/null
+	mkdir -p "$TMP_BUILD"
+
+	local SUCCESS="false"
+	local CURL_AUTH=()
+	if [ -n "$GITHUB_TOKEN" ] && [ "$GITHUB_TOKEN" != "null" ]; then
+		CURL_AUTH=("-H" "Authorization: Bearer ${GITHUB_TOKEN}")
+	fi
+
+	if [ -n "$TAG_NAME" ]; then
+		local ZIP_URL="https://github.com/${REPO}/releases/download/${TAG_NAME}/aegisbot.zip"
+		bashio::log.info "Downloading integration package from ${ZIP_URL}..."
+		if curl "${CURL_AUTH[@]}" -L -s -f -o "/tmp/aegisbot.zip" "${ZIP_URL}"; then
+			mkdir -p "${TMP_BUILD}/custom_components/aegisbot"
+			if unzip -q "/tmp/aegisbot.zip" -d "${TMP_BUILD}/custom_components/aegisbot"; then
+				SUCCESS="true"
+			else
+				bashio::log.error "❌ Failed to unzip integration package."
+			fi
+			rm -f "/tmp/aegisbot.zip"
+		else
+			bashio::log.error "❌ Failed to download release zip: ${ZIP_URL}"
+		fi
+	fi
+
+	# Fallback: archive zip from main branch
+	if [ "$SUCCESS" != "true" ]; then
+		local FALLBACK_URL="https://github.com/${REPO}/archive/refs/heads/main.zip"
+		bashio::log.info "Attempting fallback download from ${FALLBACK_URL}..."
+		if curl "${CURL_AUTH[@]}" -L -s -f -o "/tmp/aegisbot_fallback.zip" "${FALLBACK_URL}"; then
+			mkdir -p "${TMP_BUILD}/extracted"
+			if unzip -q "/tmp/aegisbot_fallback.zip" -d "${TMP_BUILD}/extracted"; then
+				local NESTED_DIR
+				NESTED_DIR=$(find "${TMP_BUILD}/extracted" -name "manifest.json" -exec dirname {} \; | head -n 1)
+				if [ -n "$NESTED_DIR" ]; then
+					mkdir -p "${TMP_BUILD}/custom_components/aegisbot"
+					cp -rf "${NESTED_DIR}/"* "${TMP_BUILD}/custom_components/aegisbot/"
+					SUCCESS="true"
+				fi
+			fi
+			rm -f "/tmp/aegisbot_fallback.zip"
+		fi
+	fi
+
+	if [ "$SUCCESS" = "true" ] && [ -d "${TMP_BUILD}/custom_components/aegisbot" ]; then
+		if [ -d "$INTEGRATION_DIR" ]; then
+			bashio::log.info "Removing old integration files at $INTEGRATION_DIR..."
+			rm -rf "$INTEGRATION_DIR"
+		fi
+
+		mkdir -p "${HA_CONFIG_ROOT}/custom_components"
+		cp -rf "${TMP_BUILD}/custom_components/aegisbot" "${HA_CONFIG_ROOT}/custom_components/"
+
+		if [ -d "$INTEGRATION_DIR" ] && [ -f "$INTEGRATION_DIR/manifest.json" ]; then
+			bashio::log.green "✅ AegisBot integration successfully installed/updated at $INTEGRATION_DIR"
+
+			local TITLE MSG
+			if [ "$IS_UPDATE" = "true" ]; then
+				TITLE="AegisBot Integration Updated"
+				MSG="The AegisBot integration has been updated to ${TAG_NAME:-latest}. Please restart Home Assistant."
+			else
+				TITLE="AegisBot Integration Installed"
+				MSG="The AegisBot integration has been installed. Please restart Home Assistant."
+			fi
+
+			bashio::log.warning "⚠️ RESTART HOME ASSISTANT to apply integration changes!"
+
+			curl -s -X POST \
+				-H "Authorization: Bearer $SUPERVISOR_TOKEN" \
+				-H "Content-Type: application/json" \
+				-d "{\"title\": \"$TITLE\", \"message\": \"$MSG\", \"notification_id\": \"aegisbot_restart_required\"}" \
+				http://supervisor/core/api/services/persistent_notification/create >/dev/null 2>&1 || true
+		else
+			bashio::log.error "❌ Copy failed: $INTEGRATION_DIR is missing manifest.json."
+		fi
+	else
+		bashio::log.error "❌ Could not complete integration installation."
+	fi
+
+	rm -rf "$TMP_BUILD" 2>/dev/null
+}
+
 # Determine Channel (Edge vs Stable)
-ADDON_INFO=$(curl -s --connect-timeout 5 --max-time 10 -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info)
-SLUG=$(echo "$ADDON_INFO" | jq -r '.data.slug // empty')
-NAME=$(echo "$ADDON_INFO" | jq -r '.data.name // empty')
-VERSION=$(echo "$ADDON_INFO" | jq -r '.data.version // empty')
+ADDON_INFO=$(curl -s --connect-timeout 5 --max-time 10 -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/addons/self/info 2>/dev/null || echo "{}")
+SLUG=$(echo "$ADDON_INFO" | jq -r '.data.slug // empty' 2>/dev/null || echo "")
+NAME=$(echo "$ADDON_INFO" | jq -r '.data.name // empty' 2>/dev/null || echo "")
+VERSION=$(echo "$ADDON_INFO" | jq -r '.data.version // empty' 2>/dev/null || echo "")
+
+bashio::log.info "Channel Detection - Slug: ${SLUG:-aegisbot}, Name: ${NAME:-AegisBot}, Version: ${VERSION:-unknown}"
 
 if [[ "${SLUG}" == *"edge"* ]] || [[ "${NAME,,}" == *"edge"* ]] || [[ "${VERSION}" == *"dev"* ]] || [[ "${VERSION}" == *"git"* ]] || [[ "${VERSION}" =~ [0-9a-f]{7,40} ]]; then
 	CHANNEL="edge"
@@ -34,103 +150,104 @@ else
 	bashio::log.info "🔵 Stable channel detected."
 fi
 
-bashio::log.info "Fetching release information from GitHub..."
-RELEASES_JSON=$(curl -s --connect-timeout 10 --max-time 30 -A "HomeAssistant-Addon" "https://api.github.com/repos/FaserF/ha-aegisbot/releases")
+# Integration Management
+if [ "$AUTO_INSTALL" = "false" ]; then
+	bashio::log.info "Auto-installing/updating integration is disabled in configuration options."
+else
+	bashio::log.info "Fetching release information from GitHub..."
+	CURL_AUTH=()
+	if [ -n "$GITHUB_TOKEN" ] && [ "$GITHUB_TOKEN" != "null" ]; then
+		CURL_AUTH=("-H" "Authorization: Bearer ${GITHUB_TOKEN}")
+	fi
 
-if ! echo "$RELEASES_JSON" | jq -e 'if type=="array" then true else false end' >/dev/null 2>&1; then
-	bashio::log.info "Note: Could not fetch releases (GitHub API may be rate-limited). Skipping update checks."
-	RELEASES_JSON="[]"
-fi
+	RELEASES_JSON=$(curl -s -f "${CURL_AUTH[@]}" -A "HomeAssistant-Addon" "https://api.github.com/repos/${REPO}/releases" 2>/dev/null || echo "[]")
 
-TARGET_TAG=""
-if [ "$RELEASES_JSON" != "[]" ]; then
-	if [ "$CHANNEL" == "edge" ]; then
-		TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name // empty')
+	if ! echo "$RELEASES_JSON" | jq -e 'if type=="array" then true else false end' >/dev/null 2>&1; then
+		bashio::log.info "Note: Could not fetch releases (GitHub API rate limit or no internet). Skipping update checks."
+		RELEASES_JSON="[]"
+	fi
+
+	TARGET_TAG=""
+	if [ "$RELEASES_JSON" != "[]" ]; then
+		if [ "$CHANNEL" = "edge" ]; then
+			TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name // empty')
+		else
+			TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name // empty')
+		fi
+
+		if [ -z "$TARGET_TAG" ] && [ "$CHANNEL" = "stable" ]; then
+			if [ "$(echo "$RELEASES_JSON" | jq 'length')" -gt 0 ]; then
+				TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r '.[0].tag_name // empty')
+				bashio::log.info "No stable release found, falling back to latest tag: $TARGET_TAG"
+			fi
+		fi
+	fi
+
+	if [ ! -d "$INTEGRATION_DIR" ]; then
+		bashio::log.warning "Integration not found at $INTEGRATION_DIR"
+		if [ -n "$TARGET_TAG" ]; then
+			bashio::log.info "Target version (Initial Install): $TARGET_TAG"
+			install_integration "$TARGET_TAG" "false"
+		else
+			bashio::log.info "No releases found. Installing from Main branch..."
+			install_integration "" "false"
+		fi
 	else
-		TARGET_TAG=$(echo "$RELEASES_JSON" | jq -r 'map(select(.prerelease == false)) | .[0].tag_name // empty')
-	fi
-fi
-
-# Get local version
-LOCAL_VERSION="none"
-if [ -f "$INTEGRATION_PATH/manifest.json" ]; then
-	LOCAL_VERSION=$(jq -r '.version' "$INTEGRATION_PATH/manifest.json" 2>/dev/null || echo "none")
-fi
-
-# Compare
-UPDATE_NEEDED="false"
-if [ ! -f "$INTEGRATION_PATH/manifest.json" ]; then
-	UPDATE_NEEDED="true"
-elif [ -n "$TARGET_TAG" ]; then
-	curr="${LOCAL_VERSION#v}"
-	targ="${TARGET_TAG#v}"
-	if [ "$curr" != "$targ" ]; then
-		# Check if target is greater than current
-		if test "$(printf '%s\n' "$curr" "$targ" | sort -V | head -n 1)" != "$targ"; then
-			UPDATE_NEEDED="true"
+		# Check if integration is official FaserF/ha-aegisbot
+		IS_OFFICIAL="false"
+		if [ -f "$INTEGRATION_DIR/manifest.json" ]; then
+			if jq -e '(.codeowners // []) | contains(["@FaserF"]) or (.documentation // "" | contains("FaserF")) or (.issue_tracker // "" | contains("FaserF/ha-aegisbot"))' "$INTEGRATION_DIR/manifest.json" >/dev/null 2>&1; then
+				IS_OFFICIAL="true"
+			fi
 		fi
-	fi
-fi
 
-if [ "$UPDATE_NEEDED" = "true" ]; then
-	bashio::log.info "Installing/Updating AegisBot integration ($LOCAL_VERSION -> $TARGET_TAG)..."
+		if [ "$IS_OFFICIAL" != "true" ]; then
+			bashio::log.warning "⚠️ Existing integration at $INTEGRATION_DIR does not appear to be FaserF/ha-aegisbot. Overwriting with official release..."
+			install_integration "$TARGET_TAG" "true"
+		else
+			bashio::log.info "✅ Official FaserF ha-aegisbot integration found at $INTEGRATION_DIR"
 
-	mkdir -p "/tmp/aegisbot_install"
-	rm -rf "/tmp/aegisbot_install"
-	mkdir -p "/tmp/aegisbot_install"
+			INTEGRATION_VERSION=$(jq -r '.version // "unknown"' "$INTEGRATION_DIR/manifest.json" 2>/dev/null || echo "unknown")
+			bashio::log.info "Integration Version: ${INTEGRATION_VERSION}"
+			bashio::log.info "Checking for updates..."
 
-	ZIP_URL="https://github.com/FaserF/ha-aegisbot/releases/download/${TARGET_TAG}/aegisbot.zip"
-	if ! curl -L -s -f -o "/tmp/aegisbot.zip" "$ZIP_URL"; then
-		# Fallback to main branch zip if no target tag or error
-		if [ -z "$TARGET_TAG" ]; then
-			ZIP_URL="https://github.com/FaserF/ha-aegisbot/archive/refs/heads/main.zip"
-			bashio::log.info "No target release tag, attempting main branch zip: $ZIP_URL"
-			curl -L -s -f -o "/tmp/aegisbot.zip" "$ZIP_URL"
-		fi
-	fi
+			CURRENT_VERSION="$INTEGRATION_VERSION"
+			UPDATE_NEEDED="false"
 
-	if [ -f "/tmp/aegisbot.zip" ]; then
-		if unzip -q "/tmp/aegisbot.zip" -d "/tmp/aegisbot_install"; then
-			SRC_DIR=""
-			if [ -f "/tmp/aegisbot_install/manifest.json" ]; then
-				SRC_DIR="/tmp/aegisbot_install"
-			elif [ -d "/tmp/aegisbot_install/custom_components/aegisbot" ]; then
-				SRC_DIR="/tmp/aegisbot_install/custom_components/aegisbot"
-			else
-				nested_dir=$(find /tmp/aegisbot_install -name "manifest.json" -exec dirname {} \; | head -n 1)
-				if [ -n "$nested_dir" ]; then
-					SRC_DIR="$nested_dir"
+			if [ -n "$TARGET_TAG" ]; then
+				curr="${CURRENT_VERSION#v}"
+				targ="${TARGET_TAG#v}"
+
+				if [ "$curr" != "$targ" ]; then
+					if version_gt "$targ" "$curr"; then
+						bashio::log.info "Update Available: $targ > $curr"
+						UPDATE_NEEDED="true"
+					else
+						bashio::log.info "Current version ($curr) is up to date relative to target ($targ)."
+					fi
+				else
+					bashio::log.info "Current version ($curr) matches target ($targ)."
 				fi
 			fi
 
-			if [ -n "$SRC_DIR" ] && [ -f "$SRC_DIR/manifest.json" ]; then
-				rm -rf "$INTEGRATION_PATH"
-				mkdir -p "/config/custom_components"
-				cp -rf "$SRC_DIR" "$INTEGRATION_PATH"
-				bashio::log.green "AegisBot integration successfully updated to $TARGET_TAG."
-				bashio::log.info "Please restart Home Assistant to apply changes."
+			if [ "$UPDATE_NEEDED" = "true" ]; then
+				bashio::log.info "⬆️  Auto-updating integration to $TARGET_TAG..."
+				install_integration "$TARGET_TAG" "true"
 			else
-				bashio::log.error "❌ Could not find valid integration source files in extracted package."
+				bashio::log.info "✨ Integration is up to date."
 			fi
-		else
-			bashio::log.error "❌ Failed to unzip package."
 		fi
-		rm -f "/tmp/aegisbot.zip"
-	else
-		bashio::log.error "❌ Download failed."
 	fi
-	rm -rf "/tmp/aegisbot_install"
-else
-	bashio::log.info "AegisBot integration is up to date ($LOCAL_VERSION)."
 fi
 
 # Register discovery info in Supervisor
-bashio::log.info "Registering discovery info in Supervisor for slug: $SLUG..."
+SLUG_NAME="${SLUG:-aegisbot}"
+bashio::log.info "Registering discovery info in Supervisor for service 'aegisbot' (slug: $SLUG_NAME)..."
 DISCOVERY_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
 	-H "Authorization: Bearer $SUPERVISOR_TOKEN" \
 	-H "Content-Type: application/json" \
-	-d "{\"service\":\"aegisbot\",\"config\":{\"addon\":\"$SLUG\"}}" \
-	http://supervisor/discovery)
+	-d "{\"service\":\"aegisbot\",\"config\":{\"addon\":\"$SLUG_NAME\"}}" \
+	http://supervisor/discovery 2>/dev/null || echo "Failed")
 bashio::log.info "Supervisor discovery response: $DISCOVERY_RESPONSE"
 
 exit 0

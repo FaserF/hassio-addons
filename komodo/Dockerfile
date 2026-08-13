@@ -33,7 +33,8 @@ RUN \
         mongodb-org-server \
     && rm -fr \
         /tmp/* \
-        /var/{cache,log}/* \
+        /var/cache/* \
+        /var/log/* \
         /var/lib/apt/lists/*
 
 # Copy rootfs

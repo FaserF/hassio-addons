@@ -117,3 +117,9 @@ def sync_template():
 
 if __name__ == "__main__":
     sync_template()
+    try:
+        from sync_banner_lib import sync_lib
+        sync_lib()
+    except Exception as e:
+        print(f"⚠️ Could not sync banner lib: {e}")
+

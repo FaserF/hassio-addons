@@ -19,12 +19,13 @@ ports:
 ports_description:
   8077/tcp: Web Interface (HTTP)
 map:
-  - type: share
-    read_only: false
+  - homeassistant_config:rw
+  - share:rw
 options:
   version: "latest"
   github_token: ""
   github_repo: "FaserF/AegisBot"
+  auto_install_integration: true
   developer_mode: false
   reset_database: false
   log_level: "info"
@@ -46,6 +47,7 @@ schema:
   version: str
   github_token: password?
   github_repo: str?
+  auto_install_integration: bool?
   developer_mode: bool
   reset_database: bool
   reset_database_confirm: bool?

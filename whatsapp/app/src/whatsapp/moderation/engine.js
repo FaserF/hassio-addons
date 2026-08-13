@@ -18,7 +18,7 @@ import {
 // In-memory sliding window trackers
 
 /** Translate a bot-reply key using the group's configured language (fallback: 'en') */
-function gt(config, key, params = {}) {
+export function gt(config, key, params = {}) {
   const lang = config?.language || 'en';
   return t(lang, key, params);
 }

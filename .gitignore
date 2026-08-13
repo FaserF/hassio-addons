@@ -17,6 +17,7 @@ scripts/__pycache__/
 # Environments
 .env
 .venv
+uv.lock
 env/
 venv/
 ENV/

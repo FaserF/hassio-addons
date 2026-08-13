@@ -970,7 +970,7 @@
     "current_welcome": "Aktuelle Willkommensnachricht:\n\n{text}",
     "current_goodbye": "Aktuelle Abschiedsnachricht:\n\n{text}",
     "id_info": "Gruppen-ID: `{groupId}`\nDeine ID: `{userId}`",
-    "mod_test_header": "🛡️ *WhatsApp Moderationstests für Gruppe: \"{groupName}\"*\n📌 *Gruppen-ID:* `{groupId}`\n⚙️ *Präfix:* `{prefix}`\n\n_Nachfolgend finden Sie kopierbereite Testnachrichten für jede Kategorie. Sie können einen gesamten Block oder einzelne Zeilen kopieren, um in \"{groupName}\" zu testen:_ ",
+    "mod_test_header": "🛡️ *WhatsApp Moderationstests für Gruppe: \"{groupName}\"*\n📌 *Gruppen-ID:* `{groupId}`\n⚙️ *Präfix:* `{prefix}`\n\n_Nachfolgend findest du kopierbereite Testnachrichten für jede Kategorie. Du kannst einen gesamten Block oder einzelne Zeilen kopieren, um in \"{groupName}\" zu testen:_ ",
     "usage_save": "⚠️ Verwendung: `{prefix}save <notename> <content>`",
     "note_saved": "✅ Notiz `{name}` gespeichert.\nAbrufen mit `{prefix}get {name}` oder `#{name}`",
     "usage_get": "⚠️ Verwendung: `{prefix}get <notename>`",

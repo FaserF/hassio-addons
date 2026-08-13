@@ -94,6 +94,56 @@ _show_app_banner() {{
     local MAINTAINER="{MAINTAINER}"
     local REPO="$MAINTAINER/hassio-addons"
 
+    # Restart Loop Protection (Max 3 consecutive failed starts)
+    if [ -z "$_BOOT_LOOP_CHECKED" ] && [ -d "/data" ]; then
+        export _BOOT_LOOP_CHECKED=1
+        local STATE_FILE="/data/.boot_loop_protection"
+        local LAST_VER=""
+        local FAIL_COUNT=0
+
+        if [ -f "$STATE_FILE" ]; then
+            LAST_VER=$(head -n 1 "$STATE_FILE" 2>/dev/null)
+            FAIL_COUNT=$(sed -n '2p' "$STATE_FILE" 2>/dev/null)
+            FAIL_COUNT="${{FAIL_COUNT//[!0-9]/}}"
+            [ -z "$FAIL_COUNT" ] && FAIL_COUNT=0
+        fi
+
+        if [ "$VERSION" != "$LAST_VER" ]; then
+            FAIL_COUNT=0
+            LAST_VER="$VERSION"
+        fi
+
+        FAIL_COUNT=$((FAIL_COUNT + 1))
+
+        if [ "$FAIL_COUNT" -gt 3 ]; then
+            bashio::log.error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            bashio::log.error "🚨 RESTART LOOP DETECTED!"
+            bashio::log.error "⚠️  This App has failed to start 3 times consecutively."
+            bashio::log.error "⚠️  Stopping App to prevent an endless restart loop."
+            bashio::log.error "💡 Update the App or fix configuration issues to try again."
+            bashio::log.error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+            printf "%s\n0\n" "$VERSION" > "$STATE_FILE" 2>/dev/null
+
+            if type bashio::addon.stop >/dev/null 2>&1; then
+                bashio::addon.stop 2>/dev/null || true
+            elif type bashio::app.stop >/dev/null 2>&1; then
+                bashio::app.stop 2>/dev/null || true
+            fi
+            sleep 3600
+            exit 0
+        fi
+
+        printf "%s\n%s\n" "$VERSION" "$FAIL_COUNT" > "$STATE_FILE" 2>/dev/null
+
+        (
+            sleep 120
+            if [ -d "/data" ]; then
+                printf "%s\n0\n" "$VERSION" > "/data/.boot_loop_protection" 2>/dev/null
+            fi
+        ) &
+    fi
+
     # Extract base version and commit from dev versions (1.2.3-dev+abc123)
     local BASE_VERSION="${{VERSION%%-dev*}}"
     local DEV_COMMIT=""
@@ -315,6 +365,14 @@ def find_run_script(addon_path: str) -> str:
     if os.path.isdir(services_dir):
         for service in os.listdir(services_dir):
             run_path = os.path.join(services_dir, service, "run")
+            if os.path.exists(run_path):
+                return run_path
+
+    # Search for any run file in s6-rc.d
+    s6rc_dir = os.path.join(addon_path, "rootfs", "etc", "s6-overlay", "s6-rc.d")
+    if os.path.isdir(s6rc_dir):
+        for service in os.listdir(s6rc_dir):
+            run_path = os.path.join(s6rc_dir, service, "run")
             if os.path.exists(run_path):
                 return run_path
 

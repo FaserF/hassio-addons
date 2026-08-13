@@ -1229,10 +1229,12 @@ export function registerTelegramRoutes(app) {
           const stripHtmlTags = (str) => {
             if (typeof str !== 'string') return '';
             return str
-              .replace(/<\/?(b|i|s|u|code|pre|a)[^>]*>/gi, '')
-              .replace(/&amp;/g, '&')
+              .replace(/<[^>]*>/g, '')
               .replace(/&lt;/g, '<')
-              .replace(/&gt;/g, '>');
+              .replace(/&gt;/g, '>')
+              .replace(/&quot;/g, '"')
+              .replace(/&#039;/g, "'")
+              .replace(/&amp;/g, '&');
           };
           const plainSummary = stripHtmlTags(summaryText);
           await session.sock.sendMessage(mapping.wa_jid, { text: plainSummary });
