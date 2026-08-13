@@ -199,26 +199,15 @@ export async function syncWhatsAppEditToTelegram(
   if (!store.enabled) return;
 
   const mapped = resolveTgMsgFromWa(waMsgId);
-  if (!mapped || !mapped.tgMsgId || !mapped.tgChatId) return;
+  const targetMappings = (store.mappings || []).filter((m) => {
+    if (!m.enabled) return false;
+    if (m.sync_mode !== 'bidirectional' && m.sync_mode !== 'outbound') return false;
+    if (mapped?.tgChatId && String(m.tg_chat_id) === String(mapped.tgChatId)) return true;
+    if (waJid && m.wa_jid && m.wa_jid.toLowerCase() === waJid.toLowerCase()) return true;
+    return false;
+  });
 
-  const mappings = (store.mappings || []).filter(
-    (m) => m.enabled && (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound')
-  );
-
-  const targetMappings = mappings.filter(
-    (m) =>
-      (m.wa_jid && m.wa_jid.toLowerCase() === (waJid || '').toLowerCase()) ||
-      String(m.tg_chat_id) === String(mapped.tgChatId)
-  );
-
-  const listToProcess =
-    targetMappings.length > 0
-      ? targetMappings
-      : (store.mappings || []).filter(
-          (m) => m.enabled && String(m.tg_chat_id) === String(mapped.tgChatId)
-        );
-
-  for (const mapping of listToProcess) {
+  for (const mapping of targetMappings) {
     if (mapping.sync_edits === false) continue;
     const bot = getTelegramBotClient(mapping.bot_id);
     if (!bot) continue;
@@ -240,17 +229,56 @@ export async function syncWhatsAppEditToTelegram(
       mapping.convert_formatting !== false ? waToTelegramHtml(processedText) : processedText;
     const fullText = `${header}${formattedBody}`;
 
-    try {
-      await bot.editMessageText(mapped.tgChatId, mapped.tgMsgId, fullText);
-      logger.info(
-        { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
-        '✏️ Successfully mirrored WhatsApp message edit to Telegram'
-      );
-    } catch (err) {
-      logger.debug(
-        { error: err.message, waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
-        'Failed to edit Telegram message for edited WhatsApp message'
-      );
+    let editSucceeded = false;
+    if (mapped && mapped.tgMsgId && mapped.tgChatId) {
+      try {
+        await bot.editMessageText(mapped.tgChatId, mapped.tgMsgId, fullText);
+        editSucceeded = true;
+        logger.info(
+          { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+          '✏️ Successfully mirrored WhatsApp message edit natively to Telegram'
+        );
+      } catch (err) {
+        logger.info(
+          { error: err.message, waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+          'Native Telegram editMessageText failed (e.g. >48h old or media), attempting reply fallback'
+        );
+      }
+    }
+
+    if (!editSucceeded) {
+      const editIndicator = '✏️ <i>[Bearbeitete Nachricht / Edited Message]</i>';
+      const tgChatId = mapped?.tgChatId || mapping.tg_chat_id;
+      let fallbackText = `${header}${editIndicator}:\n${formattedBody}`;
+      const sendOpts = {};
+
+      if (mapped && mapped.tgMsgId) {
+        sendOpts.reply_to_message_id = Number(mapped.tgMsgId);
+      } else {
+        fallbackText = `${header}${editIndicator} <i>(Original vor längerer Zeit gesendet)</i>:\n${formattedBody}`;
+      }
+
+      try {
+        const sentTgMsg = await bot.sendMessage(tgChatId, fallbackText, sendOpts);
+        if (sentTgMsg && sentTgMsg.message_id) {
+          recordMessageMap(
+            waMsgId,
+            tgChatId,
+            sentTgMsg.message_id,
+            waJid,
+            false
+          );
+        }
+        logger.info(
+          { waMsgId, tgChatId, newTgMsgId: sentTgMsg?.message_id },
+          '✏️ Sent contextual WhatsApp message edit fallback to Telegram'
+        );
+      } catch (fallbackErr) {
+        logger.warn(
+          { error: fallbackErr.message, waMsgId, tgChatId },
+          '⚠️ Failed to send Telegram edit fallback message'
+        );
+      }
     }
   }
 }
@@ -1217,22 +1245,66 @@ export async function processTelegramUpdates() {
           if (session && session.sock && session.isConnected) {
             try {
               if (isEdit) {
+                let editSucceeded = false;
                 const mapped = resolveWaMsgFromTg(tgChatId, String(msg.message_id));
                 if (mapped && mapped.waMsgId && mapped.waJid) {
-                  await session.sock.sendMessage(mapping.wa_jid, {
-                    text: outboundWaText,
-                    edit: {
-                      remoteJid: mapping.wa_jid,
-                      fromMe: mapped.fromMe !== undefined ? mapped.fromMe : true,
-                      id: mapped.waMsgId,
-                    },
-                  });
-                  logger.info(
-                    { tgChatId, tgMsgId: msg.message_id, waMsgId: mapped.waMsgId },
-                    '✏️ Mirrored Telegram message edit to WhatsApp'
-                  );
-                  continue;
+                  try {
+                    await session.sock.sendMessage(mapping.wa_jid, {
+                      text: outboundWaText,
+                      edit: {
+                        remoteJid: mapping.wa_jid,
+                        fromMe: mapped.fromMe !== undefined ? mapped.fromMe : true,
+                        id: mapped.waMsgId,
+                      },
+                    });
+                    editSucceeded = true;
+                    logger.info(
+                      { tgChatId, tgMsgId: msg.message_id, waMsgId: mapped.waMsgId },
+                      '✏️ Mirrored Telegram message edit natively to WhatsApp'
+                    );
+                  } catch (editErr) {
+                    logger.info(
+                      { err: editErr?.message, waMsgId: mapped.waMsgId },
+                      'Native WhatsApp edit failed (e.g. >15m old), falling back to contextual update message'
+                    );
+                  }
                 }
+
+                if (!editSucceeded) {
+                  const editIndicator = '✏️ *[Bearbeitete Nachricht / Edited Message]*';
+                  let fallbackWaText = `${cleanHeader}${editIndicator}\n${tgQuoteSnippet}${formattedTgText}`;
+                  const sendOpts = { text: fallbackWaText };
+
+                  if (mapped && mapped.waMsgId) {
+                    sendOpts.quoted = {
+                      key: {
+                        remoteJid: mapping.wa_jid,
+                        fromMe: mapped.fromMe !== undefined ? mapped.fromMe : true,
+                        id: mapped.waMsgId,
+                      },
+                      message: { conversation: '...' },
+                    };
+                  } else {
+                    fallbackWaText = `${cleanHeader}${editIndicator} _(Original vor längerer Zeit gesendet)_\n${tgQuoteSnippet}${formattedTgText}`;
+                    sendOpts.text = fallbackWaText;
+                  }
+
+                  const sentMsg = await session.sock.sendMessage(mapping.wa_jid, sendOpts);
+                  if (sentMsg?.key?.id) {
+                    recordMessageMap(
+                      sentMsg.key.id,
+                      tgChatId,
+                      msg.message_id,
+                      mapping.wa_jid,
+                      sentMsg.key.fromMe
+                    );
+                  }
+                  logger.info(
+                    { tgChatId, tgMsgId: msg.message_id, waMsgId: sentMsg?.key?.id },
+                    '✏️ Sent contextual Telegram message edit fallback to WhatsApp'
+                  );
+                }
+                continue;
               }
 
               const cleanCmd = tgText
