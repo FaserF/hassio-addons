@@ -8,7 +8,10 @@ import { registerUiApiRoutes } from './ui_api.js';
 import { registerModerationRoutes } from './moderation.js';
 import { registerTelegramRoutes } from './telegram.js';
 
+import authRouter from './auth.js';
+
 export function registerAPIRoutes(app) {
+  app.use('/api/auth', authRouter);
   registerSessionRoutes(app);
   registerMessagingRoutes(app);
   registerContactRoutes(app);

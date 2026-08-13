@@ -45,7 +45,14 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+import loginView from './views/login.html.js';
+
 export function registerUIRoutes(app) {
+  app.get('/login', (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.send(loginView());
+  });
+
   // Serve static assets for the UI with no-cache headers to prevent browser caching stale JS/CSS
   app.use(
     '/ui-assets',

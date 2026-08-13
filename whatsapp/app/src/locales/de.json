@@ -13,6 +13,18 @@
     "settings": "Einstellungen",
     "docs": "Dokumentation"
   },
+  "login": {
+    "title": "Anmeldung - WhatsApp Gateway",
+    "app_name": "WhatsApp Gateway",
+    "subtitle": "Mit Telefonnummer anmelden (2FA)",
+    "phone_label": "Telefonnummer",
+    "phone_hint": "Inklusive Landesvorwahl ohne + oder Leerzeichen (z. B. 4917612345678 für Deutschland).",
+    "send_code": "Code per WhatsApp senden",
+    "otp_label": "6-stelliger Anmeldecode",
+    "otp_hint": "Wir haben einen 6-stelligen Code an deine WhatsApp Nummer geschickt.",
+    "submit": "Anmelden",
+    "use_different_number": "Andere Nummer verwenden"
+  },
   "common": {
     "save": "Einstellungen speichern",
     "cancel": "Abbrechen",

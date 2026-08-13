@@ -175,10 +175,28 @@ export function registerAllListeners(session) {
   }
 }
 
+import { handleOptOutCommand } from '../../rbac.js';
+
 export function handleIncomingMessages(session) {
   session.sock.ev.on('messages.upsert', async (m) => {
     if (!m.messages || m.messages.length === 0) return;
     session.stats.received += m.messages.length;
+
+    // Check for anti-spam opt-out command (/stoplogin, !stoplogin, /optout)
+    for (const msg of m.messages) {
+      if (!msg.key?.fromMe && msg.message) {
+        const text = extractEditedText(msg.message).trim().toLowerCase();
+        if (text === '/stoplogin' || text === '!stoplogin' || text === '/blocklogin' || text === '/optout') {
+          const senderJid = msg.key.participant || msg.key.remoteJid;
+          const optedOut = handleOptOutCommand(senderJid);
+          if (optedOut && session.sock) {
+            try {
+              await reply(session, msg, '🚫 Du wurdest erfolgreich von weiteren Login-Benachrichtigungen des WhatsApp Gateways gesperrt.');
+            } catch (_e) {}
+          }
+        }
+      }
+    }
 
     // Check for group system stub messages (e.g. member add/remove/leave via message notification)
     for (const msg of m.messages) {

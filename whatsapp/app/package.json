@@ -13,6 +13,7 @@
     "test:moderation": "node tests/test-moderation.js",
     "test:commands": "node tests/test-commands.js",
     "test:telegram": "node --test tests/test-telegram-bridge.js",
+    "test:rbac": "node --test tests/test-rbac-auth.js",
     "test": "npm run lint && node tests/run-all-tests.js"
   },
   "dependencies": {

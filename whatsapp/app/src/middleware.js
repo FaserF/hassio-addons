@@ -4,110 +4,94 @@ import { UI_AUTH_ENABLED, UI_AUTH_PASSWORD, API_TOKEN } from './config.js';
 import { getSession, addLog } from './session.js';
 import { SYSTEM_STATE, saveSystemState } from './state.js';
 
+import { determineUserRole, isPrivateIP } from './rbac.js';
+
+export const rbacMiddleware = (req, res, next) => {
+  const userRole = determineUserRole(req);
+  req.userRole = userRole;
+  next();
+};
+
 export const ipFilterMiddleware = (req, res, next) => {
-  // If UI Auth is enabled, we don't need IP filtering
-  if (UI_AUTH_ENABLED) return next();
+  const userRole = req.userRole || determineUserRole(req);
+  req.userRole = userRole;
 
   // Always allow Ingress
-  if (req.headers['x-ingress-path']) return next();
+  if (userRole.isIngress) return next();
+
+  // If UI Auth password is specified, allow request to proceed to Basic Auth / 2FA check
+  if (UI_AUTH_ENABLED || UI_AUTH_PASSWORD) return next();
+
+  // Local private IP is allowed auto superadmin when no password set
+  if (userRole.authMethod === 'local_trusted') return next();
+
+  // If user has valid 2FA session token, allow
+  if (userRole.role !== 'unauthenticated') return next();
 
   let ip = req.ip || req.socket?.remoteAddress;
   if (ip.startsWith('::ffff:')) ip = ip.substr(7);
 
-  const isPrivate =
-    ip === '127.0.0.1' ||
-    ip === '::1' ||
-    /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:|^fe80:/.test(ip);
-
-  if (!isPrivate) {
-    addLog(
-      getSession('default'),
-      `Blocked external access attempt from ${ip} (UI Auth Disabled)`,
-      'warning'
-    );
-    logger.warn(
-      { ip, headers: req.headers },
-      '[SECURITY] Blocked external access attempt while UI Auth is disabled'
-    );
-    return res
-      .status(403)
-      .send(
-        'Forbidden: External access is disabled when UI Authentication is off. Enable UI Auth or use Ingress.'
-      );
+  addLog(
+    getSession('default'),
+    `Blocked external access attempt from ${ip} (Unauthenticated)`,
+    'warning'
+  );
+  logger.warn(
+    { ip, headers: req.headers },
+    '[SECURITY] Blocked external unauthenticated access attempt'
+  );
+  
+  if (req.originalUrl.startsWith('/api/')) {
+    return res.status(401).json({ error: 'Unauthorized', redirect: '/login' });
   }
-
-  return next();
-};
-
-export const authMiddleware = (req, res, next) => {
-  const providedToken = req.header('X-Auth-Token') || req.query?.token;
-
-  if (!providedToken) {
-    logger.warn({ ip: req.ip, path: req.originalUrl }, '[AUTH] Missing X-Auth-Token in request');
-    return res.status(401).json({ error: 'Unauthorized', detail: 'Missing X-Auth-Token' });
-  }
-
-  if (providedToken !== API_TOKEN) {
-    logger.warn(
-      {
-        ip: req.ip,
-        path: req.originalUrl,
-        match: false,
-        tokenPrefix: providedToken.substring(0, 4) + '...',
-      },
-      '[AUTH] Token mismatch. The provided token does not match the current API_TOKEN. Check addon logs for the current token.'
-    );
-    return res.status(401).json({ error: 'Unauthorized', detail: 'Invalid X-Auth-Token' });
-  }
-
-  // Valid token provided - update "Active Interest" for discovery logic
-  SYSTEM_STATE.last_integration_online = Date.now();
-  saveSystemState();
-
-  next();
-};
-
-export const anyAuthMiddleware = (req, res, next) => {
-  const providedToken = req.header('X-Auth-Token') || req.query?.token;
-  if (providedToken) {
-    if (providedToken === API_TOKEN) {
-      SYSTEM_STATE.last_integration_online = Date.now();
-      saveSystemState();
-      return next();
-    }
-    return res.status(401).json({ error: 'Unauthorized', detail: 'Invalid X-Auth-Token' });
-  }
-
-  return uiAuthMiddleware(req, res, next);
+  return res.redirect('/login');
 };
 
 export const uiAuthMiddleware = (req, res, next) => {
-  // Always skip if Ingress is used (Home Assistant handles auth)
-  if (req.headers['x-ingress-path']) return next();
+  const userRole = req.userRole || determineUserRole(req);
+  req.userRole = userRole;
 
-  if (!UI_AUTH_ENABLED) return next();
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    res.setHeader('WWW-Authenticate', 'Basic realm="WhatsApp Addon"');
-    return res.status(401).send('Unauthorized');
+  // Skip auth checks for Ingress
+  if (userRole.isIngress) return next();
+
+  // Local private IP without password -> trusted superadmin
+  if (userRole.authMethod === 'local_trusted') return next();
+
+  // Active 2FA session -> allowed
+  if (userRole.role !== 'unauthenticated') return next();
+
+  // Basic auth check if password configured
+  if (UI_AUTH_ENABLED || UI_AUTH_PASSWORD) {
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+      let user = '';
+      let pass = '';
+      try {
+        const auth = Buffer.from(authHeader.split(' ')[1] || '', 'base64')
+          .toString()
+          .split(':');
+        user = auth[0] || '';
+        pass = auth[1] || '';
+      } catch (err) {}
+
+      if (user === 'admin' && pass === UI_AUTH_PASSWORD) {
+        req.userRole = {
+          role: 'superadmin',
+          isSuperAdmin: true,
+          isIngress: false,
+          authMethod: 'basic_auth',
+          phone: null,
+        };
+        return next();
+      }
+    }
   }
 
-  let user = '';
-  let pass = '';
-  try {
-    const auth = Buffer.from(authHeader.split(' ')[1] || '', 'base64')
-      .toString()
-      .split(':');
-    user = auth[0] || '';
-    pass = auth[1] || '';
-  } catch (err) {}
-
-  if (user === 'admin' && pass === UI_AUTH_PASSWORD) {
-    next();
-  } else {
-    res.setHeader('WWW-Authenticate', 'Basic realm="WhatsApp Addon"');
-    return res.status(401).send('Unauthorized');
+  // Not authenticated -> Redirect to WhatsApp Login UI page or return 401
+  if (req.originalUrl.startsWith('/api/')) {
+    return res.status(401).json({ error: 'Unauthorized', redirect: '/login' });
   }
+  return res.redirect('/login');
 };
 
 export const ingressPrefixMiddleware = (req, res, next) => {
@@ -151,16 +135,7 @@ export const httpLoggerMiddleware = (req, res, next) => {
   next();
 };
 
-const isPrivateIP = (ip) => {
-  if (!ip) return false;
-  let cleanIp = ip;
-  if (cleanIp.startsWith('::ffff:')) cleanIp = cleanIp.substr(7);
-  return (
-    cleanIp === '127.0.0.1' ||
-    cleanIp === '::1' ||
-    /^(10)\.|^(172\.(1[6-9]|2[0-9]|3[0-1]))\.|^(192\.168)\.|^fc[0-9a-f]{2}:|^fe80:/.test(cleanIp)
-  );
-};
+
 
 export const uiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,

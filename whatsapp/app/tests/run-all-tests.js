@@ -34,6 +34,9 @@ async function run() {
     const { runI18nTests } = await import('./test-i18n.js');
     await runI18nTests();
 
+    console.log('\n--- 8/8 Testing RBAC & WhatsApp Login ---');
+    await import('./test-rbac-auth.js');
+
     const duration = ((performance.now() - startTime) / 1000).toFixed(2);
     console.log(`\n🎉 ALL TEST SUITES PASSED IN ${duration}s!`);
     process.exit(0);

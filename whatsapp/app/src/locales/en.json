@@ -13,6 +13,18 @@
     "settings": "Settings",
     "docs": "Documentation"
   },
+  "login": {
+    "title": "WhatsApp Gateway Login",
+    "app_name": "WhatsApp Gateway",
+    "subtitle": "Sign in with phone number (2FA)",
+    "phone_label": "Phone Number",
+    "phone_hint": "Including country code without + or spaces (e.g. 4917612345678 for Germany).",
+    "send_code": "Send Code via WhatsApp",
+    "otp_label": "6-Digit Login Code",
+    "otp_hint": "We sent a 6-digit code to your WhatsApp number.",
+    "submit": "Sign In",
+    "use_different_number": "Use different phone number"
+  },
   "common": {
     "save": "Save Settings",
     "cancel": "Cancel",
