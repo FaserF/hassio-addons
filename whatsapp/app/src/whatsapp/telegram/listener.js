@@ -199,7 +199,7 @@ export async function syncWhatsAppEditToTelegram(
   groupName = '',
   senderName = ''
 ) {
-  if (!waMsgId || !newText) return;
+  if (!waMsgId || !newText || !newText.trim()) return;
   if (ignoreWaEditEchoes.has(waMsgId)) {
     ignoreWaEditEchoes.delete(waMsgId);
     logger.debug({ waMsgId }, 'Ignoring WhatsApp edit event echo from Telegram bridge');

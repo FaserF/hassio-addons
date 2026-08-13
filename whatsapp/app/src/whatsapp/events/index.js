@@ -57,6 +57,32 @@ function unwrapProtocolNode(m) {
   return null;
 }
 
+export function extractEditedText(node) {
+  if (!node) return '';
+  if (typeof node === 'string') return node.trim();
+  const unwrap = (m) => {
+    if (!m) return null;
+    if (typeof m === 'string') return m;
+    if (m.conversation) return m.conversation;
+    if (m.extendedTextMessage?.text) return m.extendedTextMessage.text;
+    if (m.editedMessage) return unwrap(m.editedMessage);
+    if (m.protocolMessage?.editedMessage) return unwrap(m.protocolMessage.editedMessage);
+    if (m.ephemeralMessage?.message) return unwrap(m.ephemeralMessage.message);
+    if (m.viewOnceMessage?.message) return unwrap(m.viewOnceMessage.message);
+    if (m.viewOnceMessageV2?.message) return unwrap(m.viewOnceMessageV2.message);
+    if (m.viewOnceMessageV2Extension?.message) return unwrap(m.viewOnceMessageV2Extension.message);
+    if (m.documentWithCaptionMessage?.message) return unwrap(m.documentWithCaptionMessage.message);
+    if (m.imageMessage?.caption) return m.imageMessage.caption;
+    if (m.videoMessage?.caption) return m.videoMessage.caption;
+    if (m.documentMessage?.caption) return m.documentMessage.caption;
+    if (m.audioMessage?.caption) return m.audioMessage.caption;
+    if (m.message) return unwrap(m.message);
+    return null;
+  };
+  const res = unwrap(node);
+  return typeof res === 'string' ? res.trim() : '';
+}
+
 export function registerAllListeners(session) {
   registerAckListener(session);
   registerReactionListener(session);
@@ -366,13 +392,7 @@ export function handleIncomingMessages(session) {
       ) {
         const editedWaMsgId = protNode.key?.id;
         const targetJid = protNode.key?.remoteJid || msg.key?.remoteJid;
-        const editedContentObj = protNode.editedMessage || msg.message?.editedMessage;
-        const newText =
-          editedContentObj?.conversation ||
-          editedContentObj?.extendedTextMessage?.text ||
-          editedContentObj?.imageMessage?.caption ||
-          editedContentObj?.videoMessage?.caption ||
-          '';
+        const newText = extractEditedText(protNode.editedMessage || msg.message);
         if (editedWaMsgId && targetJid && newText) {
           logger.info(
             { editedWaMsgId, targetJid },
@@ -1092,13 +1112,7 @@ export function handleIncomingMessages(session) {
           ) {
             const editedWaMsgId = prot.key?.id || key?.id;
             const targetJid = prot.key?.remoteJid || key?.remoteJid;
-            const editedContentObj = prot.editedMessage || update.message?.editedMessage;
-            const newText =
-              editedContentObj?.conversation ||
-              editedContentObj?.extendedTextMessage?.text ||
-              editedContentObj?.imageMessage?.caption ||
-              editedContentObj?.videoMessage?.caption ||
-              '';
+            const newText = extractEditedText(prot.editedMessage || update.message);
             if (editedWaMsgId && targetJid && newText) {
               logger.info(
                 { editedWaMsgId, targetJid },
