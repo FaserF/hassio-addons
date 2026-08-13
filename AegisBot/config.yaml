@@ -70,6 +70,7 @@ schema:
   ai_model: str?
   ai_provider: list(openai|gemini)?
   release_type: list(developer|nightly|pre-release|stable)?
+  first_admin_password: password?
   environment: str?
   default_locale: str?
 stage: experimental

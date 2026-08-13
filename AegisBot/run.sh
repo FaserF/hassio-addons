@@ -448,6 +448,10 @@ if bashio::config.has_value 'release_type'; then
 	RELEASE_TYPE=$(bashio::config 'release_type')
 	export RELEASE_TYPE
 fi
+if bashio::config.has_value 'first_admin_password'; then
+	FIRST_ADMIN_PASSWORD=$(bashio::config 'first_admin_password')
+	export FIRST_ADMIN_PASSWORD
+fi
 if bashio::config.has_value 'environment'; then
 	ENVIRONMENT=$(bashio::config 'environment')
 	export ENVIRONMENT
@@ -821,8 +825,8 @@ bashio::log.info "Creating .env file for backend..."
 	[ -n "${GEMINI_API_KEY:-}" ] && echo "GEMINI_API_KEY=${GEMINI_API_KEY:-}"
 	[ -n "${SECURITY_SCAN_API_KEY:-}" ] && echo "SECURITY_SCAN_API_KEY=${SECURITY_SCAN_API_KEY:-}"
 	[ -n "${AI_MODEL:-}" ] && echo "AI_MODEL=${AI_MODEL:-}"
-	echo "AI_PROVIDER=${AI_PROVIDER:-gemini}"
-	echo "RELEASE_TYPE=${RELEASE_TYPE:-stable}"
+	[ -n "${RELEASE_TYPE:-}" ] && echo "RELEASE_TYPE=${RELEASE_TYPE:-}"
+	[ -n "${FIRST_ADMIN_PASSWORD:-}" ] && echo "FIRST_ADMIN_PASSWORD=${FIRST_ADMIN_PASSWORD:-}"
 	echo "ENVIRONMENT=${ENVIRONMENT:-production}"
 	echo "API_V1_STR=${API_V1_STR:-/api/v1}"
 	echo "DEFAULT_LOCALE=${DEFAULT_LOCALE:-}"
