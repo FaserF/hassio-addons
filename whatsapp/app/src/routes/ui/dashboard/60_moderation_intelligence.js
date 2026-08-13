@@ -47,6 +47,7 @@ async function saveGroupAiConfig() {
   if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.ai = {
+    provider: document.getElementById('mod-ai-provider')?.value || 'gemini',
     enabled: Boolean(document.getElementById('mod-ai-enabled')?.checked),
     faq_auto_reply: Boolean(document.getElementById('mod-ai-faq')?.checked),
     sentiment_moderation: Boolean(document.getElementById('mod-ai-sentiment')?.checked),

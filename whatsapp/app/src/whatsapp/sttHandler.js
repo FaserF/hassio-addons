@@ -12,10 +12,10 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
   const audioMsg = msg?.audioMessage;
   if (!audioMsg) return false;
 
-  // Check group configuration toggle (stt_enabled, default true)
+  // Check group configuration toggle (stt_enabled, default false)
   if (groupId && groupId.endsWith('@g.us')) {
     const config = getGroupModerationConfig(groupId);
-    if (config && config.stt_enabled === false) {
+    if (!config || !config.stt_enabled) {
       return false;
     }
   }
@@ -122,9 +122,27 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
         failureReason = err.message;
       }
     } else {
-      failureReason = isDe
-        ? 'Kein Gemini/OpenAI API key konfiguriert. Bitte trage einen API-Schlüssel in den Moderations-Einstellungen ein.'
-        : 'No Gemini or OpenAI API key configured for Speech-to-Text transcription. Please set an API key in Moderation settings.';
+      // Fallback: Free Web Speech Recognition Endpoint (Google Speech API free tier)
+      try {
+        const targetLang = isDe ? 'de-DE' : 'en-US';
+        const url = `https://www.google.com/speech-api/v1/recognize?xjerr=1&client=chromium&lang=${targetLang}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'audio/ogg; codecs=opus' },
+          body: stream,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const hyp = data.hypotheses?.[0]?.utterance;
+          if (hyp) transcribedText = hyp;
+        }
+      } catch (e) {}
+
+      if (!transcribedText) {
+        failureReason = isDe
+          ? 'Kein Gemini/OpenAI API-Key konfiguriert. Füge optional einen Schlüssel in den Moderations-Einstellungen ein.'
+          : 'No Gemini or OpenAI API key configured. Optional: Add a key in Moderation settings.';
+      }
     }
 
     if (transcribedText) {

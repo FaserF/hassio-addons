@@ -709,7 +709,7 @@ export async function handleModerationMessage(session, event) {
   const config = getGroupModerationConfig(groupId);
 
   const isGroupConfigured =
-    config.enabled || config.translation?.mode === 'auto' || config.stt_enabled !== false;
+    config.enabled || config.translation?.mode === 'auto' || Boolean(config.stt_enabled);
   if (!store.global_enabled || !isGroupConfigured) {
     logger.debug('Skipping moderation: global_enabled is false or group features not configured');
     return false;

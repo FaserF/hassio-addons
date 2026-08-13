@@ -83,6 +83,7 @@ const TRACKED_FIELD_IDS = [
   'mod-antispam-bot-enabled',
   'mod-notify-deleted-action',
   'mod-notify-bypassed-actions',
+  'mod-ai-provider',
   'mod-ai-enabled',
   'mod-ai-faq',
   'mod-ai-sentiment',
@@ -886,6 +887,8 @@ async function selectModerationGroup(groupId) {
   }
 
   // AI & Translation
+  const aiProvider = document.getElementById('mod-ai-provider');
+  if (aiProvider) aiProvider.value = config.ai?.provider || 'gemini';
   const aiEnabled = document.getElementById('mod-ai-enabled');
   if (aiEnabled) aiEnabled.checked = Boolean(config.ai?.enabled);
   const aiFaq = document.getElementById('mod-ai-faq');
@@ -907,7 +910,7 @@ async function selectModerationGroup(groupId) {
 
   // Speech-to-Text (STT)
   const sttEnabled = document.getElementById('mod-stt-enabled');
-  if (sttEnabled) sttEnabled.checked = config.stt_enabled !== false;
+  if (sttEnabled) sttEnabled.checked = Boolean(config.stt_enabled);
 
   // Anti-Spam & Anti-Raid
   const floodE = document.getElementById('mod-flood-enabled');

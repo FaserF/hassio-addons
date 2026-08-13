@@ -423,10 +423,17 @@ export default () => `
                             <div class="mod-feature-icon-wrap mod-color-info"><i class="fas fa-brain"></i></div>
                             <div><div class="mod-feature-title" data-i18n="moderation.ai_title">Gemini AI Assistant &amp; Translation</div><div class="mod-feature-desc" data-i18n="moderation.ai_desc">Configure Gemini API Key, FAQ auto-responder, toxicity moderation, and language translation.</div></div>
                         </div>
+                        <div class="mod-inline-controls" style="margin-bottom:12px;">
+                            <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.ai_provider_label">AI Provider:</label>
+                            <select id="mod-ai-provider" class="mod-select mod-select-sm" onchange="onAiProviderChange(this.value)">
+                                <option value="gemini" data-i18n="moderation.ai_prov_gemini">✨ Google Gemini AI (Default)</option>
+                                <option value="openai" data-i18n="moderation.ai_prov_openai">🤖 OpenAI (GPT-4o-mini / Whisper)</option>
+                            </select>
+                        </div>
                         <div class="mod-field-group" style="margin-bottom:12px;">
-                            <label class="mod-field-label" data-i18n="moderation.ai_key_label">Gemini API Key (Global)</label>
-                            <input type="password" id="mod-ai-api-key" class="mod-input" placeholder="AIzaSy..." data-i18n-placeholder="moderation.ai_api_key_ph" style="max-width:400px;">
-                            <p class="mod-field-desc" style="margin-top:4px;" data-i18n="moderation.ai_key_hint">Get your free API key from Google AI Studio (aip.google.dev).</p>
+                            <label class="mod-field-label" id="mod-ai-key-label" data-i18n="moderation.ai_key_label">AI Provider API Key (Global)</label>
+                            <input type="password" id="mod-ai-api-key" class="mod-input" placeholder="AIzaSy... / sk-proj-..." data-i18n-placeholder="moderation.ai_api_key_ph" style="max-width:400px;">
+                            <p class="mod-field-desc" style="margin-top:4px;" id="mod-ai-key-hint" data-i18n="moderation.ai_key_hint">Get your free API key from Google AI Studio (aip.google.dev) or OpenAI Platform (platform.openai.com).</p>
                         </div>
                         <div class="mod-inline-controls" style="margin-bottom:10px;">
                             <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-ai-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
