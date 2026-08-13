@@ -1349,7 +1349,11 @@ export async function processTelegramUpdates() {
                 .toLowerCase()
                 .replace(/^[!/#]+/, '');
               if (
-                (cleanCmd === 'del' || cleanCmd === 'delete' || cleanCmd === 'revoke') &&
+                (cleanCmd === 'del' ||
+                  cleanCmd === 'delete' ||
+                  cleanCmd === 'revoke' ||
+                  cleanCmd === 'rm' ||
+                  cleanCmd === 'remove') &&
                 replyToTgId
               ) {
                 const mapped = resolveWaMsgFromTg(tgChatId, String(replyToTgId));
@@ -1361,9 +1365,12 @@ export async function processTelegramUpdates() {
                       id: mapped.waMsgId,
                     },
                   });
+                  // Clean up both the target message and the !del command message in Telegram
+                  await bot.deleteMessage(tgChatId, replyToTgId).catch(() => null);
+                  await bot.deleteMessage(tgChatId, msg.message_id).catch(() => null);
                   logger.info(
                     { tgChatId, tgMsgId: replyToTgId, waMsgId: mapped.waMsgId },
-                    '🗑️ Mirrored Telegram delete command to WhatsApp'
+                    '🗑️ Mirrored Telegram delete command to WhatsApp and cleaned up Telegram messages'
                   );
                   continue;
                 }
