@@ -1367,7 +1367,10 @@ export async function processTelegramUpdates() {
                     );
                     continue;
                   } catch (pinErr) {
-                    logger.debug({ error: pinErr.message }, 'Native WhatsApp pin failed, sending fallback text');
+                    logger.debug(
+                      { error: pinErr.message },
+                      'Native WhatsApp pin failed, sending fallback text'
+                    );
                   }
                 }
               }

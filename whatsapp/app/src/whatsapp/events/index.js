@@ -50,7 +50,8 @@ const processedParticipantEvents = new Map();
 export function unwrapProtocolNode(m) {
   if (!m) return null;
   if (m.protocolMessage) return m.protocolMessage;
-  if (m.pinInChatMessage) return { type: 5, pinInChatMessage: m.pinInChatMessage, key: m.pinInChatMessage.key };
+  if (m.pinInChatMessage)
+    return { type: 5, pinInChatMessage: m.pinInChatMessage, key: m.pinInChatMessage.key };
   if (m.editedMessage) {
     if (m.editedMessage.message?.protocolMessage) return m.editedMessage.message.protocolMessage;
     if (m.editedMessage.protocolMessage) return m.editedMessage.protocolMessage;
@@ -439,7 +440,10 @@ export function handleIncomingMessages(session) {
         }
       } else if (
         protNode &&
-        (protNode.type === 5 || protNode.type === 'PIN_IN_CHAT' || String(protNode.type) === '5' || protNode.pinInChatMessage)
+        (protNode.type === 5 ||
+          protNode.type === 'PIN_IN_CHAT' ||
+          String(protNode.type) === '5' ||
+          protNode.pinInChatMessage)
       ) {
         const pinObj = protNode.pinInChatMessage || protNode;
         const pinnedWaMsgId = pinObj.key?.id || protNode.key?.id;
@@ -1177,7 +1181,10 @@ export function handleIncomingMessages(session) {
             }
           } else if (
             prot &&
-            (prot.type === 5 || prot.type === 'PIN_IN_CHAT' || String(prot.type) === '5' || prot.pinInChatMessage)
+            (prot.type === 5 ||
+              prot.type === 'PIN_IN_CHAT' ||
+              String(prot.type) === '5' ||
+              prot.pinInChatMessage)
           ) {
             const pinObj = prot.pinInChatMessage || prot;
             const pinnedWaMsgId = pinObj.key?.id || prot.key?.id || key?.id;
