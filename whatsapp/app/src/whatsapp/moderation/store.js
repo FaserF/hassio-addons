@@ -123,6 +123,7 @@ export function getDefaultGroupConfig() {
       captcha_timeout_seconds: 240,
       clean_welcome: false,
     },
+    stt_enabled: true, // Speech-to-Text auto transcription toggle (default: true)
     verified_users: {}, // userId -> { verified: boolean, timestamp: number, mode: 'auto' | 'manual' }
     warnings: {
       max_warnings: 3,
