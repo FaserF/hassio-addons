@@ -1,4 +1,5 @@
 import { logger } from '../../logger.js';
+import { translateTextFreeWithReason } from '../../utils/freeTranslator.js';
 
 export async function processAiModeration(
   text,
@@ -13,6 +14,65 @@ export async function processAiModeration(
     groupAiConfig.api_key ||
     process.env.OPENAI_API_KEY ||
     process.env.GEMINI_API_KEY;
+
+  if (mode === 'translate') {
+    const targetLang = extraContext.targetLang || 'en';
+    let aiErrorReason = null;
+    if (apiKey) {
+      try {
+        const prompt = `Translate the following text into ${targetLang}. Return ONLY the translated text without commentary.\nText: "${text}"`;
+        if (provider === 'openai' || groupAiConfig.openai_api_key) {
+          const oaKey = groupAiConfig.openai_api_key || process.env.OPENAI_API_KEY || apiKey;
+          const res = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${oaKey}`,
+            },
+            body: JSON.stringify({
+              model: groupAiConfig.model || 'gpt-4o-mini',
+              messages: [{ role: 'user', content: prompt }],
+              max_tokens: 500,
+            }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const translated = data.choices?.[0]?.message?.content?.trim();
+            if (translated) return { translation: translated, reason: null };
+          } else {
+            aiErrorReason = `OpenAI API returned status ${res.status}.`;
+          }
+        } else {
+          const geminiModel = groupAiConfig.model || 'gemini-1.5-flash';
+          const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+            }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const translated = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            if (translated) return { translation: translated, reason: null };
+          } else {
+            aiErrorReason = `Gemini API returned status ${res.status}.`;
+          }
+        }
+      } catch (err) {
+        aiErrorReason = `AI Provider error: ${err.message}`;
+        logger.debug({ error: err.message }, 'AI translation failed, switching to free translator fallback');
+      }
+    }
+
+    // Fallback for translation mode: Free multi-provider engine (Google -> Lingva -> MyMemory)
+    const freeRes = await translateTextFreeWithReason(text, targetLang);
+    if (freeRes.translation) return { translation: freeRes.translation, reason: null };
+
+    const finalReason = freeRes.reason || aiErrorReason || 'Unknown error occurred during translation.';
+    return { translation: null, reason: finalReason };
+  }
 
   if (!apiKey || (!groupAiConfig.enabled && mode !== 'rules_question')) {
     return null;
@@ -82,3 +142,4 @@ export async function processAiModeration(
     return null;
   }
 }
+
