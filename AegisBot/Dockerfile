@@ -11,6 +11,7 @@ ENV LANG=C.UTF-8
 ENV PIP_ROOT_USER_ACTION=ignore
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ENV PYTHONUNBUFFERED=1
+ENV PATH="/usr/local/bin:/root/.local/bin:${PATH}"
 
 # Install System Requirements including Node.js
 
@@ -37,6 +38,7 @@ RUN \
     nodejs \
     npm \
     unzip \
+    ffmpeg \
     jq && \
     # Verify Node.js version
     node --version && \

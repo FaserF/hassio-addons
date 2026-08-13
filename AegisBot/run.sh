@@ -3,6 +3,8 @@
 # Load custom bashio libraries
 # shellcheck source=/dev/null
 
+export PATH="/usr/local/bin:/root/.local/bin:$PATH"
+
 # <App_BANNER_INJECTION>
 
 # ============================================================================
@@ -796,7 +798,7 @@ ln -s "$PLUGINS_DIR" /app/plugins
 if [ -f "/app/backend/alembic.ini" ]; then
 	bashio::log.info "Running database migrations..."
 	cd /app/backend || exit 1
-	alembic upgrade head || bashio::log.warning "Migration failed or not needed, continuing..."
+	python3 -m alembic upgrade head || bashio::log.warning "Migration failed or not needed, continuing..."
 else
 	bashio::log.info "alembic.ini not found, skipping migrations (Database initialized by app.main)."
 fi
@@ -834,7 +836,7 @@ cd /app/backend || exit 1
 export PYTHONPATH=/app/backend
 
 # Start Uvicorn in background
-uvicorn app.main:app --host 127.0.0.1 --port 8001 --proxy-headers --forwarded-allow-ips="*" --log-level "$(echo "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" &
+python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --proxy-headers --forwarded-allow-ips="*" --log-level "$(echo "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" &
 BACKEND_PID=$!
 
 # --- NGINX START ---

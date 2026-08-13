@@ -47,6 +47,48 @@ export const ipFilterMiddleware = (req, res, next) => {
   return res.redirect('/login');
 };
 
+export const authMiddleware = (req, res, next) => {
+  const providedToken = req.header('X-Auth-Token') || req.query?.token;
+
+  if (!providedToken) {
+    logger.warn({ ip: req.ip, path: req.originalUrl }, '[AUTH] Missing X-Auth-Token in request');
+    return res.status(401).json({ error: 'Unauthorized', detail: 'Missing X-Auth-Token' });
+  }
+
+  if (providedToken !== API_TOKEN) {
+    logger.warn(
+      {
+        ip: req.ip,
+        path: req.originalUrl,
+        match: false,
+        tokenPrefix: providedToken.substring(0, 4) + '...',
+      },
+      '[AUTH] Token mismatch. The provided token does not match the current API_TOKEN. Check addon logs for the current token.'
+    );
+    return res.status(401).json({ error: 'Unauthorized', detail: 'Invalid X-Auth-Token' });
+  }
+
+  // Valid token provided - update "Active Interest" for discovery logic
+  SYSTEM_STATE.last_integration_online = Date.now();
+  saveSystemState();
+
+  next();
+};
+
+export const anyAuthMiddleware = (req, res, next) => {
+  const providedToken = req.header('X-Auth-Token') || req.query?.token;
+  if (providedToken) {
+    if (providedToken === API_TOKEN) {
+      SYSTEM_STATE.last_integration_online = Date.now();
+      saveSystemState();
+      return next();
+    }
+    return res.status(401).json({ error: 'Unauthorized', detail: 'Invalid X-Auth-Token' });
+  }
+
+  return uiAuthMiddleware(req, res, next);
+};
+
 export const uiAuthMiddleware = (req, res, next) => {
   const userRole = req.userRole || determineUserRole(req);
   req.userRole = userRole;
