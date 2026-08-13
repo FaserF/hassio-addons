@@ -117,3 +117,30 @@ async function scanFilenameAndMetadata(filename) {
   }
   return false;
 }
+
+export function checkSuspiciousName(name) {
+  if (!name || typeof name !== 'string') return null;
+  const lower = name.toLowerCase();
+
+  // Drugs & weed keywords & emojis
+  const drugKeywords = /\b(free\s*drugs?|best\s*weed|buy\s*weed|weed\s*plug|cannabis|thc\s*vape|cocaine|psilocybin|shrooms|xanax|oxycodone|mdma|ketamine)\b/i;
+  const drugEmojiCombo = /(weed|cannabis|kush|drugs?|vape|pills?|coke|shrooms?).*[\u{1F343}\u{1F33F}\u{1F344}\u{1F48A}\u{1F489}\u{1F6AC}\u{1F341}]|[\u{1F343}\u{1F33F}\u{1F344}\u{1F48A}\u{1F489}\u{1F6AC}\u{1F341}].*(weed|cannabis|kush|drugs?|vape|pills?|coke|shrooms?)/iu;
+
+  // Adult / NSFW keywords & emojis
+  const adultKeywords = /\b(sex\s*chat|free\s*sex|nude\s*pics?|escorts?\s*service|onlyfans\s*leak|porn\s*video|xxx\s*hot|hookups?\s*dating|horny\s*girls?)\b/i;
+  const adultEmojiCombo = /(sex|nude|porn|xxx|fuck|dating|girls?|hot|babe).*[\u{1F346}\u{1F351}\u{1F4A6}\u{1F51E}]|[\u{1F346}\u{1F351}\u{1F4A6}\u{1F51E}].*(sex|nude|porn|xxx|fuck|dating|girls?|hot|babe)/iu;
+
+  // Financial / Crypto scams
+  const cryptoScams = /\b(crypto\s*profit|forex\s*signals?|binance\s*pump|guaranteed\s*returns?|whatsapp\s*investment|earn\s*\$?\d{3,}\s*daily|free\s*bitcoins?|airdrop\s*claim\s*now)\b/i;
+
+  if (drugKeywords.test(lower) || drugEmojiCombo.test(name)) {
+    return 'Prohibited drug/narcotics name pattern';
+  }
+  if (adultKeywords.test(lower) || adultEmojiCombo.test(name)) {
+    return 'Prohibited adult/escort/NSFW name pattern';
+  }
+  if (cryptoScams.test(lower)) {
+    return 'Prohibited crypto/forex scam name pattern';
+  }
+  return null;
+}

@@ -12,6 +12,11 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
   const audioMsg = msg?.audioMessage;
   if (!audioMsg) return false;
 
+  // Skip outgoing/bridged audio messages sent by the bot/gateway
+  if (rawMsg.key?.fromMe) {
+    return false;
+  }
+
   // Check group configuration toggle (stt_enabled, default false)
   if (groupId && groupId.endsWith('@g.us')) {
     const config = getGroupModerationConfig(groupId);

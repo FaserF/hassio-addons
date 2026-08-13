@@ -28,6 +28,7 @@ import {
   syncWhatsAppGroupEventToTelegram,
   syncWhatsAppDeleteToTelegram,
   syncWhatsAppEditToTelegram,
+  syncWhatsAppPinToTelegram,
   startTelegramPolling,
 } from '../telegram/listener.js';
 
@@ -46,10 +47,15 @@ export { getChangelogUrl, checkSystemUpdates, monitorHACore } from './system.js'
 const MEDIA_DIR = process.env.MEDIA_FOLDER || path.join(process.cwd(), 'media');
 const processedParticipantEvents = new Map();
 
-function unwrapProtocolNode(m) {
+export function unwrapProtocolNode(m) {
   if (!m) return null;
   if (m.protocolMessage) return m.protocolMessage;
-  if (m.editedMessage) return m.editedMessage;
+  if (m.pinInChatMessage) return { type: 5, pinInChatMessage: m.pinInChatMessage, key: m.pinInChatMessage.key };
+  if (m.editedMessage) {
+    if (m.editedMessage.message?.protocolMessage) return m.editedMessage.message.protocolMessage;
+    if (m.editedMessage.protocolMessage) return m.editedMessage.protocolMessage;
+    return { type: 14, editedMessage: m.editedMessage, key: m.editedMessage.key };
+  }
   if (m.ephemeralMessage?.message) return unwrapProtocolNode(m.ephemeralMessage.message);
   if (m.viewOnceMessage?.message) return unwrapProtocolNode(m.viewOnceMessage.message);
   if (m.viewOnceMessageV2?.message) return unwrapProtocolNode(m.viewOnceMessageV2.message);
@@ -431,6 +437,22 @@ export function handleIncomingMessages(session) {
           const senderName = msg.pushName || session.contactCache?.get(targetJid)?.name || '';
           syncWhatsAppEditToTelegram(editedWaMsgId, targetJid, newText, groupName, senderName);
         }
+      } else if (
+        protNode &&
+        (protNode.type === 5 || protNode.type === 'PIN_IN_CHAT' || String(protNode.type) === '5' || protNode.pinInChatMessage)
+      ) {
+        const pinObj = protNode.pinInChatMessage || protNode;
+        const pinnedWaMsgId = pinObj.key?.id || protNode.key?.id;
+        const targetJid = pinObj.key?.remoteJid || protNode.key?.remoteJid || msg.key?.remoteJid;
+        const pinType = pinObj.type !== undefined ? pinObj.type : 1;
+        if (pinnedWaMsgId && targetJid) {
+          const isPinned = pinType === 1;
+          logger.info(
+            { pinnedWaMsgId, targetJid, isPinned },
+            '📌 Detected WhatsApp message pin update (protocolMessage PIN_IN_CHAT)'
+          );
+          syncWhatsAppPinToTelegram(pinnedWaMsgId, targetJid, isPinned);
+        }
       }
     }
 
@@ -441,9 +463,10 @@ export function handleIncomingMessages(session) {
         if (
           unwrapProtocolNode(msg.message) ||
           msg.message?.protocolMessage ||
-          msg.message?.editedMessage
+          msg.message?.editedMessage ||
+          msg.message?.pinInChatMessage
         )
-          return false; // Skip protocol control nodes (edits & deletes) from raw text forwarding
+          return false; // Skip protocol control nodes (edits, deletes, pins) from raw text forwarding
         if (msg.key.fromMe) {
           // Allow outgoing messages if they are to an admin (usually to self) OR in a group
           const isToAdminPrimary = isAdmin(msg.key.remoteJid, session);
@@ -1121,17 +1144,10 @@ export function handleIncomingMessages(session) {
 
     session.sock.ev.on('messages.update', async (updates) => {
       try {
-        const unwrapProtocol = (m) => {
-          if (!m) return null;
-          if (m.protocolMessage) return m.protocolMessage;
-          if (m.ephemeralMessage?.message) return unwrapProtocol(m.ephemeralMessage.message);
-          if (m.viewOnceMessage?.message) return unwrapProtocol(m.viewOnceMessage.message);
-          return null;
-        };
         for (const item of updates || []) {
           const update = item.update || {};
           const key = item.key || update.key;
-          const prot = unwrapProtocol(update.message);
+          const prot = unwrapProtocolNode(update.message);
           if (prot && (prot.type === 0 || prot.type === 'REVOKE' || String(prot.type) === '0')) {
             const deletedId = prot.key?.id || key?.id;
             const targetJid = prot.key?.remoteJid || key?.remoteJid;
@@ -1158,6 +1174,22 @@ export function handleIncomingMessages(session) {
               const groupName = isGroup ? session.groupCache?.get(targetJid) || targetJid : '';
               const senderName = session.contactCache?.get(targetJid)?.name || '';
               syncWhatsAppEditToTelegram(editedWaMsgId, targetJid, newText, groupName, senderName);
+            }
+          } else if (
+            prot &&
+            (prot.type === 5 || prot.type === 'PIN_IN_CHAT' || String(prot.type) === '5' || prot.pinInChatMessage)
+          ) {
+            const pinObj = prot.pinInChatMessage || prot;
+            const pinnedWaMsgId = pinObj.key?.id || prot.key?.id || key?.id;
+            const targetJid = pinObj.key?.remoteJid || prot.key?.remoteJid || key?.remoteJid;
+            const pinType = pinObj.type !== undefined ? pinObj.type : 1;
+            if (pinnedWaMsgId && targetJid) {
+              const isPinned = pinType === 1;
+              logger.info(
+                { pinnedWaMsgId, targetJid, isPinned },
+                '📌 Received messages.update (PIN_IN_CHAT) event from Baileys'
+              );
+              syncWhatsAppPinToTelegram(pinnedWaMsgId, targetJid, isPinned);
             }
           }
         }

@@ -148,6 +148,53 @@ export async function syncWhatsAppDeleteToTelegram(waMsgId, waJid) {
   }
 }
 
+export async function syncWhatsAppPinToTelegram(waMsgId, waJid, isPinned = true) {
+  if (!waMsgId) return;
+  const store = loadTelegramStore();
+  if (!store.enabled) return;
+
+  const mapped = resolveTgMsgFromWa(waMsgId);
+  if (!mapped || !mapped.tgMsgId || !mapped.tgChatId) return;
+
+  const mappings = (store.mappings || []).filter(
+    (m) =>
+      m.enabled &&
+      (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound') &&
+      m.sync_pins !== false
+  );
+
+  const targetMappings = mappings.filter(
+    (m) =>
+      (m.wa_jid && m.wa_jid.toLowerCase() === (waJid || '').toLowerCase()) ||
+      String(m.tg_chat_id) === String(mapped.tgChatId)
+  );
+
+  for (const mapping of targetMappings) {
+    const bot = getTelegramBotClient(mapping.bot_id);
+    if (!bot) continue;
+    try {
+      if (isPinned) {
+        await bot.pinChatMessage(mapped.tgChatId, Number(mapped.tgMsgId), true);
+        logger.info(
+          { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+          '📌 Successfully mirrored WhatsApp pin to Telegram'
+        );
+      } else {
+        await bot.unpinChatMessage(mapped.tgChatId, Number(mapped.tgMsgId));
+        logger.info(
+          { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+          '📌 Successfully mirrored WhatsApp unpin to Telegram'
+        );
+      }
+    } catch (err) {
+      logger.debug(
+        { error: err.message, waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+        'Failed to pin/unpin Telegram message'
+      );
+    }
+  }
+}
+
 export async function syncTelegramDeleteToWhatsApp(tgChatId, tgMsgId) {
   if (!tgChatId || !tgMsgId) return;
   const store = loadTelegramStore();
@@ -1097,20 +1144,38 @@ export async function processTelegramUpdates() {
             tgText = tgText || '[🎤 Voice Note]';
             const fileUrl = await bot.getFileUrl(msg.voice.file_id);
             if (fileUrl) {
+              let audioBuffer = null;
+              try {
+                const res = await fetch(fileUrl);
+                if (res.ok) {
+                  audioBuffer = Buffer.from(await res.arrayBuffer());
+                }
+              } catch (_dlErr) {}
               mediaPayload = {
                 url: fileUrl,
+                buffer: audioBuffer,
                 type: 'audio',
-                mimetype: msg.voice.mime_type || 'audio/ogg',
+                mimetype: msg.voice.mime_type || 'audio/ogg; codecs=opus',
+                ptt: true,
               };
             }
           } else if (msg.audio) {
             tgText = tgText || '[🎵 Audio]';
             const fileUrl = await bot.getFileUrl(msg.audio.file_id);
             if (fileUrl) {
+              let audioBuffer = null;
+              try {
+                const res = await fetch(fileUrl);
+                if (res.ok) {
+                  audioBuffer = Buffer.from(await res.arrayBuffer());
+                }
+              } catch (_dlErr) {}
               mediaPayload = {
                 url: fileUrl,
+                buffer: audioBuffer,
                 type: 'audio',
                 mimetype: msg.audio.mime_type || 'audio/mp3',
+                ptt: false,
               };
             }
           } else if (msg.document) {
@@ -1277,6 +1342,36 @@ export async function processTelegramUpdates() {
           }
           if (session && session.sock && session.isConnected) {
             try {
+              if (isPinMsg) {
+                const pinnedTgMsg = msg.pinned_message;
+                const pinnedTgMsgId = pinnedTgMsg?.message_id;
+                const mappedWaMsg = pinnedTgMsgId
+                  ? resolveWaMsgFromTg(tgChatId, String(pinnedTgMsgId))
+                  : null;
+                if (mappedWaMsg && mappedWaMsg.waMsgId) {
+                  try {
+                    await session.sock.sendMessage(mapping.wa_jid, {
+                      pin: {
+                        key: {
+                          remoteJid: mapping.wa_jid,
+                          fromMe: mappedWaMsg.fromMe !== undefined ? mappedWaMsg.fromMe : false,
+                          id: mappedWaMsg.waMsgId,
+                        },
+                        type: 1,
+                        time: 604800,
+                      },
+                    });
+                    logger.info(
+                      { tgChatId, tgPinnedId: pinnedTgMsgId, waMsgId: mappedWaMsg.waMsgId },
+                      '📌 Mirrored Telegram message pin natively to WhatsApp'
+                    );
+                    continue;
+                  } catch (pinErr) {
+                    logger.debug({ error: pinErr.message }, 'Native WhatsApp pin failed, sending fallback text');
+                  }
+                }
+              }
+
               if (isEdit) {
                 let editSucceeded = false;
                 const mapped = resolveWaMsgFromTg(tgChatId, String(msg.message_id));
@@ -1441,9 +1536,9 @@ export async function processTelegramUpdates() {
                     };
                   } else if (mediaPayload.type === 'audio') {
                     waContent = {
-                      audio: { url: mediaPayload.url },
-                      mimetype: mediaPayload.mimetype,
-                      ptt: Boolean(msg.voice),
+                      audio: mediaPayload.buffer ? mediaPayload.buffer : { url: mediaPayload.url },
+                      mimetype: mediaPayload.mimetype || 'audio/ogg; codecs=opus',
+                      ptt: Boolean(mediaPayload.ptt || msg.voice),
                     };
                   } else if (mediaPayload.type === 'sticker') {
                     waContent = {

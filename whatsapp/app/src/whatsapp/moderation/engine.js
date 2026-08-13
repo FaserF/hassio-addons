@@ -15,6 +15,7 @@ import {
   normalizeJid,
   isSameUser,
 } from '../../utils/security.js';
+import { checkSuspiciousName } from './securityScanner.js';
 
 // In-memory sliding window trackers
 
@@ -811,6 +812,30 @@ export async function handleModerationMessage(session, event) {
   const isGroupAdminUser = Boolean(
     (event.is_group ? event.is_group_admin : event.is_admin) || rawMsg?.key?.fromMe
   );
+
+  // Check suspicious spam/drugs/nsfw name pattern
+  if (config.name_ban_enabled !== false && !isGroupAdminUser) {
+    const senderName = event.sender_name || rawMsg?.pushName || '';
+    const nameViolation = checkSuspiciousName(senderName);
+    if (nameViolation) {
+      logger.warn({ senderName, userId, nameViolation }, '🚫 Flagged suspicious user profile name');
+      if (rawMsg?.key?.id) {
+        try {
+          await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+        } catch (_e) {}
+      }
+      const action = config.name_ban_action || 'ban';
+      await executePenalty(
+        session,
+        groupId,
+        userId,
+        action,
+        `Prohibited Name Pattern: ${nameViolation}`,
+        rawMsg
+      );
+      return true;
+    }
+  }
 
   // 0. Auto-Responder / Custom Filters & FAQ triggers check (runs for everyone including admins)
   const allFilters = [
@@ -1914,6 +1939,43 @@ export async function handleModerationParticipantUpdate(session, update) {
             'Banned in Global Ban Federation',
             rawMsg
           );
+          continue;
+        }
+      }
+
+      // Check suspicious spam/drugs/nsfw name pattern on participant join
+      if (config.name_ban_enabled !== false) {
+        const contact = session.contactCache?.get(participantJid);
+        const contactName = contact?.name || contact?.notify || '';
+        const nameViolation = checkSuspiciousName(contactName);
+        if (nameViolation) {
+          logger.warn(
+            { participantJid, contactName, nameViolation },
+            '🚫 Prohibited Name Pattern detected on joining WhatsApp participant'
+          );
+          const action = config.name_ban_action || 'ban';
+          if (action === 'ban') {
+            config.banned_users = config.banned_users || {};
+            config.banned_users[cleanDigits || userId] = {
+              timestamp: Date.now(),
+              reason: `Prohibited name pattern (${nameViolation})`,
+            };
+            store.groups[groupId] = config;
+            saveModerationStore(store);
+          }
+          try {
+            await session.sock.groupParticipantsUpdate(groupId, [participantJid], 'remove');
+            await reply(
+              session,
+              groupId,
+              {
+                text: `🚫 *Automated Moderation Notice*\n\nUser @${cleanDigits || userId} was removed.\n*Reason:* ${nameViolation}`,
+                mentions: [participantJid],
+              },
+              rawMsg,
+              { skipSpamGuard: true }
+            );
+          } catch (_err) {}
           continue;
         }
       }

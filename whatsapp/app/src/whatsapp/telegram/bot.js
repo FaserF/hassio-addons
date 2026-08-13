@@ -22,6 +22,7 @@ const ALLOWED_METHODS = new Map([
   ['sendDocument', 'sendDocument'],
   ['setMessageReaction', 'setMessageReaction'],
   ['editMessageText', 'editMessageText'],
+  ['editMessageCaption', 'editMessageCaption'],
   ['deleteMessage', 'deleteMessage'],
   ['sendVideo', 'sendVideo'],
   ['sendAudio', 'sendAudio'],
