@@ -48,9 +48,11 @@ const processedParticipantEvents = new Map();
 function unwrapProtocolNode(m) {
   if (!m) return null;
   if (m.protocolMessage) return m.protocolMessage;
+  if (m.editedMessage) return m.editedMessage;
   if (m.ephemeralMessage?.message) return unwrapProtocolNode(m.ephemeralMessage.message);
   if (m.viewOnceMessage?.message) return unwrapProtocolNode(m.viewOnceMessage.message);
   if (m.viewOnceMessageV2?.message) return unwrapProtocolNode(m.viewOnceMessageV2.message);
+  if (m.viewOnceMessageV2Extension?.message) return unwrapProtocolNode(m.viewOnceMessageV2Extension.message);
   return null;
 }
 
@@ -473,6 +475,13 @@ export function handleIncomingMessages(session) {
                     'accuracyInMeters',
                     'speedInMps',
                     'degreesClockwiseFromMagneticNorth',
+                    'protocolMessage',
+                    'editedMessage',
+                    'key',
+                    'remoteJid',
+                    'participant',
+                    'remoteJidAlt',
+                    'participantAlt',
                   ].includes(key)
                 )
                   continue;

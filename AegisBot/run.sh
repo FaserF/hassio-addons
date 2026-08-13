@@ -577,8 +577,6 @@ install_from_archive() {
 		if npm install; then
 			# Apply Ingress patches
 			sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts
-			# We now handle API_BASE dynamically in source, but ensure it's not hardcoded to a legacy value
-			sed -i "s#import.meta.env.VITE_API_URL || '/api/v1'#getApiBase()#g" src/api/client.ts
 
 			bashio::log.info "Running 'npm run build'..."
 			if npm run build; then

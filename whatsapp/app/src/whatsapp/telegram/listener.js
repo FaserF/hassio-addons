@@ -187,6 +187,8 @@ export async function syncTelegramDeleteToWhatsApp(tgChatId, tgMsgId) {
   }
 }
 
+const recentWaEditEvents = new Map();
+
 export async function syncWhatsAppEditToTelegram(
   waMsgId,
   waJid,
@@ -195,6 +197,17 @@ export async function syncWhatsAppEditToTelegram(
   senderName = ''
 ) {
   if (!waMsgId || !newText) return;
+  const dedupKey = `${waMsgId}:${newText}`;
+  const now = Date.now();
+  if (recentWaEditEvents.has(dedupKey) && now - recentWaEditEvents.get(dedupKey) < 10000) {
+    logger.debug({ waMsgId }, 'Skipping duplicate WhatsApp edit event within 10s');
+    return;
+  }
+  recentWaEditEvents.set(dedupKey, now);
+  for (const [k, ts] of recentWaEditEvents.entries()) {
+    if (now - ts > 30000) recentWaEditEvents.delete(k);
+  }
+
   const store = loadTelegramStore();
   if (!store.enabled) return;
 
