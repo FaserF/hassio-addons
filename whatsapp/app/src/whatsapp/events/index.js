@@ -52,7 +52,8 @@ function unwrapProtocolNode(m) {
   if (m.ephemeralMessage?.message) return unwrapProtocolNode(m.ephemeralMessage.message);
   if (m.viewOnceMessage?.message) return unwrapProtocolNode(m.viewOnceMessage.message);
   if (m.viewOnceMessageV2?.message) return unwrapProtocolNode(m.viewOnceMessageV2.message);
-  if (m.viewOnceMessageV2Extension?.message) return unwrapProtocolNode(m.viewOnceMessageV2Extension.message);
+  if (m.viewOnceMessageV2Extension?.message)
+    return unwrapProtocolNode(m.viewOnceMessageV2Extension.message);
   return null;
 }
 
