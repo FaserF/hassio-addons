@@ -30,8 +30,12 @@ RUN \
     musl \
     nginx \
     gcc \
+    g++ \
+    make \
     musl-dev \
     libffi-dev \
+    openssl-dev \
+    python3-dev \
     curl \
     postgresql-client \
     xz \
@@ -42,7 +46,21 @@ RUN \
     jq && \
     # Verify Node.js version
     node --version && \
-    npm --version
+    npm --version && \
+    # Pre-install core Python dependencies into system Python
+    pip3 install --no-cache-dir \
+    "uvicorn[standard]>=0.23.0" \
+    "fastapi>=0.100.0" \
+    "pydantic-settings>=2.0.0" \
+    "sqlalchemy>=2.0.0" \
+    "aiogram>=3.0.0" \
+    "alembic>=1.11.0" \
+    "aiosqlite>=0.19.0" \
+    "structlog>=23.1.0" \
+    "bcrypt>=5.0.0" \
+    "python-multipart>=0.0.6" \
+    "httpx>=0.24.0" \
+    "python-dotenv>=1.0.0"
 
 # Try to download and build during Docker build if repo is public.
 # If this fails (e.g. private repo), we continue and let run.sh handle it.

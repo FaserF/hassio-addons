@@ -835,6 +835,15 @@ cd /app/backend || exit 1
 # Set Python path
 export PYTHONPATH=/app/backend
 
+# Ensure uvicorn is installed in Python environment
+if ! python3 -c "import uvicorn" 2>/dev/null; then
+	bashio::log.warning "uvicorn module not found in Python environment. Auto-installing core dependencies..."
+	python3 -m pip install --no-cache-dir "uvicorn[standard]>=0.23.0" "fastapi>=0.100.0" "pydantic-settings>=2.0.0" "sqlalchemy>=2.0.0" "aiosqlite>=0.19.0" "aiogram>=3.0.0" "python-dotenv>=1.0.0" || true
+	if [ -f "/app/backend/requirements.txt" ]; then
+		python3 -m pip install --no-cache-dir -r /app/backend/requirements.txt || true
+	fi
+fi
+
 # Start Uvicorn in background
 python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --proxy-headers --forwarded-allow-ips="*" --log-level "$(echo "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" &
 BACKEND_PID=$!
