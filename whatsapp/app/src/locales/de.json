@@ -1064,6 +1064,12 @@
     "unknown_command_title": "⚠️ *Unbekannter Befehl:*",
     "unknown_command_desc": "Der Befehl `{cmd}` existiert nicht.",
     "did_you_mean": "💡 *Meintest du vielleicht?*",
-    "type_help_hint": "Tippe `{prefix}help` um alle verfügbaren Befehle zu sehen."
+    "type_help_hint": "Tippe `{prefix}help` um alle verfügbaren Befehle zu sehen.",
+    "stt_header": "🎙️ *Sprachnachricht zu Text (STT)*",
+    "stt_disclaimer": "\n\n_⚠️ Hinweis: Automatische Transkription – kann Fehler enthalten._",
+    "stt_error_header": "❌ *Speech-to-Text Fehler*",
+    "stt_download_failed": "Audiodaten konnten nicht heruntergeladen werden.",
+    "stt_transcription_failed": "Audiosignal konnte nicht transkribiert werden. (Optional: KI-Schlüssel in Moderations-Einstellungen eintragen)",
+    "stt_no_speech_recognized": "Keine Sprache erkannt."
   }
 }

@@ -25,10 +25,6 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     }
   }
 
-  const isDe =
-    (rawMsg.key?.remoteJid || '').includes('de') ||
-    (process.env.LANG || '').toLowerCase().includes('de');
-
   try {
     // 1. Download media stream from WhatsApp (Baileys)
     const stream = await downloadMediaMessage(
@@ -41,17 +37,19 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       }
     );
 
+    const store = (await import('./moderation/store.js')).loadModerationStore();
+    const config = getGroupModerationConfig(groupId) || {};
+    const { t: translate } = await import('../locales/loader.js');
+    const groupLang = config.language || 'en';
+    const gt = (key, params = {}) => translate(groupLang, key, params);
+
     if (!stream || stream.length === 0) {
-      const errText = isDe
-        ? '❌ *Speech-to-Text Fehler*\n\n*Grund:* Audiodaten konnten nicht heruntergeladen werden.'
-        : '❌ *Speech-to-Text Error*\n\n*Reason:* Could not download audio buffer.';
+      const errText = `${gt('bot_replies.stt_error_header')}\n\n*Reason:* ${gt('bot_replies.stt_download_failed')}`;
       await reply(session, groupId, { text: errText }, rawMsg);
       return true;
     }
 
     // 2. Perform STT transcription using Gemini Multimodal Audio API or OpenAI Whisper API
-    const config = getGroupModerationConfig(groupId) || {};
-    const store = (await import('./moderation/store.js')).loadModerationStore();
     const apiKey =
       store.gemini_api_key ||
       config.ai?.api_key ||
@@ -65,7 +63,7 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     if (sttEngine === 'auto' || !apiKey) {
       // 1. Try Free Web Speech Recognition Endpoint
       try {
-        const targetLang = isDe ? 'de-DE' : 'en-US';
+        const targetLang = groupLang === 'de' ? 'de-DE' : 'en-US';
         const url = `https://www.google.com/speech-api/v1/recognize?xjerr=1&client=chromium&lang=${targetLang}`;
         const res = await fetch(url, {
           method: 'POST',
@@ -91,9 +89,10 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
         try {
           const gKey = store.gemini_api_key || process.env.GEMINI_API_KEY || apiKey;
           const base64Audio = stream.toString('base64');
-          const promptText = isDe
-            ? 'Transkribiere dieses Audiosignal exakt in Text. Gib NUR den transkribierten Text ohne Erklärung zurück.'
-            : 'Transcribe this audio message exactly into text. Return ONLY the transcribed text without commentary.';
+          const promptText =
+            groupLang === 'de'
+              ? 'Transkribiere dieses Audiosignal exakt in Text. Gib NUR den transkribierten Text ohne Erklärung zurück.'
+              : 'Transcribe this audio message exactly into text. Return ONLY the transcribed text without commentary.';
           const geminiModel = config.ai?.model || 'gemini-1.5-flash';
           const res = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${gKey}`,
@@ -129,7 +128,7 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           const body = new FormData();
           body.append('file', formData, 'audio.ogg');
           body.append('model', 'whisper-1');
-          if (isDe) body.append('language', 'de');
+          if (groupLang === 'de') body.append('language', 'de');
 
           const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
             method: 'POST',
@@ -147,38 +146,31 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     }
 
     if (!transcribedText) {
-      failureReason = isDe
-        ? 'Audiosignal konnte nicht transkribiert werden. (Optional: KI-Schlüssel in Moderations-Einstellungen eintragen)'
-        : 'Could not transcribe audio message. (Optional: Set AI key in Moderation settings)';
+      failureReason = gt('bot_replies.stt_transcription_failed');
     }
 
     if (transcribedText) {
-      const header = isDe
-        ? '🎙️ *Sprachnachricht zu Text (STT)*'
-        : '🎙️ *Voice Message to Text (STT)*';
-      const disclaimer = isDe
-        ? '\n\n_⚠️ Hinweis: Automatische Transkription – kann Fehler enthalten._'
-        : '\n\n_⚠️ Note: Automated transcription – may contain errors._';
+      const header = gt('bot_replies.stt_header');
+      const disclaimer = gt('bot_replies.stt_disclaimer');
       const replyText = `${header}:\n\n"${transcribedText}"${disclaimer}`;
 
       await reply(session, groupId, { text: replyText }, rawMsg);
       return true;
     } else {
-      const header = isDe ? '❌ *Speech-to-Text Fehler*' : '❌ *Speech-to-Text Error*';
-      const reasonLabel = isDe ? '*Grund:*' : '*Reason:*';
-      const detail =
-        failureReason ||
-        (isDe ? 'Keine Sprache erkannt.' : 'Could not transcribe speech from audio.');
-      const errText = `${header}\n\n${reasonLabel} ${detail}`;
+      const header = gt('bot_replies.stt_error_header');
+      const detail = failureReason || gt('bot_replies.stt_no_speech_recognized');
+      const errText = `${header}\n\n*Reason:* ${detail}`;
 
       await reply(session, groupId, { text: errText }, rawMsg);
       return true;
     }
   } catch (err) {
     logger.error({ error: err.message, groupId }, 'Error processing WhatsApp Voice STT');
-    const header = isDe ? '❌ *Speech-to-Text Fehler*' : '❌ *Speech-to-Text Error*';
-    const reasonLabel = isDe ? '*Grund:*' : '*Reason:*';
-    const errText = `${header}\n\n${reasonLabel} ${err.message || 'Processing failed'}`;
+    const { t: translate } = await import('../locales/loader.js');
+    const config = getGroupModerationConfig(groupId) || {};
+    const groupLang = config.language || 'en';
+    const header = translate(groupLang, 'bot_replies.stt_error_header');
+    const errText = `${header}\n\n*Reason:* ${err.message || 'Processing failed'}`;
     try {
       await reply(session, groupId, { text: errText }, rawMsg);
     } catch (e) {}

@@ -1050,6 +1050,12 @@
     "unknown_command_title": "⚠️ *Unknown Command:*",
     "unknown_command_desc": "The command `{cmd}` does not exist.",
     "did_you_mean": "💡 *Did you mean?*",
-    "type_help_hint": "Type `{prefix}help` to see all available commands."
+    "type_help_hint": "Type `{prefix}help` to see all available commands.",
+    "stt_header": "🎙️ *Voice Message to Text (STT)*",
+    "stt_disclaimer": "\n\n_⚠️ Note: Automated transcription – may contain errors._",
+    "stt_error_header": "❌ *Speech-to-Text Error*",
+    "stt_download_failed": "Could not download audio buffer.",
+    "stt_transcription_failed": "Could not transcribe audio message. (Optional: Set AI key in Moderation settings)",
+    "stt_no_speech_recognized": "Could not transcribe speech from audio."
   }
 }
