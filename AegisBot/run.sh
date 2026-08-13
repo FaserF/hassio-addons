@@ -285,20 +285,12 @@ if bashio::config.true 'reset_database'; then
 	# Delete all data
 	if [ -d "$DATA_DIR" ]; then
 		bashio::log.info "Deleting all data in $DATA_DIR..."
-		# Safely delete all contents including hidden files
 		find "$DATA_DIR" -mindepth 1 -delete
 		sync # Ensure filesystem changes are written
 	fi
 
-	# Verify database is gone (check for current filename)
-	if [ -f "$DB_DIR/aegisbot.db" ]; then
-		bashio::log.error "Failed to delete database file! Forced removal..."
-		rm -f "$DB_DIR/aegisbot.db"
-	fi
-	# For legacy reasons, also check for .sqlite
-	if [ -f "$DB_DIR/aegisbot.sqlite" ]; then
-		rm -f "$DB_DIR/aegisbot.sqlite"
-	fi
+	# Force removal of all SQLite database files across data locations
+	rm -f "$DB_DIR/aegisbot.db" "$DB_DIR/aegisbot.sqlite" "/data/aegisbot.db" "/app/backend/aegisbot.db" 2>/dev/null || true
 
 	bashio::log.info "=================================================="
 	bashio::log.info "   ✅ DATABASE RESET COMPLETE"
