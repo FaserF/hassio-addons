@@ -132,6 +132,16 @@ configuration:
     name: Security Scan API Key
     description: Optional additional API key for specialized security crawling/scanning.
 
+  auto_install_integration:
+    name: Auto Install Integration
+    description: >-
+      Automatically download and install or update the Home Assistant custom integration on startup.
+
+  first_admin_password:
+    name: Initial Admin Password
+    description: >-
+      Initial password for the first admin user created on first startup. Leave empty to auto-generate.
+
   release_type:
     name: Release Type
     description: Choose the update channel (stable, pre-release, nightly, developer).

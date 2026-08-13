@@ -1228,8 +1228,19 @@ export function registerTelegramRoutes(app) {
         try {
           const stripHtmlTags = (str) => {
             if (typeof str !== 'string') return '';
-            return str
-              .replace(/<[^>]*>/g, '')
+            let result = '';
+            let insideTag = false;
+            for (let i = 0; i < str.length; i++) {
+              const char = str[i];
+              if (char === '<') {
+                insideTag = true;
+              } else if (char === '>') {
+                insideTag = false;
+              } else if (!insideTag) {
+                result += char;
+              }
+            }
+            return result
               .replace(/&lt;/g, '<')
               .replace(/&gt;/g, '>')
               .replace(/&quot;/g, '"')

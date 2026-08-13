@@ -132,6 +132,16 @@ configuration:
     name: Security-Scan API-Schlüssel
     description: Optionaler zusätzlicher API-Schlüssel für spezialisierte Sicherheits-Scans.
 
+  auto_install_integration:
+    name: Integration automatisch installieren
+    description: >-
+      Die Benutzerdefinierte Home Assistant Integration beim Start automatisch herunterladen und installieren oder aktualisieren.
+
+  first_admin_password:
+    name: Initiales Admin-Passwort
+    description: >-
+      Initiales Passwort für den ersten Admin-Benutzer, der beim ersten Start erstellt wird. Leer lassen für automatische Generierung.
+
   release_type:
     name: Release-Kanal
     description: Wähle den Update-Kanal (stable, pre-release, nightly, developer).
