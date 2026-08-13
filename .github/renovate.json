@@ -427,6 +427,12 @@
       "automerge": true
     },
     {
+      "description": "Restrict websockets to <17.0.0 for AegisBot due to google-genai dependency compatibility",
+      "matchDepNames": ["websockets"],
+      "matchFileNames": ["aegisbot/requirements.txt", "AegisBot/backend/requirements.txt"],
+      "allowedVersions": "<17.0.0"
+    },
+    {
       "description": "Skip tests for patch updates only",
       "matchUpdateTypes": ["patch"],
       "commitMessageSuffix": " [skip-tests]",
