@@ -10,6 +10,7 @@ arch:
   - amd64
 init: false
 ingress: true
+ingress_port: 8077
 ingress_stream: true
 panel_icon: mdi:robot
 discovery:
