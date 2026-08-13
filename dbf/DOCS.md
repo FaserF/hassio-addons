@@ -33,12 +33,12 @@ This feature ensures that you always have the correct version of the integration
 This add-on runs with **`host_network: true`**.
 
 ### Why is Host Network used?
+
 - **mDNS / Zeroconf Multicast**: Home Assistant auto-discovery uses multicast UDP (`224.0.0.251:5353` for `_ha-db_infoscreen._tcp.local.`).
 - **Instant Discovery**: Docker Bridge networks isolate multicast packets from the Home Assistant core instance. With host networking, the add-on's built-in mDNS broadcaster allows Home Assistant to automatically detect the local DBF server and display a ready-to-configure tile in **Settings ➔ Devices & Services**.
 - **Port Usage**: The local DBF web server listens on port `8092`.
 
 ## ⚙️ Configuration
-
 
 The app can be configured via the **Configuration** tab in the App page.
 

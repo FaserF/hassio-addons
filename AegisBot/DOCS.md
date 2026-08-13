@@ -150,6 +150,7 @@ debug: true
 This Add-on uses **`host_network: true`** by default.
 
 ### Why is Host Network used?
+
 - **mDNS / Zeroconf Multicast**: Home Assistant auto-discovery relies on link-local mDNS multicast packets (`224.0.0.251:5353` for `_ha-aegisbot._tcp.local.`).
 - **Zero-Configuration Pairing**: Docker Bridge networks isolate multicast traffic from the Home Assistant host. By using host networking, AegisBot can announce its presence on the local network so Home Assistant immediately detects it as a discovered device tile under **Settings ➔ Devices & Services**.
 - **Port Usage**: The web interface and REST API listen on port `8077` (HTTP) and `8001` (Internal Uvicorn backend).
@@ -165,7 +166,6 @@ This app uses the following folders:
   - `.secret_key`: Automatically generated encryption key.
   - `.api_token`: Secure token generated for automated Home Assistant integration pairing.
 - `/share`: Mapped for general use, but not used by the app by default.
-
 
 ## Support
 
