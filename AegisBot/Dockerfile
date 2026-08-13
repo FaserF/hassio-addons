@@ -46,7 +46,8 @@ RUN \
     jq && \
     # Verify Node.js version
     node --version && \
-    npm --version && \
+    npm --version
+
 # Copy and pre-install core Python dependencies into system Python
 COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
