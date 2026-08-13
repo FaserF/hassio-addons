@@ -56,9 +56,10 @@ export async function translateTextFreeWithReason(
           const data = await res.json();
           if (Array.isArray(data) && data[0]) {
             const translated = data[0].map((part) => part[0] || '').join('');
+            const detectedSource = data[2] || null;
             if (translated) {
               saveCache(translated);
-              return { translation: translated, reason: null };
+              return { translation: translated, sourceLang: detectedSource, reason: null };
             }
           }
         } else if (res.status === 429) {
@@ -84,8 +85,9 @@ export async function translateTextFreeWithReason(
         if (res.ok) {
           const data = await res.json();
           if (data && data.translation) {
+            const detectedSource = data.info?.detectedSource || null;
             saveCache(data.translation);
-            return { translation: data.translation, reason: null };
+            return { translation: data.translation, sourceLang: detectedSource, reason: null };
           }
         } else if (res.status === 429) {
           logger.warn('Lingva Translate rate-limited (429). Cooldown 5 minutes.');
@@ -110,9 +112,10 @@ export async function translateTextFreeWithReason(
         if (res.ok) {
           const data = await res.json();
           const translated = data?.responseData?.translatedText;
+          const detectedSource = data?.responseData?.detectedLanguage || null;
           if (translated && !translated.toUpperCase().includes('MYMEMORY WARNING')) {
             saveCache(translated);
-            return { translation: translated, reason: null };
+            return { translation: translated, sourceLang: detectedSource, reason: null };
           }
         } else if (res.status === 429) {
           logger.warn('MyMemory API rate-limited (429). Cooldown 5 minutes.');

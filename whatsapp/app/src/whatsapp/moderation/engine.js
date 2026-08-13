@@ -1438,8 +1438,12 @@ export async function handleModerationMessage(session, event) {
       transResult?.translation &&
       transResult.translation.trim().toLowerCase() !== text.trim().toLowerCase()
     ) {
+      const srcCode = (transResult.sourceLang || '?').toUpperCase();
+      const dstCode = targetLang.toUpperCase();
       const header =
-        targetLang === 'de' ? '🌐 *Automatische Übersetzung:*' : '🌐 *Auto Translation:*';
+        targetLang === 'de'
+          ? `🌐 *Automatische Übersetzung (${srcCode} → ${dstCode}):*`
+          : `🌐 *Auto Translation (${srcCode} → ${dstCode}):*`;
       await reply(session, groupId, { text: `${header}\n\n"${transResult.translation}"` }, rawMsg);
     }
   }

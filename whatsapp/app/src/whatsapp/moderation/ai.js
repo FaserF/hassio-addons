@@ -20,7 +20,7 @@ export async function processAiModeration(
     let aiErrorReason = null;
     if (apiKey) {
       try {
-        const prompt = `Translate the following text into ${targetLang}. Return ONLY the translated text without commentary.\nText: "${text}"`;
+        const prompt = `Translate the following text into target language code "${targetLang}". Respond ONLY with valid JSON in this exact structure: {"translation": "...", "sourceLang": "..."} (where sourceLang is the 2-letter ISO code of the input text, e.g. "de", "en", "es").\nText: "${text}"`;
         if (provider === 'openai' || groupAiConfig.openai_api_key) {
           const oaKey = groupAiConfig.openai_api_key || process.env.OPENAI_API_KEY || apiKey;
           const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -32,13 +32,23 @@ export async function processAiModeration(
             body: JSON.stringify({
               model: groupAiConfig.model || 'gpt-4o-mini',
               messages: [{ role: 'user', content: prompt }],
+              response_format: { type: 'json_object' },
               max_tokens: 500,
             }),
           });
           if (res.ok) {
             const data = await res.json();
-            const translated = data.choices?.[0]?.message?.content?.trim();
-            if (translated) return { translation: translated, reason: null };
+            const rawContent = data.choices?.[0]?.message?.content?.trim();
+            if (rawContent) {
+              try {
+                const parsed = JSON.parse(rawContent);
+                if (parsed.translation) {
+                  return { translation: parsed.translation, sourceLang: parsed.sourceLang || null, reason: null };
+                }
+              } catch (e) {
+                return { translation: rawContent, sourceLang: null, reason: null };
+              }
+            }
           } else {
             aiErrorReason = `OpenAI API returned status ${res.status}.`;
           }
@@ -54,8 +64,18 @@ export async function processAiModeration(
           );
           if (res.ok) {
             const data = await res.json();
-            const translated = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-            if (translated) return { translation: translated, reason: null };
+            const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            if (rawContent) {
+              const cleanJson = rawContent.replace(/```json\n?|\n?```/g, '').trim();
+              try {
+                const parsed = JSON.parse(cleanJson);
+                if (parsed.translation) {
+                  return { translation: parsed.translation, sourceLang: parsed.sourceLang || null, reason: null };
+                }
+              } catch (e) {
+                return { translation: rawContent, sourceLang: null, reason: null };
+              }
+            }
           } else {
             aiErrorReason = `Gemini API returned status ${res.status}.`;
           }
