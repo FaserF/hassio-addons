@@ -182,12 +182,38 @@ export class TelegramBotClient {
   }
 
   async editMessageText(chatId, messageId, text) {
-    return await this.request('editMessageText', {
-      chat_id: chatId,
-      message_id: messageId,
-      text: text,
-      parse_mode: 'HTML',
-    });
+    try {
+      return await this.request('editMessageText', {
+        chat_id: chatId,
+        message_id: messageId,
+        text: text,
+        parse_mode: 'HTML',
+      });
+    } catch (err) {
+      if (err.message && (err.message.includes('no text in the message') || err.message.includes('message text is empty'))) {
+        try {
+          return await this.request('editMessageCaption', {
+            chat_id: chatId,
+            message_id: messageId,
+            caption: text,
+            parse_mode: 'HTML',
+          });
+        } catch (_capErr) {
+          const plainText = text.replace(/<[^>]+>/g, '');
+          return await this.request('editMessageCaption', {
+            chat_id: chatId,
+            message_id: messageId,
+            caption: plainText,
+          });
+        }
+      }
+      const plainText = text.replace(/<[^>]+>/g, '');
+      return await this.request('editMessageText', {
+        chat_id: chatId,
+        message_id: messageId,
+        text: plainText,
+      });
+    }
   }
 
   async sendMediaFile(

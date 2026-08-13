@@ -6,6 +6,7 @@ import { waToTelegramHtml, telegramToWaFormatting, anonymizePhoneNumber } from '
 import { applyRegexReplacements } from './regex.js';
 import { logger } from '../../logger.js';
 import { getSession, sessions } from '../../session.js';
+import { t } from '../../locales/loader.js';
 
 let pollingTimer = null;
 
@@ -270,7 +271,9 @@ export async function syncWhatsAppEditToTelegram(
     }
 
     if (!editSucceeded) {
-      const editIndicator = '✏️ <i>[Bearbeitete Nachricht / Edited Message]</i>';
+      const lang = store.language || 'de';
+      const editIndicator = t(lang, 'bot_replies.edited_msg_indicator_html');
+      const editOldText = t(lang, 'bot_replies.edited_msg_old_html');
       const tgChatId = mapped?.tgChatId || mapping.tg_chat_id;
       let fallbackText = `${header}${editIndicator}:\n${formattedBody}`;
       const sendOpts = {};
@@ -278,7 +281,7 @@ export async function syncWhatsAppEditToTelegram(
       if (mapped && mapped.tgMsgId) {
         sendOpts.reply_to_message_id = Number(mapped.tgMsgId);
       } else {
-        fallbackText = `${header}${editIndicator} <i>(Original vor längerer Zeit gesendet)</i>:\n${formattedBody}`;
+        fallbackText = `${header}${editIndicator} ${editOldText}:\n${formattedBody}`;
       }
 
       try {
@@ -1300,7 +1303,9 @@ export async function processTelegramUpdates() {
                 }
 
                 if (!editSucceeded) {
-                  const editIndicator = '✏️ *[Bearbeitete Nachricht / Edited Message]*';
+                  const lang = store.language || 'de';
+                  const editIndicator = t(lang, 'bot_replies.edited_msg_indicator');
+                  const editOldText = t(lang, 'bot_replies.edited_msg_old');
                   let fallbackWaText = `${cleanHeader}${editIndicator}\n${tgQuoteSnippet}${formattedTgText}`;
                   const sendOpts = { text: fallbackWaText };
 
@@ -1314,7 +1319,7 @@ export async function processTelegramUpdates() {
                       message: { conversation: '...' },
                     };
                   } else {
-                    fallbackWaText = `${cleanHeader}${editIndicator} _(Original vor längerer Zeit gesendet)_\n${tgQuoteSnippet}${formattedTgText}`;
+                    fallbackWaText = `${cleanHeader}${editIndicator} ${editOldText}\n${tgQuoteSnippet}${formattedTgText}`;
                     sendOpts.text = fallbackWaText;
                   }
 
