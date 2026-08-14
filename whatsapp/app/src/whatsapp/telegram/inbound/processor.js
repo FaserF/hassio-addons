@@ -579,13 +579,18 @@ export async function processTelegramUpdates() {
                   : null;
                 if (mappedWaMsg && mappedWaMsg.waMsgId) {
                   try {
+                    const isFromMe = mappedWaMsg.fromMe !== undefined ? mappedWaMsg.fromMe : false;
+                    const pinKey = {
+                      remoteJid: mapping.wa_jid,
+                      fromMe: isFromMe,
+                      id: mappedWaMsg.waMsgId,
+                    };
+                    if (!isFromMe && mappedWaMsg.senderJid && mappedWaMsg.senderJid.includes('@')) {
+                      pinKey.participant = mappedWaMsg.senderJid;
+                    }
                     await session.sock.sendMessage(mapping.wa_jid, {
                       pin: {
-                        key: {
-                          remoteJid: mapping.wa_jid,
-                          fromMe: mappedWaMsg.fromMe !== undefined ? mappedWaMsg.fromMe : false,
-                          id: mappedWaMsg.waMsgId,
-                        },
+                        key: pinKey,
                         type: 1,
                         time: 604800,
                       },

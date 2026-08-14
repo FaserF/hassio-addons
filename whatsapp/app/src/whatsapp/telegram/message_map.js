@@ -6,7 +6,8 @@ export function recordMessageMap(
   tgMsgId,
   waJid,
   fromMe = false,
-  senderName = ''
+  senderName = '',
+  senderJid = ''
 ) {
   if (!waMsgId || !tgMsgId) return;
   const store = loadTelegramStore();
@@ -22,7 +23,7 @@ export function recordMessageMap(
     waJid,
     fromMe: Boolean(fromMe),
     senderName: senderName || '',
-    senderJid: senderName || '',
+    senderJid: senderJid || senderName || '',
     timestamp: Date.now(),
   };
 
@@ -56,13 +57,44 @@ export function recordMessageMap(
 }
 
 export function resolveWaMsgFromTg(tgChatId, tgMsgId) {
+  if (!tgChatId || !tgMsgId) return null;
   const store = loadTelegramStore();
-  const tgKey = `tg:${tgChatId}:${tgMsgId}`;
-  return store.message_maps?.[tgKey] || null;
+  if (!store.message_maps) return null;
+
+  const directKey = `tg:${tgChatId}:${tgMsgId}`;
+  if (store.message_maps[directKey]) return store.message_maps[directKey];
+
+  const cleanId = String(tgChatId).replace(/^-100/, '').replace(/^-/, '');
+  for (const [k, v] of Object.entries(store.message_maps)) {
+    if (!k.startsWith('tg:')) continue;
+    const parts = k.split(':');
+    if (parts.length >= 3) {
+      const storedChatId = parts[1];
+      const storedMsgId = parts[2];
+      const cleanStoredChatId = storedChatId.replace(/^-100/, '').replace(/^-/, '');
+      if (
+        (storedChatId === String(tgChatId) || cleanStoredChatId === cleanId) &&
+        storedMsgId === String(tgMsgId)
+      ) {
+        return v;
+      }
+    }
+  }
+  return null;
 }
 
 export function resolveTgMsgFromWa(waMsgId) {
+  if (!waMsgId) return null;
   const store = loadTelegramStore();
-  const waKey = `wa:${waMsgId}`;
-  return store.message_maps?.[waKey] || null;
+  if (!store.message_maps) return null;
+
+  const directKey = `wa:${waMsgId}`;
+  if (store.message_maps[directKey]) return store.message_maps[directKey];
+
+  for (const [k, v] of Object.entries(store.message_maps)) {
+    if (k.startsWith('wa:') && (k === `wa:${waMsgId}` || v.waMsgId === waMsgId)) {
+      return v;
+    }
+  }
+  return null;
 }

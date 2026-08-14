@@ -431,7 +431,16 @@ export async function syncWhatsAppToTelegram(
 
       const sentTgMsgId = tgResult?.message_id || tgResult?.result?.message_id;
       if (sentTgMsgId && waMsgId) {
-        recordMessageMap(waMsgId, mapping.tg_chat_id, sentTgMsgId, waJid, isFromMe, senderName);
+        const senderJid = msg.key?.participant || (isFromMe ? '' : waJid);
+        recordMessageMap(
+          waMsgId,
+          mapping.tg_chat_id,
+          sentTgMsgId,
+          waJid,
+          isFromMe,
+          senderName,
+          senderJid
+        );
       }
     } catch (err) {
       logger.error(

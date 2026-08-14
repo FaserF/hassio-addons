@@ -471,7 +471,7 @@ export function handleIncomingMessages(session) {
         protNode &&
         (protNode.type === 14 || protNode.type === 'MESSAGE_EDIT' || String(protNode.type) === '14')
       ) {
-        const editedWaMsgId = protNode.key?.id;
+        const editedWaMsgId = protNode.key?.id || msg.key?.id;
         const targetJid = protNode.key?.remoteJid || msg.key?.remoteJid;
         const newText = extractEditedText(protNode.editedMessage || msg.message);
         if (editedWaMsgId && targetJid && newText) {
@@ -484,6 +484,9 @@ export function handleIncomingMessages(session) {
           const senderName = msg.pushName || session.contactCache?.get(targetJid)?.name || '';
           syncWhatsAppEditToTelegram(editedWaMsgId, targetJid, newText, groupName, senderName);
           updateTranslationIfExists(session, targetJid, editedWaMsgId, newText);
+          if (msg.key?.id && msg.key.id !== editedWaMsgId) {
+            updateTranslationIfExists(session, targetJid, msg.key.id, newText);
+          }
         }
       } else if (
         protNode &&
