@@ -246,11 +246,15 @@ export async function processTelegramUpdates() {
               }
               if (session && session.sock && session.isConnected) {
                 try {
+                  const isFromMe = mapped.fromMe !== undefined ? mapped.fromMe : false;
                   const reactionKey = {
                     remoteJid: mapped.waJid,
                     id: mapped.waMsgId,
-                    fromMe: mapped.fromMe !== undefined ? mapped.fromMe : false,
+                    fromMe: isFromMe,
                   };
+                  if (!isFromMe && mapped.waJid.endsWith('@g.us') && mapped.senderJid && mapped.senderJid.includes('@')) {
+                    reactionKey.participant = mapped.senderJid;
+                  }
                   await session.sock.sendMessage(mapped.waJid, {
                     react: {
                       text: latestEmoji || '', // Empty string removes reaction in Baileys

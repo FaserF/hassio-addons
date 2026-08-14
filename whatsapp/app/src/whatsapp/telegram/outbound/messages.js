@@ -31,16 +31,44 @@ export async function syncWhatsAppToTelegram(
       (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound')
   );
 
-  // Guard against blank/empty messages without media (e.g. unhandled protocol nodes)
-  const hasMedia = Boolean(mediaUrl || mediaPath || mediaType);
-  if (!hasMedia && (!textContent || !textContent.trim())) {
-    return;
-  }
-
   const waMsgId = msg.key?.id;
   if (waMsgId) {
     const isBotEcho = resolveTgMsgFromWa(waMsgId);
     if (isBotEcho && isBotEcho.fromMe === true && msg.key?.fromMe) return; // Prevent echo loop only if bot itself sent it
+  }
+
+  // Handle WhatsApp Reactions immediately before text / media guards
+  const reactionObj =
+    msg.message?.reactionMessage ||
+    msg.message?.ephemeralMessage?.message?.reactionMessage ||
+    msg.message?.viewOnceMessage?.message?.reactionMessage;
+  if (reactionObj) {
+    const targetWaMsgId = reactionObj.key?.id;
+    const emoji = reactionObj.text || '';
+    if (targetWaMsgId) {
+      const mappedRecord = resolveTgMsgFromWa(targetWaMsgId);
+      if (mappedRecord && mappedRecord.tgMsgId) {
+        for (const mapping of mappings) {
+          if (mapping.sync_reactions !== false) {
+            const bot = getTelegramBotClient(mapping.bot_id);
+            if (bot) {
+              bot
+                .setMessageReaction(mapping.tg_chat_id, mappedRecord.tgMsgId, emoji)
+                .catch((err) => {
+                  logger.warn({ error: err.message }, '⚠️ Failed to sync reaction to Telegram');
+                });
+            }
+          }
+        }
+      }
+    }
+    return; // Reactions handled, do not send as a text message
+  }
+
+  // Guard against blank/empty messages without media (e.g. unhandled protocol nodes)
+  const hasMedia = Boolean(mediaUrl || mediaPath || mediaType);
+  if (!hasMedia && (!textContent || !textContent.trim())) {
+    return;
   }
 
   const contextInfo =
@@ -72,29 +100,6 @@ export async function syncWhatsAppToTelegram(
     }
   }
 
-  const reactionObj = msg.message?.reactionMessage;
-  if (reactionObj) {
-    const targetWaMsgId = reactionObj.key?.id;
-    const emoji = reactionObj.text || '';
-    if (targetWaMsgId) {
-      const mappedRecord = resolveTgMsgFromWa(targetWaMsgId);
-      if (mappedRecord && mappedRecord.tgMsgId) {
-        for (const mapping of mappings) {
-          if (mapping.sync_reactions !== false) {
-            const bot = getTelegramBotClient(mapping.bot_id);
-            if (bot) {
-              bot
-                .setMessageReaction(mapping.tg_chat_id, mappedRecord.tgMsgId, emoji)
-                .catch((err) => {
-                  logger.warn({ error: err.message }, '⚠️ Failed to sync reaction to Telegram');
-                });
-            }
-          }
-        }
-      }
-    }
-    return; // Reactions handled, do not send as a text message
-  }
 
   const isFromMe = Boolean(msg.key?.fromMe);
 

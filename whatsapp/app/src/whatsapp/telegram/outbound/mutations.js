@@ -113,6 +113,29 @@ export async function syncWhatsAppPinToTelegram(
           const tracked = getGroupModerationConfig(waJid)?.pinned_messages?.[waMsgId];
           if (tracked?.text) bodyText = tracked.text;
         }
+        if (!bodyText) {
+          const mapped = resolveTgMsgFromWa(waMsgId);
+          if (mapped?.text) bodyText = mapped.text;
+        }
+        if (!bodyText) {
+          for (const s of sessions.values()) {
+            if (s.messageStore && s.messageStore.has(waMsgId)) {
+              const storedMsg = s.messageStore.get(waMsgId);
+              const mObj = storedMsg?.message;
+              const extText =
+                mObj?.conversation ||
+                mObj?.extendedTextMessage?.text ||
+                mObj?.imageMessage?.caption ||
+                mObj?.videoMessage?.caption ||
+                mObj?.documentMessage?.caption ||
+                '';
+              if (extText) {
+                bodyText = extText;
+                break;
+              }
+            }
+          }
+        }
 
         let body = '';
         const groupModCfg = getGroupModerationConfig(waJid);

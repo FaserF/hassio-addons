@@ -534,12 +534,25 @@ export function handleIncomingMessages(session) {
             { pinnedWaMsgId, targetJid, isPinned },
             '📌 Detected WhatsApp message pin update (protocolMessage PIN_IN_CHAT)'
           );
+          let pinnedText = '';
+          const stored = session.messageStore?.get(pinnedWaMsgId);
+          if (stored?.message) {
+            const mObj = stored.message;
+            pinnedText =
+              mObj?.conversation ||
+              mObj?.extendedTextMessage?.text ||
+              mObj?.imageMessage?.caption ||
+              mObj?.videoMessage?.caption ||
+              mObj?.documentMessage?.caption ||
+              '';
+          }
           if (isPinned) {
             trackPinnedMessage(
               targetJid,
               pinnedWaMsgId,
               pinObj.key?.participant,
-              pinObj.key?.fromMe
+              pinObj.key?.fromMe,
+              pinnedText
             );
           } else {
             untrackPinnedMessage(targetJid, pinnedWaMsgId);
@@ -547,7 +560,14 @@ export function handleIncomingMessages(session) {
           const isGroup = targetJid.endsWith('@g.us');
           const groupName = isGroup ? session.groupCache?.get(targetJid) || targetJid : '';
           const senderName = msg.pushName || session.contactCache?.get(targetJid)?.name || '';
-          syncWhatsAppPinToTelegram(pinnedWaMsgId, targetJid, isPinned, '', senderName, groupName);
+          syncWhatsAppPinToTelegram(
+            pinnedWaMsgId,
+            targetJid,
+            isPinned,
+            pinnedText,
+            senderName,
+            groupName
+          );
         }
       }
     }
