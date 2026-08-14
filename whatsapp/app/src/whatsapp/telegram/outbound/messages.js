@@ -100,7 +100,6 @@ export async function syncWhatsAppToTelegram(
     }
   }
 
-
   const isFromMe = Boolean(msg.key?.fromMe);
 
   for (const mapping of mappings) {

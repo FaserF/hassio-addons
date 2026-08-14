@@ -252,7 +252,12 @@ export async function processTelegramUpdates() {
                     id: mapped.waMsgId,
                     fromMe: isFromMe,
                   };
-                  if (!isFromMe && mapped.waJid.endsWith('@g.us') && mapped.senderJid && mapped.senderJid.includes('@')) {
+                  if (
+                    !isFromMe &&
+                    mapped.waJid.endsWith('@g.us') &&
+                    mapped.senderJid &&
+                    mapped.senderJid.includes('@')
+                  ) {
                     reactionKey.participant = mapped.senderJid;
                   }
                   await session.sock.sendMessage(mapped.waJid, {

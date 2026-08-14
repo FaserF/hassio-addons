@@ -284,15 +284,15 @@ export async function handleModerationMessage(session, event) {
         '🌐 Processing auto-translation for group message'
       );
 
-    const transResult =
-      provider === 'ai'
-        ? await (async () => {
-            const { processAiModeration } = await import('../ai.js');
-            return processAiModeration(text, config.ai || {}, store.gemini_api_key, 'translate', {
-              targetLang,
-            });
-          })()
-        : await translateTextGatewayWithReason(text, targetLang, provider);
+      const transResult =
+        provider === 'ai'
+          ? await (async () => {
+              const { processAiModeration } = await import('../ai.js');
+              return processAiModeration(text, config.ai || {}, store.gemini_api_key, 'translate', {
+                targetLang,
+              });
+            })()
+          : await translateTextGatewayWithReason(text, targetLang, provider);
 
       if (
         transResult?.translation &&
