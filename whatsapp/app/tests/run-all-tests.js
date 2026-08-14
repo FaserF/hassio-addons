@@ -34,7 +34,10 @@ async function run() {
     const { runI18nTests } = await import('./test-i18n.js');
     await runI18nTests();
 
-    console.log('\n--- 8/8 Testing RBAC & WhatsApp Login ---');
+    console.log('\n--- 8/8 Testing STT Engine & Google v2 Parser ---');
+    await import('./test-stt.js');
+
+    console.log('\n--- 9/9 Testing RBAC & WhatsApp Login ---');
     await import('./test-rbac-auth.js');
 
     const duration = ((performance.now() - startTime) / 1000).toFixed(2);

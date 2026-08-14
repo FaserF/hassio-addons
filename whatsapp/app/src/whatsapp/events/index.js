@@ -37,6 +37,7 @@ import {
   handleModerationMessage,
   handleModerationParticipantUpdate,
   deleteTranslationIfExists,
+  updateTranslationIfExists,
   isSelfParticipant,
 } from '../moderation/engine.js';
 import { handleWhatsAppVoiceSTT } from '../sttHandler.js';
@@ -439,6 +440,7 @@ export function handleIncomingMessages(session) {
           const groupName = isGroup ? session.groupCache?.get(targetJid) || targetJid : '';
           const senderName = msg.pushName || session.contactCache?.get(targetJid)?.name || '';
           syncWhatsAppEditToTelegram(editedWaMsgId, targetJid, newText, groupName, senderName);
+          updateTranslationIfExists(session, targetJid, editedWaMsgId, newText);
         }
       } else if (
         protNode &&

@@ -332,13 +332,13 @@ export async function syncWhatsAppEditToTelegram(
             isGroupWa ? mapping.include_sender_name : false,
             mapping.anonymize_phone_numbers
           );
-      let fallbackText = `${fallbackHeader}${editIndicator}:\n${formattedBody}`;
+      let fallbackText = `${fallbackHeader}${editIndicator}:\n${formattedBody || '<i>[No text]</i>'}`;
       const sendOpts = {};
 
       if (mapped && mapped.tgMsgId) {
         sendOpts.reply_to_message_id = Number(mapped.tgMsgId);
       } else {
-        fallbackText = `${fallbackHeader}${editIndicator} ${editOldText}:\n${formattedBody}`;
+        fallbackText = `${fallbackHeader}${editIndicator} ${editOldText}:\n${formattedBody || '<i>[No text]</i>'}`;
       }
 
       try {
