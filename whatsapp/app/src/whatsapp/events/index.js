@@ -36,6 +36,7 @@ startTelegramPolling();
 import {
   handleModerationMessage,
   handleModerationParticipantUpdate,
+  deleteTranslationIfExists,
   isSelfParticipant,
 } from '../moderation/engine.js';
 import { handleWhatsAppVoiceSTT } from '../sttHandler.js';
@@ -419,6 +420,7 @@ export function handleIncomingMessages(session) {
             { deletedId, targetJid },
             '🗑️ Detected WhatsApp message deletion (protocolMessage REVOKE)'
           );
+          deleteTranslationIfExists(session, targetJid, deletedId);
           syncWhatsAppDeleteToTelegram(deletedId, targetJid);
         }
       } else if (

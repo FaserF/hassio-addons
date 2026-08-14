@@ -29,6 +29,34 @@ const userFloodMap = new Map(); // key: groupId:userId -> array of timestamps
 const groupJoinMap = new Map(); // key: groupId -> array of timestamps
 const pendingCaptchas = new Map(); // key: groupId:userId -> { answer, mode, timeoutHandle, timestamp }
 const recentKickReasons = new Map(); // key: groupId:userId -> { reason, expires }
+const _TRANSLATION_MAP = new Map(); // key: groupId:sourceWaId -> { botWaId, botKey }
+
+export function recordTranslationMap(groupId, sourceWaId, botWaId, botKey) {
+  if (!groupId || !sourceWaId || !botWaId) return;
+  const key = `${groupId}:${sourceWaId}`;
+  _TRANSLATION_MAP.set(key, { botWaId, botKey });
+  if (_TRANSLATION_MAP.size > 5000) {
+    const firstKey = _TRANSLATION_MAP.keys().next().value;
+    _TRANSLATION_MAP.delete(firstKey);
+  }
+}
+
+export async function deleteTranslationIfExists(session, groupId, sourceWaId) {
+  if (!groupId || !sourceWaId) return;
+  const key = `${groupId}:${sourceWaId}`;
+  const record = _TRANSLATION_MAP.get(key);
+  if (record) {
+    _TRANSLATION_MAP.delete(key);
+    try {
+      if (session?.sock?.sendMessage && record.botKey) {
+        await session.sock.sendMessage(groupId, { delete: record.botKey });
+        logger.info({ groupId, sourceWaId, botWaId: record.botWaId }, '🗑️ Deleted translated WhatsApp bot message for revoked source message');
+      }
+    } catch (e) {
+      logger.debug({ error: e.message }, 'Failed to delete translated WhatsApp bot message');
+    }
+  }
+}
 
 const PLATFORM_DOMAINS = {
   whatsapp: ['chat\\.whatsapp\\.com', 'wa\\.me', 'wa\\.link', 'whatsapp\\.com\\/channel'],
@@ -1477,12 +1505,15 @@ export async function handleModerationMessage(session, event) {
           targetLang === 'de'
             ? `🌐 *Automatische Übersetzung (${srcCode.toUpperCase()} → ${dstCode.toUpperCase()}):*`
             : `🌐 *Auto Translation (${srcCode.toUpperCase()} → ${dstCode.toUpperCase()}):*`;
-        await reply(
+        const sentTransMsg = await reply(
           session,
           groupId,
           { text: `${header}\n\n"${transResult.translation}"` },
           rawMsg
         );
+        if (sentTransMsg?.key?.id && rawMsg?.key?.id) {
+          recordTranslationMap(groupId, rawMsg.key.id, sentTransMsg.key.id, sentTransMsg.key);
+        }
       }
     }
   }
