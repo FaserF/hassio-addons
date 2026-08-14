@@ -3065,10 +3065,11 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
   const store = loadModerationStore();
   if (!store.global_enabled) return false;
 
+  const isPrivateChat = !groupId || !groupId.endsWith('@g.us');
   const config = getGroupModerationConfig(groupId);
-  if (!config.enabled || !config.commands?.enabled) return false;
+  if (!isPrivateChat && (!config.enabled || !config.commands?.enabled)) return false;
 
-  const prefix = config.commands.prefix || '!';
+  const prefix = config.commands?.prefix || '!';
 
   let rawText = (text || '').trim();
   // Strip code block fence wrappers (e.g. ```!locktypes```)
@@ -3086,9 +3087,15 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
         .replace(/^['"`\s]+|['"`\s]+$/g, '')
         .trim()
     )
-    .filter(
-      (l) => l.length > 0 && (l.startsWith(prefix) || l.startsWith('!') || l.startsWith('/'))
-    );
+    .filter((l) => {
+      if (l.length === 0) return false;
+      if (l.startsWith(prefix) || l.startsWith('!') || l.startsWith('/')) return true;
+      if (isPrivateChat) {
+        const firstWord = l.split(/\s+/)[0].toLowerCase();
+        return registry.getCommand(firstWord) !== undefined;
+      }
+      return false;
+    });
 
   if (rawLines.length === 0) return false;
 
@@ -3273,7 +3280,8 @@ async function executeSingleCommandLine(
     const allCmds = Array.from(new Set([...allBuiltIn, ...allCustom]));
     const suggestions = findCommandSuggestions(cmdStr, allCmds, 3);
 
-    if (isAdminUser || suggestions.length > 0) {
+    const isPrivateChat = !groupId || !groupId.endsWith('@g.us');
+    if (isAdminUser || isPrivateChat || suggestions.length > 0) {
       let suggestText = '';
       if (suggestions.length > 0) {
         suggestText = `\n\n${gt(config, 'bot_replies.did_you_mean')}\n${suggestions.map((s) => `• \`${prefix}${s}\``).join('\n')}`;
