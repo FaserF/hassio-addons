@@ -131,7 +131,10 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
             '✏️ Successfully synchronized edited WhatsApp auto-translation'
           );
         } catch (editErr) {
-          logger.debug({ error: editErr.message }, 'Native WhatsApp translation edit rejected, sending update reply');
+          logger.debug(
+            { error: editErr.message },
+            'Native WhatsApp translation edit rejected, sending update reply'
+          );
           const sentNew = await session.sock.sendMessage(
             groupId,
             { text: updatedText },
