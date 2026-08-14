@@ -338,7 +338,8 @@ export async function syncWhatsAppEditToTelegram(
     if (!m.enabled) return false;
     if (m.sync_mode !== 'bidirectional' && m.sync_mode !== 'outbound') return false;
     if (mapped?.tgChatId && String(m.tg_chat_id) === String(mapped.tgChatId)) return true;
-    if (targetWaJid && m.wa_jid && m.wa_jid.toLowerCase() === targetWaJid.toLowerCase()) return true;
+    if (targetWaJid && m.wa_jid && m.wa_jid.toLowerCase() === targetWaJid.toLowerCase())
+      return true;
     return false;
   });
 
