@@ -65,15 +65,33 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       // 1. Try Free Web Speech Recognition Endpoint
       try {
         const targetLang = groupLang === 'de' ? 'de-DE' : 'en-US';
-        const url = `https://www.google.com/speech-api/v1/recognize?xjerr=1&client=chromium&lang=${targetLang}`;
+        const url = `https://www.google.com/speech-api/v2/recognize?output=json&lang=${targetLang}&key=p66v73-8-4-0-0-0`;
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'audio/ogg; codecs=opus' },
           body: stream,
         });
         if (res.ok) {
-          const data = await res.json();
-          const hyp = data.hypotheses?.[0]?.utterance;
+          const rawText = await res.text();
+          let parsed = null;
+          try {
+            parsed = JSON.parse(rawText);
+          } catch (e) {
+            // Google v2 sometimes returns multi-line chunked JSON
+            const lines = rawText.split('\n').filter((l) => l.trim().length > 0);
+            for (const line of lines) {
+              try {
+                const jsonObj = JSON.parse(line);
+                if (jsonObj.result?.[0]?.alternative?.[0]?.transcript || jsonObj.hypotheses?.[0]?.utterance) {
+                  parsed = jsonObj;
+                  break;
+                }
+              } catch (_err) {}
+            }
+          }
+          const hyp =
+            parsed?.result?.[0]?.alternative?.[0]?.transcript ||
+            parsed?.hypotheses?.[0]?.utterance;
           if (hyp) transcribedText = hyp;
           else errorsCaptured.push(gt('bot_replies.stt_err_free_no_speech'));
         } else if (res.status === 429) {
