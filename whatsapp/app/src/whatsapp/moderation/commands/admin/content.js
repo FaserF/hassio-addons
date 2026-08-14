@@ -8,20 +8,55 @@ import {
 } from '../../../telegram/listener.js';
 import { gt } from '../../engine/translations.js';
 
-export const pinnedMessagesTracker = new Map(); // groupId -> Map of msgId -> { id, participant, fromMe }
+// Persist pinned messages to disk so !unpinall works across bot restarts.
+// Storage: moderation_store -> groups[groupId].pinned_messages -> { [msgId]: { id, participant, fromMe } }
 
 export function trackPinnedMessage(groupId, waMsgId, participant = null, fromMe = false) {
   if (!groupId || !waMsgId) return;
-  if (!pinnedMessagesTracker.has(groupId)) {
-    pinnedMessagesTracker.set(groupId, new Map());
+  try {
+    const store = loadModerationStore();
+    if (!store.groups[groupId]) store.groups[groupId] = getGroupModerationConfig(groupId);
+    if (!store.groups[groupId].pinned_messages) store.groups[groupId].pinned_messages = {};
+    store.groups[groupId].pinned_messages[waMsgId] = { id: waMsgId, participant: participant || null, fromMe: Boolean(fromMe) };
+    saveModerationStore(store);
+  } catch (e) {
+    logger.debug({ error: e.message, groupId, waMsgId }, 'Failed to persist pinned message tracking');
   }
-  pinnedMessagesTracker.get(groupId).set(waMsgId, { id: waMsgId, participant, fromMe });
 }
 
 export function untrackPinnedMessage(groupId, waMsgId) {
   if (!groupId || !waMsgId) return;
-  if (pinnedMessagesTracker.has(groupId)) {
-    pinnedMessagesTracker.get(groupId).delete(waMsgId);
+  try {
+    const store = loadModerationStore();
+    if (store.groups[groupId]?.pinned_messages) {
+      delete store.groups[groupId].pinned_messages[waMsgId];
+      saveModerationStore(store);
+    }
+  } catch (e) {
+    logger.debug({ error: e.message, groupId, waMsgId }, 'Failed to remove pinned message tracking');
+  }
+}
+
+export function getTrackedPinnedMessages(groupId) {
+  if (!groupId) return {};
+  try {
+    const store = loadModerationStore();
+    return store.groups[groupId]?.pinned_messages || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+export function clearTrackedPinnedMessages(groupId) {
+  if (!groupId) return;
+  try {
+    const store = loadModerationStore();
+    if (store.groups[groupId]) {
+      store.groups[groupId].pinned_messages = {};
+      saveModerationStore(store);
+    }
+  } catch (e) {
+    logger.debug({ error: e.message, groupId }, 'Failed to clear pinned message tracking');
   }
 }
 
@@ -267,53 +302,48 @@ export function registerContentCommands(registry) {
     async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
       try {
         let unpinnedCount = 0;
-        const tracked = pinnedMessagesTracker.get(groupId);
-        if (tracked && tracked.size > 0) {
-          for (const [msgId, item] of Array.from(tracked.entries())) {
-            try {
-              const pinKey = {
+        const tracked = getTrackedPinnedMessages(groupId);
+        const pinnedEntries = Object.entries(tracked);
+        logger.info({ groupId, pinnedCount: pinnedEntries.length }, '📌 unpinall: found tracked pins');
+
+        for (const [msgId, item] of pinnedEntries) {
+          try {
+            // Use pinInChatMessage proto format (type 2 = unpin) via sendMessage flat format
+            await session.sock.sendMessage(groupId, {
+              pin: {
                 remoteJid: groupId,
                 id: item.id || msgId,
                 fromMe: Boolean(item.fromMe),
                 ...(item.participant ? { participant: item.participant } : {}),
-              };
+              },
+              type: 0,
+              time: 0,
+            });
+            unpinnedCount++;
+            logger.info({ msgId, groupId }, '📌 unpinall: unpinned message');
+          } catch (err) {
+            // Fallback: nested key format
+            try {
               await session.sock.sendMessage(groupId, {
-                pin: pinKey,
-                type: 0,
-                time: 0,
+                pin: {
+                  key: {
+                    remoteJid: groupId,
+                    id: item.id || msgId,
+                    fromMe: Boolean(item.fromMe),
+                    ...(item.participant ? { participant: item.participant } : {}),
+                  },
+                  type: 0,
+                  time: 0,
+                },
               });
               unpinnedCount++;
-            } catch (err) {
-              try {
-                await session.sock.sendMessage(groupId, {
-                  pin: {
-                    key: {
-                      remoteJid: groupId,
-                      id: item.id || msgId,
-                      fromMe: Boolean(item.fromMe),
-                      ...(item.participant ? { participant: item.participant } : {}),
-                    },
-                    type: 0,
-                    time: 0,
-                  },
-                });
-                unpinnedCount++;
-              } catch (_e) {}
+              logger.info({ msgId, groupId }, '📌 unpinall: unpinned message (fallback format)');
+            } catch (_e) {
+              logger.warn({ msgId, error: _e?.message, groupId }, '📌 unpinall: failed to unpin message');
             }
           }
-          tracked.clear();
         }
-
-        // Also attempt chatModify pin: false and groupSettingUpdate
-        try {
-          await session.sock.chatModify({ pin: false }, groupId);
-        } catch (_waErr) {
-          try {
-            if (typeof session.sock.groupSettingUpdate === 'function') {
-              await session.sock.groupSettingUpdate(groupId, 'not_announcement');
-            }
-          } catch (_fallbackErr) {}
-        }
+        clearTrackedPinnedMessages(groupId);
 
         // Sync unpin-all to Telegram
         syncWhatsAppUnpinAllToTelegram(groupId);

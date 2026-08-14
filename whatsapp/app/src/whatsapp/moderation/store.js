@@ -196,6 +196,7 @@ export function getDefaultGroupConfig() {
       mute_action: 'delete', // WhatsApp limitation: 'delete' un-sends their future messages or restricts group
     },
     federation_id: 'fed_global_default',
+    pinned_messages: {}, // msgId -> { id, participant, fromMe } — persisted across restarts
   };
 }
 

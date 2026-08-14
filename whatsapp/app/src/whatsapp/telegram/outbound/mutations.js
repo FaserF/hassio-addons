@@ -7,6 +7,8 @@ import { formatHeader } from '../headers.js';
 import { getSession, sessions } from '../../../session.js';
 import { logger } from '../../../logger.js';
 import { t } from '../../../locales/loader.js';
+import { getGroupModerationConfig } from '../../moderation/store.js';
+import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 
 export const recentWaEditEvents = new Map();
 export const ignoreWaEditEchoes = new Set();
@@ -236,7 +238,29 @@ export async function syncWhatsAppEditToTelegram(
           mapping.anonymize_phone_numbers
         );
 
-    let processedText = applyRegexReplacements(newText, mapping.regex_replacements || []);
+    let effectiveText = newText;
+    if (mapping.translate_wa_to_tg && newText && newText.trim()) {
+      try {
+        const groupModCfg = getGroupModerationConfig(waJid);
+        const targetLang =
+          groupModCfg?.translation?.target_lang ||
+          groupModCfg?.language ||
+          'en';
+        const transRes = await translateTextGatewayWithReason(newText, targetLang);
+        if (
+          transRes?.translation &&
+          transRes.translation.trim() &&
+          transRes.translation.trim().toLowerCase() !== newText.trim().toLowerCase()
+        ) {
+          const note = `🌐 <i>[Auto-translated -> ${targetLang.toUpperCase()}]</i>\n`;
+          effectiveText = `${note}${transRes.translation}`;
+        }
+      } catch (transErr) {
+        logger.debug({ err: transErr.message }, 'Failed to translate WA->TG edit');
+      }
+    }
+
+    let processedText = applyRegexReplacements(effectiveText, mapping.regex_replacements || []);
     const formattedBody =
       mapping.convert_formatting !== false ? waToTelegramHtml(processedText) : processedText;
     const fullText = `${header}${formattedBody}`;

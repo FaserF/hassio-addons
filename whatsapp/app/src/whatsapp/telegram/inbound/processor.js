@@ -563,9 +563,11 @@ export async function processTelegramUpdates() {
 
           if (mapping.translate_tg_to_wa && tgText && tgText.trim() && !isSystemMsg && !isPinMsg) {
             try {
-              const modStore = loadModerationStore();
-              const groupModCfg = getGroupModerationConfig(modStore, mapping.wa_jid);
-              const targetLang = groupModCfg?.auto_translate_target || 'de';
+              const groupModCfg = getGroupModerationConfig(mapping.wa_jid);
+              const targetLang =
+                groupModCfg?.translation?.target_lang ||
+                groupModCfg?.language ||
+                'de';
               const transRes = await translateTextGatewayWithReason(tgText, targetLang);
               if (
                 transRes?.translation &&
