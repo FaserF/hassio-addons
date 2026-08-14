@@ -15,6 +15,10 @@ import {
   resolveUserDisplayName,
   resolveCanonicalUserKey,
 } from '../../utils/security.js';
+import {
+  syncWhatsAppPinToTelegram,
+  syncWhatsAppUnpinAllToTelegram,
+} from '../telegram/listener.js';
 import { t } from '../../locales/loader.js';
 
 /** Translate a bot-reply key using group config language (fallback: 'en') */
@@ -2775,6 +2779,30 @@ registry.register(
 registry.register(
   'pin',
   async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const quotedMsg = rawMsg?.message?.extendedTextMessage?.contextInfo;
+    const targetMsgId = quotedMsg?.stanzaId || rawMsg?.key?.id;
+    const targetParticipant = quotedMsg?.participant || rawMsg?.key?.remoteJid;
+    const isFromMe = quotedMsg ? quotedMsg.participant === session?.sock?.user?.id : Boolean(rawMsg?.key?.fromMe);
+
+    if (session?.sock?.sendMessage && targetMsgId) {
+      try {
+        await session.sock.sendMessage(groupId, {
+          pin: {
+            key: {
+              remoteJid: groupId,
+              fromMe: isFromMe,
+              id: targetMsgId,
+              ...(targetParticipant ? { participant: targetParticipant } : {}),
+            },
+            type: 1,
+            time: 604800,
+          },
+        });
+      } catch (err) {
+        logger.debug({ error: err.message, targetMsgId }, 'Failed to natively pin message via Baileys');
+      }
+    }
+    syncWhatsAppPinToTelegram(targetMsgId, groupId, true);
     await reply(session, groupId, { text: `📌 *Message Pinned.*` }, rawMsg);
   },
   { adminOnly: true, help: 'Pin a message in group' }
@@ -2783,6 +2811,29 @@ registry.register(
 registry.register(
   'unpin',
   async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const quotedMsg = rawMsg?.message?.extendedTextMessage?.contextInfo;
+    const targetMsgId = quotedMsg?.stanzaId || rawMsg?.key?.id;
+    const targetParticipant = quotedMsg?.participant || rawMsg?.key?.remoteJid;
+    const isFromMe = quotedMsg ? quotedMsg.participant === session?.sock?.user?.id : Boolean(rawMsg?.key?.fromMe);
+
+    if (session?.sock?.sendMessage && targetMsgId) {
+      try {
+        await session.sock.sendMessage(groupId, {
+          pin: {
+            key: {
+              remoteJid: groupId,
+              fromMe: isFromMe,
+              id: targetMsgId,
+              ...(targetParticipant ? { participant: targetParticipant } : {}),
+            },
+            type: 2, // type 2 = unpin in Baileys
+          },
+        });
+      } catch (err) {
+        logger.debug({ error: err.message, targetMsgId }, 'Failed to natively unpin message via Baileys');
+      }
+    }
+    syncWhatsAppPinToTelegram(targetMsgId, groupId, false);
     await reply(session, groupId, { text: `📌 *Message Unpinned.*` }, rawMsg);
   },
   { adminOnly: true, help: 'Unpin a message in group' }
@@ -2791,6 +2842,23 @@ registry.register(
 registry.register(
   'unpinall',
   async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+    const quotedMsg = rawMsg?.message?.extendedTextMessage?.contextInfo;
+    const targetMsgId = quotedMsg?.stanzaId;
+    if (session?.sock?.sendMessage && targetMsgId) {
+      try {
+        await session.sock.sendMessage(groupId, {
+          pin: {
+            key: {
+              remoteJid: groupId,
+              fromMe: Boolean(quotedMsg?.participant === session?.sock?.user?.id),
+              id: targetMsgId,
+            },
+            type: 2,
+          },
+        });
+      } catch (_e) {}
+    }
+    syncWhatsAppUnpinAllToTelegram(groupId);
     await reply(session, groupId, { text: `📌 *All Pinned Messages Removed.*` }, rawMsg);
   },
   { adminOnly: true, help: 'Unpin all messages in group' }

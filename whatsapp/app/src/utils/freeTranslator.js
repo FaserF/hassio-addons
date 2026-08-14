@@ -49,7 +49,10 @@ export async function translateTextFreeWithReason(
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-        const res = await fetch(url, { signal: controller.signal });
+        const res = await fetch(url, {
+          signal: controller.signal,
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+        });
         clearTimeout(timeoutId);
 
         if (res.ok) {
@@ -63,8 +66,8 @@ export async function translateTextFreeWithReason(
             }
           }
         } else if (res.status === 429) {
-          logger.warn('Google Translate API rate-limited (429). Cooldown 5 minutes.');
-          cooldowns.set('google', now + 300000);
+          logger.warn('Google Translate API rate-limited (429). Cooldown 2 minutes.');
+          cooldowns.set('google', now + 120000);
         }
       } catch (err) {
         logger.debug({ error: err.message }, 'Google Translate fallback failed');
@@ -72,29 +75,33 @@ export async function translateTextFreeWithReason(
     }
 
     if (prov === 'lingva') {
-      try {
-        const url = `https://lingva.ml/api/v1/auto/${encodeURIComponent(targetLang)}/${encodeURIComponent(
-          cleanText
-        )}`;
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const lingvaMirrors = [
+        'https://lingva.ml',
+        'https://translate.plausibility.cloud',
+        'https://lingva.lunar.icu',
+      ];
+      for (const mirror of lingvaMirrors) {
+        try {
+          const url = `${mirror}/api/v1/auto/${encodeURIComponent(targetLang)}/${encodeURIComponent(
+            cleanText
+          )}`;
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-        const res = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(timeoutId);
 
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.translation) {
-            const detectedSource = data.info?.detectedSource || null;
-            saveCache(data.translation);
-            return { translation: data.translation, sourceLang: detectedSource, reason: null };
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.translation) {
+              const detectedSource = data.info?.detectedSource || null;
+              saveCache(data.translation);
+              return { translation: data.translation, sourceLang: detectedSource, reason: null };
+            }
           }
-        } else if (res.status === 429) {
-          logger.warn('Lingva Translate rate-limited (429). Cooldown 5 minutes.');
-          cooldowns.set('lingva', now + 300000);
+        } catch (err) {
+          logger.debug({ error: err.message, mirror }, 'Lingva mirror request failed');
         }
-      } catch (err) {
-        logger.debug({ error: err.message }, 'Lingva Translate fallback failed');
       }
     }
 

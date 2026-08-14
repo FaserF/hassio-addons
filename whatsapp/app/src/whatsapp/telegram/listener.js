@@ -6,6 +6,7 @@ import { waToTelegramHtml, telegramToWaFormatting, anonymizePhoneNumber } from '
 import { applyRegexReplacements } from './regex.js';
 import { logger } from '../../logger.js';
 import { getSession, sessions } from '../../session.js';
+import { resolveCanonicalUserKey, resolveUserDisplayName } from '../../utils/security.js';
 import { t } from '../../locales/loader.js';
 
 let pollingTimer = null;
@@ -69,9 +70,32 @@ export async function syncWhatsAppGroupEventToTelegram(
       (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound')
   );
 
-  if (mappings.length === 0) return;
+  // Resolve and deduplicate participants by canonical phone number to prevent duplicate LID/PN notices
+  let session = getSession('default');
+  if (!session || !session.sock || !session.isConnected) {
+    for (const s of sessions.values()) {
+      if (s.sock && s.isConnected) {
+        session = s;
+        break;
+      }
+    }
+  }
 
-  const partNames = participants.map((p) => String(p).split('@')[0]).join(', ');
+  const seenUsers = new Set();
+  const cleanNamesList = [];
+  for (const p of participants) {
+    const rawUser = String(p).split('@')[0];
+    const canonical = resolveCanonicalUserKey(p, session) || rawUser;
+    if (!seenUsers.has(canonical)) {
+      seenUsers.add(canonical);
+      const isLid = String(p).includes('@lid') || (canonical.length >= 14 && canonical.startsWith('1576'));
+      const display = isLid ? (session ? resolveUserDisplayName(p, session) : `@${canonical}`) : canonical;
+      cleanNamesList.push(display);
+    }
+  }
+
+  if (cleanNamesList.length === 0) return;
+  const partNames = cleanNamesList.join(', ');
   let eventText = '';
   if (action === 'add') {
     eventText = `👥 [System: ${partNames || 'Member'} joined WhatsApp group]`;
@@ -190,6 +214,38 @@ export async function syncWhatsAppPinToTelegram(waMsgId, waJid, isPinned = true)
       logger.debug(
         { error: err.message, waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
         'Failed to pin/unpin Telegram message'
+      );
+    }
+  }
+}
+
+export async function syncWhatsAppUnpinAllToTelegram(waJid) {
+  if (!waJid) return;
+  const store = loadTelegramStore();
+  if (!store.enabled) return;
+
+  const mappings = (store.mappings || []).filter(
+    (m) =>
+      m.enabled &&
+      (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound') &&
+      m.sync_pins !== false &&
+      m.wa_jid &&
+      m.wa_jid.toLowerCase() === waJid.toLowerCase()
+  );
+
+  for (const mapping of mappings) {
+    const bot = getTelegramBotClient(mapping.bot_id);
+    if (!bot) continue;
+    try {
+      await bot.unpinallChatMessage(mapping.tg_chat_id);
+      logger.info(
+        { waJid, tgChatId: mapping.tg_chat_id },
+        '📌 Successfully mirrored WhatsApp unpinall to Telegram'
+      );
+    } catch (err) {
+      logger.debug(
+        { error: err.message, waJid, tgChatId: mapping.tg_chat_id },
+        'Failed to unpin all messages in Telegram chat'
       );
     }
   }
@@ -1387,7 +1443,8 @@ export async function processTelegramUpdates() {
                     logger.debug({ error: pinErr.message }, 'Native WhatsApp pin failed');
                   }
                 }
-                if (nativePinOk) continue; // If native pin succeeded, do not send secondary notification text to WA
+                // If native pin succeeded, do not send secondary notification text to WA
+                if (nativePinOk) continue;
               }
 
               if (isEdit) {

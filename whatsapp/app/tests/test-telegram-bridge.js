@@ -145,7 +145,7 @@ describe('Telegram Bridge Unit Tests', () => {
   });
 
   it('deduplicates participant lists with mixed Phone JIDs and LIDs', () => {
-    const raw = ['4917647365403@s.whatsapp.net', '4917647365403@lid'];
+    const raw = ['4917611111111@s.whatsapp.net', '4917611111111@lid'];
     const seenPNs = new Set();
     const normalizedParticipants = [];
     for (const p of raw) {
@@ -156,7 +156,20 @@ describe('Telegram Bridge Unit Tests', () => {
       }
     }
     assert.strictEqual(normalizedParticipants.length, 1);
-    assert.strictEqual(normalizedParticipants[0], '4917647365403@s.whatsapp.net');
+    assert.strictEqual(normalizedParticipants[0], '4917611111111@s.whatsapp.net');
+  });
+
+  it('TelegramBotClient supports pinChatMessage, unpinChatMessage and unpinallChatMessage', async () => {
+    const client = new TelegramBotClient('123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11');
+    assert.strictEqual(typeof client.pinChatMessage, 'function');
+    assert.strictEqual(typeof client.unpinChatMessage, 'function');
+    assert.strictEqual(typeof client.unpinallChatMessage, 'function');
+  });
+
+  it('syncWhatsAppPinToTelegram and syncWhatsAppUnpinAllToTelegram export functions', async () => {
+    const listener = await import('../src/whatsapp/telegram/listener.js');
+    assert.strictEqual(typeof listener.syncWhatsAppPinToTelegram, 'function');
+    assert.strictEqual(typeof listener.syncWhatsAppUnpinAllToTelegram, 'function');
   });
 
   it('validates 16 message and media types in integration test suite coverage', () => {

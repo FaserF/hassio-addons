@@ -361,6 +361,10 @@ export class TelegramBotClient {
     if (messageId) payload.message_id = messageId;
     return await this.request('unpinChatMessage', payload);
   }
+
+  async unpinallChatMessage(chatId) {
+    return await this.request('unpinChatMessage', { chat_id: chatId });
+  }
 }
 
 const botClientsMap = new Map();

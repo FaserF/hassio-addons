@@ -19,7 +19,7 @@ Home Assistant WhatsApp Backend (Baileys/Node.js)
 This app is a "bridge". It does **not** communicate with Home Assistant directly via the Event Bus. Instead, it acts as a server that the **WhatsApp Custom Component** connects to.
 
 **Flow:**
-`Home Assistant` -> `WhatsApp Integration` -> `HTTP (Port 8099)` -> `This App` -> `Baileys (Node.js)` -> `WhatsApp Web`
+`Home Assistant` -> `WhatsApp Integration` -> `HTTP (Port 8066)` -> `This App` -> `Baileys (Node.js)` -> `WhatsApp Web`
 
 ## 🔒 Security & Public Access
 
@@ -167,32 +167,55 @@ Configure the app via the **Configuration** tab in the Home Assistant app page.
 
 ```yaml
 log_level: info
+reset_session: false
 send_message_timeout: 25000
 keep_alive_interval: 30000
 mask_sensitive_data: false
+webhook_enabled: false
+webhook_url: ""
+webhook_token: ""
 ui_auth_enabled: false
-ui_auth_password: ''
+ui_auth_password: ""
+mark_online: false
 media_folder: null
-admin_numbers: ''
-welcome_message_enabled: true
+admin_numbers: ""
+welcome_message_enabled: false
 admin_notifications_enabled: true
+message_send_interval: 1000
+group_fetch_interval: 300000
+group_fetch_cooldown_on_error: 60000
+group_fetch_cooldown_on_rate_limit: 900000
+sync_full_history: false
 reject_unauthorized: true
+auto_install_integration: true
+github_token: ""
 ```
 
 ### Configuration Options
 
 - `log_level`: Level of logs to output (trace, debug, info, warning, error, fatal).
+- `reset_session`: (Default: `false`) Force the app to clear session data on startup and require a new QR code scan.
 - `send_message_timeout`: Time (in ms) to wait for WhatsApp acknowledgement before timing out. Increase if you have slow network.
 - `keep_alive_interval`: Time (in ms) between connection checks to prevent "Stale Connection".
 - `mask_sensitive_data`: If true, `+491761234567` becomes `491*****67` in logs.
+- `webhook_enabled`: (Default: `false`) Enable forwarding incoming messages to a webhook URL.
+- `webhook_url`: The full URL to POST data to (e.g., `https://my-webhook.com/whatsapp`).
+- `webhook_token`: (Optional) A secret token sent in the `X-Webhook-Token` header.
 - `ui_auth_enabled`: Enables Basic Authentication for the Web UI (not the API).
 - `ui_auth_password`: The password for the Web UI (Username is always `admin`).
-- `admin_numbers`: Comma-separated list of phone numbers (e.g. `49176123456, 49176987654`) that are allowed to use `ha-app-*` admin commands.
-- `welcome_message_enabled`: (Default: `true`) If true, the bot sends a role-aware welcome message on first-contact from a new user. Set to `false` (or set env `WELCOME_MESSAGE_ENABLED=false`) to disable.
-- `admin_notifications_enabled`: (Default: `true`) Automatically notifies admins about system health (WhatsApp loss/restore, HA Core/Integration updates, HA restarts).
 - `mark_online`: (Default: `false`) If set to `true`, the app will mark your account as "Online" as long as it's running. Using `false` is recommended to avoid silencing notifications on your mobile phone.
 - `media_folder`: (for example: `/media/whatsapp`) Path to a folder where received media (Images, Videos, Voice) should be saved. If set, files will **NOT** be automatically deleted. If cleared (`null` in the YAML config), files are stored internally and deleted after 24h.
+- `admin_numbers`: Comma-separated list of phone numbers (e.g. `49176123456, 49176987654`) that are allowed to use `ha-app-*` admin commands.
+- `welcome_message_enabled`: (Default: `false`) If true, the bot sends a role-aware welcome message on first-contact from a new user.
+- `admin_notifications_enabled`: (Default: `true`) Automatically notifies admins about system health (WhatsApp loss/restore, HA Core/Integration updates, HA restarts).
+- `message_send_interval`: (Default: `1000`) Delay in milliseconds between consecutive automated outgoing messages.
+- `group_fetch_interval`: (Default: `300000`) Delay in milliseconds between fetching group metadata.
+- `group_fetch_cooldown_on_error`: (Default: `60000`) Cooldown in milliseconds if fetching group metadata fails.
+- `group_fetch_cooldown_on_rate_limit`: (Default: `900000`) Cooldown in milliseconds if fetching group metadata hits a rate limit.
+- `sync_full_history`: (Default: `false`) Attempt to sync full chat history during initial pairing.
 - `reject_unauthorized`: (Default: `true`) Set to `false` to disable SSL/TLS certificate validation (useful if fetching media from local integrations using self-signed certificates, such as Frigate).
+- `auto_install_integration`: (Default: `true`) Automatically install the custom Home Assistant integration if missing.
+- `github_token`: (Optional) GitHub Personal Access Token to avoid API rate limits when checking for updates.
 
 > [!NOTE]
 > **Standalone Docker Environment Variables**: In Standalone Docker mode, all configuration options can be passed via environment variables (case-insensitive, e.g. `WELCOME_MESSAGE_ENABLED=false` or `welcome_message_enabled=false`). Full variable reference available in the **[Configuration Docs](https://faserf.github.io/ha-whatsapp/configuration.html)**.

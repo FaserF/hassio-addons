@@ -103,4 +103,6 @@ export async function runUiRenderTests() {
   }
 }
 
-await runUiRenderTests();
+if (process.argv[1] && process.argv[1].endsWith('test-ui-render.js')) {
+  await runUiRenderTests();
+}

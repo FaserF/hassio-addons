@@ -459,6 +459,30 @@ Payload: `{ "number": "120363000000000000@newsletter" }`
 Add or remove WhatsApp Business labels to/from a chat.
 Payload: `{ "number": "1234567890", "labelId": "1" }`
 
+### 3.5 Telegram Bridge
+
+#### `GET /api/telegram/config` & `POST /api/telegram/config`
+
+Get or update the global Telegram Bridge configuration.
+Payload: `{ "enabled": true, "syncReads": true, "syncTyping": true, ... }`
+
+#### `GET /api/telegram/bots` & `POST /api/telegram/bots`
+
+List all configured Telegram bots or add a new one.
+Payload: `{ "token": "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" }`
+
+#### `DELETE /api/telegram/bots/:id`
+
+Delete a specific Telegram bot from the configuration by its bot ID (e.g., bot numeric ID).
+
+#### `GET /api/telegram/bots/:id/audit`
+
+Run an audit on the Telegram bot to check for missing permissions or configuration issues.
+
+#### `POST /api/telegram/bots/:id/fix`
+
+Attempt to automatically fix issues found during the audit (e.g., set webhook, commands).
+
 ### 4. Native Commands
 
 The App supports several commands sent via WhatsApp messages directly to the bot.

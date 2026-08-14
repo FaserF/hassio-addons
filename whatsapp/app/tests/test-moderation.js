@@ -573,32 +573,40 @@ try {
   );
   console.log('✅ PASSED: Bot Welcome message on join verified successfully');
   // Test 11: isSameUser and LID <-> PN Resolution
+  const mockSessionSelf = {
+    ...mockSession,
+    sock: {
+      ...mockSession.sock,
+      user: { id: '491761234567@s.whatsapp.net', lid: '157600000000001@lid' },
+    },
+    stats: { my_number: '491761234567' },
+  };
   assert.strictEqual(
-    isSameUser('157608354779256@lid', '491761234567@s.whatsapp.net', mockSession),
+    isSameUser('157600000000001@lid', '491761234567@s.whatsapp.net', mockSessionSelf),
     true,
     'LID and PN for self account should match'
   );
   assert.strictEqual(
-    isSameUser('491761234567@s.whatsapp.net', '491761234567@s.whatsapp.net', mockSession),
+    isSameUser('491761234567@s.whatsapp.net', '491761234567@s.whatsapp.net', mockSessionSelf),
     true,
     'Identical JIDs should match'
   );
   assert.strictEqual(
-    isSameUser('491761234567@s.whatsapp.net', '491769999999@s.whatsapp.net', mockSession),
+    isSameUser('491761234567@s.whatsapp.net', '491769999999@s.whatsapp.net', mockSessionSelf),
     false,
     'Different users should not match'
   );
 
-  const resolvedPn = resolveCanonicalUserKey('157608354779256', mockSession);
+  const resolvedPn = resolveCanonicalUserKey('157600000000001', mockSessionSelf);
   assert.strictEqual(resolvedPn, '491761234567', 'Self LID should resolve to canonical PN');
 
-  const displayName = resolveUserDisplayName('491761234567', mockSession);
+  const displayName = resolveUserDisplayName('491761234567', mockSessionSelf);
   assert(displayName.includes('491761234567'), 'Display name should include canonical PN');
   console.log('✅ PASSED: isSameUser and LID resolution verified successfully');
 
   // Test normalizeJid and ReDoS safety
   assert.strictEqual(normalizeJid('491761234567:0@s.whatsapp.net'), '491761234567@s.whatsapp.net');
-  assert.strictEqual(normalizeJid('157608354779256:12@lid'), '157608354779256@lid');
+  assert.strictEqual(normalizeJid('157600000000001:12@lid'), '157600000000001@lid');
   assert.strictEqual(normalizeJid('491761234567@s.whatsapp.net'), '491761234567@s.whatsapp.net');
   assert.strictEqual(normalizeJid(':'.repeat(1000) + '@s.whatsapp.net'), '@s.whatsapp.net');
   assert.strictEqual(normalizeJid(':'.repeat(1000)), ':'.repeat(1000));
@@ -729,13 +737,13 @@ try {
   await handleModerationParticipantUpdate(mockSessionCaptchaTest, {
     id: '1203630999999999@g.us',
     action: 'add',
-    participants: ['4917647365403@s.whatsapp.net'],
+    participants: ['4917611111111@s.whatsapp.net'],
   });
 
   // Verify pending captcha exists
   const pendingCap = findPendingCaptcha(
     '1203630999999999@g.us',
-    '4917647365403',
+    '4917611111111',
     mockSessionCaptchaTest
   );
   assert(pendingCap, 'Pending captcha entry should exist after participant update');
@@ -745,7 +753,7 @@ try {
   captchaReplies = [];
   const wrongHandled = await handleModerationMessage(mockSessionCaptchaTest, {
     sender: '1203630999999999@g.us',
-    sender_number: '4917647365403',
+    sender_number: '4917611111111',
     content: 'WRONGCODE',
     raw: { key: { id: 'msgWrong' } },
   });
@@ -761,7 +769,7 @@ try {
   captchaReplies = [];
   const validHandled = await handleModerationMessage(mockSessionCaptchaTest, {
     sender: '1203630999999999@g.us',
-    sender_number: '4917647365403',
+    sender_number: '4917611111111',
     content: `*${actualCode}*`,
     raw: { key: { id: 'msgValid' } },
   });
@@ -773,7 +781,7 @@ try {
   );
   const pendingCapAfter = findPendingCaptcha(
     '1203630999999999@g.us',
-    '4917647365403',
+    '4917611111111',
     mockSessionCaptchaTest
   );
   assert.strictEqual(pendingCapAfter, null, 'Pending captcha should be cleared after valid code');
