@@ -332,11 +332,13 @@ export async function syncWhatsAppEditToTelegram(
     return;
   }
 
+  const targetWaJid = waJid || mapped?.waJid || '';
+
   const targetMappings = (store.mappings || []).filter((m) => {
     if (!m.enabled) return false;
     if (m.sync_mode !== 'bidirectional' && m.sync_mode !== 'outbound') return false;
     if (mapped?.tgChatId && String(m.tg_chat_id) === String(mapped.tgChatId)) return true;
-    if (waJid && m.wa_jid && m.wa_jid.toLowerCase() === waJid.toLowerCase()) return true;
+    if (targetWaJid && m.wa_jid && m.wa_jid.toLowerCase() === targetWaJid.toLowerCase()) return true;
     return false;
   });
 
@@ -346,7 +348,7 @@ export async function syncWhatsAppEditToTelegram(
     if (!bot) continue;
 
     const effectiveSenderName = senderName || mapped?.senderName || '';
-    const isGroupWa = waJid.endsWith('@g.us');
+    const isGroupWa = targetWaJid.endsWith('@g.us');
     const isDirectMirror = Boolean(mapping.is_direct_chat_mirror);
     const header = isDirectMirror
       ? ''
@@ -359,13 +361,14 @@ export async function syncWhatsAppEditToTelegram(
         );
 
     let effectiveText = newText;
-    const groupModCfg = getGroupModerationConfig(waJid);
+    const groupModCfg = getGroupModerationConfig(targetWaJid);
     const isTranslateActive =
       Boolean(mapping.translate_wa_to_tg) ||
       (groupModCfg?.translation?.enabled !== false &&
         (groupModCfg?.translation?.mode === 'auto' ||
           groupModCfg?.translation?.mode === 'forwards'));
 
+    let translationBanner = '';
     if (isTranslateActive && newText && newText.trim()) {
       try {
         const targetLang = groupModCfg?.translation?.target_lang || groupModCfg?.language || 'en';
@@ -376,8 +379,8 @@ export async function syncWhatsAppEditToTelegram(
           transRes.translation.trim() &&
           transRes.translation.trim().toLowerCase() !== newText.trim().toLowerCase()
         ) {
-          const note = `🌐 <i>[Auto-translated -> ${targetLang.toUpperCase()}]</i>\n`;
-          effectiveText = `${note}${transRes.translation}`;
+          translationBanner = `🌐 <i>[Auto-translated -> ${targetLang.toUpperCase()}]</i>\n`;
+          effectiveText = transRes.translation;
         }
       } catch (transErr) {
         logger.debug({ err: transErr.message }, 'Failed to translate WA->TG edit');
@@ -387,7 +390,7 @@ export async function syncWhatsAppEditToTelegram(
     let processedText = applyRegexReplacements(effectiveText, mapping.regex_replacements || []);
     const formattedBody =
       mapping.convert_formatting !== false ? waToTelegramHtml(processedText) : processedText;
-    const fullText = `${header}${formattedBody}`;
+    const fullText = `${header}${translationBanner}${formattedBody}`;
 
     let editSucceeded = false;
     if (mapped && mapped.tgMsgId && mapped.tgChatId) {

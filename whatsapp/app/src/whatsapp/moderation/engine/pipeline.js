@@ -182,7 +182,6 @@ export async function handleModerationMessage(session, event) {
           : filter.response;
 
         await reply(session, groupId, { text: replyText }, rawMsg);
-        // Execute filter action if defined & user is not admin
         if (filter.action && filter.action !== 'reply' && !isGroupAdminUser) {
           if (rawMsg?.key?.id) {
             try {
@@ -199,8 +198,9 @@ export async function handleModerationMessage(session, event) {
               rawMsg
             );
           }
+          return true;
         }
-        return true;
+        break;
       }
     }
   }

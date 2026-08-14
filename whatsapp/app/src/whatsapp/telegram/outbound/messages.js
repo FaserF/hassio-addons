@@ -139,6 +139,7 @@ export async function syncWhatsAppToTelegram(
           (groupModCfg?.translation?.mode === 'auto' ||
             groupModCfg?.translation?.mode === 'forwards'));
 
+      let translationBanner = '';
       if (isTranslateActive && textContent && textContent.trim()) {
         try {
           const targetLang = groupModCfg?.translation?.target_lang || groupModCfg?.language || 'en';
@@ -149,8 +150,8 @@ export async function syncWhatsAppToTelegram(
             transRes.translation.trim() &&
             transRes.translation.trim().toLowerCase() !== textContent.trim().toLowerCase()
           ) {
-            const note = `🌐 <i>[Auto-translated -> ${targetLang.toUpperCase()}]</i>\n`;
-            effectiveText = `${note}${transRes.translation}`;
+            translationBanner = `🌐 <i>[Auto-translated -> ${targetLang.toUpperCase()}]</i>\n`;
+            effectiveText = transRes.translation;
           }
         } catch (transErr) {
           logger.debug({ err: transErr.message }, 'Failed to translate WA->TG message');
@@ -162,7 +163,7 @@ export async function syncWhatsAppToTelegram(
         mapping.convert_formatting !== false
           ? waToTelegramHtml(processedText)
           : processedText || '';
-      const fullText = `${header}${quotedTextFallback}${formattedBody}`;
+      const fullText = `${header}${quotedTextFallback}${translationBanner}${formattedBody}`;
 
       const silent = Boolean(mapping.silent_delivery);
       const threadId = mapping.tg_thread_id || null;
