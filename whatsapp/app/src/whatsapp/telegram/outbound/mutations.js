@@ -115,17 +115,22 @@ export async function syncWhatsAppPinToTelegram(
         }
 
         let body = '';
-        const lang = store.language || 'en';
+        const groupModCfg = getGroupModerationConfig(waJid);
+        const lang = groupModCfg?.language || store.language || 'de';
         if (bodyText && bodyText.trim()) {
           const cleanText = bodyText.trim();
           const cmdMatch = cleanText.match(/^[!/#]\s*([a-zA-Z0-9_]+)/i);
           const cmdName = cmdMatch ? cmdMatch[1].toLowerCase() : null;
           const regCmd = cmdName ? registry.getCommand(cmdName) : null;
 
-          if (regCmd && regCmd.help) {
+          if (regCmd) {
+            const localizedHelp =
+              t(lang, `bot_replies.cmd_${cmdName}_desc`) ||
+              (regCmd.name ? t(lang, `bot_replies.cmd_${regCmd.name}_desc`) : null) ||
+              regCmd.help;
             body = t(lang, 'bot_replies.pinned_command_detail', {
               cmd: cleanText,
-              help: regCmd.help,
+              help: localizedHelp,
             });
           } else {
             body = waToTelegramHtml(cleanText);
