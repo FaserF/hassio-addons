@@ -9,9 +9,7 @@ const geminiResponse = {
   candidates: [
     {
       content: {
-        parts: [
-          { text: 'Hallo Test Sprachnachricht' },
-        ],
+        parts: [{ text: 'Hallo Test Sprachnachricht' }],
       },
     },
   ],
