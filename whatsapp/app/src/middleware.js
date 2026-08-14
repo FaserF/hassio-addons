@@ -196,3 +196,13 @@ export const apiLimiter = rateLimit({
   skip: (req) => isPrivateIP(req.ip || req.socket?.remoteAddress),
   validate: { trustProxy: false },
 });
+
+export const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10, // Strict limit against brute force OTP attempts
+  message: { success: false, error: 'rate_limited', message: 'Too many authentication attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { trustProxy: false },
+});
+

@@ -14,6 +14,8 @@ jobs:
   whatsapp-live-integration-test:
     name: WhatsApp Addon App <-> HA Integration Live Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout hassio-addons
         uses: actions/checkout@v7

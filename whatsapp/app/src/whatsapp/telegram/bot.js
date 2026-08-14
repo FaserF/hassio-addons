@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { loadTelegramStore, updateCachedChat } from './store.js';
+import { stripHtmlTags } from './format.js';
 
 const TELEGRAM_TOKEN_REGEX = /^[0-9]{6,}:[A-Za-z0-9_-]{20,}$/;
 
@@ -213,7 +214,7 @@ export class TelegramBotClient {
             parse_mode: 'HTML',
           });
         } catch (_capErr) {
-          const plainText = text.replace(/<[^>]+>/g, '');
+          const plainText = stripHtmlTags(text);
           return await this.request('editMessageCaption', {
             chat_id: chatId,
             message_id: messageId,
@@ -221,7 +222,7 @@ export class TelegramBotClient {
           });
         }
       }
-      const plainText = text.replace(/<[^>]+>/g, '');
+      const plainText = stripHtmlTags(text);
       return await this.request('editMessageText', {
         chat_id: chatId,
         message_id: messageId,

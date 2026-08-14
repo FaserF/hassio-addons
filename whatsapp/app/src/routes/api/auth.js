@@ -9,11 +9,12 @@ import {
 } from '../../rbac.js';
 import { getSession } from '../../session.js';
 import { logger } from '../../logger.js';
+import { authLimiter } from '../../middleware.js';
 
 const router = express.Router();
 
 // Request 6-digit OTP via WhatsApp
-router.post('/request-otp', async (req, res) => {
+router.post('/request-otp', authLimiter, async (req, res) => {
   const { phone } = req.body || {};
   const result = requestOtpCode(phone);
 
@@ -58,7 +59,7 @@ router.post('/request-otp', async (req, res) => {
 });
 
 // Verify 6-digit OTP
-router.post('/verify-otp', (req, res) => {
+router.post('/verify-otp', authLimiter, (req, res) => {
   const { phone, code } = req.body || {};
   const result = verifyOtpCode(phone, code);
 

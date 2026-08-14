@@ -10,7 +10,7 @@ export function waToTelegramHtml(text) {
   let out = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
   // Markdown links [Text](URL) -> <a href="URL">Text</a>
-  out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi, '<a href="$2">$1</a>');
+  out = out.replace(/\[([^\]\r\n]{1,500})\]\((https?:\/\/[^\s)\r\n]{1,2000})\)/gi, '<a href="$2">$1</a>');
   // Code blocks ```text```
   out = out.replace(/```([\s\S]*?)```/g, '<code>$1</code>');
   // Monospace `text`
@@ -22,6 +22,20 @@ export function waToTelegramHtml(text) {
   // Strikethrough ~text~
   out = out.replace(/(^|\s|\W)~([^~\n]+)~(?=\W|\s|$)/g, '$1<s>$2</s>');
 
+  return out;
+}
+
+/**
+ * Safely strip all HTML tags from a string without regex backtracking or incomplete sanitization.
+ */
+export function stripHtmlTags(str) {
+  if (!str) return '';
+  let out = String(str);
+  let prev;
+  do {
+    prev = out;
+    out = out.replace(/<[^>]*>/g, '');
+  } while (out !== prev && out.includes('<'));
   return out;
 }
 
@@ -75,14 +89,8 @@ export function telegramToWaFormatting(text, entities = null) {
   out = out.replace(/<code>([\s\S]*?)<\/code>/gi, '```$1```');
   out = out.replace(/<pre>([\s\S]*?)<\/pre>/gi, '```$1```');
 
-  // Strip remaining HTML tags iteratively until no more tags remain
-  let prev;
-  do {
-    prev = out;
-    out = out.replace(/<[^>]+>/g, '');
-  } while (out !== prev);
-
-  return out;
+  // Strip remaining HTML tags safely
+  return stripHtmlTags(out);
 }
 
 /**
