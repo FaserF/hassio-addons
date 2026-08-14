@@ -89,11 +89,17 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
     const transResult =
       provider === 'ai'
         ? await (async () => {
-            const { processAiModeration } = await import('./ai.js');
-            return processAiModeration(newText, config.ai || {}, store.gemini_api_key, 'translate', {
+          const { processAiModeration } = await import('./ai.js');
+          return processAiModeration(
+            newText,
+            config.ai || {},
+            store.gemini_api_key,
+            'translate',
+            {
               targetLang,
-            });
-          })()
+            }
+          );
+        })()
         : await translateTextFreeWithReason(newText, targetLang, provider);
 
     if (
@@ -561,7 +567,7 @@ export async function executePenalty(session, groupId, userId, action, reason = 
             if (foundPart?.id) {
               candidateJids.push(foundPart.id);
             }
-          } catch (_err) {}
+          } catch (_err) { }
         }
         if (cleanDigits && !candidateJids.includes(`${cleanDigits}@s.whatsapp.net`)) {
           candidateJids.push(`${cleanDigits}@s.whatsapp.net`);
@@ -919,7 +925,7 @@ export async function handleModerationMessage(session, event) {
       if (rawMsg?.key?.id) {
         try {
           await session.sock.sendMessage(groupId, { delete: rawMsg.key });
-        } catch (_e) {}
+        } catch (_e) { }
       }
       const action = config.name_ban_action || 'ban';
       await executePenalty(
@@ -948,7 +954,7 @@ export async function handleModerationMessage(session, event) {
       if (filter.is_regex) {
         try {
           isMatch = new RegExp(filter.trigger, 'i').test(text);
-        } catch (e) {}
+        } catch (e) { }
       } else {
         const cleanTrigger = filter.trigger.toLowerCase().trim();
         const lowerText = text.toLowerCase().trim();
@@ -969,7 +975,7 @@ export async function handleModerationMessage(session, event) {
           if (rawMsg?.key?.id) {
             try {
               await session.sock.sendMessage(groupId, { delete: rawMsg.key });
-            } catch (e) {}
+            } catch (e) { }
           }
           if (filter.action !== 'delete') {
             await executePenalty(
@@ -1181,7 +1187,7 @@ export async function handleModerationMessage(session, event) {
             try {
               const meta = await session.sock.groupMetadata(groupId);
               if (meta?.subject) groupName = meta.subject;
-            } catch (_e) {}
+            } catch (_e) { }
           }
 
           // Send confirmation — DM if captcha was sent via DM, otherwise group
@@ -1426,7 +1432,7 @@ export async function handleModerationMessage(session, event) {
         if (rawMsg?.key?.id) {
           try {
             await session.sock.sendMessage(groupId, { delete: rawMsg.key });
-          } catch (e) {}
+          } catch (e) { }
         }
         const blAction = config.blacklist.action || 'delete';
         if (config.antispam?.notify_deleted_action !== false) {
@@ -1463,7 +1469,7 @@ export async function handleModerationMessage(session, event) {
       if (rawMsg?.key?.id) {
         try {
           await session.sock.sendMessage(groupId, { delete: rawMsg.key });
-        } catch (e) {}
+        } catch (e) { }
       }
       await reply(session, groupId, { text: gt(config, 'bot_replies.ai_guard_deleted') }, rawMsg);
       await executePenalty(
@@ -1549,11 +1555,11 @@ export async function handleModerationMessage(session, event) {
     const transResult =
       provider === 'ai'
         ? await (async () => {
-            const { processAiModeration } = await import('./ai.js');
-            return processAiModeration(text, config.ai || {}, store.gemini_api_key, 'translate', {
-              targetLang,
-            });
-          })()
+          const { processAiModeration } = await import('./ai.js');
+          return processAiModeration(text, config.ai || {}, store.gemini_api_key, 'translate', {
+            targetLang,
+          });
+        })()
         : await translateTextFreeWithReason(text, targetLang, provider);
 
     if (
@@ -1956,7 +1962,7 @@ export async function handleModerationParticipantUpdate(session, update) {
           try {
             const meta = await session.sock.groupMetadata(groupId);
             if (meta?.subject) groupTitle = meta.subject;
-          } catch (_e) {}
+          } catch (_e) { }
         }
         try {
           await session.sock.sendMessage(participantJid, {
@@ -2075,7 +2081,7 @@ export async function handleModerationParticipantUpdate(session, update) {
               rawMsg,
               { skipSpamGuard: true }
             );
-          } catch (_err) {}
+          } catch (_err) { }
           continue;
         }
       }
