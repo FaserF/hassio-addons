@@ -622,7 +622,10 @@ export async function processTelegramUpdates() {
                       );
                     }
                   } catch (bridgeErr) {
-                    logger.debug({ error: bridgeErr.message }, 'Failed to send unmapped pinned TG message to WhatsApp');
+                    logger.debug(
+                      { error: bridgeErr.message },
+                      'Failed to send unmapped pinned TG message to WhatsApp'
+                    );
                   }
                 }
 

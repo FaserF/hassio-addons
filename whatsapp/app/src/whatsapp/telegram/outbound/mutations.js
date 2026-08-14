@@ -59,7 +59,14 @@ export async function syncWhatsAppDeleteToTelegram(waMsgId, waJid) {
   }
 }
 
-export async function syncWhatsAppPinToTelegram(waMsgId, waJid, isPinned = true, rawText = '', senderName = '', groupName = '') {
+export async function syncWhatsAppPinToTelegram(
+  waMsgId,
+  waJid,
+  isPinned = true,
+  rawText = '',
+  senderName = '',
+  groupName = ''
+) {
   if (!waMsgId) return;
   const store = loadTelegramStore();
   if (!store.enabled) return;
@@ -114,7 +121,10 @@ export async function syncWhatsAppPinToTelegram(waMsgId, waJid, isPinned = true,
           recordMessageMap(waMsgId, targetTgChatId, sent.message_id, waJid, false, senderName);
         }
       } catch (sendErr) {
-        logger.debug({ error: sendErr.message }, 'Failed to send unmapped pinned message to Telegram');
+        logger.debug(
+          { error: sendErr.message },
+          'Failed to send unmapped pinned message to Telegram'
+        );
       }
     }
 
@@ -248,7 +258,8 @@ export async function syncWhatsAppEditToTelegram(
   const store = loadTelegramStore();
   if (!store.enabled) return;
 
-  const mapped = resolveTgMsgFromWa(waMsgId) || (rawMsgKeyId ? resolveTgMsgFromWa(rawMsgKeyId) : null);
+  const mapped =
+    resolveTgMsgFromWa(waMsgId) || (rawMsgKeyId ? resolveTgMsgFromWa(rawMsgKeyId) : null);
   const targetMappings = (store.mappings || []).filter((m) => {
     if (!m.enabled) return false;
     if (m.sync_mode !== 'bidirectional' && m.sync_mode !== 'outbound') return false;
