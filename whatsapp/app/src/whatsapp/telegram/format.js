@@ -10,7 +10,10 @@ export function waToTelegramHtml(text) {
   let out = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
   // Markdown links [Text](URL) -> <a href="URL">Text</a>
-  out = out.replace(/\[([^\]\r\n]{1,500})\]\((https?:\/\/[^\s)\r\n]{1,2000})\)/gi, '<a href="$2">$1</a>');
+  out = out.replace(
+    /\[([^\]\r\n]{1,500})\]\((https?:\/\/[^\s)\r\n]{1,2000})\)/gi,
+    '<a href="$2">$1</a>'
+  );
   // Code blocks ```text```
   out = out.replace(/```([\s\S]*?)```/g, '<code>$1</code>');
   // Monospace `text`
