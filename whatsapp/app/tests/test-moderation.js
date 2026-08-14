@@ -64,7 +64,7 @@ try {
   // Mock session object
   const mockSession = {
     sock: {
-      user: { id: '491761234567@s.whatsapp.net', lid: '157608354779256@lid' },
+      user: { id: '491761234567@s.whatsapp.net', lid: '100000000000000@lid' },
       sendMessage: async () => ({ key: { id: 'test' } }),
       sendMessageAck: async () => {},
       groupParticipantsUpdate: async () => {},
