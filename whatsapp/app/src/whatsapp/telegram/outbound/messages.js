@@ -476,7 +476,8 @@ export async function syncWhatsAppToTelegram(
           isFromMe,
           senderName,
           senderJid,
-          textContent
+          textContent,
+          'wa'
         );
       }
     } catch (err) {

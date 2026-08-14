@@ -324,7 +324,7 @@ export async function syncWhatsAppEditToTelegram(
     resolveTgMsgFromWa(waMsgId) || (rawMsgKeyId ? resolveTgMsgFromWa(rawMsgKeyId) : null);
 
   // If this message was sent to WhatsApp from Telegram (bridge echo), do NOT mirror it back to Telegram
-  if (mapped && mapped.fromMe === true) {
+  if (mapped && mapped.origin === 'tg') {
     logger.debug(
       { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
       'Skipping WhatsApp edit mirror for message originated from Telegram'
@@ -396,6 +396,17 @@ export async function syncWhatsAppEditToTelegram(
         const editRes = await bot.editMessageText(mapped.tgChatId, mapped.tgMsgId, fullText);
         if (editRes && (editRes.message_id || editRes.ok || editRes.result)) {
           editSucceeded = true;
+          recordMessageMap(
+            waMsgId,
+            mapped.tgChatId,
+            mapped.tgMsgId,
+            waJid,
+            mapped.fromMe,
+            effectiveSenderName,
+            mapped.senderJid || '',
+            newText,
+            mapped.origin || 'wa'
+          );
           logger.info(
             { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
             '✏️ Successfully mirrored WhatsApp message edit natively to Telegram'

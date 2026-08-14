@@ -932,7 +932,10 @@ export async function processTelegramUpdates() {
                   msg.message_id,
                   mapping.wa_jid,
                   true,
-                  senderName
+                  senderName,
+                  '',
+                  outboundWaText,
+                  'tg'
                 );
               }
             } catch (waErr) {
