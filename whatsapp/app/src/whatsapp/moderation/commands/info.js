@@ -314,7 +314,17 @@ export function registerInfoCommands(registry) {
   registry.register(
     'about',
     async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
-      const msg = gt(config, 'bot_replies.about_text');
+      const version = process.env.npm_package_version || '2.0.0';
+      const serverVersion =
+        process.env.ADDON_VERSION ||
+        process.env.SERVER_VERSION ||
+        process.env.APP_VERSION ||
+        process.env.VERSION ||
+        'standalone';
+      const msg = gt(config, 'bot_replies.about_text', {
+        version,
+        server_version: serverVersion,
+      });
       await reply(session, groupId, { text: msg }, rawMsg);
     },
     { help: 'Displays project description, version, docs, repo, and support links' }

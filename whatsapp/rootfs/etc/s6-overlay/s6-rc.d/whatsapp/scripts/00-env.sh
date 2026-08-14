@@ -13,6 +13,16 @@ if [ -f /etc/environment ]; then
 	[ -n "${ALPINE_VERSION:-}" ] && export ALPINE_VERSION
 fi
 
+# Detect Addon / Server version
+ADDON_VER=""
+if ! ADDON_VER=$(bashio::app.version 2>/dev/null); then
+	if ! ADDON_VER=$(bashio::addon.version 2>/dev/null); then
+		ADDON_VER="${APP_VERSION:-unknown}"
+	fi
+fi
+export ADDON_VERSION="${ADDON_VER:-unknown}"
+export SERVER_VERSION="${ADDON_VER:-unknown}"
+
 bashio::log.info "Starting WhatsApp Home Assistant App (Baileys)..."
 
 export PORT=8066
