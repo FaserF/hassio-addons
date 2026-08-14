@@ -3637,7 +3637,13 @@ function renderTelegramMappings(mappings, bots = []) {
       const assignedBot = bots.find((b) => b.id === m.bot_id);
       const botLabel = assignedBot ? `@${assignedBot.username}` : 'Default Bot';
 
-      const waTitle = m.wa_name && m.wa_name !== m.wa_jid ? m.wa_name : '';
+      let waTitle = m.wa_name && m.wa_name !== m.wa_jid ? m.wa_name : '';
+      if (waTitle === '__ME_SELF_BOT__' || m.wa_jid === '__ME_SELF_BOT__') {
+        waTitle = (window.t ? window.t('chats.me_self') : null) || 'Me / Self (Bot Account)';
+      } else if (typeof waTitle === 'string' && waTitle.startsWith('__GROUP_FALLBACK__:')) {
+        waTitle = `${(window.t ? window.t('common.group') : null) || 'Group'} (${waTitle.split(':')[1]})`;
+      }
+
       const tgTitle =
         m.tg_chat_title && !m.tg_chat_title.startsWith('Chat ') ? m.tg_chat_title : '';
 
@@ -3645,7 +3651,7 @@ function renderTelegramMappings(mappings, bots = []) {
       const cleanTg = tgTitle || `TG ${m.tg_chat_id}`;
       const threadLabel = m.tg_thread_id ? ` (Topic ${m.tg_thread_id})` : '';
       const autoName = `${cleanWa} ↔ ${cleanTg}${threadLabel}`;
-      const displayName = m.name || autoName;
+      const displayName = m.name === '__ME_SELF_BOT__' ? waTitle : m.name || autoName;
 
       const waDisplay = waTitle
         ? `<strong>${escapeHtml(waTitle)}</strong><br><small style="color:var(--text-muted);">(${escapeHtml(m.wa_jid)})</small>`

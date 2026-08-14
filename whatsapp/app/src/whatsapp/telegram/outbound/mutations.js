@@ -395,35 +395,42 @@ export async function syncWhatsAppEditToTelegram(
 
     let editSucceeded = false;
     if (mapped && mapped.tgMsgId && mapped.tgChatId) {
-      try {
-        ignoreTgEditEchoes.add(String(mapped.tgMsgId));
-        const editRes = await bot.editMessageText(mapped.tgChatId, mapped.tgMsgId, fullText);
-        if (editRes && (editRes.message_id || editRes.ok || editRes.result)) {
-          editSucceeded = true;
-          recordMessageMap(
-            waMsgId,
-            mapped.tgChatId,
-            mapped.tgMsgId,
-            waJid,
-            mapped.fromMe,
-            effectiveSenderName,
-            mapped.senderJid || '',
-            newText,
-            mapped.origin || 'wa'
+      const activeBot =
+        bot ||
+        getTelegramBotClient(mapping?.bot_id) ||
+        getTelegramBotClient() ||
+        (store.bots && store.bots[0] ? getTelegramBotClient(store.bots[0].id) : null);
+      if (activeBot) {
+        try {
+          ignoreTgEditEchoes.add(String(mapped.tgMsgId));
+          const editRes = await activeBot.editMessageText(mapped.tgChatId, mapped.tgMsgId, fullText);
+          if (editRes && (editRes.message_id || editRes.ok || editRes.result)) {
+            editSucceeded = true;
+            recordMessageMap(
+              waMsgId,
+              mapped.tgChatId,
+              mapped.tgMsgId,
+              targetWaJid || waJid,
+              mapped.fromMe,
+              effectiveSenderName,
+              mapped.senderJid || '',
+              newText,
+              mapped.origin || 'wa'
+            );
+            logger.info(
+              { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+              '✏️ Successfully mirrored WhatsApp message edit natively to Telegram'
+            );
+          } else {
+            throw new Error(editRes?.description || 'Telegram edit returned unexpected response');
+          }
+        } catch (err) {
+          ignoreTgEditEchoes.delete(String(mapped.tgMsgId));
+          logger.warn(
+            { error: err.message, waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+            '⚠️ Native Telegram editMessageText failed, attempting reply fallback'
           );
-          logger.info(
-            { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
-            '✏️ Successfully mirrored WhatsApp message edit natively to Telegram'
-          );
-        } else {
-          throw new Error(editRes?.description || 'Telegram edit returned unexpected response');
         }
-      } catch (err) {
-        ignoreTgEditEchoes.delete(String(mapped.tgMsgId));
-        logger.info(
-          { error: err.message, waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
-          'Native Telegram editMessageText failed, attempting reply fallback'
-        );
       }
     }
 
