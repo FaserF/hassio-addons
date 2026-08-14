@@ -40,6 +40,7 @@ import {
   updateTranslationIfExists,
   isSelfParticipant,
 } from '../moderation/engine.js';
+import { trackPinnedMessage, untrackPinnedMessage } from '../moderation/commands/admin/content.js';
 import { handleWhatsAppVoiceSTT } from '../sttHandler.js';
 import { processCommand } from '../moderation/commands.js';
 
@@ -527,6 +528,11 @@ export function handleIncomingMessages(session) {
             { pinnedWaMsgId, targetJid, isPinned },
             '📌 Detected WhatsApp message pin update (protocolMessage PIN_IN_CHAT)'
           );
+          if (isPinned) {
+            trackPinnedMessage(targetJid, pinnedWaMsgId, pinObj.key?.participant, pinObj.key?.fromMe);
+          } else {
+            untrackPinnedMessage(targetJid, pinnedWaMsgId);
+          }
           syncWhatsAppPinToTelegram(pinnedWaMsgId, targetJid, isPinned);
         }
       }

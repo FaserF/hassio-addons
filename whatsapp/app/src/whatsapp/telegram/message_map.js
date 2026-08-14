@@ -88,11 +88,17 @@ export function resolveTgMsgFromWa(waMsgId) {
   const store = loadTelegramStore();
   if (!store.message_maps) return null;
 
-  const directKey = `wa:${waMsgId}`;
+  const cleanId = String(waMsgId).trim();
+  const directKey = `wa:${cleanId}`;
   if (store.message_maps[directKey]) return store.message_maps[directKey];
 
   for (const [k, v] of Object.entries(store.message_maps)) {
-    if (k.startsWith('wa:') && (k === `wa:${waMsgId}` || v.waMsgId === waMsgId)) {
+    if (!v) continue;
+    if (
+      v.waMsgId === cleanId ||
+      k === `wa:${cleanId}` ||
+      (v.waMsgId && (v.waMsgId.includes(cleanId) || cleanId.includes(v.waMsgId)))
+    ) {
       return v;
     }
   }

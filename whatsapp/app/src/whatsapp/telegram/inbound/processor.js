@@ -7,6 +7,8 @@ import { getSession, sessions } from '../../../session.js';
 import { logger } from '../../../logger.js';
 import { t } from '../../../locales/loader.js';
 import { ignoreWaEditEchoes, ignoreTgEditEchoes } from '../outbound/mutations.js';
+import { loadModerationStore, getGroupModerationConfig } from '../../moderation/store.js';
+import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 
 const lastUpdateIds = new Map();
 
@@ -554,10 +556,26 @@ export async function processTelegramUpdates() {
               );
           const cleanHeader = rawHeader.replace(/<\/?b>/g, '');
           const entities = msg.entities || msg.caption_entities || null;
-          const formattedTgText =
+          let formattedTgText =
             mapping.convert_formatting !== false
               ? telegramToWaFormatting(tgText, entities)
               : tgText;
+
+          if (mapping.translate_tg_to_wa && tgText && tgText.trim() && !isSystemMsg && !isPinMsg) {
+            try {
+              const modStore = loadModerationStore();
+              const groupModCfg = getGroupModerationConfig(modStore, mapping.wa_jid);
+              const targetLang = groupModCfg?.auto_translate_target || 'de';
+              const transRes = await translateTextGatewayWithReason(tgText, targetLang);
+              if (transRes?.translation && transRes.translation.trim() && transRes.translation.trim().toLowerCase() !== tgText.trim().toLowerCase()) {
+                const note = `🌐 _[Auto-translated -> ${targetLang.toUpperCase()}]_\n`;
+                formattedTgText = `${note}${transRes.translation}`;
+              }
+            } catch (transErr) {
+              logger.debug({ err: transErr.message }, 'Failed to translate TG->WA message');
+            }
+          }
+
           const outboundWaText = `${cleanHeader}${tgQuoteSnippet}${formattedTgText}`;
 
           let session = getSession('default');
@@ -589,21 +607,41 @@ export async function processTelegramUpdates() {
                       pinKey.participant = mappedWaMsg.senderJid;
                     }
                     await session.sock.sendMessage(mapping.wa_jid, {
-                      pin: {
-                        key: pinKey,
-                        type: 1,
-                        time: 604800,
-                      },
+                      pin: pinKey,
+                      type: 1,
+                      time: 604800,
                     });
                     logger.info(
                       { tgChatId, tgPinnedId: pinnedTgMsgId, waMsgId: mappedWaMsg.waMsgId },
                       '📌 Mirrored Telegram message pin natively to WhatsApp'
                     );
                   } catch (pinErr) {
-                    logger.warn(
-                      { error: pinErr.message, groupId: mapping.wa_jid },
-                      'Native WhatsApp pin failed (bot may lack admin rights)'
-                    );
+                    try {
+                      // Fallback: Baileys nested pin format
+                      await session.sock.sendMessage(mapping.wa_jid, {
+                        pin: {
+                          key: {
+                            remoteJid: mapping.wa_jid,
+                            fromMe: mappedWaMsg.fromMe !== undefined ? mappedWaMsg.fromMe : false,
+                            id: mappedWaMsg.waMsgId,
+                            ...(mappedWaMsg.senderJid && mappedWaMsg.senderJid.includes('@')
+                              ? { participant: mappedWaMsg.senderJid }
+                              : {}),
+                          },
+                          type: 1,
+                          time: 604800,
+                        },
+                      });
+                      logger.info(
+                        { tgChatId, tgPinnedId: pinnedTgMsgId, waMsgId: mappedWaMsg.waMsgId },
+                        '📌 Mirrored Telegram message pin natively to WhatsApp (nested format)'
+                      );
+                    } catch (nestedErr) {
+                      logger.warn(
+                        { error: pinErr.message, nestedError: nestedErr.message, groupId: mapping.wa_jid },
+                        'Native WhatsApp pin failed (bot may lack admin rights)'
+                      );
+                    }
                   }
                 } else {
                   logger.warn(

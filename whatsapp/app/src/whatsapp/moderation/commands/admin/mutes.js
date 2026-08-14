@@ -1,6 +1,7 @@
 import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from '../../store.js';
 import { reply } from '../../../actions.js';
 import { isSameUser } from '../../../../utils/security.js';
+import { gt } from '../../engine/translations.js';
 
 export function parseDuration(str) {
   const match = str.match(/^(\d+)([dhms])$/i);
@@ -38,7 +39,7 @@ export function registerMuteCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: '⚠️ You must mention a user or reply to their message to mute them.' },
+          { text: gt(config, 'bot_replies.mute_mention_required') },
           rawMsg
         );
         return;
@@ -52,11 +53,11 @@ export function registerMuteCommands(registry) {
       const validTargets = [];
       for (const jid of targetMatches) {
         if (isSameUser(jid, userId, session)) {
-          await reply(session, groupId, { text: `⚠️ You cannot mute yourself.` }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_mute_self') }, rawMsg);
           continue;
         }
         if (isSameUser(jid, session?.sock?.user?.id, session)) {
-          await reply(session, groupId, { text: `⚠️ You cannot mute the bot account.` }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_mute_bot') }, rawMsg);
           continue;
         }
         validTargets.push(jid);
@@ -73,7 +74,7 @@ export function registerMuteCommands(registry) {
         session,
         groupId,
         {
-          text: `🔇 Muted ${validTargets.length} user(s) indefinitely.\nReason: ${reason}\n\n_Their messages will be automatically deleted._`,
+          text: gt(config, 'bot_replies.muted_indefinitely', { count: validTargets.length, reason }),
           mentions: validTargets,
         },
         rawMsg
@@ -98,7 +99,7 @@ export function registerMuteCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: '⚠️ You must mention a user or reply to their message to unmute them.' },
+          { text: gt(config, 'bot_replies.unmute_mention_required') },
           rawMsg
         );
         return;
@@ -122,11 +123,11 @@ export function registerMuteCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `🔊 Unmuted ${unmutedCount} user(s).`, mentions: targetMatches },
+          { text: gt(config, 'bot_replies.unmuted_count', { count: unmutedCount }), mentions: targetMatches },
           rawMsg
         );
       } else {
-        await reply(session, groupId, { text: '❌ None of those users are muted.' }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.no_muted_users') }, rawMsg);
       }
     },
     { adminOnly: true, help: 'Unmute a muted user' }
@@ -175,11 +176,11 @@ export function registerMuteCommands(registry) {
       const validTargets = [];
       for (const targetJid of targetMatches) {
         if (isSameUser(targetJid, userId, session)) {
-          await reply(session, groupId, { text: `⚠️ You cannot mute yourself.` }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_mute_self') }, rawMsg);
           continue;
         }
         if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
-          await reply(session, groupId, { text: `⚠️ You cannot mute the bot account.` }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_mute_bot') }, rawMsg);
           continue;
         }
         validTargets.push(targetJid);
@@ -221,7 +222,7 @@ export function registerMuteCommands(registry) {
         session,
         groupId,
         {
-          text: `🔇 Temporarily muted for ${formatDuration(durationMs)}.\nReason: ${reason}\n\n_Their messages will be automatically deleted until the mute expires._`,
+          text: gt(config, 'bot_replies.muted_temp', { user: validTargets[0]?.split('@')[0] || '', duration: formatDuration(durationMs), reason }),
           mentions: targetMatches,
         },
         rawMsg
@@ -269,11 +270,11 @@ export function registerMuteCommands(registry) {
       const validTargets = [];
       for (const targetJid of targetMatches) {
         if (isSameUser(targetJid, userId, session)) {
-          await reply(session, groupId, { text: `⚠️ You cannot ban yourself.` }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_ban_self') }, rawMsg);
           continue;
         }
         if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
-          await reply(session, groupId, { text: `⚠️ You cannot ban the bot account.` }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_ban_bot') }, rawMsg);
           continue;
         }
         validTargets.push(targetJid);

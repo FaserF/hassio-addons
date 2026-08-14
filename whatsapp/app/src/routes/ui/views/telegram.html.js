@@ -311,6 +311,12 @@ export default () => `
                     <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                         <input type="checkbox" id="tg-modal-sync-pins" checked> <span data-i18n="telegram.opt_sync_pins">Sync Pinned Messages</span>
                     </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-translate-tg-to-wa"> <span data-i18n="telegram.opt_translate_tg_to_wa">Translate TG -&gt; WA</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="tg-modal-translate-wa-to-tg"> <span data-i18n="telegram.opt_translate_wa_to_tg">Translate WA -&gt; TG</span>
+                    </label>
                 </div>
             </div>
 

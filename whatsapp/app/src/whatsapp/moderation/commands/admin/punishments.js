@@ -2,6 +2,7 @@ import { loadModerationStore, getGroupModerationConfig, saveModerationStore } fr
 import { executePenalty, issueUserWarning } from '../../engine/penalties.js';
 import { reply } from '../../../actions.js';
 import { isSameUser } from '../../../../utils/security.js';
+import { gt } from '../../engine/translations.js';
 
 export function registerPunishmentCommands(registry) {
   registry.register(
@@ -20,7 +21,7 @@ export function registerPunishmentCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ You must mention a user or reply to their message to warn them.` },
+          { text: gt(config, 'bot_replies.warn_mention_required') },
           rawMsg
         );
         return;
@@ -33,7 +34,7 @@ export function registerPunishmentCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: `⚠️ You cannot issue a warning to yourself.` },
+            { text: gt(config, 'bot_replies.cannot_warn_self') },
             rawMsg
           );
           continue;
@@ -56,7 +57,7 @@ export function registerPunishmentCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: `⚠️ Cannot issue warnings to WhatsApp group administrators.` },
+            { text: gt(config, 'bot_replies.cannot_warn_admin') },
             rawMsg
           );
           continue;
@@ -84,7 +85,7 @@ export function registerPunishmentCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ You must mention a user or reply to their message to unwarn them.` },
+          { text: gt(config, 'bot_replies.unwarn_mention_required') },
           rawMsg
         );
         return;
@@ -99,14 +100,14 @@ export function registerPunishmentCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: `✅ Cleared warnings for @${targetId}`, mentions: [targetJid] },
+            { text: gt(config, 'bot_replies.warnings_cleared', { user: targetId }), mentions: [targetJid] },
             rawMsg
           );
         } else {
           await reply(
             session,
             groupId,
-            { text: `ℹ️ User @${targetId} has no warnings.`, mentions: [targetJid] },
+            { text: gt(config, 'bot_replies.user_no_warnings', { user: targetId }), mentions: [targetJid] },
             rawMsg
           );
         }
@@ -132,7 +133,7 @@ export function registerPunishmentCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ You must mention a user or reply to their message to check their warnings.` },
+          { text: gt(config, 'bot_replies.warns_mention_required') },
           rawMsg
         );
         return;
@@ -151,7 +152,7 @@ export function registerPunishmentCommands(registry) {
             session,
             groupId,
             {
-              text: `⚠️ @${targetId} has ${warns.length} warning(s):\n${wList}`,
+              text: gt(config, 'bot_replies.user_warnings_list', { user: targetId, count: warns.length, list: wList }),
               mentions: [targetJid],
             },
             rawMsg
@@ -160,7 +161,7 @@ export function registerPunishmentCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: `✅ User @${targetId} has 0 warnings.`, mentions: [targetJid] },
+            { text: gt(config, 'bot_replies.user_zero_warnings', { user: targetId }), mentions: [targetJid] },
             rawMsg
           );
         }
@@ -185,7 +186,7 @@ export function registerPunishmentCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ You must mention a user or reply to their message to kick them.` },
+          { text: gt(config, 'bot_replies.kick_mention_required') },
           rawMsg
         );
         return;
@@ -193,11 +194,11 @@ export function registerPunishmentCommands(registry) {
       const reason = args.join(' ') || 'Admin requested kick';
       for (const targetJid of targetMatches) {
         if (isSameUser(targetJid, userId, session)) {
-          await reply(session, groupId, { text: `⚠️ You cannot kick yourself.` }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_kick_self') }, rawMsg);
           continue;
         }
         if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
-          await reply(session, groupId, { text: `⚠️ You cannot kick the bot account.` }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_kick_bot') }, rawMsg);
           continue;
         }
         const targetId = targetJid.split('@')[0];
@@ -223,7 +224,7 @@ export function registerPunishmentCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ You must mention a user or reply to their message to ban them.` },
+          { text: gt(config, 'bot_replies.ban_mention_required') },
           rawMsg
         );
         return;
@@ -231,11 +232,11 @@ export function registerPunishmentCommands(registry) {
       const reason = args.join(' ') || 'Admin requested ban';
       for (const targetJid of targetMatches) {
         if (isSameUser(targetJid, userId, session)) {
-          await reply(session, groupId, { text: `⚠️ You cannot ban yourself.` }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_ban_self') }, rawMsg);
           continue;
         }
         if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
-          await reply(session, groupId, { text: `⚠️ You cannot ban the bot account.` }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_ban_bot') }, rawMsg);
           continue;
         }
         const targetId = targetJid.split('@')[0];
@@ -266,7 +267,7 @@ export function registerPunishmentCommands(registry) {
           session,
           groupId,
           {
-            text: `⚠️ You must mention a user, reply to their message, or specify their number (e.g. \`${config.commands.prefix}unban 49176...\`) to unban them.`,
+            text: gt(config, 'bot_replies.unban_mention_required', { prefix: config.commands.prefix }),
           },
           rawMsg
         );
@@ -283,7 +284,7 @@ export function registerPunishmentCommands(registry) {
             session,
             groupId,
             {
-              text: `✅ Unbanned @${targetId}. They may now rejoin the group.`,
+              text: gt(config, 'bot_replies.unbanned_user', { user: targetId }),
               mentions: [targetJid],
             },
             rawMsg
@@ -292,7 +293,7 @@ export function registerPunishmentCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: `⚠️ User @${targetId} is not banned in this group.`, mentions: [targetJid] },
+            { text: gt(config, 'bot_replies.user_not_banned', { user: targetId }), mentions: [targetJid] },
             rawMsg
           );
         }
@@ -324,7 +325,7 @@ export function registerPunishmentCommands(registry) {
           session,
           groupId,
           {
-            text: `⚠️ You must mention a user, reply to their message, or specify their number to clear kick log.`,
+            text: gt(config, 'bot_replies.unkick_mention_required'),
           },
           rawMsg
         );
@@ -341,7 +342,7 @@ export function registerPunishmentCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `✅ Cleared kick log entries for @${targetId}.`, mentions: [targetJid] },
+          { text: gt(config, 'bot_replies.kick_log_cleared', { user: targetId }), mentions: [targetJid] },
           rawMsg
         );
       }

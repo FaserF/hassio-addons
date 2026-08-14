@@ -6,6 +6,8 @@ import { waToTelegramHtml } from '../format.js';
 import { applyRegexReplacements } from '../regex.js';
 import { formatHeader } from '../headers.js';
 import { logger } from '../../../logger.js';
+import { loadModerationStore, getGroupModerationConfig } from '../../moderation/store.js';
+import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 
 export async function syncWhatsAppToTelegram(
   msg,
@@ -125,7 +127,23 @@ export async function syncWhatsAppToTelegram(
             mapping.anonymize_phone_numbers
           );
 
-      let processedText = applyRegexReplacements(textContent, mapping.regex_replacements || []);
+      let effectiveText = textContent;
+      if (mapping.translate_wa_to_tg && textContent && textContent.trim()) {
+        try {
+          const modStore = loadModerationStore();
+          const groupModCfg = getGroupModerationConfig(modStore, waJid);
+          const targetLang = groupModCfg?.auto_translate_target || 'en';
+          const transRes = await translateTextGatewayWithReason(textContent, targetLang);
+          if (transRes?.translation && transRes.translation.trim() && transRes.translation.trim().toLowerCase() !== textContent.trim().toLowerCase()) {
+            const note = `🌐 <i>[Auto-translated -> ${targetLang.toUpperCase()}]</i>\n`;
+            effectiveText = `${note}${transRes.translation}`;
+          }
+        } catch (transErr) {
+          logger.debug({ err: transErr.message }, 'Failed to translate WA->TG message');
+        }
+      }
+
+      let processedText = applyRegexReplacements(effectiveText, mapping.regex_replacements || []);
       const formattedBody =
         mapping.convert_formatting !== false
           ? waToTelegramHtml(processedText)

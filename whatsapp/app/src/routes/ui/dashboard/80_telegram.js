@@ -544,6 +544,8 @@ function getTgMappingCurrentState() {
     poll_delete_old: document.getElementById('tg-modal-poll-delete-old')?.checked || false,
     sync_system_events: document.getElementById('tg-modal-sync-system-events')?.checked || false,
     sync_pins: document.getElementById('tg-modal-sync-pins')?.checked || false,
+    translate_tg_to_wa: document.getElementById('tg-modal-translate-tg-to-wa')?.checked || false,
+    translate_wa_to_tg: document.getElementById('tg-modal-translate-wa-to-tg')?.checked || false,
   };
 }
 
@@ -591,6 +593,10 @@ function openAddTelegramMappingModal() {
   if (sysEvEl) sysEvEl.checked = true;
   const pinsEl = document.getElementById('tg-modal-sync-pins');
   if (pinsEl) pinsEl.checked = true;
+  const transTgWaEl = document.getElementById('tg-modal-translate-tg-to-wa');
+  if (transTgWaEl) transTgWaEl.checked = false;
+  const transWaTgEl = document.getElementById('tg-modal-translate-wa-to-tg');
+  if (transWaTgEl) transWaTgEl.checked = false;
 
   const modal = document.getElementById('tg-mapping-modal');
   if (modal) modal.style.display = 'flex';
@@ -681,6 +687,12 @@ async function editTelegramMapping(id) {
 
     const pinsEl = document.getElementById('tg-modal-sync-pins');
     if (pinsEl) pinsEl.checked = mapping.sync_pins !== false;
+
+    const transTgWaEl = document.getElementById('tg-modal-translate-tg-to-wa');
+    if (transTgWaEl) transTgWaEl.checked = Boolean(mapping.translate_tg_to_wa);
+
+    const transWaTgEl = document.getElementById('tg-modal-translate-wa-to-tg');
+    if (transWaTgEl) transWaTgEl.checked = Boolean(mapping.translate_wa_to_tg);
 
     const modal = document.getElementById('tg-mapping-modal');
     if (modal) modal.style.display = 'flex';
@@ -789,6 +801,10 @@ async function saveTelegramMappingModal() {
   const sync_system_events =
     document.getElementById('tg-modal-sync-system-events')?.checked || false;
   const sync_pins = document.getElementById('tg-modal-sync-pins')?.checked || false;
+  const translate_tg_to_wa =
+    document.getElementById('tg-modal-translate-tg-to-wa')?.checked || false;
+  const translate_wa_to_tg =
+    document.getElementById('tg-modal-translate-wa-to-tg')?.checked || false;
 
   if (!wa_jid || !tg_chat_id) {
     showToast(t('telegram.mapping_add_failed'), 'warning');
@@ -825,6 +841,8 @@ async function saveTelegramMappingModal() {
         poll_delete_old_message,
         sync_system_events,
         sync_pins,
+        translate_tg_to_wa,
+        translate_wa_to_tg,
       }),
     });
     const data = await res.json();
