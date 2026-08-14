@@ -2,29 +2,28 @@ import assert from 'assert';
 
 console.log('🧪 Running STT Unit & Endpoint Parser Tests...');
 
-// Test 1: Verify Google v2 API URL format and JSON structure parsing
-const testData = JSON.stringify({
-  result: [
+// Test 1: Verify Gemini response parsing
+const geminiResponse = {
+  candidates: [
     {
-      alternative: [{ transcript: 'Hallo Test Sprachnachricht' }],
+      content: {
+        parts: [
+          { text: 'Hallo Test Sprachnachricht' },
+        ],
+      },
     },
   ],
-});
+};
+const geminiText = geminiResponse.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+assert.strictEqual(geminiText, 'Hallo Test Sprachnachricht');
+console.log('✅ PASSED: Gemini STT response JSON parser extracts transcript correctly');
 
-const lines = testData.split('\n').filter((l) => l.trim().length > 0);
-let parsed = null;
-for (const line of lines) {
-  try {
-    const jsonObj = JSON.parse(line);
-    if (jsonObj.result?.[0]?.alternative?.[0]?.transcript) {
-      parsed = jsonObj;
-      break;
-    }
-  } catch (_err) {}
-}
-
-const hyp = parsed?.result?.[0]?.alternative?.[0]?.transcript;
-assert.strictEqual(hyp, 'Hallo Test Sprachnachricht');
-console.log('✅ PASSED: Google v2 STT response JSON parser extracts transcript correctly');
+// Test 2: Verify OpenAI Whisper response parsing
+const whisperResponse = {
+  text: 'Hallo Test Sprachnachricht',
+};
+const whisperText = whisperResponse.text?.trim();
+assert.strictEqual(whisperText, 'Hallo Test Sprachnachricht');
+console.log('✅ PASSED: Whisper STT response JSON parser extracts transcript correctly');
 
 console.log('✅ ALL STT TESTS PASSED');

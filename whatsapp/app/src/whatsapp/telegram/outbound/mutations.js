@@ -122,7 +122,7 @@ export async function syncWhatsAppUnpinAllToTelegram(waJid) {
     const bot = getTelegramBotClient(mapping.bot_id);
     if (!bot) continue;
     try {
-      await bot.unpinallChatMessage(mapping.tg_chat_id);
+      await bot.unpinAllChatMessages(mapping.tg_chat_id);
       logger.info(
         { waJid, tgChatId: mapping.tg_chat_id },
         '📌 Successfully mirrored WhatsApp unpinall to Telegram'
@@ -255,43 +255,43 @@ export async function syncWhatsAppEditToTelegram(
     }
 
     if (!editSucceeded) {
-      if (mapped && mapped.tgMsgId) {
-        logger.info(
-          { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
-          'ℹ️ Native Telegram edit not accepted (e.g. message too old or media), skipping fallback'
-        );
-      } else {
-        const lang = store.language || 'de';
-        const editIndicator = t(lang, 'bot_replies.edited_msg_indicator_html');
-        const tgChatId = mapping.tg_chat_id;
-        const effectiveSenderName = senderName || '';
-        const fallbackHeader = isDirectMirror
-          ? ''
-          : formatHeader(
-              groupName,
-              effectiveSenderName,
-              isGroupWa ? mapping.include_group_name : false,
-              isGroupWa ? mapping.include_sender_name : false,
-              mapping.anonymize_phone_numbers
-            );
-        const fallbackText = `${fallbackHeader}${editIndicator}:\n${formattedBody || '<i>[No text]</i>'}`;
+      const lang = store.language || 'de';
+      const editIndicator = t(lang, 'bot_replies.edited_msg_indicator_html');
+      const tgChatId = mapping.tg_chat_id;
+      const effectiveSenderName = senderName || '';
+      const fallbackHeader = isDirectMirror
+        ? ''
+        : formatHeader(
+            groupName,
+            effectiveSenderName,
+            isGroupWa ? mapping.include_group_name : false,
+            isGroupWa ? mapping.include_sender_name : false,
+            mapping.anonymize_phone_numbers
+          );
+      const fallbackText = `${fallbackHeader}${editIndicator}\n${formattedBody || '<i>[No text]</i>'}`;
+      const replyToId = mapped?.tgMsgId ? mapped.tgMsgId : null;
 
-        try {
-          const sentTgMsg = await bot.sendMessage(tgChatId, fallbackText);
-          if (sentTgMsg && sentTgMsg.message_id) {
-            ignoreTgEditEchoes.add(String(sentTgMsg.message_id));
-            recordMessageMap(waMsgId, tgChatId, sentTgMsg.message_id, waJid, false);
-          }
-          logger.info(
-            { waMsgId, tgChatId, newTgMsgId: sentTgMsg?.message_id },
-            '✏️ Sent contextual WhatsApp message edit notification to Telegram'
-          );
-        } catch (fallbackErr) {
-          logger.warn(
-            { error: fallbackErr.message, waMsgId, tgChatId },
-            '⚠️ Failed to send Telegram edit fallback message'
-          );
+      try {
+        const sentTgMsg = await bot.sendMessage(
+          tgChatId,
+          fallbackText,
+          replyToId,
+          mapping.tg_thread_id || null,
+          Boolean(mapping.silent_delivery)
+        );
+        if (sentTgMsg && sentTgMsg.message_id) {
+          ignoreTgEditEchoes.add(String(sentTgMsg.message_id));
+          recordMessageMap(waMsgId, tgChatId, sentTgMsg.message_id, waJid, false);
         }
+        logger.info(
+          { waMsgId, tgChatId, newTgMsgId: sentTgMsg?.message_id },
+          '✏️ Sent contextual WhatsApp message edit notification to Telegram'
+        );
+      } catch (fallbackErr) {
+        logger.warn(
+          { error: fallbackErr.message, waMsgId, tgChatId },
+          '⚠️ Failed to send Telegram edit fallback message'
+        );
       }
     }
   }

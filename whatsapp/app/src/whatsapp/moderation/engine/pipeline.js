@@ -23,8 +23,9 @@ export async function handleModerationMessage(session, event) {
   const groupId = isGroup ? event.from || event.sender : event.sender;
   const config = getGroupModerationConfig(groupId);
 
-  const isGroupConfigured =
-    config.enabled || config.translation?.mode === 'auto' || Boolean(config.stt_enabled);
+  const isTranslationActive =
+    Boolean(config.translation?.enabled) || config.translation?.mode === 'auto';
+  const isGroupConfigured = config.enabled || isTranslationActive || Boolean(config.stt_enabled);
   if (!store.global_enabled || !isGroupConfigured) {
     logger.debug('Skipping moderation: global_enabled is false or group features not configured');
     return false;
@@ -268,9 +269,13 @@ export async function handleModerationMessage(session, event) {
   }
 
   // 0. Non-destructive Auto-Translation Engine
-  if (config.translation?.mode === 'auto' && text && text.trim().length > 2) {
+  if (isTranslationActive && text && text.trim().length > 2) {
     const targetLang = config.translation?.target_lang || 'en';
     const provider = config.translation?.provider || 'auto';
+    logger.info(
+      { groupId, textSnippet: text.slice(0, 40), targetLang, provider },
+      '🌐 Processing auto-translation for group message'
+    );
 
     const transResult =
       provider === 'ai'
@@ -291,7 +296,7 @@ export async function handleModerationMessage(session, event) {
 
       // Skip translation if detected source language is already the target language
       if (srcCode !== '?' && srcCode === dstCode) {
-        logger.debug(
+        logger.info(
           { srcCode, dstCode },
           'Skipping auto-translation: source language matches target language'
         );
@@ -309,7 +314,19 @@ export async function handleModerationMessage(session, event) {
         if (sentTransMsg?.key?.id && rawMsg?.key?.id) {
           recordTranslationMap(groupId, rawMsg.key.id, sentTransMsg.key.id, sentTransMsg.key);
         }
+        logger.info(
+          { groupId, src: srcCode, dst: dstCode },
+          '✅ Auto-translation successfully sent to group'
+        );
       }
+    } else {
+      logger.info(
+        {
+          textSnippet: text.slice(0, 40),
+          reason: transResult?.reason || 'Translation matched original text or returned empty',
+        },
+        'ℹ️ Auto-translation skipped: no distinct translation produced'
+      );
     }
   }
 

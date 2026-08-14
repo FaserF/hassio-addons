@@ -35,6 +35,7 @@ const ALLOWED_METHODS = new Map([
   ['stopMessageLiveLocation', 'stopMessageLiveLocation'],
   ['pinChatMessage', 'pinChatMessage'],
   ['unpinChatMessage', 'unpinChatMessage'],
+  ['unpinAllChatMessages', 'unpinAllChatMessages'],
   ['getMyCommands', 'getMyCommands'],
   ['setMyCommands', 'setMyCommands'],
   ['getChatMenuButton', 'getChatMenuButton'],
@@ -362,8 +363,8 @@ export class TelegramBotClient {
     return await this.request('unpinChatMessage', payload);
   }
 
-  async unpinallChatMessage(chatId) {
-    return await this.request('unpinChatMessage', { chat_id: chatId });
+  async unpinAllChatMessages(chatId) {
+    return await this.request('unpinAllChatMessages', { chat_id: chatId });
   }
 }
 

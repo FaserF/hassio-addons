@@ -61,121 +61,23 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     const sttEngine = config.stt_engine || 'auto';
     const errorsCaptured = [];
 
-    if (sttEngine === 'auto' || !apiKey) {
-      // 1a. Try Google Speech Recognition Endpoints with multiple public keys
-      const googleKeys = [
-        'p66v73-8-4-0-0-0',
-        'AIzaSyA88-VvQ3gI_20iA4_Yv5Wq79eL0vF_tq8',
-        'AIzaSyCJz2v4b8v6k8q8o0p2_Yv5Wq79eL0vF_t',
-      ];
-      for (const gKey of googleKeys) {
-        if (transcribedText) break;
-        try {
-          const targetLang = groupLang === 'de' ? 'de-DE' : 'en-US';
-          const url = `https://www.google.com/speech-api/v2/recognize?output=json&lang=${targetLang}&key=${gKey}&client=chromium`;
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 6000);
-          const res = await fetch(url, {
-            method: 'POST',
-            signal: controller.signal,
-            headers: {
-              'Content-Type': 'audio/ogg; codecs=opus',
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            },
-            body: stream,
-          });
-          clearTimeout(timeoutId);
-          if (res.ok) {
-            const rawText = await res.text();
-            let parsed = null;
-            try {
-              parsed = JSON.parse(rawText);
-            } catch (e) {
-              const lines = rawText.split('\n').filter((l) => l.trim().length > 0);
-              for (const line of lines) {
-                try {
-                  const jsonObj = JSON.parse(line);
-                  if (
-                    jsonObj.result?.[0]?.alternative?.[0]?.transcript ||
-                    jsonObj.hypotheses?.[0]?.utterance
-                  ) {
-                    parsed = jsonObj;
-                    break;
-                  }
-                } catch (_err) {}
-              }
-            }
-            const hyp =
-              parsed?.result?.[0]?.alternative?.[0]?.transcript ||
-              parsed?.hypotheses?.[0]?.utterance;
-            if (hyp) transcribedText = hyp;
-          }
-        } catch (e) {
-          logger.debug({ error: e.message }, 'Google STT API call failed');
-        }
+    if (!apiKey) {
+      if (sttEngine === 'auto') {
+        failureReason =
+          'No API key configured. Please configure a Gemini API key in settings to enable Speech-to-Text.';
+      } else {
+        failureReason = `No API key configured for STT engine "${sttEngine}". Please configure an API key in settings.`;
       }
-
-      // 1b. Free Fallback: Wit.ai Speech API with fallback tokens
-      if (!transcribedText) {
-        const witTokens =
-          groupLang === 'de'
-            ? ['6A7Z7MEYB2W66T6ZJTYD6MZXH7S44I7K', '7S44I7K6A7Z7MEYB2W66T6ZJTYD6MZX']
-            : ['U72F3K6S4D8F9G0H1J2K3L4M5N6O7P8Q', 'N6O7P8QU72F3K6S4D8F9G0H1J2K3L4M5'];
-        for (const witToken of witTokens) {
-          if (transcribedText) break;
-          try {
-            const witUrl = 'https://api.wit.ai/speech';
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 6000);
-            const witRes = await fetch(witUrl, {
-              method: 'POST',
-              signal: controller.signal,
-              headers: {
-                Authorization: `Bearer ${witToken}`,
-                'Content-Type': 'audio/ogg',
-              },
-              body: stream,
-            });
-            clearTimeout(timeoutId);
-            if (witRes.ok) {
-              const rawText = await witRes.text();
-              let parsed = null;
-              try {
-                parsed = JSON.parse(rawText);
-              } catch (e) {
-                const lines = rawText.split('\n').filter((l) => l.trim().length > 0);
-                for (const line of lines) {
-                  try {
-                    const jsonObj = JSON.parse(line);
-                    if (jsonObj.text || jsonObj._text) {
-                      parsed = jsonObj;
-                      break;
-                    }
-                  } catch (_err) {}
-                }
-              }
-              const hyp = parsed?.text || parsed?._text;
-              if (hyp) transcribedText = hyp;
-            }
-          } catch (e) {
-            logger.debug({ error: e.message }, 'Wit.ai STT fallback failed');
-          }
-        }
-      }
-
-      if (!transcribedText) {
-        errorsCaptured.push(gt('bot_replies.stt_err_free_http_error', { status: 403 }));
-      }
-    }
-
-    if (!transcribedText && apiKey) {
-      // 2. Try Gemini 1.5 Multimodal Audio API
+    } else {
+      // 1. Try Gemini 1.5 Multimodal Audio API
       if (
         sttEngine === 'gemini' ||
-        (sttEngine === 'auto' && (store.gemini_api_key || process.env.GEMINI_API_KEY))
+        (sttEngine === 'auto' &&
+          (store.gemini_api_key || config.ai?.api_key || process.env.GEMINI_API_KEY))
       ) {
         try {
-          const gKey = store.gemini_api_key || process.env.GEMINI_API_KEY || apiKey;
+          const gKey =
+            store.gemini_api_key || config.ai?.api_key || process.env.GEMINI_API_KEY || apiKey;
           const base64Audio = stream.toString('base64');
           const promptText = gt('bot_replies.stt_prompt_text');
           const geminiModel = config.ai?.model || 'gemini-1.5-flash';
@@ -217,8 +119,13 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
         }
       }
 
-      // 3. Try OpenAI Whisper API
-      if (!transcribedText && (sttEngine === 'openai' || process.env.OPENAI_API_KEY)) {
+      // 2. Try OpenAI Whisper API
+      if (
+        !transcribedText &&
+        (sttEngine === 'openai' ||
+          (sttEngine === 'auto' && (config.ai?.openai_api_key || process.env.OPENAI_API_KEY)) ||
+          process.env.OPENAI_API_KEY)
+      ) {
         try {
           const oaKey = config.ai?.openai_api_key || process.env.OPENAI_API_KEY || apiKey;
           const formData = new Blob([stream], { type: 'audio/ogg' });
@@ -254,7 +161,7 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       }
     }
 
-    if (!transcribedText) {
+    if (!transcribedText && !failureReason) {
       failureReason =
         errorsCaptured.length > 0
           ? errorsCaptured.join('\n• ')

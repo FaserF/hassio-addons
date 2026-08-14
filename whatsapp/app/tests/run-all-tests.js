@@ -34,7 +34,7 @@ async function run() {
     const { runI18nTests } = await import('./test-i18n.js');
     await runI18nTests();
 
-    console.log('\n--- 8/8 Testing STT Engine & Google v2 Parser ---');
+    console.log('\n--- 8/8 Testing STT Engine Parsers ---');
     await import('./test-stt.js');
 
     console.log('\n--- 9/9 Testing RBAC & WhatsApp Login ---');

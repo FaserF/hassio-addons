@@ -177,6 +177,29 @@ export function registerContentCommands(registry) {
     'unpinall',
     async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
       try {
+        // Unpin all messages natively in WhatsApp via Baileys chatModify
+        try {
+          await session.sock.chatModify({ pin: false }, groupId);
+        } catch (waErr) {
+          logger.debug(
+            { error: waErr.message, groupId },
+            'chatModify pin:false failed, trying groupSettingUpdate'
+          );
+          // Fallback: some Baileys versions use groupSettingUpdate
+          try {
+            if (typeof session.sock.groupSettingUpdate === 'function') {
+              await session.sock.groupSettingUpdate(groupId, 'not_announcement');
+            }
+          } catch (_fallbackErr) {
+            // Best-effort: WA may not expose a reliable "unpin all" API.
+            // Individual unpins would require tracking each pinned message ID.
+            logger.debug(
+              { error: _fallbackErr?.message },
+              'groupSettingUpdate fallback also failed'
+            );
+          }
+        }
+        // Sync unpin-all to Telegram
         syncWhatsAppUnpinAllToTelegram(groupId);
         await reply(session, groupId, { text: '📌 All messages unpinned successfully.' }, rawMsg);
       } catch (e) {

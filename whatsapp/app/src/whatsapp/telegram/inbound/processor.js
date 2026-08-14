@@ -595,8 +595,16 @@ export async function processTelegramUpdates() {
                       '📌 Mirrored Telegram message pin natively to WhatsApp'
                     );
                   } catch (pinErr) {
-                    logger.debug({ error: pinErr.message }, 'Native WhatsApp pin failed');
+                    logger.warn(
+                      { error: pinErr.message, groupId: mapping.wa_jid },
+                      'Native WhatsApp pin failed (bot may lack admin rights)'
+                    );
                   }
+                } else {
+                  logger.warn(
+                    { tgChatId, tgPinnedId: pinnedTgMsgId, waJid: mapping.wa_jid },
+                    '📌 Cannot mirror TG pin to WA: no message mapping found. The pinned message was likely sent before bridge sync was active or was not synced through the bridge.'
+                  );
                 }
                 // Always skip sending the raw notification text in WhatsApp
                 continue;
