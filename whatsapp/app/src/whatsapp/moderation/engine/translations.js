@@ -43,11 +43,13 @@ export async function deleteTranslationIfExists(session, groupId, sourceWaId) {
 export async function updateTranslationIfExists(session, groupId, sourceWaId, newText) {
   if (!groupId || !sourceWaId || !newText || newText.trim().length < 2) return;
 
-  // Try exact key first, then fallback without group prefix if needed
-  let record = _TRANSLATION_MAP.get(`${groupId}:${sourceWaId}`);
+  const cleanSourceId = String(sourceWaId).trim();
+  const exactKey = `${groupId}:${cleanSourceId}`;
+
+  let record = _TRANSLATION_MAP.get(exactKey);
   if (!record) {
     for (const [k, v] of _TRANSLATION_MAP.entries()) {
-      if (k.endsWith(`:${sourceWaId}`) || k === sourceWaId) {
+      if (k === cleanSourceId || k.endsWith(`:${cleanSourceId}`)) {
         record = v;
         break;
       }
@@ -56,7 +58,7 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
 
   if (!record || !record.botKey) {
     logger.debug(
-      { groupId, sourceWaId },
+      { groupId, sourceWaId: cleanSourceId },
       'No translation map record found for edited WhatsApp message'
     );
     return;
@@ -100,13 +102,18 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
       const updatedText = `${header} *(edited)*\n\n"${transResult.translation}"`;
 
       if (session?.sock?.sendMessage) {
+        const editKey = {
+          remoteJid: groupId,
+          id: record.botKey.id || record.botWaId,
+          fromMe: true,
+        };
         try {
           await session.sock.sendMessage(groupId, {
             text: updatedText,
-            edit: record.botKey,
+            edit: editKey,
           });
           logger.info(
-            { groupId, sourceWaId, botWaId: record.botWaId },
+            { groupId, sourceWaId: cleanSourceId, botWaId: record.botWaId },
             '✏️ Successfully synchronized edited WhatsApp auto-translation'
           );
         } catch (editErr) {
@@ -117,7 +124,7 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
           const sentNew = await session.sock.sendMessage(
             groupId,
             { text: updatedText },
-            { quoted: { key: record.botKey } }
+            { quoted: { key: editKey } }
           );
           if (sentNew?.key?.id) {
             record.botWaId = sentNew.key.id;
@@ -128,7 +135,7 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
     }
   } catch (err) {
     logger.warn(
-      { error: err.message, groupId, sourceWaId },
+      { error: err.message, groupId, sourceWaId: cleanSourceId },
       '⚠️ Failed to edit translated WhatsApp bot message'
     );
   }

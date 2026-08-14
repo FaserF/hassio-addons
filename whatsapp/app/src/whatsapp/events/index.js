@@ -55,12 +55,25 @@ export function unwrapProtocolNode(m) {
     if (
       m.protocolMessage.type === 5 ||
       m.protocolMessage.type === 'PIN_IN_CHAT' ||
+      String(m.protocolMessage.type) === '5' ||
       m.protocolMessage.pinInChatMessage
     ) {
       return {
         type: 5,
         pinInChatMessage: m.protocolMessage.pinInChatMessage || m.protocolMessage,
         key: m.protocolMessage.key || m.protocolMessage.pinInChatMessage?.key,
+      };
+    }
+    if (
+      m.protocolMessage.type === 14 ||
+      m.protocolMessage.type === 'MESSAGE_EDIT' ||
+      String(m.protocolMessage.type) === '14' ||
+      m.protocolMessage.editedMessage
+    ) {
+      return {
+        type: 14,
+        editedMessage: m.protocolMessage.editedMessage || m.protocolMessage,
+        key: m.protocolMessage.key || m.protocolMessage.editedMessage?.key || m.key,
       };
     }
     return m.protocolMessage;
@@ -450,8 +463,10 @@ export function handleIncomingMessages(session) {
           );
         }
       }
+    }
 
-      // Check for incoming REVOKE / message deletion protocol nodes
+    // Check for incoming REVOKE / message deletion / message edit / pin protocol nodes
+    for (const msg of m.messages) {
       const protNode = unwrapProtocolNode(msg.message);
       if (
         protNode &&
