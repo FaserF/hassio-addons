@@ -79,9 +79,15 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
       provider === 'ai'
         ? await (async () => {
             const { processAiModeration } = await import('./ai.js');
-            return processAiModeration(newText, config.ai || {}, store.gemini_api_key, 'translate', {
-              targetLang,
-            });
+            return processAiModeration(
+              newText,
+              config.ai || {},
+              store.gemini_api_key,
+              'translate',
+              {
+                targetLang,
+              }
+            );
           })()
         : await translateTextFreeWithReason(newText, targetLang, provider);
 
@@ -112,7 +118,10 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
       }
     }
   } catch (err) {
-    logger.debug({ error: err.message, groupId, sourceWaId }, 'Failed to edit translated WhatsApp bot message');
+    logger.debug(
+      { error: err.message, groupId, sourceWaId },
+      'Failed to edit translated WhatsApp bot message'
+    );
   }
 }
 

@@ -6,9 +6,9 @@ console.log('🧪 Running STT Unit & Endpoint Parser Tests...');
 const testData = JSON.stringify({
   result: [
     {
-      alternative: [{ transcript: 'Hallo Test Sprachnachricht' }]
-    }
-  ]
+      alternative: [{ transcript: 'Hallo Test Sprachnachricht' }],
+    },
+  ],
 });
 
 const lines = testData.split('\n').filter((l) => l.trim().length > 0);

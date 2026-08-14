@@ -82,7 +82,10 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
             for (const line of lines) {
               try {
                 const jsonObj = JSON.parse(line);
-                if (jsonObj.result?.[0]?.alternative?.[0]?.transcript || jsonObj.hypotheses?.[0]?.utterance) {
+                if (
+                  jsonObj.result?.[0]?.alternative?.[0]?.transcript ||
+                  jsonObj.hypotheses?.[0]?.utterance
+                ) {
                   parsed = jsonObj;
                   break;
                 }
@@ -90,8 +93,7 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
             }
           }
           const hyp =
-            parsed?.result?.[0]?.alternative?.[0]?.transcript ||
-            parsed?.hypotheses?.[0]?.utterance;
+            parsed?.result?.[0]?.alternative?.[0]?.transcript || parsed?.hypotheses?.[0]?.utterance;
           if (hyp) transcribedText = hyp;
           else errorsCaptured.push(gt('bot_replies.stt_err_free_no_speech'));
         } else if (res.status === 429) {
@@ -144,7 +146,9 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           } else if (res.status === 401 || res.status === 403) {
             errorsCaptured.push(gt('bot_replies.stt_err_gemini_auth'));
           } else {
-            errorsCaptured.push(gt('bot_replies.stt_err_gemini_http_error', { status: res.status }));
+            errorsCaptured.push(
+              gt('bot_replies.stt_err_gemini_http_error', { status: res.status })
+            );
           }
         } catch (e) {
           logger.debug({ error: e.message }, 'Gemini STT failed');
@@ -178,7 +182,9 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           } else if (res.status === 401) {
             errorsCaptured.push(gt('bot_replies.stt_err_whisper_auth'));
           } else {
-            errorsCaptured.push(gt('bot_replies.stt_err_whisper_http_error', { status: res.status }));
+            errorsCaptured.push(
+              gt('bot_replies.stt_err_whisper_http_error', { status: res.status })
+            );
           }
         } catch (e) {
           logger.debug({ error: e.message }, 'Whisper STT failed');
