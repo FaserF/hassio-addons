@@ -84,4 +84,3 @@ window.exportAutoTestLogs = exportAutoTestLogs;
 window.handleModConfigFileUpload = handleModConfigFileUpload;
 window.refreshModerationDiagnostics = refreshModerationDiagnostics;
 window.renderModerationDiagnostics = renderModerationDiagnostics;
-

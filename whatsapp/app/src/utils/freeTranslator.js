@@ -113,7 +113,11 @@ export async function translateTextFreeWithReason(
         } else if (res.status === 429) {
           logger.warn('Google Translate API rate-limited (429). Cooldown 2 minutes.');
           cooldowns.set('google', now + 120000);
-          recordError('google', 'Rate limit exceeded (HTTP 429). 2-minute cooldown activated.', targetLang);
+          recordError(
+            'google',
+            'Rate limit exceeded (HTTP 429). 2-minute cooldown activated.',
+            targetLang
+          );
           attemptedReasons.push('Google Translate: Rate limited (HTTP 429)');
         } else {
           recordError('google', `HTTP Error ${res.status}: ${res.statusText}`, targetLang);
@@ -211,7 +215,11 @@ export async function translateTextFreeWithReason(
         } else if (res.status === 429) {
           logger.warn('MyMemory API rate-limited (429). Cooldown 5 minutes.');
           cooldowns.set('mymemory', now + 300000);
-          recordError('mymemory', 'Rate limit exceeded (HTTP 429). 5-minute cooldown activated.', targetLang);
+          recordError(
+            'mymemory',
+            'Rate limit exceeded (HTTP 429). 5-minute cooldown activated.',
+            targetLang
+          );
           attemptedReasons.push('MyMemory: Rate limited (HTTP 429)');
         } else {
           recordError('mymemory', `HTTP Error ${res.status}: ${res.statusText}`, targetLang);
@@ -227,7 +235,7 @@ export async function translateTextFreeWithReason(
 
   const failReason =
     'All free translation providers (Google, Lingva, MyMemory) failed or are currently rate-limited. Solution: Wait for cooldowns to expire or configure GEMINI_API_KEY in settings.';
-  
+
   lastTranslationEvent = {
     timestamp: Date.now(),
     provider: 'none',
@@ -256,7 +264,12 @@ export async function translateTextFree(text, targetLang = 'en') {
 export function getTranslationDiagnostics(groupConfig = {}, store = {}) {
   const now = Date.now();
   const configuredProvider = groupConfig?.translation?.provider || 'auto';
-  const hasAiKey = Boolean(store?.gemini_api_key || groupConfig?.ai?.api_key || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY);
+  const hasAiKey = Boolean(
+    store?.gemini_api_key ||
+    groupConfig?.ai?.api_key ||
+    process.env.GEMINI_API_KEY ||
+    process.env.OPENAI_API_KEY
+  );
 
   const googleCooldown = cooldowns.get('google') || 0;
   const mymemoryCooldown = cooldowns.get('mymemory') || 0;
@@ -274,7 +287,8 @@ export function getTranslationDiagnostics(groupConfig = {}, store = {}) {
     mymemory: {
       name: 'MyMemory (Free)',
       status: mymemoryCooldown > now ? 'cooldown' : 'healthy',
-      cooldown_remaining_sec: mymemoryCooldown > now ? Math.ceil((mymemoryCooldown - now) / 1000) : 0,
+      cooldown_remaining_sec:
+        mymemoryCooldown > now ? Math.ceil((mymemoryCooldown - now) / 1000) : 0,
     },
     ai: {
       name: 'Gemini / OpenAI AI Model',
@@ -295,9 +309,10 @@ export function getTranslationDiagnostics(groupConfig = {}, store = {}) {
   } else if (configuredProvider === 'google') {
     activeProvider = 'google';
     activeProviderName = 'Google Translate (Free)';
-    selectionReason = googleCooldown > now
-      ? `Manual Selection: Google Translate is selected, but currently in cooldown (${Math.ceil((googleCooldown - now) / 1000)}s remaining) due to rate-limiting (429).`
-      : 'Manual Selection: Group is explicitly set to Google Translate.';
+    selectionReason =
+      googleCooldown > now
+        ? `Manual Selection: Google Translate is selected, but currently in cooldown (${Math.ceil((googleCooldown - now) / 1000)}s remaining) due to rate-limiting (429).`
+        : 'Manual Selection: Group is explicitly set to Google Translate.';
   } else if (configuredProvider === 'lingva') {
     activeProvider = 'lingva';
     activeProviderName = 'Lingva Translate (Free Privacy API)';
@@ -305,9 +320,10 @@ export function getTranslationDiagnostics(groupConfig = {}, store = {}) {
   } else if (configuredProvider === 'mymemory') {
     activeProvider = 'mymemory';
     activeProviderName = 'MyMemory (Free)';
-    selectionReason = mymemoryCooldown > now
-      ? `Manual Selection: MyMemory is selected, but currently in cooldown (${Math.ceil((mymemoryCooldown - now) / 1000)}s remaining) due to rate-limiting (429).`
-      : 'Manual Selection: Group is explicitly set to MyMemory.';
+    selectionReason =
+      mymemoryCooldown > now
+        ? `Manual Selection: MyMemory is selected, but currently in cooldown (${Math.ceil((mymemoryCooldown - now) / 1000)}s remaining) due to rate-limiting (429).`
+        : 'Manual Selection: Group is explicitly set to MyMemory.';
   } else {
     // auto
     if (googleCooldown <= now) {
@@ -321,7 +337,8 @@ export function getTranslationDiagnostics(groupConfig = {}, store = {}) {
     } else {
       activeProvider = 'mymemory';
       activeProviderName = 'MyMemory (Free)';
-      selectionReason = 'Auto-Failover: Primary & secondary engines unavailable. Switched to MyMemory.';
+      selectionReason =
+        'Auto-Failover: Primary & secondary engines unavailable. Switched to MyMemory.';
     }
   }
 

@@ -75,7 +75,9 @@ async function saveGroupAiConfig() {
     quiet_mode: true,
   };
 
-  const apiKey = (document.getElementById('mod-ai-api-key') || document.getElementById('mod-ai-key'))?.value || '';
+  const apiKey =
+    (document.getElementById('mod-ai-api-key') || document.getElementById('mod-ai-key'))?.value ||
+    '';
 
   try {
     const res = await fetch(basePath + 'api/moderation/config', {
@@ -154,9 +156,15 @@ function renderModerationDiagnostics(data) {
       if (stt.last_event && stt.last_event.timestamp) {
         sttLastRow.style.display = 'flex';
         const d = new Date(stt.last_event.timestamp);
-        const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const timeStr = d.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        });
         const outcome = stt.last_event.status === 'success' ? '✅ Success' : '❌ Failed';
-        const preview = stt.last_event.transcribed_snippet ? ` ("${stt.last_event.transcribed_snippet}…")` : '';
+        const preview = stt.last_event.transcribed_snippet
+          ? ` ("${stt.last_event.transcribed_snippet}…")`
+          : '';
         const errDetail = stt.last_event.error ? ` (${stt.last_event.error})` : '';
         sttLastVal.textContent = `${timeStr} — ${stt.last_event.engineName || stt.last_event.engine} [${outcome}]${preview}${errDetail}`;
       } else {
@@ -170,7 +178,10 @@ function renderModerationDiagnostics(data) {
         sttErrorsBox.style.display = 'block';
         sttErrorsList.innerHTML = errs
           .map((err) => {
-            const time = new Date(err.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const time = new Date(err.timestamp).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
             return `<div class="mod-diag-error-item">
               <span class="mod-diag-error-msg"><strong>[${escapeHtml(err.engine)}]:</strong> ${escapeHtml(err.error)}</span>
               <span class="mod-diag-error-time">${time}</span>
@@ -203,13 +214,15 @@ function renderModerationDiagnostics(data) {
       transBadge.className = 'mod-diag-badge ' + (trans.status || 'healthy');
       let badgeText = trans.status || 'Healthy';
       if (trans.status === 'healthy') badgeText = t('moderation.status_healthy') || 'Operational';
-      else if (trans.status === 'degraded') badgeText = t('moderation.status_degraded') || 'Degraded / Failover';
+      else if (trans.status === 'degraded')
+        badgeText = t('moderation.status_degraded') || 'Degraded / Failover';
       else if (trans.status === 'error') badgeText = t('moderation.status_error') || 'Error';
       transBadge.textContent = badgeText;
     }
 
     if (transProv) {
-      transProv.textContent = trans.active_provider_name || trans.active_provider || 'Google Translate';
+      transProv.textContent =
+        trans.active_provider_name || trans.active_provider || 'Google Translate';
     }
 
     if (transReason) {
@@ -248,9 +261,15 @@ function renderModerationDiagnostics(data) {
       if (trans.last_event && trans.last_event.timestamp) {
         transLastRow.style.display = 'flex';
         const d = new Date(trans.last_event.timestamp);
-        const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const timeStr = d.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        });
         const outcome = trans.last_event.status === 'success' ? '✅ Success' : '❌ Failed';
-        const srcDst = trans.last_event.sourceLang ? ` (${trans.last_event.sourceLang} → ${trans.last_event.targetLang})` : ` (→ ${trans.last_event.targetLang})`;
+        const srcDst = trans.last_event.sourceLang
+          ? ` (${trans.last_event.sourceLang} → ${trans.last_event.targetLang})`
+          : ` (→ ${trans.last_event.targetLang})`;
         transLastVal.textContent = `${timeStr} — ${trans.last_event.providerName || trans.last_event.provider} [${outcome}]${srcDst}`;
       } else {
         transLastRow.style.display = 'none';
@@ -263,7 +282,10 @@ function renderModerationDiagnostics(data) {
         transErrorsBox.style.display = 'block';
         transErrorsList.innerHTML = errs
           .map((err) => {
-            const time = new Date(err.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const time = new Date(err.timestamp).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
             return `<div class="mod-diag-error-item">
               <span class="mod-diag-error-msg"><strong>[${escapeHtml(err.provider)}]:</strong> ${escapeHtml(err.error)}</span>
               <span class="mod-diag-error-time">${time}</span>
@@ -277,4 +299,3 @@ function renderModerationDiagnostics(data) {
     }
   }
 }
-

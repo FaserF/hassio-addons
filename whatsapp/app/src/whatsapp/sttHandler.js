@@ -27,14 +27,9 @@ export function getSTTDiagnostics(groupConfig = {}, store = {}) {
   const isEnabled = Boolean(groupConfig?.stt_enabled);
   const sttEngine = groupConfig?.stt_engine || 'auto';
   const hasGeminiKey = Boolean(
-    store?.gemini_api_key ||
-    groupConfig?.ai?.api_key ||
-    process.env.GEMINI_API_KEY
+    store?.gemini_api_key || groupConfig?.ai?.api_key || process.env.GEMINI_API_KEY
   );
-  const hasOpenAIKey = Boolean(
-    groupConfig?.ai?.openai_api_key ||
-    process.env.OPENAI_API_KEY
-  );
+  const hasOpenAIKey = Boolean(groupConfig?.ai?.openai_api_key || process.env.OPENAI_API_KEY);
   const hasAnyKey = hasGeminiKey || hasOpenAIKey;
 
   let activeEngine;
@@ -45,12 +40,14 @@ export function getSTTDiagnostics(groupConfig = {}, store = {}) {
   if (!isEnabled) {
     activeEngine = 'disabled';
     activeEngineName = 'Disabled';
-    selectionReason = 'STT is toggled off in group settings. Incoming voice notes are not transcribed.';
+    selectionReason =
+      'STT is toggled off in group settings. Incoming voice notes are not transcribed.';
     status = 'disabled';
   } else if (!hasAnyKey) {
     activeEngine = 'none';
     activeEngineName = 'No API Key Configured';
-    selectionReason = 'STT is enabled, but no Gemini or OpenAI API Key was found in settings or environment. Transcription will fail until a key is added.';
+    selectionReason =
+      'STT is enabled, but no Gemini or OpenAI API Key was found in settings or environment. Transcription will fail until a key is added.';
     status = 'no_key';
   } else {
     if (sttEngine === 'gemini') {
@@ -72,7 +69,8 @@ export function getSTTDiagnostics(groupConfig = {}, store = {}) {
       if (hasGeminiKey) {
         activeEngine = 'gemini';
         activeEngineName = '⚡ Auto: Gemini 1.5 Flash';
-        selectionReason = 'Auto STT: Gemini 1.5 Multimodal Audio selected (Gemini API key is active).';
+        selectionReason =
+          'Auto STT: Gemini 1.5 Multimodal Audio selected (Gemini API key is active).';
       } else if (hasOpenAIKey) {
         activeEngine = 'openai';
         activeEngineName = '⚡ Auto: OpenAI Whisper';
@@ -80,7 +78,8 @@ export function getSTTDiagnostics(groupConfig = {}, store = {}) {
       } else {
         activeEngine = 'none';
         activeEngineName = 'Auto STT (No Key)';
-        selectionReason = 'Auto STT requires either a Gemini or OpenAI API key to process voice messages.';
+        selectionReason =
+          'Auto STT requires either a Gemini or OpenAI API key to process voice messages.';
         status = 'no_key';
       }
     }
@@ -151,7 +150,11 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
 
     if (!stream || stream.length === 0) {
       const errText = `${gt('bot_replies.stt_error_header')}\n\n*Reason:* ${gt('bot_replies.stt_download_failed')}`;
-      recordSttError('whatsapp_media', 'Failed to download voice note audio stream from WhatsApp servers', groupId);
+      recordSttError(
+        'whatsapp_media',
+        'Failed to download voice note audio stream from WhatsApp servers',
+        groupId
+      );
       lastSttEvent = {
         timestamp: Date.now(),
         engine: 'whatsapp_media',

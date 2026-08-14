@@ -71,7 +71,8 @@ export function unwrapProtocolNode(m) {
     if (m.editedMessage.message?.protocolMessage)
       return {
         type: 14,
-        editedMessage: m.editedMessage.message.protocolMessage.editedMessage || m.editedMessage.message,
+        editedMessage:
+          m.editedMessage.message.protocolMessage.editedMessage || m.editedMessage.message,
         key: m.editedMessage.message.protocolMessage.key || m.editedMessage.key || m.key,
       };
     if (m.editedMessage.protocolMessage)
