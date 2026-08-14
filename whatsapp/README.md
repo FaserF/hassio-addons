@@ -1,4 +1,4 @@
-# WhatsApp Home Assistant App
+# WhatsApp Gateway
 
 <img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/whatsapp/logo.png" width="100" alt="Logo" />
 
