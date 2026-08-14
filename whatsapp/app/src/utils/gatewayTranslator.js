@@ -206,9 +206,7 @@ export async function translateTextGatewayWithReason(
               !translated.toUpperCase().includes('QUERY LENGTH LIMIT EXCEEDED')
             ) {
               const detected =
-                data.matches?.[0]?.['created-by'] ||
-                data.responseData?.detectedLanguage ||
-                '?';
+                data.matches?.[0]?.['created-by'] || data.responseData?.detectedLanguage || '?';
               saveCache(translated, detected);
               lastTranslationEvent = {
                 timestamp: Date.now(),

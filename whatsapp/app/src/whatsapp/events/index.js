@@ -577,10 +577,8 @@ export function handleIncomingMessages(session) {
             return unwrapMessage(m.documentWithCaptionMessage.message);
           if (m.protocolMessage?.editedMessage)
             return unwrapMessage(m.protocolMessage.editedMessage);
-          if (m.editedMessage?.message)
-            return unwrapMessage(m.editedMessage.message);
-          if (m.editedMessage)
-            return unwrapMessage(m.editedMessage);
+          if (m.editedMessage?.message) return unwrapMessage(m.editedMessage.message);
+          if (m.editedMessage) return unwrapMessage(m.editedMessage);
           return m;
         };
         const realMsgObj = unwrapMessage(msg.message);

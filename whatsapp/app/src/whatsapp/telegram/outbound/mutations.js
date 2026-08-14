@@ -185,13 +185,13 @@ export async function syncWhatsAppEditToTelegram(
   rawMsgKeyId = null
 ) {
   if (!waMsgId || !newText || !newText.trim()) return;
-  if (
-    ignoreWaEditEchoes.has(waMsgId) ||
-    (rawMsgKeyId && ignoreWaEditEchoes.has(rawMsgKeyId))
-  ) {
+  if (ignoreWaEditEchoes.has(waMsgId) || (rawMsgKeyId && ignoreWaEditEchoes.has(rawMsgKeyId))) {
     ignoreWaEditEchoes.delete(waMsgId);
     if (rawMsgKeyId) ignoreWaEditEchoes.delete(rawMsgKeyId);
-    logger.debug({ waMsgId, rawMsgKeyId }, 'Ignoring WhatsApp edit event echo from Telegram bridge');
+    logger.debug(
+      { waMsgId, rawMsgKeyId },
+      'Ignoring WhatsApp edit event echo from Telegram bridge'
+    );
     return;
   }
 
