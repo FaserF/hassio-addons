@@ -103,9 +103,10 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       if (!transcribedText) {
         try {
           // Public Wit.ai Speech API default tokens for speech recognition
-          const witToken = groupLang === 'de'
-            ? '6A7Z7MEYB2W66T6ZJTYD6MZXH7S44I7K'
-            : 'U72F3K6S4D8F9G0H1J2K3L4M5N6O7P8Q';
+          const witToken =
+            groupLang === 'de'
+              ? '6A7Z7MEYB2W66T6ZJTYD6MZXH7S44I7K'
+              : 'U72F3K6S4D8F9G0H1J2K3L4M5N6O7P8Q';
           const witUrl = 'https://api.wit.ai/speech';
           const witRes = await fetch(witUrl, {
             method: 'POST',

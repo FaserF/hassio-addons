@@ -1384,10 +1384,7 @@ export async function processTelegramUpdates() {
                       '📌 Mirrored Telegram message pin natively to WhatsApp'
                     );
                   } catch (pinErr) {
-                    logger.debug(
-                      { error: pinErr.message },
-                      'Native WhatsApp pin failed'
-                    );
+                    logger.debug({ error: pinErr.message }, 'Native WhatsApp pin failed');
                   }
                 }
                 if (nativePinOk) continue; // If native pin succeeded, do not send secondary notification text to WA
