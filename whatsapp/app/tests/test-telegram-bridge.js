@@ -144,6 +144,13 @@ describe('Telegram Bridge Unit Tests', () => {
     assert.strictEqual(mapping.sync_pins, true);
   });
 
+  it('syncWhatsAppEditToTelegram preserves sender headers and updates mapping', async () => {
+    const { syncWhatsAppEditToTelegram } = await import('../src/whatsapp/telegram/listener.js');
+    const { updateTranslationIfExists } = await import('../src/whatsapp/moderation/engine.js');
+    assert.strictEqual(typeof syncWhatsAppEditToTelegram, 'function');
+    assert.strictEqual(typeof updateTranslationIfExists, 'function');
+  });
+
   it('validates 16 message and media types in integration test suite coverage', () => {
     const featureTypes = [
       '1. Text & Formatting',

@@ -121,14 +121,27 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
       const updatedText = `${header} *(edited)*\n\n"${transResult.translation}"`;
 
       if (session?.sock?.sendMessage) {
-        await session.sock.sendMessage(groupId, {
-          text: updatedText,
-          edit: record.botKey,
-        });
-        logger.info(
-          { groupId, sourceWaId, botWaId: record.botWaId },
-          '✏️ Successfully synchronized edited WhatsApp auto-translation'
-        );
+        try {
+          await session.sock.sendMessage(groupId, {
+            text: updatedText,
+            edit: record.botKey,
+          });
+          logger.info(
+            { groupId, sourceWaId, botWaId: record.botWaId },
+            '✏️ Successfully synchronized edited WhatsApp auto-translation'
+          );
+        } catch (editErr) {
+          logger.debug({ error: editErr.message }, 'Native WhatsApp translation edit rejected, sending update reply');
+          const sentNew = await session.sock.sendMessage(
+            groupId,
+            { text: updatedText },
+            { quoted: { key: record.botKey } }
+          );
+          if (sentNew?.key?.id) {
+            record.botWaId = sentNew.key.id;
+            record.botKey = sentNew.key;
+          }
+        }
       }
     }
   } catch (err) {

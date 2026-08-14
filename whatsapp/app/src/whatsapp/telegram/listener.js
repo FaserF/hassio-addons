@@ -1240,14 +1240,20 @@ export async function processTelegramUpdates() {
               `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User';
             tgText = `👥 [System: ${name} left the Telegram group]`;
           } else if (msg.pinned_message) {
-            const pinnedSender = msg.pinned_message.from
-              ? `${msg.pinned_message.from.first_name || ''} ${msg.pinned_message.from.last_name || ''}`.trim() ||
-                msg.pinned_message.from.username
+            const pinnedObj = msg.pinned_message;
+            const pinnedSender = pinnedObj.from
+              ? `${pinnedObj.from.first_name || ''} ${pinnedObj.from.last_name || ''}`.trim() ||
+                pinnedObj.from.username ||
+                'User'
               : 'User';
-            const snippet = (msg.pinned_message.text || msg.pinned_message.caption || '').slice(
-              0,
-              60
-            );
+            const rawSnippet =
+              pinnedObj.text ||
+              pinnedObj.caption ||
+              (pinnedObj.photo ? '[📷 Photo]' : '') ||
+              (pinnedObj.video ? '[🎥 Video]' : '') ||
+              (pinnedObj.document ? `[📄 ${pinnedObj.document.file_name || 'Document'}]` : '') ||
+              'Message';
+            const snippet = rawSnippet.length > 80 ? `${rawSnippet.slice(0, 80)}...` : rawSnippet;
             tgText = `📌 [Pinned Message by ${pinnedSender}]: ${snippet}`;
           } else if (msg.poll) {
             const p = msg.poll;
