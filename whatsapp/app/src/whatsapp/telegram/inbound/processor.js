@@ -567,7 +567,11 @@ export async function processTelegramUpdates() {
               const groupModCfg = getGroupModerationConfig(modStore, mapping.wa_jid);
               const targetLang = groupModCfg?.auto_translate_target || 'de';
               const transRes = await translateTextGatewayWithReason(tgText, targetLang);
-              if (transRes?.translation && transRes.translation.trim() && transRes.translation.trim().toLowerCase() !== tgText.trim().toLowerCase()) {
+              if (
+                transRes?.translation &&
+                transRes.translation.trim() &&
+                transRes.translation.trim().toLowerCase() !== tgText.trim().toLowerCase()
+              ) {
                 const note = `🌐 _[Auto-translated -> ${targetLang.toUpperCase()}]_\n`;
                 formattedTgText = `${note}${transRes.translation}`;
               }
@@ -638,7 +642,11 @@ export async function processTelegramUpdates() {
                       );
                     } catch (nestedErr) {
                       logger.warn(
-                        { error: pinErr.message, nestedError: nestedErr.message, groupId: mapping.wa_jid },
+                        {
+                          error: pinErr.message,
+                          nestedError: nestedErr.message,
+                          groupId: mapping.wa_jid,
+                        },
                         'Native WhatsApp pin failed (bot may lack admin rights)'
                       );
                     }

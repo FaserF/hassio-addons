@@ -53,11 +53,21 @@ export function registerMuteCommands(registry) {
       const validTargets = [];
       for (const jid of targetMatches) {
         if (isSameUser(jid, userId, session)) {
-          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_mute_self') }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.cannot_mute_self') },
+            rawMsg
+          );
           continue;
         }
         if (isSameUser(jid, session?.sock?.user?.id, session)) {
-          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_mute_bot') }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.cannot_mute_bot') },
+            rawMsg
+          );
           continue;
         }
         validTargets.push(jid);
@@ -74,7 +84,10 @@ export function registerMuteCommands(registry) {
         session,
         groupId,
         {
-          text: gt(config, 'bot_replies.muted_indefinitely', { count: validTargets.length, reason }),
+          text: gt(config, 'bot_replies.muted_indefinitely', {
+            count: validTargets.length,
+            reason,
+          }),
           mentions: validTargets,
         },
         rawMsg
@@ -123,7 +136,10 @@ export function registerMuteCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: gt(config, 'bot_replies.unmuted_count', { count: unmutedCount }), mentions: targetMatches },
+          {
+            text: gt(config, 'bot_replies.unmuted_count', { count: unmutedCount }),
+            mentions: targetMatches,
+          },
           rawMsg
         );
       } else {
@@ -176,11 +192,21 @@ export function registerMuteCommands(registry) {
       const validTargets = [];
       for (const targetJid of targetMatches) {
         if (isSameUser(targetJid, userId, session)) {
-          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_mute_self') }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.cannot_mute_self') },
+            rawMsg
+          );
           continue;
         }
         if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
-          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_mute_bot') }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.cannot_mute_bot') },
+            rawMsg
+          );
           continue;
         }
         validTargets.push(targetJid);
@@ -222,7 +248,11 @@ export function registerMuteCommands(registry) {
         session,
         groupId,
         {
-          text: gt(config, 'bot_replies.muted_temp', { user: validTargets[0]?.split('@')[0] || '', duration: formatDuration(durationMs), reason }),
+          text: gt(config, 'bot_replies.muted_temp', {
+            user: validTargets[0]?.split('@')[0] || '',
+            duration: formatDuration(durationMs),
+            reason,
+          }),
           mentions: targetMatches,
         },
         rawMsg
@@ -270,7 +300,12 @@ export function registerMuteCommands(registry) {
       const validTargets = [];
       for (const targetJid of targetMatches) {
         if (isSameUser(targetJid, userId, session)) {
-          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_ban_self') }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.cannot_ban_self') },
+            rawMsg
+          );
           continue;
         }
         if (isSameUser(targetJid, session?.sock?.user?.id, session)) {

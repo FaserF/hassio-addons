@@ -134,7 +134,11 @@ export async function syncWhatsAppToTelegram(
           const groupModCfg = getGroupModerationConfig(modStore, waJid);
           const targetLang = groupModCfg?.auto_translate_target || 'en';
           const transRes = await translateTextGatewayWithReason(textContent, targetLang);
-          if (transRes?.translation && transRes.translation.trim() && transRes.translation.trim().toLowerCase() !== textContent.trim().toLowerCase()) {
+          if (
+            transRes?.translation &&
+            transRes.translation.trim() &&
+            transRes.translation.trim().toLowerCase() !== textContent.trim().toLowerCase()
+          ) {
             const note = `🌐 <i>[Auto-translated -> ${targetLang.toUpperCase()}]</i>\n`;
             effectiveText = `${note}${transRes.translation}`;
           }

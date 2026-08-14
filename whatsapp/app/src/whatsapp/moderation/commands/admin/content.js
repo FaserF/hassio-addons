@@ -31,7 +31,12 @@ export function registerContentCommands(registry) {
     async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
       const quotedMsg = rawMsg.message?.extendedTextMessage?.contextInfo;
       if (!quotedMsg?.stanzaId) {
-        await reply(session, groupId, { text: gt(config, 'bot_replies.delete_reply_required') }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.delete_reply_required') },
+          rawMsg
+        );
         return;
       }
       try {
@@ -90,7 +95,12 @@ export function registerContentCommands(registry) {
       if (!c.locks[type]) c.locks[type] = { enabled: true, action: 'delete' };
       c.locks[type].enabled = true;
       saveModerationStore(store);
-      await reply(session, groupId, { text: gt(config, 'bot_replies.type_locked', { type }) }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.type_locked', { type }) },
+        rawMsg
+      );
     },
     { adminOnly: true, help: 'Lock a content type (e.g. url, image, sticker, invite, poll)' }
   );
@@ -114,7 +124,12 @@ export function registerContentCommands(registry) {
         c.locks[type].enabled = false;
         saveModerationStore(store);
       }
-      await reply(session, groupId, { text: gt(config, 'bot_replies.type_unlocked', { type }) }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.type_unlocked', { type }) },
+        rawMsg
+      );
     },
     { adminOnly: true, help: 'Unlock a content type' }
   );
@@ -144,7 +159,12 @@ export function registerContentCommands(registry) {
           type: 1,
           time: 604800,
         });
-        trackPinnedMessage(groupId, quoted.stanzaId, quoted.participant, quoted.participant ? false : true);
+        trackPinnedMessage(
+          groupId,
+          quoted.stanzaId,
+          quoted.participant,
+          quoted.participant ? false : true
+        );
         syncWhatsAppPinToTelegram(quoted.stanzaId, groupId, true);
         await reply(session, groupId, { text: gt(config, 'bot_replies.pin_success') }, rawMsg);
       } catch (e) {
@@ -161,12 +181,22 @@ export function registerContentCommands(registry) {
               time: 604800,
             },
           });
-          trackPinnedMessage(groupId, quoted.stanzaId, quoted.participant, quoted.participant ? false : true);
+          trackPinnedMessage(
+            groupId,
+            quoted.stanzaId,
+            quoted.participant,
+            quoted.participant ? false : true
+          );
           syncWhatsAppPinToTelegram(quoted.stanzaId, groupId, true);
           await reply(session, groupId, { text: gt(config, 'bot_replies.pin_success') }, rawMsg);
         } catch (e2) {
           logger.warn({ error: e2.message, groupId }, 'Failed to pin message');
-          await reply(session, groupId, { text: gt(config, 'bot_replies.pin_failed', { error: e2.message }) }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.pin_failed', { error: e2.message }) },
+            rawMsg
+          );
         }
       }
     },
@@ -220,7 +250,12 @@ export function registerContentCommands(registry) {
           await reply(session, groupId, { text: gt(config, 'bot_replies.unpin_success') }, rawMsg);
         } catch (e2) {
           logger.warn({ error: e2.message, groupId }, 'Failed to unpin message');
-          await reply(session, groupId, { text: gt(config, 'bot_replies.unpin_failed', { error: e2.message }) }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.unpin_failed', { error: e2.message }) },
+            rawMsg
+          );
         }
       }
     },

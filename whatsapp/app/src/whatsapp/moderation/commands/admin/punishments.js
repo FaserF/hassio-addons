@@ -100,14 +100,20 @@ export function registerPunishmentCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: gt(config, 'bot_replies.warnings_cleared', { user: targetId }), mentions: [targetJid] },
+            {
+              text: gt(config, 'bot_replies.warnings_cleared', { user: targetId }),
+              mentions: [targetJid],
+            },
             rawMsg
           );
         } else {
           await reply(
             session,
             groupId,
-            { text: gt(config, 'bot_replies.user_no_warnings', { user: targetId }), mentions: [targetJid] },
+            {
+              text: gt(config, 'bot_replies.user_no_warnings', { user: targetId }),
+              mentions: [targetJid],
+            },
             rawMsg
           );
         }
@@ -152,7 +158,11 @@ export function registerPunishmentCommands(registry) {
             session,
             groupId,
             {
-              text: gt(config, 'bot_replies.user_warnings_list', { user: targetId, count: warns.length, list: wList }),
+              text: gt(config, 'bot_replies.user_warnings_list', {
+                user: targetId,
+                count: warns.length,
+                list: wList,
+              }),
               mentions: [targetJid],
             },
             rawMsg
@@ -161,7 +171,10 @@ export function registerPunishmentCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: gt(config, 'bot_replies.user_zero_warnings', { user: targetId }), mentions: [targetJid] },
+            {
+              text: gt(config, 'bot_replies.user_zero_warnings', { user: targetId }),
+              mentions: [targetJid],
+            },
             rawMsg
           );
         }
@@ -194,11 +207,21 @@ export function registerPunishmentCommands(registry) {
       const reason = args.join(' ') || 'Admin requested kick';
       for (const targetJid of targetMatches) {
         if (isSameUser(targetJid, userId, session)) {
-          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_kick_self') }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.cannot_kick_self') },
+            rawMsg
+          );
           continue;
         }
         if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
-          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_kick_bot') }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.cannot_kick_bot') },
+            rawMsg
+          );
           continue;
         }
         const targetId = targetJid.split('@')[0];
@@ -232,7 +255,12 @@ export function registerPunishmentCommands(registry) {
       const reason = args.join(' ') || 'Admin requested ban';
       for (const targetJid of targetMatches) {
         if (isSameUser(targetJid, userId, session)) {
-          await reply(session, groupId, { text: gt(config, 'bot_replies.cannot_ban_self') }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.cannot_ban_self') },
+            rawMsg
+          );
           continue;
         }
         if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
@@ -267,7 +295,9 @@ export function registerPunishmentCommands(registry) {
           session,
           groupId,
           {
-            text: gt(config, 'bot_replies.unban_mention_required', { prefix: config.commands.prefix }),
+            text: gt(config, 'bot_replies.unban_mention_required', {
+              prefix: config.commands.prefix,
+            }),
           },
           rawMsg
         );
@@ -293,7 +323,10 @@ export function registerPunishmentCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: gt(config, 'bot_replies.user_not_banned', { user: targetId }), mentions: [targetJid] },
+            {
+              text: gt(config, 'bot_replies.user_not_banned', { user: targetId }),
+              mentions: [targetJid],
+            },
             rawMsg
           );
         }
@@ -342,7 +375,10 @@ export function registerPunishmentCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: gt(config, 'bot_replies.kick_log_cleared', { user: targetId }), mentions: [targetJid] },
+          {
+            text: gt(config, 'bot_replies.kick_log_cleared', { user: targetId }),
+            mentions: [targetJid],
+          },
           rawMsg
         );
       }

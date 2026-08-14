@@ -529,7 +529,12 @@ export function handleIncomingMessages(session) {
             '📌 Detected WhatsApp message pin update (protocolMessage PIN_IN_CHAT)'
           );
           if (isPinned) {
-            trackPinnedMessage(targetJid, pinnedWaMsgId, pinObj.key?.participant, pinObj.key?.fromMe);
+            trackPinnedMessage(
+              targetJid,
+              pinnedWaMsgId,
+              pinObj.key?.participant,
+              pinObj.key?.fromMe
+            );
           } else {
             untrackPinnedMessage(targetJid, pinnedWaMsgId);
           }
