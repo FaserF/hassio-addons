@@ -565,9 +565,7 @@ export async function processTelegramUpdates() {
             try {
               const groupModCfg = getGroupModerationConfig(mapping.wa_jid);
               const targetLang =
-                groupModCfg?.translation?.target_lang ||
-                groupModCfg?.language ||
-                'de';
+                groupModCfg?.translation?.target_lang || groupModCfg?.language || 'de';
               const transRes = await translateTextGatewayWithReason(tgText, targetLang);
               if (
                 transRes?.translation &&

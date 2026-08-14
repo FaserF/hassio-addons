@@ -242,10 +242,7 @@ export async function syncWhatsAppEditToTelegram(
     if (mapping.translate_wa_to_tg && newText && newText.trim()) {
       try {
         const groupModCfg = getGroupModerationConfig(waJid);
-        const targetLang =
-          groupModCfg?.translation?.target_lang ||
-          groupModCfg?.language ||
-          'en';
+        const targetLang = groupModCfg?.translation?.target_lang || groupModCfg?.language || 'en';
         const transRes = await translateTextGatewayWithReason(newText, targetLang);
         if (
           transRes?.translation &&

@@ -131,10 +131,7 @@ export async function syncWhatsAppToTelegram(
       if (mapping.translate_wa_to_tg && textContent && textContent.trim()) {
         try {
           const groupModCfg = getGroupModerationConfig(waJid);
-          const targetLang =
-            groupModCfg?.translation?.target_lang ||
-            groupModCfg?.language ||
-            'en';
+          const targetLang = groupModCfg?.translation?.target_lang || groupModCfg?.language || 'en';
           const transRes = await translateTextGatewayWithReason(textContent, targetLang);
           if (
             transRes?.translation &&

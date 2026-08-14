@@ -17,10 +17,17 @@ export function trackPinnedMessage(groupId, waMsgId, participant = null, fromMe 
     const store = loadModerationStore();
     if (!store.groups[groupId]) store.groups[groupId] = getGroupModerationConfig(groupId);
     if (!store.groups[groupId].pinned_messages) store.groups[groupId].pinned_messages = {};
-    store.groups[groupId].pinned_messages[waMsgId] = { id: waMsgId, participant: participant || null, fromMe: Boolean(fromMe) };
+    store.groups[groupId].pinned_messages[waMsgId] = {
+      id: waMsgId,
+      participant: participant || null,
+      fromMe: Boolean(fromMe),
+    };
     saveModerationStore(store);
   } catch (e) {
-    logger.debug({ error: e.message, groupId, waMsgId }, 'Failed to persist pinned message tracking');
+    logger.debug(
+      { error: e.message, groupId, waMsgId },
+      'Failed to persist pinned message tracking'
+    );
   }
 }
 
@@ -33,7 +40,10 @@ export function untrackPinnedMessage(groupId, waMsgId) {
       saveModerationStore(store);
     }
   } catch (e) {
-    logger.debug({ error: e.message, groupId, waMsgId }, 'Failed to remove pinned message tracking');
+    logger.debug(
+      { error: e.message, groupId, waMsgId },
+      'Failed to remove pinned message tracking'
+    );
   }
 }
 
@@ -304,7 +314,10 @@ export function registerContentCommands(registry) {
         let unpinnedCount = 0;
         const tracked = getTrackedPinnedMessages(groupId);
         const pinnedEntries = Object.entries(tracked);
-        logger.info({ groupId, pinnedCount: pinnedEntries.length }, '📌 unpinall: found tracked pins');
+        logger.info(
+          { groupId, pinnedCount: pinnedEntries.length },
+          '📌 unpinall: found tracked pins'
+        );
 
         for (const [msgId, item] of pinnedEntries) {
           try {
@@ -339,7 +352,10 @@ export function registerContentCommands(registry) {
               unpinnedCount++;
               logger.info({ msgId, groupId }, '📌 unpinall: unpinned message (fallback format)');
             } catch (_e) {
-              logger.warn({ msgId, error: _e?.message, groupId }, '📌 unpinall: failed to unpin message');
+              logger.warn(
+                { msgId, error: _e?.message, groupId },
+                '📌 unpinall: failed to unpin message'
+              );
             }
           }
         }
