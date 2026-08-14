@@ -11,6 +11,7 @@ host_network: true
 ingress: true
 ingress_entry: "admin/"
 panel_icon: "mdi:shield-check-outline"
+startup: system
 discovery:
   - shielddns
 map:

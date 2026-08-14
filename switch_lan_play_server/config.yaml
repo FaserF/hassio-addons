@@ -9,6 +9,7 @@ arch:
 image: ghcr.io/faserf/hassio-addons-switch-lan-play-server-{arch}
 panel_icon: mdi:local-area-network
 init: false
+startup: system
 options:
   log_level: "info"
 schema:

@@ -8,6 +8,7 @@ arch:
   - aarch64
   - amd64
 image: ghcr.io/faserf/hassio-addons-openssl-{arch}
+startup: once
 map:
   - ssl:rw
 init: false

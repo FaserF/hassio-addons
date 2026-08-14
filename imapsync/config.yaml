@@ -10,6 +10,7 @@ arch:
   - amd64
 # image: ghcr.io/faserf/hassio-addons-imapsync-{arch}
 init: false
+startup: once
 map:
   - homeassistant_config:rw
 options:

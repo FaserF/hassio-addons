@@ -9,6 +9,7 @@ arch:
   - amd64
 image: ghcr.io/faserf/hassio-addons-tado_aa-{arch}
 init: false
+startup: services
 options:
   username: ""
   password: ""

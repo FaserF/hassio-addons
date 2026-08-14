@@ -9,6 +9,7 @@ arch:
   - aarch64
   - amd64
 image: ghcr.io/faserf/hassio-addons-bashscriptexecuter-{arch}
+startup: once
 map:
   - share:rw
   - homeassistant_config:rw

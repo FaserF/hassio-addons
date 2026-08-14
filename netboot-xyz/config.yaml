@@ -15,6 +15,7 @@ init: false
 full_access: true
 privileged:
   - NET_ADMIN
+startup: system
 map:
   - media:rw
 panel_icon: mdi:download-network

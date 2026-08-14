@@ -10,6 +10,7 @@ arch:
 image: ghcr.io/faserf/hassio-addons-pterodactyl_wings-{arch}
 # webui: "[PROTO:ssl]://[HOST]:[PORT:8080]"
 host_network: true
+startup: services
 map:
   - share:rw
 ingress: true

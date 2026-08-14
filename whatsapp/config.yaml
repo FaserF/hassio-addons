@@ -1,4 +1,4 @@
-name: "WhatsApp Home Assistant App"
+name: "WhatsApp Gateway"
 version: "2.0.0"
 slug: "whatsapp"
 image: ghcr.io/faserf/hassio-addons-whatsapp-{arch}
@@ -9,10 +9,15 @@ arch:
   - amd64
 init: false
 host_network: true
+startup: services
+discovery:
+  - whatsapp
 map:
   - homeassistant_config:rw
   - media:rw
 panel_icon: mdi:whatsapp
+panel_title: "WhatsApp Gateway"
+ingress_title: "WhatsApp Gateway"
 options:
   log_level: "info"
   reset_session: false
