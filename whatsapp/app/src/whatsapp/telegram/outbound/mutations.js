@@ -403,7 +403,11 @@ export async function syncWhatsAppEditToTelegram(
       if (activeBot) {
         try {
           ignoreTgEditEchoes.add(String(mapped.tgMsgId));
-          const editRes = await activeBot.editMessageText(mapped.tgChatId, mapped.tgMsgId, fullText);
+          const editRes = await activeBot.editMessageText(
+            mapped.tgChatId,
+            mapped.tgMsgId,
+            fullText
+          );
           if (editRes && (editRes.message_id || editRes.ok || editRes.result)) {
             editSucceeded = true;
             recordMessageMap(

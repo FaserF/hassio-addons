@@ -28,7 +28,10 @@ export async function syncWhatsAppToTelegram(
   if (waMsgId) {
     const now = Date.now();
     if (recentWaSyncMessages.has(waMsgId) && now - recentWaSyncMessages.get(waMsgId) < 10000) {
-      logger.debug({ waMsgId }, 'Skipping duplicate WhatsApp to Telegram sync for identical waMsgId');
+      logger.debug(
+        { waMsgId },
+        'Skipping duplicate WhatsApp to Telegram sync for identical waMsgId'
+      );
       return;
     }
     recentWaSyncMessages.set(waMsgId, now);
@@ -49,7 +52,11 @@ export async function syncWhatsAppToTelegram(
       const ageMs = Date.now() - msgTimeMs;
       if (ageMs > maxAgeMs) {
         logger.info(
-          { waMsgId, ageSeconds: Math.round(ageMs / 1000), maxAgeSeconds: Math.round(maxAgeMs / 1000) },
+          {
+            waMsgId,
+            ageSeconds: Math.round(ageMs / 1000),
+            maxAgeSeconds: Math.round(maxAgeMs / 1000),
+          },
           '⏳ Skipping outdated offline WhatsApp message beyond catchup window'
         );
         return;

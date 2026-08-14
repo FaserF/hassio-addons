@@ -3608,11 +3608,21 @@ async function saveTelegramCatchupConfig() {
       }),
     });
     if (res.ok) {
-      showToast(window.t ? window.t('telegram.catchup_saved') || 'Offline-Nachholen gespeichert' : 'Offline Catchup settings saved', 'success');
+      showToast(
+        window.t
+          ? window.t('telegram.catchup_saved') || 'Offline-Nachholen gespeichert'
+          : 'Offline Catchup settings saved',
+        'success'
+      );
     }
   } catch (err) {
     console.error('Failed to save offline catchup config', err);
-    showToast(window.t ? window.t('telegram.catchup_save_failed') || 'Fehler beim Speichern' : 'Failed to save offline catchup settings', 'danger');
+    showToast(
+      window.t
+        ? window.t('telegram.catchup_save_failed') || 'Fehler beim Speichern'
+        : 'Failed to save offline catchup settings',
+      'danger'
+    );
   }
 }
 

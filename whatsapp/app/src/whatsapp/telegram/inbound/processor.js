@@ -316,7 +316,11 @@ export async function processTelegramUpdates() {
           const ageMs = Date.now() - msgTimeMs;
           if (ageMs > maxAgeMs) {
             logger.info(
-              { tgMsgId: msg.message_id, ageSeconds: Math.round(ageMs / 1000), maxAgeSeconds: Math.round(maxAgeMs / 1000) },
+              {
+                tgMsgId: msg.message_id,
+                ageSeconds: Math.round(ageMs / 1000),
+                maxAgeSeconds: Math.round(maxAgeMs / 1000),
+              },
               '⏳ Skipping outdated offline Telegram message beyond catchup window'
             );
             continue;
