@@ -1,0 +1,843 @@
+import { loadTelegramStore, saveTelegramStore, updateCachedChat } from '../store.js';
+import { getTelegramBotClient } from '../bot.js';
+import { recordMessageMap, resolveWaMsgFromTg } from '../message_map.js';
+import { telegramToWaFormatting } from '../format.js';
+import { formatHeader } from '../headers.js';
+import { getSession, sessions } from '../../../session.js';
+import { logger } from '../../../logger.js';
+import { t } from '../../../locales/loader.js';
+import { ignoreWaEditEchoes, ignoreTgEditEchoes } from '../outbound/mutations.js';
+
+const lastUpdateIds = new Map();
+
+export async function processTelegramUpdates() {
+  const store = loadTelegramStore();
+  if (!store.enabled) return;
+
+  const bots = (store.bots || []).filter((b) => b.enabled && b.token);
+  if (bots.length === 0) return;
+
+  for (const botConfig of bots) {
+    const bot = getTelegramBotClient(botConfig.id);
+    if (!bot) continue;
+
+    let lastUpdateId = lastUpdateIds.get(botConfig.id) || 0;
+
+    try {
+      const updates = await bot.request('getUpdates', {
+        offset: lastUpdateId + 1,
+        limit: 50,
+        timeout: 0,
+        allowed_updates: [
+          'message',
+          'edited_message',
+          'channel_post',
+          'edited_channel_post',
+          'message_reaction',
+          'message_reaction_count',
+          'poll',
+          'poll_answer',
+        ],
+      });
+
+      if (!Array.isArray(updates) || updates.length === 0) continue;
+
+      for (const update of updates) {
+        lastUpdateId = Math.max(lastUpdateId, update.update_id);
+        lastUpdateIds.set(botConfig.id, lastUpdateId);
+
+        // Handle Telegram Poll Answers (when a user votes or changes vote in a poll)
+        if (update.poll_answer) {
+          const pa = update.poll_answer;
+          const pollId = String(pa.poll_id);
+          const voterName = pa.user
+            ? `${pa.user.first_name || ''} ${pa.user.last_name || ''}`.trim() ||
+              pa.user.username ||
+              'Telegram User'
+            : 'Telegram User';
+          const selectedOptionIds = pa.option_ids || [];
+
+          // Find stored poll details if cached
+          const cachedPoll = store.cached_polls?.[pollId];
+          const pollQuestion = cachedPoll?.question || 'Poll';
+          const pollOptions = cachedPoll?.options || [];
+          const selectedText = selectedOptionIds
+            .map((idx) => pollOptions[idx] || `Option ${idx + 1}`)
+            .join(', ');
+
+          const voteText =
+            selectedOptionIds.length > 0
+              ? `📊 [Poll Vote Update: ${pollQuestion}]\n👤 Voter: ${voterName}\n🗳️ Vote: ${selectedText}`
+              : `📊 [Poll Vote Update: ${pollQuestion}]\n👤 Voter: ${voterName}\n🗳️ Vote: Retracted (No options selected)`;
+
+          const tgChatId = String(pa.voter_chat?.id || cachedPoll?.chat_id || '');
+          const mappings = (store.mappings || []).filter(
+            (m) =>
+              m.enabled &&
+              (!tgChatId || String(m.tg_chat_id) === tgChatId) &&
+              (!m.bot_id || m.bot_id === botConfig.id) &&
+              (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
+          );
+
+          for (const mapping of mappings) {
+            const pollMode = mapping.poll_sync_mode || 'text_diagram';
+            if (pollMode === 'once_no_update') continue;
+            if (mapping.poll_send_update_message === false) continue;
+
+            let session = getSession('default');
+            if (!session || !session.sock || !session.isConnected) {
+              for (const s of sessions.values()) {
+                if (s.sock && s.isConnected) {
+                  session = s;
+                  break;
+                }
+              }
+            }
+            if (session && session.sock && session.isConnected) {
+              try {
+                // Delete previous poll vote update message if stored to avoid chat cluttering
+                const oldWaVoteMsgKey = cachedPoll?.last_wa_vote_msg_key;
+                if (oldWaVoteMsgKey && mapping.poll_delete_old_update !== false) {
+                  try {
+                    await session.sock.sendMessage(mapping.wa_jid, { delete: oldWaVoteMsgKey });
+                  } catch (_delErr) {}
+                }
+                const sentWaMsg = await session.sock.sendMessage(mapping.wa_jid, {
+                  text: voteText,
+                });
+                if (sentWaMsg?.key && pollId) {
+                  if (!store.cached_polls) store.cached_polls = {};
+                  if (!store.cached_polls[pollId]) store.cached_polls[pollId] = {};
+                  store.cached_polls[pollId].last_wa_vote_msg_key = sentWaMsg.key;
+                  saveTelegramStore(store);
+                }
+              } catch (e) {
+                logger.error(
+                  { error: e.message },
+                  '❌ Failed to sync Telegram poll vote to WhatsApp'
+                );
+              }
+            }
+          }
+          continue;
+        }
+
+        // Handle Telegram Poll Updates (when poll options or total voters change)
+        if (update.poll) {
+          const p = update.poll;
+          const pollId = String(p.id);
+          if (!store.cached_polls) store.cached_polls = {};
+          const previousPoll = store.cached_polls[pollId];
+          store.cached_polls[pollId] = {
+            id: pollId,
+            question: p.question,
+            options: (p.options || []).map((o) => o.text),
+            total_voter_count: p.total_voter_count,
+            is_closed: p.is_closed,
+            chat_id: previousPoll?.chat_id || '',
+          };
+          saveTelegramStore(store);
+
+          // Build text diagram update and send to mapped WhatsApp chats
+          const tgChatIdForPoll = String(previousPoll?.chat_id || '');
+          const pollMappings = (store.mappings || []).filter(
+            (m) =>
+              m.enabled &&
+              (!tgChatIdForPoll || String(m.tg_chat_id) === tgChatIdForPoll) &&
+              (!m.bot_id || m.bot_id === botConfig.id) &&
+              (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
+          );
+
+          for (const mapping of pollMappings) {
+            const pollMode = mapping.poll_sync_mode || 'text_diagram';
+            if (pollMode === 'once_no_update' || pollMode === 'native_no_vote') continue;
+
+            const totalVotes = p.total_voter_count || 0;
+            if (pollMode === 'native_sync') {
+              // Auto-vote mode: find leading option with highest votes and relay winner update
+              if (totalVotes > 0) {
+                const sortedOpts = [...(p.options || [])].sort(
+                  (a, b) => (b.voter_count || 0) - (a.voter_count || 0)
+                );
+                const winner = sortedOpts[0];
+                if (winner && winner.voter_count > 0) {
+                  const winnerText = `🗳️ [Poll Leader / Auto-Vote: ${p.question}]\n🏆 Leading Option: ${winner.text} (${winner.voter_count}/${totalVotes} votes)`;
+                  let session = getSession('default');
+                  if (!session || !session.sock || !session.isConnected) {
+                    for (const s of sessions.values()) {
+                      if (s.sock && s.isConnected) {
+                        session = s;
+                        break;
+                      }
+                    }
+                  }
+                  if (session && session.sock && session.isConnected) {
+                    await session.sock
+                      .sendMessage(mapping.wa_jid, { text: winnerText })
+                      .catch(() => null);
+                  }
+                }
+              }
+              continue;
+            }
+            if (mapping.poll_send_update_message === false) continue;
+
+            const optLines = (p.options || []).map((opt) => {
+              const pct = totalVotes > 0 ? Math.round((opt.voter_count / totalVotes) * 100) : 0;
+              const bar = '█'.repeat(Math.round(pct / 10)) + '░'.repeat(10 - Math.round(pct / 10));
+              return `  ${opt.text}\n  ${bar} ${opt.voter_count} (${pct}%)`;
+            });
+            const closedLabel = p.is_closed ? ' ✅ Closed' : '';
+            const updateText = `📊 [Poll Update${closedLabel}: ${p.question}]\n${optLines.join('\n')}\n👥 Total voters: ${totalVotes}`;
+
+            let session = getSession('default');
+            if (!session || !session.sock || !session.isConnected) {
+              for (const s of sessions.values()) {
+                if (s.sock && s.isConnected) {
+                  session = s;
+                  break;
+                }
+              }
+            }
+            if (session && session.sock && session.isConnected) {
+              try {
+                await session.sock.sendMessage(mapping.wa_jid, { text: updateText });
+              } catch (e) {
+                logger.error(
+                  { error: e.message },
+                  '❌ Failed to send Telegram poll update to WhatsApp'
+                );
+              }
+            }
+          }
+          continue;
+        }
+
+        // Handle Telegram Message Reactions (message_reaction updates)
+        if (update.message_reaction) {
+          const reactObj = update.message_reaction;
+          const tgChatId = String(reactObj.chat.id);
+          const tgMsgId = String(reactObj.message_id);
+          const newReactions = reactObj.new_reaction || [];
+          const latestEmoji =
+            newReactions.length > 0 ? newReactions[newReactions.length - 1].emoji : '';
+
+          const mappings = (store.mappings || []).filter(
+            (m) =>
+              m.enabled &&
+              String(m.tg_chat_id) === tgChatId &&
+              (!m.bot_id || m.bot_id === botConfig.id) &&
+              (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
+          );
+
+          if (mappings.length > 0) {
+            const mapped = resolveWaMsgFromTg(tgChatId, tgMsgId);
+            if (mapped && mapped.waMsgId && mapped.waJid) {
+              let session = getSession('default');
+              if (!session || !session.sock || !session.isConnected) {
+                for (const s of sessions.values()) {
+                  if (s.sock && s.isConnected) {
+                    session = s;
+                    break;
+                  }
+                }
+              }
+              if (session && session.sock && session.isConnected) {
+                try {
+                  const reactionKey = {
+                    remoteJid: mapped.waJid,
+                    id: mapped.waMsgId,
+                    fromMe: mapped.fromMe !== undefined ? mapped.fromMe : false,
+                  };
+                  await session.sock.sendMessage(mapped.waJid, {
+                    react: {
+                      text: latestEmoji || '', // Empty string removes reaction in Baileys
+                      key: reactionKey,
+                    },
+                  });
+                } catch (reactErr) {
+                  logger.error(
+                    { error: reactErr.message },
+                    '❌ Failed to sync Telegram reaction to WhatsApp'
+                  );
+                }
+              }
+            }
+          }
+          continue;
+        }
+
+        const isEdit = Boolean(update.edited_message || update.edited_channel_post);
+        const msg =
+          update.message ||
+          update.channel_post ||
+          update.edited_message ||
+          update.edited_channel_post;
+        if (!msg || !msg.chat) continue;
+
+        if (isEdit && ignoreTgEditEchoes.has(String(msg.message_id))) {
+          ignoreTgEditEchoes.delete(String(msg.message_id));
+          logger.debug(
+            { tgMsgId: msg.message_id },
+            'Ignoring Telegram edit event echo from WhatsApp bridge'
+          );
+          continue;
+        }
+
+        updateCachedChat(msg.chat, botConfig.id);
+
+        const tgChatId = String(msg.chat.id);
+        const mappings = (store.mappings || []).filter(
+          (m) =>
+            m.enabled &&
+            String(m.tg_chat_id) === tgChatId &&
+            (!m.bot_id || m.bot_id === botConfig.id) &&
+            (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
+        );
+
+        if (mappings.length === 0) continue;
+
+        const senderName = msg.from
+          ? `${msg.from.first_name || ''} ${msg.from.last_name || ''}`.trim() ||
+            msg.from.username ||
+            'Telegram User'
+          : msg.chat.title || 'Telegram';
+        let tgText = msg.text || msg.caption || '';
+        let mediaPayload = null; // { url, type, mimetype }
+
+        try {
+          if (msg.sticker) {
+            const emoji = msg.sticker.emoji ? ` ${msg.sticker.emoji}` : '';
+            tgText = tgText || `[🎨 Sticker${emoji}]`;
+            const fileId = msg.sticker.file_id;
+            const fileUrl = await bot.getFileUrl(fileId);
+            if (fileUrl) {
+              mediaPayload = {
+                url: fileUrl,
+                type: msg.sticker.is_animated || msg.sticker.is_video ? 'document' : 'sticker',
+                mimetype: msg.sticker.is_video ? 'video/webm' : 'image/webp',
+              };
+            }
+          } else if (msg.animation) {
+            tgText = tgText || '[🎞️ GIF]';
+            const fileId = msg.animation.file_id;
+            const fileUrl = await bot.getFileUrl(fileId);
+            if (fileUrl) {
+              mediaPayload = {
+                url: fileUrl,
+                type: 'video',
+                mimetype: msg.animation.mime_type || 'video/mp4',
+              };
+            }
+          } else if (msg.photo && Array.isArray(msg.photo) && msg.photo.length > 0) {
+            tgText = tgText || '[📷 Photo]';
+            const bestPhoto = msg.photo[msg.photo.length - 1];
+            const fileUrl = await bot.getFileUrl(bestPhoto.file_id);
+            if (fileUrl) {
+              mediaPayload = {
+                url: fileUrl,
+                type: 'image',
+                mimetype: 'image/jpeg',
+                mediaGroupId: msg.media_group_id || null,
+              };
+            }
+          } else if (msg.video) {
+            tgText = tgText || '[🎥 Video]';
+            const fileUrl = await bot.getFileUrl(msg.video.file_id);
+            if (fileUrl) {
+              mediaPayload = {
+                url: fileUrl,
+                type: 'video',
+                mimetype: msg.video.mime_type || 'video/mp4',
+                mediaGroupId: msg.media_group_id || null,
+              };
+            }
+          } else if (msg.video_note) {
+            tgText = tgText || '[📹 Video Note]';
+            const fileUrl = await bot.getFileUrl(msg.video_note.file_id);
+            if (fileUrl) {
+              mediaPayload = {
+                url: fileUrl,
+                type: 'video',
+                mimetype: 'video/mp4',
+                ptv: true,
+              };
+            }
+          } else if (msg.voice) {
+            tgText = tgText || '[🎤 Voice Note]';
+            const fileUrl = await bot.getFileUrl(msg.voice.file_id);
+            if (fileUrl) {
+              let audioBuffer = null;
+              try {
+                const res = await fetch(fileUrl);
+                if (res.ok) {
+                  audioBuffer = Buffer.from(await res.arrayBuffer());
+                }
+              } catch (_dlErr) {}
+              mediaPayload = {
+                url: fileUrl,
+                buffer: audioBuffer,
+                type: 'audio',
+                mimetype: msg.voice.mime_type || 'audio/ogg; codecs=opus',
+                ptt: true,
+              };
+            }
+          } else if (msg.audio) {
+            tgText = tgText || '[🎵 Audio]';
+            const fileUrl = await bot.getFileUrl(msg.audio.file_id);
+            if (fileUrl) {
+              let audioBuffer = null;
+              try {
+                const res = await fetch(fileUrl);
+                if (res.ok) {
+                  audioBuffer = Buffer.from(await res.arrayBuffer());
+                }
+              } catch (_dlErr) {}
+              mediaPayload = {
+                url: fileUrl,
+                buffer: audioBuffer,
+                type: 'audio',
+                mimetype: msg.audio.mime_type || 'audio/mp3',
+                ptt: false,
+              };
+            }
+          } else if (msg.document) {
+            tgText = tgText || `[📄 Document: ${msg.document.file_name || 'file'}]`;
+            const fileUrl = await bot.getFileUrl(msg.document.file_id);
+            if (fileUrl) {
+              mediaPayload = {
+                url: fileUrl,
+                type: 'document',
+                mimetype: msg.document.mime_type || 'application/octet-stream',
+                fileName: msg.document.file_name,
+              };
+            }
+          } else if (msg.contact) {
+            const c = msg.contact;
+            const fullName = `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Contact';
+            const phone = c.phone_number || '';
+            const vcardStr = `BEGIN:VCARD\nVERSION:3.0\nN:${c.last_name || ''};${c.first_name || ''};;;\nFN:${fullName}\nTEL;type=CELL;type=VOICE;waid=${phone.replace(/\D/g, '')}:+${phone.replace(/\D/g, '')}\nEND:VCARD`;
+            mediaPayload = {
+              type: 'contact',
+              displayName: fullName,
+              vcard: vcardStr,
+            };
+            tgText = tgText || `👤 [Contact: ${fullName} (${phone})]`;
+          } else if (msg.location) {
+            const loc = msg.location;
+            const isLive = Boolean(loc.live_period || msg.live_location);
+            mediaPayload = {
+              type: isLive ? 'live_location' : 'location',
+              latitude: loc.latitude,
+              longitude: loc.longitude,
+            };
+            tgText =
+              tgText ||
+              (isLive
+                ? `📍 [Live Location Share: ${loc.latitude}, ${loc.longitude}]`
+                : `📍 [Location Share: ${loc.latitude}, ${loc.longitude}]`);
+          } else if (
+            msg.new_chat_members &&
+            Array.isArray(msg.new_chat_members) &&
+            msg.new_chat_members.length > 0
+          ) {
+            const names = msg.new_chat_members
+              .map(
+                (m) => `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User'
+              )
+              .join(', ');
+            tgText = `👥 [System: ${names} joined the Telegram group]`;
+          } else if (msg.left_chat_member) {
+            const m = msg.left_chat_member;
+            const name =
+              `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User';
+            tgText = `👥 [System: ${name} left the Telegram group]`;
+          } else if (msg.pinned_message) {
+            const pinnedObj = msg.pinned_message;
+            const pinnedSender = pinnedObj.from
+              ? `${pinnedObj.from.first_name || ''} ${pinnedObj.from.last_name || ''}`.trim() ||
+                pinnedObj.from.username ||
+                'User'
+              : 'User';
+            const rawSnippet =
+              pinnedObj.text ||
+              pinnedObj.caption ||
+              (pinnedObj.photo ? '[📷 Photo]' : '') ||
+              (pinnedObj.video ? '[🎥 Video]' : '') ||
+              (pinnedObj.document ? `[📄 ${pinnedObj.document.file_name || 'Document'}]` : '') ||
+              'Message';
+            const snippet = rawSnippet.length > 80 ? `${rawSnippet.slice(0, 80)}...` : rawSnippet;
+            tgText = `📌 [Pinned Message by ${pinnedSender}]: ${snippet}`;
+          } else if (msg.poll) {
+            const p = msg.poll;
+            const pollOptions = (p.options || []).map((o) => o.text);
+            const optStr =
+              pollOptions.length > 0
+                ? `\nOptions:\n${pollOptions.map((o, i) => `  ${i + 1}️⃣ ${o}`).join('\n')}`
+                : '';
+            tgText = `📊 [Poll: ${p.question || 'Untitled'}]${optStr}`;
+            // Store native poll payload so per-mapping handler can create a native WA poll
+            mediaPayload = {
+              type: 'poll',
+              question: p.question || 'Poll',
+              options: pollOptions,
+              allows_multiple_answers: Boolean(p.allows_multiple_answers),
+              is_anonymous: Boolean(p.is_anonymous),
+            };
+            const pollId = String(p.id);
+            if (!store.cached_polls) store.cached_polls = {};
+            store.cached_polls[pollId] = {
+              id: pollId,
+              question: p.question,
+              options: pollOptions,
+              chat_id: tgChatId,
+            };
+            saveTelegramStore(store);
+          }
+        } catch (mediaErr) {
+          logger.warn({ error: mediaErr.message }, '⚠️ Failed to fetch Telegram file URL');
+        }
+
+        if (!tgText && !mediaPayload) continue;
+
+        const replyToTgId = msg.reply_to_message?.message_id;
+        let quotedWaMsgId = null;
+        let tgQuoteSnippet = '';
+        if (replyToTgId) {
+          const mapped = resolveWaMsgFromTg(tgChatId, replyToTgId);
+          if (mapped) {
+            quotedWaMsgId = mapped.waMsgId;
+          } else if (msg.reply_to_message) {
+            const qMsg = msg.reply_to_message;
+            const qSender =
+              qMsg.from?.first_name || qMsg.from?.username || qMsg.author_signature || 'User';
+            const qMediaTag = qMsg.animation
+              ? '🎥 [GIF/Video]'
+              : qMsg.sticker
+                ? `🎨 [Sticker ${qMsg.sticker.emoji || ''}]`.trim()
+                : qMsg.photo
+                  ? '📷 [Photo]'
+                  : qMsg.video
+                    ? '🎥 [Video]'
+                    : qMsg.audio || qMsg.voice
+                      ? '🎵 [Audio]'
+                      : qMsg.document
+                        ? `📄 [Document: ${qMsg.document.file_name || ''}]`.trim()
+                        : '';
+            const qText = qMsg.text || qMsg.caption || qMediaTag;
+            const snippet = qText
+              ? qText.length > 80
+                ? `${qText.substring(0, 80)}...`
+                : qText
+              : '';
+            if (snippet || qSender) {
+              tgQuoteSnippet = `> [${qSender}]: ${snippet}\n`;
+            }
+          }
+        }
+
+        for (const mapping of mappings) {
+          const isSystemMsg = Boolean(msg.new_chat_members || msg.left_chat_member);
+          const isPinMsg = Boolean(msg.pinned_message);
+          if (isSystemMsg && mapping.sync_system_events === false) continue;
+          if (isPinMsg && mapping.sync_pins === false) continue;
+
+          const isGroupChat = msg.chat.type === 'group' || msg.chat.type === 'supergroup';
+          const isDirectMirror = Boolean(mapping.is_direct_chat_mirror);
+          const rawHeader = isDirectMirror
+            ? ''
+            : formatHeader(
+                isGroupChat ? msg.chat.title : null,
+                senderName,
+                mapping.include_group_name,
+                isGroupChat ? mapping.include_sender_name : false
+              );
+          const cleanHeader = rawHeader.replace(/<\/?b>/g, '');
+          const entities = msg.entities || msg.caption_entities || null;
+          const formattedTgText =
+            mapping.convert_formatting !== false
+              ? telegramToWaFormatting(tgText, entities)
+              : tgText;
+          const outboundWaText = `${cleanHeader}${tgQuoteSnippet}${formattedTgText}`;
+
+          let session = getSession('default');
+          if (!session || !session.sock || !session.isConnected) {
+            for (const s of sessions.values()) {
+              if (s.sock && s.isConnected) {
+                session = s;
+                break;
+              }
+            }
+          }
+          if (session && session.sock && session.isConnected) {
+            try {
+              if (isPinMsg) {
+                const pinnedTgMsg = msg.pinned_message;
+                const pinnedTgMsgId = pinnedTgMsg?.message_id;
+                const mappedWaMsg = pinnedTgMsgId
+                  ? resolveWaMsgFromTg(tgChatId, String(pinnedTgMsgId))
+                  : null;
+                if (mappedWaMsg && mappedWaMsg.waMsgId) {
+                  try {
+                    await session.sock.sendMessage(mapping.wa_jid, {
+                      pin: {
+                        key: {
+                          remoteJid: mapping.wa_jid,
+                          fromMe: mappedWaMsg.fromMe !== undefined ? mappedWaMsg.fromMe : false,
+                          id: mappedWaMsg.waMsgId,
+                        },
+                        type: 1,
+                        time: 604800,
+                      },
+                    });
+                    logger.info(
+                      { tgChatId, tgPinnedId: pinnedTgMsgId, waMsgId: mappedWaMsg.waMsgId },
+                      '📌 Mirrored Telegram message pin natively to WhatsApp'
+                    );
+                  } catch (pinErr) {
+                    logger.debug({ error: pinErr.message }, 'Native WhatsApp pin failed');
+                  }
+                }
+                // Always skip sending the raw notification text in WhatsApp
+                continue;
+              }
+
+              if (isEdit) {
+                let editSucceeded = false;
+                const mapped = resolveWaMsgFromTg(tgChatId, String(msg.message_id));
+                if (mapped && mapped.waMsgId && mapped.waJid) {
+                  try {
+                    ignoreWaEditEchoes.add(mapped.waMsgId);
+                    await session.sock.sendMessage(mapping.wa_jid, {
+                      text: outboundWaText,
+                      edit: {
+                        remoteJid: mapping.wa_jid,
+                        fromMe: mapped.fromMe !== undefined ? mapped.fromMe : true,
+                        id: mapped.waMsgId,
+                      },
+                    });
+                    editSucceeded = true;
+                    logger.info(
+                      { tgChatId, tgMsgId: msg.message_id, waMsgId: mapped.waMsgId },
+                      '✏️ Mirrored Telegram message edit natively to WhatsApp'
+                    );
+                  } catch (editErr) {
+                    ignoreWaEditEchoes.delete(mapped.waMsgId);
+                    logger.info(
+                      { err: editErr?.message, waMsgId: mapped.waMsgId },
+                      'Native WhatsApp edit failed (e.g. >15m old), falling back to contextual update message'
+                    );
+                  }
+                }
+
+                if (!editSucceeded) {
+                  const lang = store.language || 'de';
+                  const editIndicator = t(lang, 'bot_replies.edited_msg_indicator');
+                  const editOldText = t(lang, 'bot_replies.edited_msg_old');
+                  let fallbackWaText = `${cleanHeader}${editIndicator}\n${tgQuoteSnippet}${formattedTgText}`;
+                  const sendOpts = { text: fallbackWaText };
+
+                  if (mapped && mapped.waMsgId) {
+                    sendOpts.quoted = {
+                      key: {
+                        remoteJid: mapping.wa_jid,
+                        fromMe: mapped.fromMe !== undefined ? mapped.fromMe : true,
+                        id: mapped.waMsgId,
+                      },
+                      message: { conversation: '...' },
+                    };
+                  } else {
+                    fallbackWaText = `${cleanHeader}${editIndicator} ${editOldText}\n${tgQuoteSnippet}${formattedTgText}`;
+                    sendOpts.text = fallbackWaText;
+                  }
+
+                  const sentMsg = await session.sock.sendMessage(mapping.wa_jid, sendOpts);
+                  if (sentMsg?.key?.id) {
+                    recordMessageMap(
+                      sentMsg.key.id,
+                      tgChatId,
+                      msg.message_id,
+                      mapping.wa_jid,
+                      sentMsg.key.fromMe
+                    );
+                  }
+                  logger.info(
+                    { tgChatId, tgMsgId: msg.message_id, waMsgId: sentMsg?.key?.id },
+                    '✏️ Sent contextual Telegram message edit fallback to WhatsApp'
+                  );
+                }
+                continue;
+              }
+
+              const cleanCmd = tgText
+                .trim()
+                .toLowerCase()
+                .replace(/^[!/#]+/, '');
+              if (
+                (cleanCmd === 'del' ||
+                  cleanCmd === 'delete' ||
+                  cleanCmd === 'revoke' ||
+                  cleanCmd === 'rm' ||
+                  cleanCmd === 'remove') &&
+                replyToTgId
+              ) {
+                const mapped = resolveWaMsgFromTg(tgChatId, String(replyToTgId));
+                if (mapped && mapped.waMsgId) {
+                  await session.sock.sendMessage(mapping.wa_jid, {
+                    delete: {
+                      remoteJid: mapping.wa_jid,
+                      fromMe: mapped.fromMe !== undefined ? mapped.fromMe : true,
+                      id: mapped.waMsgId,
+                    },
+                  });
+                  // Clean up both the target message and the !del command message in Telegram
+                  await bot.deleteMessage(tgChatId, replyToTgId).catch(() => null);
+                  await bot.deleteMessage(tgChatId, msg.message_id).catch(() => null);
+                  logger.info(
+                    { tgChatId, tgMsgId: replyToTgId, waMsgId: mapped.waMsgId },
+                    '🗑️ Mirrored Telegram delete command to WhatsApp and cleaned up Telegram messages'
+                  );
+                  continue;
+                }
+              }
+
+              const sendOptions = {};
+              if (quotedWaMsgId) {
+                sendOptions.quoted = { key: { remoteJid: mapping.wa_jid, id: quotedWaMsgId } };
+              }
+
+              let waContent = { text: outboundWaText };
+              if (mediaPayload) {
+                if (mediaPayload.type === 'location' || mediaPayload.type === 'liveLocation') {
+                  waContent = {
+                    location: {
+                      degreesLatitude: mediaPayload.latitude,
+                      degreesLongitude: mediaPayload.longitude,
+                    },
+                  };
+                } else if (mediaPayload.type === 'live_location') {
+                  waContent = {
+                    liveLocation: {
+                      degreesLatitude: mediaPayload.latitude,
+                      degreesLongitude: mediaPayload.longitude,
+                    },
+                  };
+                } else if (mediaPayload.type === 'contact') {
+                  waContent = {
+                    contacts: {
+                      displayName: mediaPayload.displayName,
+                      contacts: [{ vcard: mediaPayload.vcard }],
+                    },
+                  };
+                } else if (mediaPayload.type === 'poll') {
+                  const pollMode = mapping.poll_sync_mode || 'text_diagram';
+                  if (
+                    (pollMode === 'native_sync' || pollMode === 'native_no_vote') &&
+                    mediaPayload.options?.length > 0
+                  ) {
+                    // Send native WhatsApp poll
+                    waContent = {
+                      poll: {
+                        name: mediaPayload.question,
+                        values: mediaPayload.options,
+                        selectableCount: mediaPayload.allows_multiple_answers
+                          ? mediaPayload.options.length
+                          : 1,
+                      },
+                    };
+                  } else if (pollMode === 'once_no_update') {
+                    // Send short text once
+                    waContent = {
+                      text: `📊 [Poll: ${mediaPayload.question}]\nOptions: ${(mediaPayload.options || []).join(', ')}`,
+                    };
+                  } else {
+                    // text_diagram: already in outboundWaText, use default text
+                    waContent = { text: outboundWaText };
+                  }
+                } else if (mediaPayload.url) {
+                  if (mediaPayload.type === 'image') {
+                    waContent = { image: { url: mediaPayload.url }, caption: outboundWaText };
+                  } else if (mediaPayload.type === 'video') {
+                    waContent = {
+                      video: { url: mediaPayload.url },
+                      caption: outboundWaText,
+                      gifPlayback: Boolean(msg.animation),
+                      ptv: Boolean(mediaPayload.ptv),
+                    };
+                  } else if (mediaPayload.type === 'audio') {
+                    waContent = {
+                      audio: mediaPayload.buffer ? mediaPayload.buffer : { url: mediaPayload.url },
+                      mimetype: mediaPayload.mimetype || 'audio/ogg; codecs=opus',
+                      ptt: Boolean(mediaPayload.ptt || msg.voice),
+                    };
+                  } else if (mediaPayload.type === 'sticker') {
+                    waContent = {
+                      sticker: { url: mediaPayload.url },
+                    };
+                  } else if (mediaPayload.type === 'document') {
+                    waContent = {
+                      document: { url: mediaPayload.url },
+                      mimetype: mediaPayload.mimetype,
+                      fileName: mediaPayload.fileName || 'file',
+                      caption: outboundWaText,
+                    };
+                  }
+                }
+              }
+
+              const sentWaMsg = await session.sock.sendMessage(
+                mapping.wa_jid,
+                waContent,
+                sendOptions
+              );
+              // For location/live_location: follow up with sender info as text (WA native pins carry no caption)
+              if (
+                sentWaMsg &&
+                (mediaPayload?.type === 'location' || mediaPayload?.type === 'live_location') &&
+                outboundWaText.trim()
+              ) {
+                await session.sock
+                  .sendMessage(
+                    mapping.wa_jid,
+                    { text: outboundWaText.trim() },
+                    sentWaMsg.key?.id
+                      ? { quoted: { key: { remoteJid: mapping.wa_jid, id: sentWaMsg.key.id } } }
+                      : {}
+                  )
+                  .catch(() => null);
+              }
+              if (mediaPayload && mediaPayload.type === 'sticker' && outboundWaText.trim()) {
+                await session.sock
+                  .sendMessage(
+                    mapping.wa_jid,
+                    { text: outboundWaText.trim() },
+                    sentWaMsg && sentWaMsg.key?.id
+                      ? { quoted: { key: { remoteJid: mapping.wa_jid, id: sentWaMsg.key.id } } }
+                      : {}
+                  )
+                  .catch(() => null);
+              }
+              if (sentWaMsg && sentWaMsg.key && sentWaMsg.key.id) {
+                recordMessageMap(
+                  sentWaMsg.key.id,
+                  tgChatId,
+                  msg.message_id,
+                  mapping.wa_jid,
+                  true,
+                  senderName
+                );
+              }
+            } catch (waErr) {
+              logger.error(
+                { error: waErr.message, waJid: mapping.wa_jid },
+                '❌ Error syncing Telegram message to WhatsApp'
+              );
+            }
+          }
+        }
+      }
+    } catch (err) {
+      logger.warn({ error: err.message, botId: botConfig.id }, '⚠️ Error polling Telegram updates');
+    }
+  }
+}

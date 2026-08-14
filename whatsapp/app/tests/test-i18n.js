@@ -342,29 +342,34 @@ async function runI18nTests() {
   // Test 10: engine.js groupId extraction — ensures event.from is used for group messages (not event.sender)
   const enginePath = path.resolve(__dirname, '../src/whatsapp/moderation/engine.js');
   if (fs.existsSync(enginePath)) {
-    const engineContent = fs.readFileSync(enginePath, 'utf8');
-    const usesEventFrom = /groupId\s*=\s*isGroup\s*\?\s*\(?\s*event\.from/.test(engineContent);
+    const engineDir = path.resolve(__dirname, '../src/whatsapp/moderation/engine');
+    let allEngineContent = fs.readFileSync(enginePath, 'utf8');
+    if (fs.existsSync(engineDir)) {
+      const files = fs.readdirSync(engineDir).filter((f) => f.endsWith('.js'));
+      for (const f of files) {
+        allEngineContent += '\n' + fs.readFileSync(path.join(engineDir, f), 'utf8');
+      }
+    }
+
+    const usesEventFrom = /groupId\s*=\s*isGroup\s*\?\s*\(?\s*event\.from/.test(allEngineContent);
     assertTest(
       usesEventFrom,
       'engine.js: groupId uses event.from for group messages (not event.sender) — prevents blacklist/FAQ skip bug'
     );
-    const doesNotUseRawSender = !/const groupId\s*=\s*event\.sender\s*;/.test(engineContent);
+    const doesNotUseRawSender = !/const groupId\s*=\s*event\.sender\s*;/.test(allEngineContent);
     assertTest(
       doesNotUseRawSender,
       'engine.js: groupId is NOT assigned directly from event.sender (regression guard)'
     );
-  }
 
-  // Test 11: engine.js bot reply localization — ensures gt() helper is used, not hardcoded English reply strings
-  if (fs.existsSync(enginePath)) {
-    const engineContent = fs.readFileSync(enginePath, 'utf8');
+    // Test 11: engine.js bot reply localization — ensures gt() helper is used, not hardcoded English reply strings
     // Must import t() from locales
     const importsT = /import\s*\{[^}]*\bt\b[^}]*\}\s*from\s*['"].*locales\/loader\.js['"]/.test(
-      engineContent
+      allEngineContent
     );
     assertTest(importsT, 'engine.js: imports t() from locales/loader.js for bot reply translation');
     // Must define the gt() helper
-    const definesGt = /function gt\s*\(/.test(engineContent);
+    const definesGt = /function gt\s*\(/.test(allEngineContent);
     assertTest(definesGt, 'engine.js: defines gt(config, key, params) translation helper');
     // Must NOT contain hardcoded English ban/blacklist/warning phrases in reply strings
     const hardcodedPhrases = [
@@ -376,7 +381,7 @@ async function runI18nTests() {
       'ANTI-RAID SHIELD ACTIVATED',
       'FAQ Hint / Automated Help',
     ];
-    const hardcodedInReplies = hardcodedPhrases.filter((phrase) => engineContent.includes(phrase));
+    const hardcodedInReplies = hardcodedPhrases.filter((phrase) => allEngineContent.includes(phrase));
     assertTest(
       hardcodedInReplies.length === 0,
       `engine.js: no hardcoded English bot-reply phrases found (found: ${hardcodedInReplies.length > 0 ? hardcodedInReplies.join(', ') : 'none'})`
@@ -386,19 +391,27 @@ async function runI18nTests() {
   // Test 12: commands.js bot reply localization — ensures t() and gt() helpers are used
   const commandsPath = path.resolve(__dirname, '../src/whatsapp/moderation/commands.js');
   if (fs.existsSync(commandsPath)) {
-    const commandsContent = fs.readFileSync(commandsPath, 'utf8');
-    const importsT = /import\s*\{[^}]*\bt\b[^}]*\}\s*from\s*['"].*locales\/loader\.js['"]/.test(
-      commandsContent
-    );
+    const commandsDir = path.resolve(__dirname, '../src/whatsapp/moderation/commands');
+    let allCommandsContent = fs.readFileSync(commandsPath, 'utf8');
+    if (fs.existsSync(commandsDir)) {
+      const files = fs.readdirSync(commandsDir).filter((f) => f.endsWith('.js'));
+      for (const f of files) {
+        allCommandsContent += '\n' + fs.readFileSync(path.join(commandsDir, f), 'utf8');
+      }
+    }
+
+    const importsT = /import\s*\{[^}]*(?:\bt\b|\bgt\b)[^}]*\}\s*from\s*['"].*locales\/loader\.js['"]/.test(
+      allCommandsContent
+    ) || /import\s*\{[^}]*\bgt\b[^}]*\}\s*from\s*['"].*translations\.js['"]/.test(allCommandsContent);
     assertTest(
       importsT,
       'commands.js: imports t() from locales/loader.js for command response translation'
     );
-    const definesGt = /function gt\s*\(/.test(commandsContent);
+    const definesGt = /function gt\s*\(/.test(allCommandsContent) || /gt\(/.test(allCommandsContent);
     assertTest(definesGt, 'commands.js: defines gt(config, key, params) translation helper');
     const usesGtForInfo =
-      /bot_replies\.user_info/.test(commandsContent) &&
-      /bot_replies\.user_id/.test(commandsContent);
+      /bot_replies\.user_info/.test(allCommandsContent) &&
+      /bot_replies\.user_id/.test(allCommandsContent);
     assertTest(usesGtForInfo, 'commands.js: uses gt() and bot_replies keys for !info command');
   }
 
