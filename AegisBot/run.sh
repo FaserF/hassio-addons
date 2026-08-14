@@ -577,9 +577,6 @@ install_from_archive() {
 
 		bashio::log.info "Running 'npm install'..."
 		if npm install; then
-			# Apply Ingress patches
-			sed -i "s|defineConfig({|defineConfig({ base: './',|g" vite.config.ts
-
 			bashio::log.info "Running 'npm run build'..."
 			if npm run build; then
 				bashio::log.info "Frontend build successful. Installing..."
