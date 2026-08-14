@@ -2,7 +2,7 @@ name: WhatsApp HA Integration Live End-to-End Test
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [master]
     types: [opened, synchronize, reopened]
     paths:
       - 'whatsapp/**'

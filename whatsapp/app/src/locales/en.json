@@ -1056,9 +1056,9 @@
     "stt_error_header": "❌ *Speech-to-Text Error*",
     "start_group_msg": "🛡️ *WhatsApp Gateway & Orchestrator Active*\n\nThis group (*{group}*) is actively protected and orchestrated.\n\n• 🧠 *Anti-Spam, Raid & Name Filter:* Active\n• 🔗 *Telegram Bridge:* Connected & Synced\n• 🌍 *Translation & Audio STT:* Ready\n\n📌 *Key Commands:*\n• `{prefix}help` — Full commands directory\n• `{prefix}rules` — Group rules & FAQ\n• `{prefix}info` — User & reputation status",
     "start_private_msg": "🛡️ *Welcome to WhatsApp Gateway & Security Orchestrator*\n_Professional community moderation & platform bridging._\n\n• 🤖 *Automated Protection:* Anti-Spam, Anti-Raid, Content Locks & Name Filters\n• 🔗 *Telegram Bridge:* 2-Way sync of text, media, pins & reactions\n• 🎙️ *Speech-to-Text:* Automatic voice note transcription\n• 🌐 *Multi-Language:* Automated real-time translation\n\n📌 *Quickstart:*\n• `{prefix}help` — View commands directory\n• `{prefix}info` — Check account & permission status\n• Access the Web Console in Home Assistant for advanced orchestrations.",
-    "stt_download_failed": "Could not download audio buffer.",
-    "stt_transcription_failed": "Could not transcribe audio message. (Optional: Set AI key in Moderation settings)",
-    "stt_no_speech_recognized": "Could not transcribe speech from audio.",
+    "stt_download_failed": "The audio file could not be downloaded from WhatsApp servers.",
+    "stt_transcription_failed": "No speech could be recognized from the audio message using the free web engine. For higher accuracy, you can optionally configure a Gemini or OpenAI API key in the Moderation UI.",
+    "stt_no_speech_recognized": "Audio was processed, but no clear speech or words could be detected.",
     "about_text": "🛡️ *About WhatsApp Gateway & Security Orchestrator*\n\nWhatsApp Gateway is a state-of-the-art open-source security & moderation orchestrator for Home Assistant and WhatsApp. It features AI intent detection, real-time analytics, MFA Web UI dashboard, content locks, and Telegram 2-way bridge.\n\n📚 *Documentation:* https://faserf.github.io/ha-whatsapp/\n🐙 *GitHub Repository:* https://github.com/FaserF/ha-whatsapp\n💖 *Sponsor & Donate:* https://github.com/sponsors/FaserF\n🐛 *Report Issues:* https://github.com/FaserF/ha-whatsapp/issues\n\n_Made with ❤️ for community safety._"
   }
 }
