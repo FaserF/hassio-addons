@@ -1375,7 +1375,6 @@ export async function processTelegramUpdates() {
                       { tgChatId, tgPinnedId: pinnedTgMsgId, waMsgId: mappedWaMsg.waMsgId },
                       '📌 Mirrored Telegram message pin natively to WhatsApp'
                     );
-                    continue;
                   } catch (pinErr) {
                     logger.debug(
                       { error: pinErr.message },

@@ -1061,7 +1061,7 @@
     "stt_prompt_text": "Transcribe this audio message exactly into text. Return ONLY the transcribed text without commentary.",
     "stt_err_free_no_speech": "Free Web Engine: No clear speech recognized in audio signal.",
     "stt_err_free_rate_limit": "Free Web Engine: Rate limit exceeded (HTTP 429).",
-    "stt_err_free_http_error": "Free Web Engine responded with HTTP {status}.",
+    "stt_err_free_http_error": "Free Web Engine responded with HTTP {status}. (Note: Google strictly rate-limits anonymous web access. Please configure a free Gemini API key in Moderation Settings for reliable transcription)",
     "stt_err_free_network": "Free Web Engine network error: {error}",
     "stt_err_gemini_empty": "Gemini AI: Response contained no transcribed text.",
     "stt_err_gemini_rate_limit": "Gemini AI API: Rate limit / quota exceeded (HTTP 429).",

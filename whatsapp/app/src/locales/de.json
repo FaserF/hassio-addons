@@ -1075,7 +1075,7 @@
     "stt_prompt_text": "Transkribiere dieses Audiosignal exakt in Text. Gib NUR den transkribierten Text ohne Erklärung zurück.",
     "stt_err_free_no_speech": "Kostenlose Web-Erkennung: Keine deutliche Sprache im Audiosignal erkannt.",
     "stt_err_free_rate_limit": "Kostenlose Web-Erkennung: Rate-Limit erreicht (HTTP 429).",
-    "stt_err_free_http_error": "Kostenlose Web-Erkennung antwortete mit HTTP {status}.",
+    "stt_err_free_http_error": "Kostenlose Web-Erkennung antwortete mit HTTP {status}. (Hinweis: Google schränkt den anonymen Web-Zugriff zunehmend ein. Bitte hinterlege einen kostenlosen Gemini API-Schlüssel in den Moderations-Einstellungen für zuverlässige Transkription)",
     "stt_err_free_network": "Kostenlose Web-Erkennung Netzwerkfehler: {error}",
     "stt_err_gemini_empty": "Gemini AI: Antwort enthielt keinen transkribierten Text.",
     "stt_err_gemini_rate_limit": "Gemini AI API: Rate-Limit / Quota überschritten (HTTP 429).",
