@@ -196,6 +196,10 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
+        logger.warn(
+          { recipient: number },
+          '⚠️ WhatsApp has deprecated interactive buttons on standard Multi-Device web accounts. Mobile clients will likely render only plain text without buttons. Use /send_poll instead for interactive choices.'
+        );
         const formattedButtons = buttons.map((b, i) => ({
           buttonId: b.id || `btn_${i}`,
           buttonText: { displayText: b.text || b.displayText },
@@ -208,7 +212,12 @@ export function registerMessagingRoutes(app) {
           headerType: 1,
         });
         trackSent(session, number, `[Buttons] ${text}`);
-        res.json({ status: 'sent', id: sentMsg?.key?.id });
+        res.json({
+          status: 'sent',
+          id: sentMsg?.key?.id,
+          warning:
+            'Interactive buttons are deprecated by WhatsApp for standard web accounts and may render only as plain text on client apps. Consider using send_poll.',
+        });
       } catch (err) {
         res.status(500).json({ detail: err.message });
       }
