@@ -75,15 +75,32 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           const data = await res.json();
           const hyp = data.hypotheses?.[0]?.utterance;
           if (hyp) transcribedText = hyp;
-          else errorsCaptured.push(groupLang === 'de' ? 'Kostenlose Web-Erkennung: Keine deutliche Sprache im Audiosignal erkannt.' : 'Free Web Engine: No clear speech recognized in audio signal.');
+          else
+            errorsCaptured.push(
+              groupLang === 'de'
+                ? 'Kostenlose Web-Erkennung: Keine deutliche Sprache im Audiosignal erkannt.'
+                : 'Free Web Engine: No clear speech recognized in audio signal.'
+            );
         } else if (res.status === 429) {
-          errorsCaptured.push(groupLang === 'de' ? 'Kostenlose Web-Erkennung: Rate-Limit erreicht (HTTP 429).' : 'Free Web Engine: Rate limit exceeded (HTTP 429).');
+          errorsCaptured.push(
+            groupLang === 'de'
+              ? 'Kostenlose Web-Erkennung: Rate-Limit erreicht (HTTP 429).'
+              : 'Free Web Engine: Rate limit exceeded (HTTP 429).'
+          );
         } else {
-          errorsCaptured.push(groupLang === 'de' ? `Kostenlose Web-Erkennung antwortete mit HTTP ${res.status}` : `Free Web Engine responded with HTTP ${res.status}`);
+          errorsCaptured.push(
+            groupLang === 'de'
+              ? `Kostenlose Web-Erkennung antwortete mit HTTP ${res.status}`
+              : `Free Web Engine responded with HTTP ${res.status}`
+          );
         }
       } catch (e) {
         logger.debug({ error: e.message }, 'Free Web STT API call failed');
-        errorsCaptured.push(groupLang === 'de' ? `Kostenlose Web-Erkennung Netzwerkfehler: ${e.message}` : `Free Web Engine network error: ${e.message}`);
+        errorsCaptured.push(
+          groupLang === 'de'
+            ? `Kostenlose Web-Erkennung Netzwerkfehler: ${e.message}`
+            : `Free Web Engine network error: ${e.message}`
+        );
       }
     }
 
@@ -122,18 +139,38 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
             const data = await res.json();
             transcribedText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
             if (!transcribedText) {
-              errorsCaptured.push(groupLang === 'de' ? 'Gemini AI: Antwort enthielt keinen transkribierten Text.' : 'Gemini AI: Response contained no transcribed text.');
+              errorsCaptured.push(
+                groupLang === 'de'
+                  ? 'Gemini AI: Antwort enthielt keinen transkribierten Text.'
+                  : 'Gemini AI: Response contained no transcribed text.'
+              );
             }
           } else if (res.status === 429) {
-            errorsCaptured.push(groupLang === 'de' ? 'Gemini AI API: Rate-Limit / Quota überschritten (HTTP 429).' : 'Gemini AI API: Rate limit / quota exceeded (HTTP 429).');
+            errorsCaptured.push(
+              groupLang === 'de'
+                ? 'Gemini AI API: Rate-Limit / Quota überschritten (HTTP 429).'
+                : 'Gemini AI API: Rate limit / quota exceeded (HTTP 429).'
+            );
           } else if (res.status === 401 || res.status === 403) {
-            errorsCaptured.push(groupLang === 'de' ? 'Gemini AI API: Ungültiger oder abgelaufener API-Schlüssel (HTTP 401/403).' : 'Gemini AI API: Invalid or expired API key (HTTP 401/403).');
+            errorsCaptured.push(
+              groupLang === 'de'
+                ? 'Gemini AI API: Ungültiger oder abgelaufener API-Schlüssel (HTTP 401/403).'
+                : 'Gemini AI API: Invalid or expired API key (HTTP 401/403).'
+            );
           } else {
-            errorsCaptured.push(groupLang === 'de' ? `Gemini AI API Fehler (HTTP ${res.status}).` : `Gemini AI API error (HTTP ${res.status}).`);
+            errorsCaptured.push(
+              groupLang === 'de'
+                ? `Gemini AI API Fehler (HTTP ${res.status}).`
+                : `Gemini AI API error (HTTP ${res.status}).`
+            );
           }
         } catch (e) {
           logger.debug({ error: e.message }, 'Gemini STT failed');
-          errorsCaptured.push(groupLang === 'de' ? `Gemini AI Verbindungsfehler: ${e.message}` : `Gemini AI connection error: ${e.message}`);
+          errorsCaptured.push(
+            groupLang === 'de'
+              ? `Gemini AI Verbindungsfehler: ${e.message}`
+              : `Gemini AI connection error: ${e.message}`
+          );
         }
       }
 
@@ -156,26 +193,47 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
             const data = await res.json();
             transcribedText = data.text?.trim();
             if (!transcribedText) {
-              errorsCaptured.push(groupLang === 'de' ? 'OpenAI Whisper: Keinen Text transkribiert.' : 'OpenAI Whisper: Transcribed no text.');
+              errorsCaptured.push(
+                groupLang === 'de'
+                  ? 'OpenAI Whisper: Keinen Text transkribiert.'
+                  : 'OpenAI Whisper: Transcribed no text.'
+              );
             }
           } else if (res.status === 429) {
-            errorsCaptured.push(groupLang === 'de' ? 'OpenAI Whisper API: Rate-Limit / Quota überschritten (HTTP 429).' : 'OpenAI Whisper API: Rate limit / quota exceeded (HTTP 429).');
+            errorsCaptured.push(
+              groupLang === 'de'
+                ? 'OpenAI Whisper API: Rate-Limit / Quota überschritten (HTTP 429).'
+                : 'OpenAI Whisper API: Rate limit / quota exceeded (HTTP 429).'
+            );
           } else if (res.status === 401) {
-            errorsCaptured.push(groupLang === 'de' ? 'OpenAI Whisper API: Ungültiger API-Schlüssel (HTTP 401).' : 'OpenAI Whisper API: Invalid API key (HTTP 401).');
+            errorsCaptured.push(
+              groupLang === 'de'
+                ? 'OpenAI Whisper API: Ungültiger API-Schlüssel (HTTP 401).'
+                : 'OpenAI Whisper API: Invalid API key (HTTP 401).'
+            );
           } else {
-            errorsCaptured.push(groupLang === 'de' ? `OpenAI Whisper API Fehler (HTTP ${res.status}).` : `OpenAI Whisper API error (HTTP ${res.status}).`);
+            errorsCaptured.push(
+              groupLang === 'de'
+                ? `OpenAI Whisper API Fehler (HTTP ${res.status}).`
+                : `OpenAI Whisper API error (HTTP ${res.status}).`
+            );
           }
         } catch (e) {
           logger.debug({ error: e.message }, 'Whisper STT failed');
-          errorsCaptured.push(groupLang === 'de' ? `OpenAI Whisper Verbindungsfehler: ${e.message}` : `OpenAI Whisper connection error: ${e.message}`);
+          errorsCaptured.push(
+            groupLang === 'de'
+              ? `OpenAI Whisper Verbindungsfehler: ${e.message}`
+              : `OpenAI Whisper connection error: ${e.message}`
+          );
         }
       }
     }
 
     if (!transcribedText) {
-      failureReason = errorsCaptured.length > 0
-        ? errorsCaptured.join('\n• ')
-        : gt('bot_replies.stt_transcription_failed');
+      failureReason =
+        errorsCaptured.length > 0
+          ? errorsCaptured.join('\n• ')
+          : gt('bot_replies.stt_transcription_failed');
     }
 
     if (transcribedText) {

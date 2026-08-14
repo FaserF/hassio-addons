@@ -50,7 +50,10 @@ export async function deleteTranslationIfExists(session, groupId, sourceWaId) {
     try {
       if (session?.sock?.sendMessage && record.botKey) {
         await session.sock.sendMessage(groupId, { delete: record.botKey });
-        logger.info({ groupId, sourceWaId, botWaId: record.botWaId }, '🗑️ Deleted translated WhatsApp bot message for revoked source message');
+        logger.info(
+          { groupId, sourceWaId, botWaId: record.botWaId },
+          '🗑️ Deleted translated WhatsApp bot message for revoked source message'
+        );
       }
     } catch (e) {
       logger.debug({ error: e.message }, 'Failed to delete translated WhatsApp bot message');
