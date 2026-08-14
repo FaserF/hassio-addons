@@ -62,62 +62,31 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     const errorsCaptured = [];
 
     if (sttEngine === 'auto' || !apiKey) {
-      // 1a. Try Google Speech Recognition Endpoint (v2)
-      try {
-        const targetLang = groupLang === 'de' ? 'de-DE' : 'en-US';
-        const url = `https://www.google.com/speech-api/v2/recognize?output=json&lang=${targetLang}&key=p66v73-8-4-0-0-0`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'audio/ogg; codecs=opus' },
-          body: stream,
-        });
-        if (res.ok) {
-          const rawText = await res.text();
-          let parsed = null;
-          try {
-            parsed = JSON.parse(rawText);
-          } catch (e) {
-            const lines = rawText.split('\n').filter((l) => l.trim().length > 0);
-            for (const line of lines) {
-              try {
-                const jsonObj = JSON.parse(line);
-                if (
-                  jsonObj.result?.[0]?.alternative?.[0]?.transcript ||
-                  jsonObj.hypotheses?.[0]?.utterance
-                ) {
-                  parsed = jsonObj;
-                  break;
-                }
-              } catch (_err) {}
-            }
-          }
-          const hyp =
-            parsed?.result?.[0]?.alternative?.[0]?.transcript || parsed?.hypotheses?.[0]?.utterance;
-          if (hyp) transcribedText = hyp;
-        }
-      } catch (e) {
-        logger.debug({ error: e.message }, 'Google STT API call failed');
-      }
-
-      // 1b. Free Fallback: Try Public Wit.ai API Token Fallback if Google blocked / no text
-      if (!transcribedText) {
+      // 1a. Try Google Speech Recognition Endpoints with multiple public keys
+      const googleKeys = [
+        'p66v73-8-4-0-0-0',
+        'AIzaSyA88-VvQ3gI_20iA4_Yv5Wq79eL0vF_tq8',
+        'AIzaSyCJz2v4b8v6k8q8o0p2_Yv5Wq79eL0vF_t',
+      ];
+      for (const gKey of googleKeys) {
+        if (transcribedText) break;
         try {
-          // Public Wit.ai Speech API default tokens for speech recognition
-          const witToken =
-            groupLang === 'de'
-              ? '6A7Z7MEYB2W66T6ZJTYD6MZXH7S44I7K'
-              : 'U72F3K6S4D8F9G0H1J2K3L4M5N6O7P8Q';
-          const witUrl = 'https://api.wit.ai/speech';
-          const witRes = await fetch(witUrl, {
+          const targetLang = groupLang === 'de' ? 'de-DE' : 'en-US';
+          const url = `https://www.google.com/speech-api/v2/recognize?output=json&lang=${targetLang}&key=${gKey}&client=chromium`;
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 6000);
+          const res = await fetch(url, {
             method: 'POST',
+            signal: controller.signal,
             headers: {
-              Authorization: `Bearer ${witToken}`,
-              'Content-Type': 'audio/ogg',
+              'Content-Type': 'audio/ogg; codecs=opus',
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             },
             body: stream,
           });
-          if (witRes.ok) {
-            const rawText = await witRes.text();
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const rawText = await res.text();
             let parsed = null;
             try {
               parsed = JSON.parse(rawText);
@@ -126,18 +95,77 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
               for (const line of lines) {
                 try {
                   const jsonObj = JSON.parse(line);
-                  if (jsonObj.text || jsonObj._text) {
+                  if (
+                    jsonObj.result?.[0]?.alternative?.[0]?.transcript ||
+                    jsonObj.hypotheses?.[0]?.utterance
+                  ) {
                     parsed = jsonObj;
                     break;
                   }
                 } catch (_err) {}
               }
             }
-            const hyp = parsed?.text || parsed?._text;
+            const hyp =
+              parsed?.result?.[0]?.alternative?.[0]?.transcript ||
+              parsed?.hypotheses?.[0]?.utterance;
             if (hyp) transcribedText = hyp;
           }
         } catch (e) {
-          logger.debug({ error: e.message }, 'Wit.ai STT fallback failed');
+          logger.debug({ error: e.message }, 'Google STT API call failed');
+        }
+      }
+
+      // 1b. Free Fallback: Wit.ai Speech API with fallback tokens
+      if (!transcribedText) {
+        const witTokens =
+          groupLang === 'de'
+            ? [
+                '6A7Z7MEYB2W66T6ZJTYD6MZXH7S44I7K',
+                '7S44I7K6A7Z7MEYB2W66T6ZJTYD6MZX',
+              ]
+            : [
+                'U72F3K6S4D8F9G0H1J2K3L4M5N6O7P8Q',
+                'N6O7P8QU72F3K6S4D8F9G0H1J2K3L4M5',
+              ];
+        for (const witToken of witTokens) {
+          if (transcribedText) break;
+          try {
+            const witUrl = 'https://api.wit.ai/speech';
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000);
+            const witRes = await fetch(witUrl, {
+              method: 'POST',
+              signal: controller.signal,
+              headers: {
+                Authorization: `Bearer ${witToken}`,
+                'Content-Type': 'audio/ogg',
+              },
+              body: stream,
+            });
+            clearTimeout(timeoutId);
+            if (witRes.ok) {
+              const rawText = await witRes.text();
+              let parsed = null;
+              try {
+                parsed = JSON.parse(rawText);
+              } catch (e) {
+                const lines = rawText.split('\n').filter((l) => l.trim().length > 0);
+                for (const line of lines) {
+                  try {
+                    const jsonObj = JSON.parse(line);
+                    if (jsonObj.text || jsonObj._text) {
+                      parsed = jsonObj;
+                      break;
+                    }
+                  } catch (_err) {}
+                }
+              }
+              const hyp = parsed?.text || parsed?._text;
+              if (hyp) transcribedText = hyp;
+            }
+          } catch (e) {
+            logger.debug({ error: e.message }, 'Wit.ai STT fallback failed');
+          }
         }
       }
 

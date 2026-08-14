@@ -1076,6 +1076,55 @@ export async function handleModerationMessage(session, event) {
         );
       }
     }
+  }
+
+  // 0. Non-destructive Auto-Translation Engine
+  if (config.translation?.mode === 'auto' && text && text.trim().length > 2) {
+    const targetLang = config.translation?.target_lang || 'en';
+    const provider = config.translation?.provider || 'auto';
+
+    const transResult =
+      provider === 'ai'
+        ? await (async () => {
+            const { processAiModeration } = await import('./ai.js');
+            return processAiModeration(text, config.ai || {}, store.gemini_api_key, 'translate', {
+              targetLang,
+            });
+          })()
+        : await translateTextFreeWithReason(text, targetLang, provider);
+
+    if (
+      transResult?.translation &&
+      transResult.translation.trim().toLowerCase() !== text.trim().toLowerCase()
+    ) {
+      const srcCode = (transResult.sourceLang || '?').toLowerCase();
+      const dstCode = targetLang.toLowerCase();
+
+      // Skip translation if detected source language is already the target language
+      if (srcCode !== '?' && srcCode === dstCode) {
+        logger.debug(
+          { srcCode, dstCode },
+          'Skipping auto-translation: source language matches target language'
+        );
+      } else {
+        const header = gt(config, 'bot_replies.auto_translation_header', {
+          src: srcCode.toUpperCase(),
+          dst: dstCode.toUpperCase(),
+        });
+        const sentTransMsg = await reply(
+          session,
+          groupId,
+          { text: `${header}\n\n"${transResult.translation}"` },
+          rawMsg
+        );
+        if (sentTransMsg?.key?.id && rawMsg?.key?.id) {
+          recordTranslationMap(groupId, rawMsg.key.id, sentTransMsg.key.id, sentTransMsg.key);
+        }
+      }
+    }
+  }
+
+  if (isGroupAdminUser || (config.approved && config.approved.includes(userId))) {
     return false;
   }
 
@@ -1569,51 +1618,7 @@ export async function handleModerationMessage(session, event) {
     }
   }
 
-  // 8. Auto Translation Engine (Translates messages if enabled and not already target language)
-  if (config.translation?.mode === 'auto' && text && text.trim().length > 2) {
-    const targetLang = config.translation?.target_lang || 'en';
-    const provider = config.translation?.provider || 'auto';
 
-    const transResult =
-      provider === 'ai'
-        ? await (async () => {
-            const { processAiModeration } = await import('./ai.js');
-            return processAiModeration(text, config.ai || {}, store.gemini_api_key, 'translate', {
-              targetLang,
-            });
-          })()
-        : await translateTextFreeWithReason(text, targetLang, provider);
-
-    if (
-      transResult?.translation &&
-      transResult.translation.trim().toLowerCase() !== text.trim().toLowerCase()
-    ) {
-      const srcCode = (transResult.sourceLang || '?').toLowerCase();
-      const dstCode = targetLang.toLowerCase();
-
-      // Skip translation if detected source language is already the target language
-      if (srcCode !== '?' && srcCode === dstCode) {
-        logger.debug(
-          { srcCode, dstCode },
-          'Skipping auto-translation: source language matches target language'
-        );
-      } else {
-        const header = gt(config, 'bot_replies.auto_translation_header', {
-          src: srcCode.toUpperCase(),
-          dst: dstCode.toUpperCase(),
-        });
-        const sentTransMsg = await reply(
-          session,
-          groupId,
-          { text: `${header}\n\n"${transResult.translation}"` },
-          rawMsg
-        );
-        if (sentTransMsg?.key?.id && rawMsg?.key?.id) {
-          recordTranslationMap(groupId, rawMsg.key.id, sentTransMsg.key.id, sentTransMsg.key);
-        }
-      }
-    }
-  }
 
   // 9. Sentiment Moderation via AI
   if (config.ai?.enabled && config.ai?.sentiment_moderation && text && text.length > 10) {

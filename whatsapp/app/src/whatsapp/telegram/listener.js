@@ -44,11 +44,26 @@ export async function syncWhatsAppGroupEventToTelegram(
   const store = loadTelegramStore();
   if (!store.enabled) return;
 
+  let session = getSession('default');
+  if (!session || !session.sock || !session.isConnected) {
+    for (const s of sessions.values()) {
+      if (s.sock && s.isConnected) {
+        session = s;
+        break;
+      }
+    }
+  }
+
   const departureAction = action === 'remove' || action === 'leave' ? 'departure' : action;
-  const partStr = participants
-    .map((p) => String(p).split('@')[0])
-    .sort()
-    .join(',');
+  const canonicalParts = Array.from(
+    new Set(
+      participants.map((p) => {
+        const rawUser = String(p).split('@')[0];
+        return resolveCanonicalUserKey(p, session) || rawUser;
+      })
+    )
+  ).sort();
+  const partStr = canonicalParts.join(',');
   const eventKey = `tg_sys_evt:${waJid}:${departureAction}:${partStr}`;
   const now = Date.now();
   const lastTime = recentTgSystemEvents.get(eventKey) || 0;
@@ -71,16 +86,6 @@ export async function syncWhatsAppGroupEventToTelegram(
   );
 
   // Resolve and deduplicate participants by canonical phone number to prevent duplicate LID/PN notices
-  let session = getSession('default');
-  if (!session || !session.sock || !session.isConnected) {
-    for (const s of sessions.values()) {
-      if (s.sock && s.isConnected) {
-        session = s;
-        break;
-      }
-    }
-  }
-
   const seenUsers = new Set();
   const cleanNamesList = [];
   for (const p of participants) {
@@ -379,44 +384,43 @@ export async function syncWhatsAppEditToTelegram(
     }
 
     if (!editSucceeded) {
-      const lang = store.language || 'de';
-      const editIndicator = t(lang, 'bot_replies.edited_msg_indicator_html');
-      const editOldText = t(lang, 'bot_replies.edited_msg_old_html');
-      const tgChatId = mapped?.tgChatId || mapping.tg_chat_id;
-      const effectiveSenderName = senderName || mapped?.senderJid || '';
-      const fallbackHeader = isDirectMirror
-        ? ''
-        : formatHeader(
-            groupName,
-            effectiveSenderName,
-            isGroupWa ? mapping.include_group_name : false,
-            isGroupWa ? mapping.include_sender_name : false,
-            mapping.anonymize_phone_numbers
-          );
-      let fallbackText = `${fallbackHeader}${editIndicator}:\n${formattedBody || '<i>[No text]</i>'}`;
-      const sendOpts = {};
-
       if (mapped && mapped.tgMsgId) {
-        sendOpts.reply_to_message_id = Number(mapped.tgMsgId);
-      } else {
-        fallbackText = `${fallbackHeader}${editIndicator} ${editOldText}:\n${formattedBody || '<i>[No text]</i>'}`;
-      }
-
-      try {
-        const sentTgMsg = await bot.sendMessage(tgChatId, fallbackText, sendOpts);
-        if (sentTgMsg && sentTgMsg.message_id) {
-          ignoreTgEditEchoes.add(String(sentTgMsg.message_id));
-          recordMessageMap(waMsgId, tgChatId, sentTgMsg.message_id, waJid, false);
-        }
         logger.info(
-          { waMsgId, tgChatId, newTgMsgId: sentTgMsg?.message_id },
-          '✏️ Sent contextual WhatsApp message edit fallback to Telegram'
+          { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+          'ℹ️ Native Telegram edit not accepted (e.g. message too old or media), skipping fallback'
         );
-      } catch (fallbackErr) {
-        logger.warn(
-          { error: fallbackErr.message, waMsgId, tgChatId },
-          '⚠️ Failed to send Telegram edit fallback message'
-        );
+      } else {
+        const lang = store.language || 'de';
+        const editIndicator = t(lang, 'bot_replies.edited_msg_indicator_html');
+        const tgChatId = mapping.tg_chat_id;
+        const effectiveSenderName = senderName || '';
+        const fallbackHeader = isDirectMirror
+          ? ''
+          : formatHeader(
+              groupName,
+              effectiveSenderName,
+              isGroupWa ? mapping.include_group_name : false,
+              isGroupWa ? mapping.include_sender_name : false,
+              mapping.anonymize_phone_numbers
+            );
+        const fallbackText = `${fallbackHeader}${editIndicator}:\n${formattedBody || '<i>[No text]</i>'}`;
+
+        try {
+          const sentTgMsg = await bot.sendMessage(tgChatId, fallbackText);
+          if (sentTgMsg && sentTgMsg.message_id) {
+            ignoreTgEditEchoes.add(String(sentTgMsg.message_id));
+            recordMessageMap(waMsgId, tgChatId, sentTgMsg.message_id, waJid, false);
+          }
+          logger.info(
+            { waMsgId, tgChatId, newTgMsgId: sentTgMsg?.message_id },
+            '✏️ Sent contextual WhatsApp message edit notification to Telegram'
+          );
+        } catch (fallbackErr) {
+          logger.warn(
+            { error: fallbackErr.message, waMsgId, tgChatId },
+            '⚠️ Failed to send Telegram edit fallback message'
+          );
+        }
       }
     }
   }
@@ -433,13 +437,14 @@ export async function syncWhatsAppToTelegram(
   mediaType = null
 ) {
   const store = loadTelegramStore();
-  if (!store.enabled || !store.bot_token) return;
+  if (!store.enabled) return;
 
   // Find active mappings for this WhatsApp JID
   const mappings = (store.mappings || []).filter(
     (m) =>
       m.enabled &&
-      m.wa_jid === waJid &&
+      m.wa_jid &&
+      m.wa_jid.toLowerCase() === waJid.toLowerCase() &&
       (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound')
   );
 
@@ -448,7 +453,7 @@ export async function syncWhatsAppToTelegram(
   const waMsgId = msg.key?.id;
   if (waMsgId) {
     const isBotEcho = resolveTgMsgFromWa(waMsgId);
-    if (isBotEcho) return; // Prevent loop echo of messages generated by Telegram bot
+    if (isBotEcho && isBotEcho.fromMe === true && msg.key?.fromMe) return; // Prevent echo loop only if bot itself sent it
   }
 
   const contextInfo =
@@ -1425,7 +1430,6 @@ export async function processTelegramUpdates() {
                 const mappedWaMsg = pinnedTgMsgId
                   ? resolveWaMsgFromTg(tgChatId, String(pinnedTgMsgId))
                   : null;
-                let nativePinOk = false;
                 if (mappedWaMsg && mappedWaMsg.waMsgId) {
                   try {
                     await session.sock.sendMessage(mapping.wa_jid, {
@@ -1439,7 +1443,6 @@ export async function processTelegramUpdates() {
                         time: 604800,
                       },
                     });
-                    nativePinOk = true;
                     logger.info(
                       { tgChatId, tgPinnedId: pinnedTgMsgId, waMsgId: mappedWaMsg.waMsgId },
                       '📌 Mirrored Telegram message pin natively to WhatsApp'
@@ -1448,8 +1451,8 @@ export async function processTelegramUpdates() {
                     logger.debug({ error: pinErr.message }, 'Native WhatsApp pin failed');
                   }
                 }
-                // If native pin succeeded, do not send secondary notification text to WA
-                if (nativePinOk) continue;
+                // Always skip sending the raw notification text in WhatsApp
+                continue;
               }
 
               if (isEdit) {
