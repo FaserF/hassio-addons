@@ -63,14 +63,25 @@ export async function deleteTranslationIfExists(session, groupId, sourceWaId) {
 
 export async function updateTranslationIfExists(session, groupId, sourceWaId, newText) {
   if (!groupId || !sourceWaId || !newText || newText.trim().length < 2) return;
-  const key = `${groupId}:${sourceWaId}`;
-  const record = _TRANSLATION_MAP.get(key);
-  if (!record || !record.botKey) return;
+
+  // Try exact key first, then fallback without group prefix if needed
+  let record = _TRANSLATION_MAP.get(`${groupId}:${sourceWaId}`);
+  if (!record) {
+    for (const [k, v] of _TRANSLATION_MAP.entries()) {
+      if (k.endsWith(`:${sourceWaId}`) || k === sourceWaId) {
+        record = v;
+        break;
+      }
+    }
+  }
+
+  if (!record || !record.botKey) {
+    logger.debug({ groupId, sourceWaId }, 'No translation map record found for edited WhatsApp message');
+    return;
+  }
 
   const store = loadModerationStore();
   const config = getGroupModerationConfig(groupId) || {};
-  if (config.translation?.mode !== 'auto') return;
-
   const targetLang = config.translation?.target_lang || 'en';
   const provider = config.translation?.provider || 'auto';
 
@@ -112,7 +123,7 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
       }
     }
   } catch (err) {
-    logger.debug({ error: err.message, groupId, sourceWaId }, 'Failed to edit translated WhatsApp bot message');
+    logger.warn({ error: err.message, groupId, sourceWaId }, '⚠️ Failed to edit translated WhatsApp bot message');
   }
 }
 

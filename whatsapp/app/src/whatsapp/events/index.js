@@ -75,8 +75,9 @@ export function extractEditedText(node) {
     if (typeof m === 'string') return m;
     if (m.conversation) return m.conversation;
     if (m.extendedTextMessage?.text) return m.extendedTextMessage.text;
-    if (m.editedMessage) return unwrap(m.editedMessage);
     if (m.protocolMessage?.editedMessage) return unwrap(m.protocolMessage.editedMessage);
+    if (m.protocolMessage?.message) return unwrap(m.protocolMessage.message);
+    if (m.editedMessage) return unwrap(m.editedMessage);
     if (m.ephemeralMessage?.message) return unwrap(m.ephemeralMessage.message);
     if (m.viewOnceMessage?.message) return unwrap(m.viewOnceMessage.message);
     if (m.viewOnceMessageV2?.message) return unwrap(m.viewOnceMessageV2.message);
