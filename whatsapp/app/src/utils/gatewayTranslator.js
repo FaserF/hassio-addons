@@ -69,7 +69,9 @@ export async function translateTextGatewayWithReason(
     if (provider === 'google') {
       const cd = cooldowns.get('google') || 0;
       if (cd > now) {
-        attemptedReasons.push(`Google Translate: in cooldown (${Math.ceil((cd - now) / 1000)}s left)`);
+        attemptedReasons.push(
+          `Google Translate: in cooldown (${Math.ceil((cd - now) / 1000)}s left)`
+        );
         continue;
       }
       try {

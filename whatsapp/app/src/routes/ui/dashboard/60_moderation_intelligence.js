@@ -216,7 +216,8 @@ function renderModerationDiagnostics(data) {
       transBadge.className = 'mod-diag-badge ' + (trans.status || 'healthy');
       let badgeText = trans.status || 'Healthy';
       if (trans.status === 'healthy') badgeText = t('moderation.status_healthy') || 'Operational';
-      else if (trans.status === 'disabled') badgeText = t('moderation.status_disabled') || 'Disabled';
+      else if (trans.status === 'disabled')
+        badgeText = t('moderation.status_disabled') || 'Disabled';
       else if (trans.status === 'degraded')
         badgeText = t('moderation.status_degraded') || 'Degraded / Failover';
       else if (trans.status === 'error') badgeText = t('moderation.status_error') || 'Error';
