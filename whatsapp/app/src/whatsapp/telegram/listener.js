@@ -322,13 +322,23 @@ export async function syncWhatsAppEditToTelegram(
       const editIndicator = t(lang, 'bot_replies.edited_msg_indicator_html');
       const editOldText = t(lang, 'bot_replies.edited_msg_old_html');
       const tgChatId = mapped?.tgChatId || mapping.tg_chat_id;
-      let fallbackText = `${header}${editIndicator}:\n${formattedBody}`;
+      const effectiveSenderName = senderName || mapped?.senderJid || '';
+      const fallbackHeader = isDirectMirror
+        ? ''
+        : formatHeader(
+            groupName,
+            effectiveSenderName,
+            isGroupWa ? mapping.include_group_name : false,
+            isGroupWa ? mapping.include_sender_name : false,
+            mapping.anonymize_phone_numbers
+          );
+      let fallbackText = `${fallbackHeader}${editIndicator}:\n${formattedBody}`;
       const sendOpts = {};
 
       if (mapped && mapped.tgMsgId) {
         sendOpts.reply_to_message_id = Number(mapped.tgMsgId);
       } else {
-        fallbackText = `${header}${editIndicator} ${editOldText}:\n${formattedBody}`;
+        fallbackText = `${fallbackHeader}${editIndicator} ${editOldText}:\n${formattedBody}`;
       }
 
       try {

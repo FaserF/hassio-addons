@@ -1059,6 +1059,6 @@
     "stt_download_failed": "Could not download audio buffer.",
     "stt_transcription_failed": "Could not transcribe audio message. (Optional: Set AI key in Moderation settings)",
     "stt_no_speech_recognized": "Could not transcribe speech from audio.",
-    "about_text": "🛡️ *About WhatsApp Gateway & Security Orchestrator*\n\nWhatsApp Gateway is a state-of-the-art open-source security & moderation orchestrator for Home Assistant and WhatsApp. It features AI intent detection, real-time analytics, MFA Web UI dashboard, content locks, and Telegram 2-way bridge.\n\n📚 *Documentation:* https://faserf.github.io/ha-whatsapp/\n🐙 *GitHub Repository:* https://github.com/FaserF/ha-whatsapp\n💖 *Sponsor & Donate:* https://github.com/sponsors/FaserF\n💬 *Support Chat:* https://t.me/AegisSupport\n🐛 *Report Issues:* https://github.com/FaserF/ha-whatsapp/issues\n\n_Made with ❤️ for community safety._"
+    "about_text": "🛡️ *About WhatsApp Gateway & Security Orchestrator*\n\nWhatsApp Gateway is a state-of-the-art open-source security & moderation orchestrator for Home Assistant and WhatsApp. It features AI intent detection, real-time analytics, MFA Web UI dashboard, content locks, and Telegram 2-way bridge.\n\n📚 *Documentation:* https://faserf.github.io/ha-whatsapp/\n🐙 *GitHub Repository:* https://github.com/FaserF/ha-whatsapp\n💖 *Sponsor & Donate:* https://github.com/sponsors/FaserF\n🐛 *Report Issues:* https://github.com/FaserF/ha-whatsapp/issues\n\n_Made with ❤️ for community safety._"
   }
 }
