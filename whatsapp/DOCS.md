@@ -172,13 +172,13 @@ send_message_timeout: 25000
 keep_alive_interval: 30000
 mask_sensitive_data: false
 webhook_enabled: false
-webhook_url: ""
-webhook_token: ""
+webhook_url: ''
+webhook_token: ''
 ui_auth_enabled: false
-ui_auth_password: ""
+ui_auth_password: ''
 mark_online: false
 media_folder: null
-admin_numbers: ""
+admin_numbers: ''
 welcome_message_enabled: false
 admin_notifications_enabled: true
 message_send_interval: 1000
@@ -188,7 +188,7 @@ group_fetch_cooldown_on_rate_limit: 900000
 sync_full_history: false
 reject_unauthorized: true
 auto_install_integration: true
-github_token: ""
+github_token: ''
 ```
 
 ### Configuration Options

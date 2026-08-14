@@ -15,10 +15,7 @@ import {
   resolveUserDisplayName,
   resolveCanonicalUserKey,
 } from '../../utils/security.js';
-import {
-  syncWhatsAppPinToTelegram,
-  syncWhatsAppUnpinAllToTelegram,
-} from '../telegram/listener.js';
+import { syncWhatsAppPinToTelegram, syncWhatsAppUnpinAllToTelegram } from '../telegram/listener.js';
 import { t } from '../../locales/loader.js';
 
 /** Translate a bot-reply key using group config language (fallback: 'en') */
@@ -2782,7 +2779,9 @@ registry.register(
     const quotedMsg = rawMsg?.message?.extendedTextMessage?.contextInfo;
     const targetMsgId = quotedMsg?.stanzaId || rawMsg?.key?.id;
     const targetParticipant = quotedMsg?.participant || rawMsg?.key?.remoteJid;
-    const isFromMe = quotedMsg ? quotedMsg.participant === session?.sock?.user?.id : Boolean(rawMsg?.key?.fromMe);
+    const isFromMe = quotedMsg
+      ? quotedMsg.participant === session?.sock?.user?.id
+      : Boolean(rawMsg?.key?.fromMe);
 
     if (session?.sock?.sendMessage && targetMsgId) {
       try {
@@ -2799,7 +2798,10 @@ registry.register(
           },
         });
       } catch (err) {
-        logger.debug({ error: err.message, targetMsgId }, 'Failed to natively pin message via Baileys');
+        logger.debug(
+          { error: err.message, targetMsgId },
+          'Failed to natively pin message via Baileys'
+        );
       }
     }
     syncWhatsAppPinToTelegram(targetMsgId, groupId, true);
@@ -2814,7 +2816,9 @@ registry.register(
     const quotedMsg = rawMsg?.message?.extendedTextMessage?.contextInfo;
     const targetMsgId = quotedMsg?.stanzaId || rawMsg?.key?.id;
     const targetParticipant = quotedMsg?.participant || rawMsg?.key?.remoteJid;
-    const isFromMe = quotedMsg ? quotedMsg.participant === session?.sock?.user?.id : Boolean(rawMsg?.key?.fromMe);
+    const isFromMe = quotedMsg
+      ? quotedMsg.participant === session?.sock?.user?.id
+      : Boolean(rawMsg?.key?.fromMe);
 
     if (session?.sock?.sendMessage && targetMsgId) {
       try {
@@ -2830,7 +2834,10 @@ registry.register(
           },
         });
       } catch (err) {
-        logger.debug({ error: err.message, targetMsgId }, 'Failed to natively unpin message via Baileys');
+        logger.debug(
+          { error: err.message, targetMsgId },
+          'Failed to natively unpin message via Baileys'
+        );
       }
     }
     syncWhatsAppPinToTelegram(targetMsgId, groupId, false);

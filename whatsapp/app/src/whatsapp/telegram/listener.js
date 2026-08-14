@@ -88,8 +88,13 @@ export async function syncWhatsAppGroupEventToTelegram(
     const canonical = resolveCanonicalUserKey(p, session) || rawUser;
     if (!seenUsers.has(canonical)) {
       seenUsers.add(canonical);
-      const isLid = String(p).includes('@lid') || (canonical.length >= 14 && canonical.startsWith('1576'));
-      const display = isLid ? (session ? resolveUserDisplayName(p, session) : `@${canonical}`) : canonical;
+      const isLid =
+        String(p).includes('@lid') || (canonical.length >= 14 && canonical.startsWith('1576'));
+      const display = isLid
+        ? session
+          ? resolveUserDisplayName(p, session)
+          : `@${canonical}`
+        : canonical;
       cleanNamesList.push(display);
     }
   }
