@@ -143,7 +143,16 @@ export async function syncWhatsAppPinToTelegram(
         );
         if (sent && sent.message_id) {
           targetTgMsgId = sent.message_id;
-          recordMessageMap(waMsgId, targetTgChatId, sent.message_id, waJid, false, senderName, '', bodyText || fullMsg);
+          recordMessageMap(
+            waMsgId,
+            targetTgChatId,
+            sent.message_id,
+            waJid,
+            false,
+            senderName,
+            '',
+            bodyText || fullMsg
+          );
         }
       } catch (sendErr) {
         logger.debug(
@@ -316,7 +325,8 @@ export async function syncWhatsAppEditToTelegram(
     const isTranslateActive =
       Boolean(mapping.translate_wa_to_tg) ||
       (groupModCfg?.translation?.enabled !== false &&
-        (groupModCfg?.translation?.mode === 'auto' || groupModCfg?.translation?.mode === 'forwards'));
+        (groupModCfg?.translation?.mode === 'auto' ||
+          groupModCfg?.translation?.mode === 'forwards'));
 
     if (isTranslateActive && newText && newText.trim()) {
       try {

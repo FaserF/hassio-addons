@@ -66,7 +66,9 @@ export async function translateTextGatewayWithReason(
   };
 
   const store = loadModerationStore ? loadModerationStore() : {};
-  const hasAiKey = Boolean(store?.gemini_api_key || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY);
+  const hasAiKey = Boolean(
+    store?.gemini_api_key || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY
+  );
 
   const providersToTry = [];
   if (preferredProvider && preferredProvider !== 'auto') {

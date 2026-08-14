@@ -565,7 +565,8 @@ export async function processTelegramUpdates() {
           const isTranslateActive =
             Boolean(mapping.translate_tg_to_wa) ||
             (groupModCfg?.translation?.enabled !== false &&
-              (groupModCfg?.translation?.mode === 'auto' || groupModCfg?.translation?.mode === 'forwards'));
+              (groupModCfg?.translation?.mode === 'auto' ||
+                groupModCfg?.translation?.mode === 'forwards'));
 
           if (isTranslateActive && tgText && tgText.trim() && !isSystemMsg && !isPinMsg) {
             try {

@@ -132,7 +132,8 @@ export async function syncWhatsAppToTelegram(
       const isTranslateActive =
         Boolean(mapping.translate_wa_to_tg) ||
         (groupModCfg?.translation?.enabled !== false &&
-          (groupModCfg?.translation?.mode === 'auto' || groupModCfg?.translation?.mode === 'forwards'));
+          (groupModCfg?.translation?.mode === 'auto' ||
+            groupModCfg?.translation?.mode === 'forwards'));
 
       if (isTranslateActive && textContent && textContent.trim()) {
         try {

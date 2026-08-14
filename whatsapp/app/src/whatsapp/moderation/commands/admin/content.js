@@ -11,7 +11,13 @@ import { gt } from '../../engine/translations.js';
 // Persist pinned messages to disk so !unpinall works across bot restarts.
 // Storage: moderation_store -> groups[groupId].pinned_messages -> { [msgId]: { id, participant, fromMe } }
 
-export function trackPinnedMessage(groupId, waMsgId, participant = null, fromMe = false, text = '') {
+export function trackPinnedMessage(
+  groupId,
+  waMsgId,
+  participant = null,
+  fromMe = false,
+  text = ''
+) {
   if (!groupId || !waMsgId) return;
   try {
     const store = loadModerationStore();
