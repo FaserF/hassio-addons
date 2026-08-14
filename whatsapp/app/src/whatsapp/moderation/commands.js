@@ -74,6 +74,10 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
     .replace(/\n?```$/i, '')
     .trim();
 
+  // Escape prefix for regex
+  const escapedPrefix = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const prefixRegex = new RegExp(`^(${escapedPrefix}|[!/#])\\s*([a-zA-Z0-9_]+)(.*)$`, 'i');
+
   // Split into lines to support multi-line command blocks
   const rawLines = rawText
     .split('\n')
@@ -83,20 +87,31 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
         .replace(/^['"`\s]+|['"`\s]+$/g, '')
         .trim()
     )
-    .filter((l) => {
-      if (l.length === 0) return false;
-      if (l.startsWith(prefix) || l.startsWith('!') || l.startsWith('/')) return true;
-      if (isPrivateChat) {
-        const firstWord = l.split(/\s+/)[0].toLowerCase();
-        return registry.getCommand(firstWord) !== undefined;
-      }
-      return false;
-    });
+    .filter((l) => l.length > 0);
 
-  if (rawLines.length === 0) return false;
+  // If text is a regular conversation or paragraph (not starting with a command or containing mostly non-command lines), do not treat as command block
+  const validCommandLines = [];
+  for (const line of rawLines) {
+    const match = line.match(prefixRegex);
+    if (match) {
+      const normalizedCmd = `${prefix}${match[2]}${match[3] ? ' ' + match[3].trim() : ''}`.trim();
+      const cmdName = match[2].toLowerCase();
+      // Check if command is known or line is strictly a single short command line
+      if (registry.getCommand(cmdName) !== undefined || rawLines.length === 1) {
+        validCommandLines.push(normalizedCmd);
+      }
+    } else if (isPrivateChat) {
+      const firstWord = line.split(/\s+/)[0].toLowerCase();
+      if (registry.getCommand(firstWord) !== undefined) {
+        validCommandLines.push(line);
+      }
+    }
+  }
+
+  if (validCommandLines.length === 0) return false;
 
   const multiCmdEnabled = Boolean(config.commands?.multi_command_enabled);
-  const linesToProcess = multiCmdEnabled ? rawLines : [rawLines[0]];
+  const linesToProcess = multiCmdEnabled ? validCommandLines : [validCommandLines[0]];
 
   // Fast path for single command line
   if (linesToProcess.length === 1) {
