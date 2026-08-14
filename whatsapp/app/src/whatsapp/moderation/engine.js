@@ -1504,10 +1504,10 @@ export async function handleModerationMessage(session, event) {
           'Skipping auto-translation: source language matches target language'
         );
       } else {
-        const header =
-          targetLang === 'de'
-            ? `🌐 *Automatische Übersetzung (${srcCode.toUpperCase()} → ${dstCode.toUpperCase()}):*`
-            : `🌐 *Auto Translation (${srcCode.toUpperCase()} → ${dstCode.toUpperCase()}):*`;
+        const header = gt(config, 'bot_replies.auto_translation_header', {
+          src: srcCode.toUpperCase(),
+          dst: dstCode.toUpperCase(),
+        });
         const sentTransMsg = await reply(
           session,
           groupId,

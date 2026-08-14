@@ -1050,6 +1050,7 @@
     "unknown_command_title": "⚠️ *Unknown Command:*",
     "unknown_command_desc": "The command `{cmd}` does not exist.",
     "did_you_mean": "💡 *Did you mean?*",
+    "auto_translation_header": "🌐 *Auto Translation ({src} → {dst}):*",
     "type_help_hint": "Type `{prefix}help` to see all available commands.",
     "stt_header": "🎙️ *Voice Message to Text (STT)*",
     "stt_disclaimer": "\n\n_⚠️ Note: Automated transcription – may contain errors._",

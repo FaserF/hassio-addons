@@ -1064,6 +1064,7 @@
     "unknown_command_title": "⚠️ *Unbekannter Befehl:*",
     "unknown_command_desc": "Der Befehl `{cmd}` existiert nicht.",
     "did_you_mean": "💡 *Meintest du vielleicht?*",
+    "auto_translation_header": "🌐 *Automatische Übersetzung ({src} → {dst}):*",
     "type_help_hint": "Tippe `{prefix}help` um alle verfügbaren Befehle zu sehen.",
     "stt_header": "🎙️ *Sprachnachricht zu Text (STT)*",
     "stt_disclaimer": "\n\n_⚠️ Hinweis: Automatische Transkription – kann Fehler enthalten._",
