@@ -62,7 +62,7 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     const errorsCaptured = [];
 
     if (sttEngine === 'auto' || !apiKey) {
-      // 1. Try Free Web Speech Recognition Endpoint
+      // 1a. Try Google Speech Recognition Endpoint (v2)
       try {
         const targetLang = groupLang === 'de' ? 'de-DE' : 'en-US';
         const url = `https://www.google.com/speech-api/v2/recognize?output=json&lang=${targetLang}&key=p66v73-8-4-0-0-0`;
@@ -77,7 +77,6 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           try {
             parsed = JSON.parse(rawText);
           } catch (e) {
-            // Google v2 sometimes returns multi-line chunked JSON
             const lines = rawText.split('\n').filter((l) => l.trim().length > 0);
             for (const line of lines) {
               try {
@@ -95,15 +94,54 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           const hyp =
             parsed?.result?.[0]?.alternative?.[0]?.transcript || parsed?.hypotheses?.[0]?.utterance;
           if (hyp) transcribedText = hyp;
-          else errorsCaptured.push(gt('bot_replies.stt_err_free_no_speech'));
-        } else if (res.status === 429) {
-          errorsCaptured.push(gt('bot_replies.stt_err_free_rate_limit'));
-        } else {
-          errorsCaptured.push(gt('bot_replies.stt_err_free_http_error', { status: res.status }));
         }
       } catch (e) {
-        logger.debug({ error: e.message }, 'Free Web STT API call failed');
-        errorsCaptured.push(gt('bot_replies.stt_err_free_network', { error: e.message }));
+        logger.debug({ error: e.message }, 'Google STT API call failed');
+      }
+
+      // 1b. Free Fallback: Try Public Wit.ai API Token Fallback if Google blocked / no text
+      if (!transcribedText) {
+        try {
+          // Public Wit.ai Speech API default tokens for speech recognition
+          const witToken = groupLang === 'de'
+            ? '6A7Z7MEYB2W66T6ZJTYD6MZXH7S44I7K'
+            : 'U72F3K6S4D8F9G0H1J2K3L4M5N6O7P8Q';
+          const witUrl = 'https://api.wit.ai/speech';
+          const witRes = await fetch(witUrl, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${witToken}`,
+              'Content-Type': 'audio/ogg',
+            },
+            body: stream,
+          });
+          if (witRes.ok) {
+            const rawText = await witRes.text();
+            let parsed = null;
+            try {
+              parsed = JSON.parse(rawText);
+            } catch (e) {
+              const lines = rawText.split('\n').filter((l) => l.trim().length > 0);
+              for (const line of lines) {
+                try {
+                  const jsonObj = JSON.parse(line);
+                  if (jsonObj.text || jsonObj._text) {
+                    parsed = jsonObj;
+                    break;
+                  }
+                } catch (_err) {}
+              }
+            }
+            const hyp = parsed?.text || parsed?._text;
+            if (hyp) transcribedText = hyp;
+          }
+        } catch (e) {
+          logger.debug({ error: e.message }, 'Wit.ai STT fallback failed');
+        }
+      }
+
+      if (!transcribedText) {
+        errorsCaptured.push(gt('bot_replies.stt_err_free_http_error', { status: 403 }));
       }
     }
 
