@@ -4,7 +4,7 @@ import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator
 import { reply } from '../../actions.js';
 import { logger } from '../../../logger.js';
 import { checkSuspiciousName } from '../securityScanner.js';
-import { gt, recordTranslationMap } from './translations.js';
+import { gt, recordTranslationMap, shouldSkipDuplicateTranslation } from './translations.js';
 import { executePenalty, issueUserWarning } from './penalties.js';
 import {
   findPendingCaptcha,
@@ -272,10 +272,17 @@ export async function handleModerationMessage(session, event) {
   if (isTranslationActive && text && text.trim().length > 2) {
     const targetLang = config.translation?.target_lang || 'en';
     const provider = config.translation?.provider || 'auto';
-    logger.info(
-      { groupId, textSnippet: text.slice(0, 40), targetLang, provider },
-      '🌐 Processing auto-translation for group message'
-    );
+
+    if (shouldSkipDuplicateTranslation(groupId, text, targetLang, 120000)) {
+      logger.info(
+        { groupId, textSnippet: text.slice(0, 40) },
+        'ℹ️ Skipping auto-translation: identical message was already translated recently'
+      );
+    } else {
+      logger.info(
+        { groupId, textSnippet: text.slice(0, 40), targetLang, provider },
+        '🌐 Processing auto-translation for group message'
+      );
 
     const transResult =
       provider === 'ai'
@@ -287,46 +294,47 @@ export async function handleModerationMessage(session, event) {
           })()
         : await translateTextGatewayWithReason(text, targetLang, provider);
 
-    if (
-      transResult?.translation &&
-      transResult.translation.trim().toLowerCase() !== text.trim().toLowerCase()
-    ) {
-      const srcCode = (transResult.sourceLang || transResult.detectedSource || '?').toLowerCase();
-      const dstCode = targetLang.toLowerCase();
+      if (
+        transResult?.translation &&
+        transResult.translation.trim().toLowerCase() !== text.trim().toLowerCase()
+      ) {
+        const srcCode = (transResult.sourceLang || transResult.detectedSource || '?').toLowerCase();
+        const dstCode = targetLang.toLowerCase();
 
-      // Skip translation if detected source language is already the target language
-      if (srcCode !== '?' && srcCode === dstCode) {
-        logger.info(
-          { srcCode, dstCode },
-          'Skipping auto-translation: source language matches target language'
-        );
-      } else {
-        const header = gt(config, 'bot_replies.auto_translation_header', {
-          src: srcCode.toUpperCase(),
-          dst: dstCode.toUpperCase(),
-        });
-        const sentTransMsg = await reply(
-          session,
-          groupId,
-          { text: `${header}\n\n"${transResult.translation}"` },
-          rawMsg
-        );
-        if (sentTransMsg?.key?.id && rawMsg?.key?.id) {
-          recordTranslationMap(groupId, rawMsg.key.id, sentTransMsg.key.id, sentTransMsg.key);
+        // Skip translation if detected source language is already the target language
+        if (srcCode !== '?' && srcCode === dstCode) {
+          logger.info(
+            { srcCode, dstCode },
+            'Skipping auto-translation: source language matches target language'
+          );
+        } else {
+          const header = gt(config, 'bot_replies.auto_translation_header', {
+            src: srcCode.toUpperCase(),
+            dst: dstCode.toUpperCase(),
+          });
+          const sentTransMsg = await reply(
+            session,
+            groupId,
+            { text: `${header}\n\n"${transResult.translation}"` },
+            rawMsg
+          );
+          if (sentTransMsg?.key?.id && rawMsg?.key?.id) {
+            recordTranslationMap(groupId, rawMsg.key.id, sentTransMsg.key.id, sentTransMsg.key);
+          }
+          logger.info(
+            { groupId, src: srcCode, dst: dstCode },
+            '✅ Auto-translation successfully sent to group'
+          );
         }
+      } else {
         logger.info(
-          { groupId, src: srcCode, dst: dstCode },
-          '✅ Auto-translation successfully sent to group'
+          {
+            textSnippet: text.slice(0, 40),
+            reason: transResult?.reason || 'Translation matched original text or returned empty',
+          },
+          'ℹ️ Auto-translation skipped: no distinct translation produced'
         );
       }
-    } else {
-      logger.info(
-        {
-          textSnippet: text.slice(0, 40),
-          reason: transResult?.reason || 'Translation matched original text or returned empty',
-        },
-        'ℹ️ Auto-translation skipped: no distinct translation produced'
-      );
     }
   }
 

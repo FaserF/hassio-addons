@@ -9,6 +9,26 @@ export function gt(config, key, params = {}) {
 }
 
 export const _TRANSLATION_MAP = new Map(); // key: groupId:sourceWaId -> { botWaId, botKey }
+export const _RECENT_TRANSLATIONS = new Map(); // key: groupId:normalizedText:targetLang -> timestamp
+
+export function shouldSkipDuplicateTranslation(groupId, text, targetLang = 'en', ttlMs = 120000) {
+  if (!groupId || !text) return false;
+  const normalized = text.trim().toLowerCase().replace(/\s+/g, ' ');
+  if (!normalized) return false;
+  const key = `${groupId}:${targetLang}:${normalized}`;
+  const now = Date.now();
+  const lastTime = _RECENT_TRANSLATIONS.get(key);
+  if (lastTime && now - lastTime < ttlMs) {
+    return true;
+  }
+  _RECENT_TRANSLATIONS.set(key, now);
+  if (_RECENT_TRANSLATIONS.size > 2000) {
+    for (const [k, ts] of _RECENT_TRANSLATIONS.entries()) {
+      if (now - ts > ttlMs) _RECENT_TRANSLATIONS.delete(k);
+    }
+  }
+  return false;
+}
 
 export function recordTranslationMap(groupId, sourceWaId, botWaId, botKey) {
   if (!sourceWaId || !botWaId) return;
