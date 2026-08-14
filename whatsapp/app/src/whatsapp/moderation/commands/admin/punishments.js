@@ -17,7 +17,12 @@ export function registerPunishmentCommands(registry) {
         targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
       }
       if (targetMatches.length === 0) {
-        await reply(session, groupId, { text: `⚠️ You must mention a user or reply to their message to warn them.` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `⚠️ You must mention a user or reply to their message to warn them.` },
+          rawMsg
+        );
         return;
       }
       const cleanedArgs = args.filter((a) => !a.startsWith('@'));
@@ -25,7 +30,12 @@ export function registerPunishmentCommands(registry) {
 
       for (const targetJid of targetMatches) {
         if (isSameUser(targetJid, userId, session)) {
-          await reply(session, groupId, { text: `⚠️ You cannot issue a warning to yourself.` }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: `⚠️ You cannot issue a warning to yourself.` },
+            rawMsg
+          );
           continue;
         }
         let isTargetGroupAdmin = false;
@@ -43,7 +53,12 @@ export function registerPunishmentCommands(registry) {
           } catch (_e) {}
         }
         if (isTargetGroupAdmin) {
-          await reply(session, groupId, { text: `⚠️ Cannot issue warnings to WhatsApp group administrators.` }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: `⚠️ Cannot issue warnings to WhatsApp group administrators.` },
+            rawMsg
+          );
           continue;
         }
         const targetId = targetJid.split('@')[0];
@@ -66,7 +81,12 @@ export function registerPunishmentCommands(registry) {
         targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
       }
       if (targetMatches.length === 0) {
-        await reply(session, groupId, { text: `⚠️ You must mention a user or reply to their message to unwarn them.` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `⚠️ You must mention a user or reply to their message to unwarn them.` },
+          rawMsg
+        );
         return;
       }
       const store = loadModerationStore();
@@ -76,9 +96,19 @@ export function registerPunishmentCommands(registry) {
         const targetId = targetJid.split('@')[0];
         if (c.warnings?.user_warns?.[targetId]) {
           c.warnings.user_warns[targetId] = [];
-          await reply(session, groupId, { text: `✅ Cleared warnings for @${targetId}`, mentions: [targetJid] }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: `✅ Cleared warnings for @${targetId}`, mentions: [targetJid] },
+            rawMsg
+          );
         } else {
-          await reply(session, groupId, { text: `ℹ️ User @${targetId} has no warnings.`, mentions: [targetJid] }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: `ℹ️ User @${targetId} has no warnings.`, mentions: [targetJid] },
+            rawMsg
+          );
         }
       }
       saveModerationStore(store);
@@ -99,7 +129,12 @@ export function registerPunishmentCommands(registry) {
         targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
       }
       if (targetMatches.length === 0) {
-        await reply(session, groupId, { text: `⚠️ You must mention a user or reply to their message to check their warnings.` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `⚠️ You must mention a user or reply to their message to check their warnings.` },
+          rawMsg
+        );
         return;
       }
       const store = loadModerationStore();
@@ -112,9 +147,22 @@ export function registerPunishmentCommands(registry) {
           const wList = warns
             .map((w, i) => `${i + 1}. ${w.reason} (${new Date(w.timestamp).toLocaleString()})`)
             .join('\n');
-          await reply(session, groupId, { text: `⚠️ @${targetId} has ${warns.length} warning(s):\n${wList}`, mentions: [targetJid] }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            {
+              text: `⚠️ @${targetId} has ${warns.length} warning(s):\n${wList}`,
+              mentions: [targetJid],
+            },
+            rawMsg
+          );
         } else {
-          await reply(session, groupId, { text: `✅ User @${targetId} has 0 warnings.`, mentions: [targetJid] }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: `✅ User @${targetId} has 0 warnings.`, mentions: [targetJid] },
+            rawMsg
+          );
         }
       }
     },
@@ -134,7 +182,12 @@ export function registerPunishmentCommands(registry) {
         targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
       }
       if (targetMatches.length === 0) {
-        await reply(session, groupId, { text: `⚠️ You must mention a user or reply to their message to kick them.` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `⚠️ You must mention a user or reply to their message to kick them.` },
+          rawMsg
+        );
         return;
       }
       const reason = args.join(' ') || 'Admin requested kick';
@@ -167,7 +220,12 @@ export function registerPunishmentCommands(registry) {
         targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
       }
       if (targetMatches.length === 0) {
-        await reply(session, groupId, { text: `⚠️ You must mention a user or reply to their message to ban them.` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `⚠️ You must mention a user or reply to their message to ban them.` },
+          rawMsg
+        );
         return;
       }
       const reason = args.join(' ') || 'Admin requested ban';
@@ -207,7 +265,9 @@ export function registerPunishmentCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ You must mention a user, reply to their message, or specify their number (e.g. \`${config.commands.prefix}unban 49176...\`) to unban them.` },
+          {
+            text: `⚠️ You must mention a user, reply to their message, or specify their number (e.g. \`${config.commands.prefix}unban 49176...\`) to unban them.`,
+          },
           rawMsg
         );
         return;
@@ -219,9 +279,22 @@ export function registerPunishmentCommands(registry) {
         const targetId = targetJid.split('@')[0];
         if (c.banned_users && c.banned_users[targetId]) {
           delete c.banned_users[targetId];
-          await reply(session, groupId, { text: `✅ Unbanned @${targetId}. They may now rejoin the group.`, mentions: [targetJid] }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            {
+              text: `✅ Unbanned @${targetId}. They may now rejoin the group.`,
+              mentions: [targetJid],
+            },
+            rawMsg
+          );
         } else {
-          await reply(session, groupId, { text: `⚠️ User @${targetId} is not banned in this group.`, mentions: [targetJid] }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: `⚠️ User @${targetId} is not banned in this group.`, mentions: [targetJid] },
+            rawMsg
+          );
         }
       }
       store.groups[groupId] = c;
@@ -247,7 +320,14 @@ export function registerPunishmentCommands(registry) {
         if (clean) targetMatches.push(`${clean}@s.whatsapp.net`);
       }
       if (targetMatches.length === 0) {
-        await reply(session, groupId, { text: `⚠️ You must mention a user, reply to their message, or specify their number to clear kick log.` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          {
+            text: `⚠️ You must mention a user, reply to their message, or specify their number to clear kick log.`,
+          },
+          rawMsg
+        );
         return;
       }
       const store = loadModerationStore();
@@ -258,7 +338,12 @@ export function registerPunishmentCommands(registry) {
         if (Array.isArray(c.kick_log)) {
           c.kick_log = c.kick_log.filter((k) => k.userId !== targetId);
         }
-        await reply(session, groupId, { text: `✅ Cleared kick log entries for @${targetId}.`, mentions: [targetJid] }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `✅ Cleared kick log entries for @${targetId}.`, mentions: [targetJid] },
+          rawMsg
+        );
       }
       store.groups[groupId] = c;
       saveModerationStore(store);

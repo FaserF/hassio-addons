@@ -1,8 +1,4 @@
-import {
-  loadModerationStore,
-  getGroupModerationConfig,
-  saveModerationStore,
-} from '../store.js';
+import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from '../store.js';
 import { processAiModeration } from '../ai.js';
 import { translateTextFreeWithReason } from '../../../utils/freeTranslator.js';
 import { reply } from '../../actions.js';

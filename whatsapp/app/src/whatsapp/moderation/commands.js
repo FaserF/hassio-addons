@@ -3,7 +3,12 @@ import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
 import { gt } from './engine/translations.js';
 import { findCommandSuggestions, levenshteinDistance } from './commands/suggestions.js';
-import { registerAdminCommands, parseDuration, formatDuration, pendingTempActions } from './commands/admin.js';
+import {
+  registerAdminCommands,
+  parseDuration,
+  formatDuration,
+  pendingTempActions,
+} from './commands/admin.js';
 import { registerInfoCommands, LOCK_TYPES } from './commands/info.js';
 import { registerConfigCommands } from './commands/config.js';
 
@@ -43,7 +48,14 @@ registerAdminCommands(registry);
 registerInfoCommands(registry);
 registerConfigCommands(registry);
 
-export { findCommandSuggestions, levenshteinDistance, parseDuration, formatDuration, pendingTempActions, LOCK_TYPES };
+export {
+  findCommandSuggestions,
+  levenshteinDistance,
+  parseDuration,
+  formatDuration,
+  pendingTempActions,
+  LOCK_TYPES,
+};
 
 export async function processCommand(session, msg, text, senderJid, isAdminUser, groupId) {
   const store = loadModerationStore();

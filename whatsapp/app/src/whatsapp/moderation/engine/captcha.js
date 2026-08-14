@@ -1,8 +1,4 @@
-import {
-  loadModerationStore,
-  getGroupModerationConfig,
-  saveModerationStore,
-} from '../store.js';
+import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from '../store.js';
 import { reply } from '../../actions.js';
 import { logger } from '../../../logger.js';
 import {

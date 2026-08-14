@@ -18,7 +18,9 @@ export function registerConfigCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Usage: \`${config.commands.prefix}setwelcome <text>\`\nPlaceholders: {mention}, {name}, {pushname}, {group}, {count}, {rules}, {date}, {time}` },
+          {
+            text: `⚠️ Usage: \`${config.commands.prefix}setwelcome <text>\`\nPlaceholders: {mention}, {name}, {pushname}, {group}, {count}, {rules}, {date}, {time}`,
+          },
           rawMsg
         );
         return;
@@ -55,7 +57,9 @@ export function registerConfigCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Usage: \`${config.commands.prefix}setgoodbye <text>\`\nPlaceholders: {mention}, {name}, {pushname}, {group}, {count}, {rules}, {date}, {time}` },
+          {
+            text: `⚠️ Usage: \`${config.commands.prefix}setgoodbye <text>\`\nPlaceholders: {mention}, {name}, {pushname}, {group}, {count}, {rules}, {date}, {time}`,
+          },
           rawMsg
         );
         return;
@@ -76,9 +80,7 @@ export function registerConfigCommands(registry) {
     'goodbye',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
       const text =
-        config.greetings?.goodbye_text ||
-        config.greetings?.goodbye_message ||
-        'Goodbye {name}!';
+        config.greetings?.goodbye_text || config.greetings?.goodbye_message || 'Goodbye {name}!';
       await reply(session, groupId, { text: `Current goodbye message:\n\n${text}` }, rawMsg);
     },
     { adminOnly: true, help: 'View the goodbye message' }
@@ -172,7 +174,12 @@ export function registerConfigCommands(registry) {
       if (!Array.isArray(c.filters)) c.filters = [];
       c.filters.push({ trigger, response, action: 'reply' });
       saveModerationStore(store);
-      await reply(session, groupId, { text: `✅ Added auto-responder filter for *"${trigger}"*.` }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: `✅ Added auto-responder filter for *"${trigger}"*.` },
+        rawMsg
+      );
     },
     { adminOnly: true, help: 'Add auto-reply filter (trigger -> response)' }
   );
@@ -215,7 +222,9 @@ export function registerConfigCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `💬 *Active Filters:*\n${filters.map((f) => `• "${f.trigger}" → ${f.response}`).join('\n')}` },
+          {
+            text: `💬 *Active Filters:*\n${filters.map((f) => `• "${f.trigger}" → ${f.response}`).join('\n')}`,
+          },
           rawMsg
         );
       }
@@ -230,7 +239,10 @@ export function registerConfigCommands(registry) {
       try {
         groupMeta = await session.sock.groupMetadata(groupId);
       } catch (e) {
-        logger.error({ error: e.message, groupId }, 'Failed to fetch group metadata for report command');
+        logger.error(
+          { error: e.message, groupId },
+          'Failed to fetch group metadata for report command'
+        );
       }
 
       const adminParticipants = (groupMeta?.participants || []).filter(
@@ -260,7 +272,9 @@ export function registerConfigCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ You cannot report yourself. Please mention (@user) or reply to the user you want to report.` },
+          {
+            text: `⚠️ You cannot report yourself. Please mention (@user) or reply to the user you want to report.`,
+          },
           rawMsg
         );
         return;
@@ -312,7 +326,11 @@ export function registerConfigCommands(registry) {
         groupId,
         {
           text: `🚨 *Report from ${reporterLabel}*${targetMentionStr}\nAdmins requested.\nReason: ${reasonText}`,
-          mentions: [userId + '@s.whatsapp.net', ...(targetJid ? [targetJid] : []), ...targetAdmins],
+          mentions: [
+            userId + '@s.whatsapp.net',
+            ...(targetJid ? [targetJid] : []),
+            ...targetAdmins,
+          ],
         },
         quotedMsg
       );
@@ -335,7 +353,10 @@ export function registerConfigCommands(registry) {
             mentions: [userId + '@s.whatsapp.net', ...(targetJid ? [targetJid] : [])],
           });
         } catch (err) {
-          logger.warn({ error: err.message, adminJid }, 'Failed to send direct report message to admin');
+          logger.warn(
+            { error: err.message, adminJid },
+            'Failed to send direct report message to admin'
+          );
         }
       }
     },
@@ -349,7 +370,9 @@ export function registerConfigCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Usage: \`${config.commands.prefix}setlang <language_code>\`\nExamples: en, de, es, fr, ar, zh, ja` },
+          {
+            text: `⚠️ Usage: \`${config.commands.prefix}setlang <language_code>\`\nExamples: en, de, es, fr, ar, zh, ja`,
+          },
           rawMsg
         );
         return;
@@ -379,7 +402,12 @@ export function registerConfigCommands(registry) {
       const apiKey = store.gemini_api_key || process.env.GEMINI_API_KEY;
 
       if (!apiKey) {
-        await reply(session, groupId, { text: '❌ Gemini API key not configured. Set it in the Addon UI.' }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: '❌ Gemini API key not configured. Set it in the Addon UI.' },
+          rawMsg
+        );
         return;
       }
 
@@ -396,7 +424,12 @@ export function registerConfigCommands(registry) {
       }
 
       if (!textToTranslate) {
-        await reply(session, groupId, { text: '⚠️ Reply to a message or provide text to translate.' }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: '⚠️ Reply to a message or provide text to translate.' },
+          rawMsg
+        );
         return;
       }
 
@@ -408,7 +441,12 @@ export function registerConfigCommands(registry) {
 
       const translated = await processAiModeration(textToTranslate, aiConfig, apiKey);
       if (translated) {
-        await reply(session, groupId, { text: `🌐 *Translation (${targetLang}):*\n\n${translated}` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `🌐 *Translation (${targetLang}):*\n\n${translated}` },
+          rawMsg
+        );
       } else {
         await reply(session, groupId, { text: '❌ Translation failed.' }, rawMsg);
       }
@@ -429,7 +467,12 @@ export function registerConfigCommands(registry) {
         targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
       }
       if (targetMatches.length === 0) {
-        await reply(session, groupId, { text: '⚠️ Mention a user or reply to reset warnings.' }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: '⚠️ Mention a user or reply to reset warnings.' },
+          rawMsg
+        );
         return;
       }
       const store = loadModerationStore();
@@ -469,7 +512,12 @@ export function registerConfigCommands(registry) {
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
       const action = (args[0] || '').toLowerCase();
       if (!['kick', 'mute', 'ban', 'remove'].includes(action)) {
-        await reply(session, groupId, { text: '⚠️ Usage: `!setwarnaction <kick|mute|ban>`' }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: '⚠️ Usage: `!setwarnaction <kick|mute|ban>`' },
+          rawMsg
+        );
         return;
       }
       const store = loadModerationStore();
@@ -477,7 +525,12 @@ export function registerConfigCommands(registry) {
       if (!c.warnings) c.warnings = {};
       c.warnings.action = action;
       saveModerationStore(store);
-      await reply(session, groupId, { text: `✅ Warning action set to *${action.toUpperCase()}*.` }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: `✅ Warning action set to *${action.toUpperCase()}*.` },
+        rawMsg
+      );
     },
     { adminOnly: true, help: 'Set group warning action upon threshold' }
   );
@@ -525,30 +578,78 @@ export function registerConfigCommands(registry) {
 
         let sample;
         switch (cmd) {
-          case 'setrules': sample = `${prefix}setrules 1. Be polite.\n2. No spam.`; break;
-          case 'warn': sample = `${prefix}warn @user Violation of group rules`; break;
-          case 'unwarn': sample = `${prefix}unwarn @user`; break;
-          case 'mute': sample = `${prefix}mute @user 10m`; break;
-          case 'tmute': sample = `${prefix}tmute @user 15m`; break;
-          case 'tban': sample = `${prefix}tban @user 1h`; break;
-          case 'kick': sample = `${prefix}kick @user`; break;
-          case 'ban': sample = `${prefix}ban @user Rule violation`; break;
-          case 'promote': sample = `${prefix}promote @user`; break;
-          case 'demote': sample = `${prefix}demote @user`; break;
-          case 'approve': sample = `${prefix}approve @user`; break;
-          case 'unapprove': sample = `${prefix}unapprove @user`; break;
-          case 'lock': sample = `${prefix}lock url`; break;
-          case 'unlock': sample = `${prefix}unlock url`; break;
-          case 'setwelcome': sample = `${prefix}setwelcome Welcome {mention} to {group}!`; break;
-          case 'setgoodbye': sample = `${prefix}setgoodbye Goodbye {name}!`; break;
-          case 'report': sample = `${prefix}report @user Inappropriate message`; break;
-          case 'notes': sample = `${prefix}notes #wifi 12345678`; break;
-          case 'filter': sample = `${prefix}filter wlan -> Password is 1234`; break;
-          case 'setlang': sample = `${prefix}setlang de`; break;
-          case 'translate': sample = `${prefix}translate de Hello world`; break;
-          case 'autotranslate': sample = `${prefix}autotranslate on`; break;
-          case 'slowmode': sample = `${prefix}slowmode 10s`; break;
-          default: sample = `${prefix}${cmd}`; break;
+          case 'setrules':
+            sample = `${prefix}setrules 1. Be polite.\n2. No spam.`;
+            break;
+          case 'warn':
+            sample = `${prefix}warn @user Violation of group rules`;
+            break;
+          case 'unwarn':
+            sample = `${prefix}unwarn @user`;
+            break;
+          case 'mute':
+            sample = `${prefix}mute @user 10m`;
+            break;
+          case 'tmute':
+            sample = `${prefix}tmute @user 15m`;
+            break;
+          case 'tban':
+            sample = `${prefix}tban @user 1h`;
+            break;
+          case 'kick':
+            sample = `${prefix}kick @user`;
+            break;
+          case 'ban':
+            sample = `${prefix}ban @user Rule violation`;
+            break;
+          case 'promote':
+            sample = `${prefix}promote @user`;
+            break;
+          case 'demote':
+            sample = `${prefix}demote @user`;
+            break;
+          case 'approve':
+            sample = `${prefix}approve @user`;
+            break;
+          case 'unapprove':
+            sample = `${prefix}unapprove @user`;
+            break;
+          case 'lock':
+            sample = `${prefix}lock url`;
+            break;
+          case 'unlock':
+            sample = `${prefix}unlock url`;
+            break;
+          case 'setwelcome':
+            sample = `${prefix}setwelcome Welcome {mention} to {group}!`;
+            break;
+          case 'setgoodbye':
+            sample = `${prefix}setgoodbye Goodbye {name}!`;
+            break;
+          case 'report':
+            sample = `${prefix}report @user Inappropriate message`;
+            break;
+          case 'notes':
+            sample = `${prefix}notes #wifi 12345678`;
+            break;
+          case 'filter':
+            sample = `${prefix}filter wlan -> Password is 1234`;
+            break;
+          case 'setlang':
+            sample = `${prefix}setlang de`;
+            break;
+          case 'translate':
+            sample = `${prefix}translate de Hello world`;
+            break;
+          case 'autotranslate':
+            sample = `${prefix}autotranslate on`;
+            break;
+          case 'slowmode':
+            sample = `${prefix}slowmode 10s`;
+            break;
+          default:
+            sample = `${prefix}${cmd}`;
+            break;
         }
         testLines.push(sample);
       }

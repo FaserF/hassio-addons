@@ -119,14 +119,8 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       if (!transcribedText) {
         const witTokens =
           groupLang === 'de'
-            ? [
-                '6A7Z7MEYB2W66T6ZJTYD6MZXH7S44I7K',
-                '7S44I7K6A7Z7MEYB2W66T6ZJTYD6MZX',
-              ]
-            : [
-                'U72F3K6S4D8F9G0H1J2K3L4M5N6O7P8Q',
-                'N6O7P8QU72F3K6S4D8F9G0H1J2K3L4M5',
-              ];
+            ? ['6A7Z7MEYB2W66T6ZJTYD6MZXH7S44I7K', '7S44I7K6A7Z7MEYB2W66T6ZJTYD6MZX']
+            : ['U72F3K6S4D8F9G0H1J2K3L4M5N6O7P8Q', 'N6O7P8QU72F3K6S4D8F9G0H1J2K3L4M5'];
         for (const witToken of witTokens) {
           if (transcribedText) break;
           try {

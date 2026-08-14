@@ -35,7 +35,12 @@ export function registerMuteCommands(registry) {
         targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
       }
       if (targetMatches.length === 0) {
-        await reply(session, groupId, { text: '⚠️ You must mention a user or reply to their message to mute them.' }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: '⚠️ You must mention a user or reply to their message to mute them.' },
+          rawMsg
+        );
         return;
       }
 
@@ -90,7 +95,12 @@ export function registerMuteCommands(registry) {
         targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
       }
       if (targetMatches.length === 0) {
-        await reply(session, groupId, { text: '⚠️ You must mention a user or reply to their message to unmute them.' }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: '⚠️ You must mention a user or reply to their message to unmute them.' },
+          rawMsg
+        );
         return;
       }
 
@@ -109,7 +119,12 @@ export function registerMuteCommands(registry) {
       saveModerationStore(store);
 
       if (unmutedCount > 0) {
-        await reply(session, groupId, { text: `🔊 Unmuted ${unmutedCount} user(s).`, mentions: targetMatches }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `🔊 Unmuted ${unmutedCount} user(s).`, mentions: targetMatches },
+          rawMsg
+        );
       } else {
         await reply(session, groupId, { text: '❌ None of those users are muted.' }, rawMsg);
       }
@@ -133,7 +148,9 @@ export function registerMuteCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Usage: \`${config.commands.prefix}tmute <duration> [@user]\`\nExample: \`${config.commands.prefix}tmute 1h @user\`` },
+          {
+            text: `⚠️ Usage: \`${config.commands.prefix}tmute <duration> [@user]\`\nExample: \`${config.commands.prefix}tmute 1h @user\``,
+          },
           rawMsg
         );
         return;
@@ -141,7 +158,12 @@ export function registerMuteCommands(registry) {
 
       const durationMs = parseDuration(args[0]);
       if (!durationMs) {
-        await reply(session, groupId, { text: '❌ Invalid duration. Use format: 10s, 30m, 12h, 1d' }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: '❌ Invalid duration. Use format: 10s, 30m, 12h, 1d' },
+          rawMsg
+        );
         return;
       }
 
@@ -184,7 +206,12 @@ export function registerMuteCommands(registry) {
             delete gc.muted_users[id];
             saveModerationStore(st);
           }
-          reply(session, groupId, { text: `🔊 Temporary mute for @${id} has expired.`, mentions: [jid] }, rawMsg);
+          reply(
+            session,
+            groupId,
+            { text: `🔊 Temporary mute for @${id} has expired.`, mentions: [jid] },
+            rawMsg
+          );
         }, durationMs);
         if (timeout.unref) timeout.unref();
         pendingTempActions.set(key, timeout);
@@ -219,7 +246,9 @@ export function registerMuteCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Usage: \`${config.commands.prefix}tban <duration> [@user]\`\nExample: \`${config.commands.prefix}tban 1d @user\`\nDurations: 10s, 30m, 12h, 1d` },
+          {
+            text: `⚠️ Usage: \`${config.commands.prefix}tban <duration> [@user]\`\nExample: \`${config.commands.prefix}tban 1d @user\`\nDurations: 10s, 30m, 12h, 1d`,
+          },
           rawMsg
         );
         return;
@@ -227,7 +256,12 @@ export function registerMuteCommands(registry) {
 
       const durationMs = parseDuration(args[0]);
       if (!durationMs) {
-        await reply(session, groupId, { text: '❌ Invalid duration. Use format: 10s, 30m, 12h, 1d' }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: '❌ Invalid duration. Use format: 10s, 30m, 12h, 1d' },
+          rawMsg
+        );
         return;
       }
 

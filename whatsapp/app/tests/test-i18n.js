@@ -381,7 +381,9 @@ async function runI18nTests() {
       'ANTI-RAID SHIELD ACTIVATED',
       'FAQ Hint / Automated Help',
     ];
-    const hardcodedInReplies = hardcodedPhrases.filter((phrase) => allEngineContent.includes(phrase));
+    const hardcodedInReplies = hardcodedPhrases.filter((phrase) =>
+      allEngineContent.includes(phrase)
+    );
     assertTest(
       hardcodedInReplies.length === 0,
       `engine.js: no hardcoded English bot-reply phrases found (found: ${hardcodedInReplies.length > 0 ? hardcodedInReplies.join(', ') : 'none'})`
@@ -400,14 +402,17 @@ async function runI18nTests() {
       }
     }
 
-    const importsT = /import\s*\{[^}]*(?:\bt\b|\bgt\b)[^}]*\}\s*from\s*['"].*locales\/loader\.js['"]/.test(
-      allCommandsContent
-    ) || /import\s*\{[^}]*\bgt\b[^}]*\}\s*from\s*['"].*translations\.js['"]/.test(allCommandsContent);
+    const importsT =
+      /import\s*\{[^}]*(?:\bt\b|\bgt\b)[^}]*\}\s*from\s*['"].*locales\/loader\.js['"]/.test(
+        allCommandsContent
+      ) ||
+      /import\s*\{[^}]*\bgt\b[^}]*\}\s*from\s*['"].*translations\.js['"]/.test(allCommandsContent);
     assertTest(
       importsT,
       'commands.js: imports t() from locales/loader.js for command response translation'
     );
-    const definesGt = /function gt\s*\(/.test(allCommandsContent) || /gt\(/.test(allCommandsContent);
+    const definesGt =
+      /function gt\s*\(/.test(allCommandsContent) || /gt\(/.test(allCommandsContent);
     assertTest(definesGt, 'commands.js: defines gt(config, key, params) translation helper');
     const usesGtForInfo =
       /bot_replies\.user_info/.test(allCommandsContent) &&

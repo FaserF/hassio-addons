@@ -1,5 +1,10 @@
 import { registerPunishmentCommands } from './admin/punishments.js';
-import { registerMuteCommands, parseDuration, formatDuration, pendingTempActions } from './admin/mutes.js';
+import {
+  registerMuteCommands,
+  parseDuration,
+  formatDuration,
+  pendingTempActions,
+} from './admin/mutes.js';
 import { registerRoleCommands } from './admin/roles.js';
 import { registerContentCommands } from './admin/content.js';
 import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from '../store.js';

@@ -28,11 +28,7 @@ export {
   handlePrivateCaptchaMessage,
 } from './engine/captcha.js';
 
-export {
-  SPAM_INVITE_LINK_PATTERNS,
-  userFloodMap,
-  groupJoinMap,
-} from './engine/filters.js';
+export { SPAM_INVITE_LINK_PATTERNS, userFloodMap, groupJoinMap } from './engine/filters.js';
 
 export {
   formatMessageTemplate,

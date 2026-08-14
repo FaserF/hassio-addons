@@ -2,7 +2,10 @@ import { loadModerationStore, getGroupModerationConfig, saveModerationStore } fr
 import { reply } from '../../../actions.js';
 import { logger } from '../../../../logger.js';
 import { sendMissingAdminWarning } from '../../engine/penalties.js';
-import { syncWhatsAppPinToTelegram, syncWhatsAppUnpinAllToTelegram } from '../../../telegram/listener.js';
+import {
+  syncWhatsAppPinToTelegram,
+  syncWhatsAppUnpinAllToTelegram,
+} from '../../../telegram/listener.js';
 
 export function registerContentCommands(registry) {
   registry.register(
@@ -36,7 +39,12 @@ export function registerContentCommands(registry) {
         ) {
           await sendMissingAdminWarning(session, groupId, 'Delete message', rawMsg);
         } else {
-          await reply(session, groupId, { text: `❌ Failed to delete message: ${e.message}` }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: `❌ Failed to delete message: ${e.message}` },
+            rawMsg
+          );
         }
       }
     },
@@ -50,7 +58,9 @@ export function registerContentCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Usage: \`${config.commands.prefix}lock <type>\`\nTypes: image, video, audio, document, sticker, url, invite, poll, rtl` },
+          {
+            text: `⚠️ Usage: \`${config.commands.prefix}lock <type>\`\nTypes: image, video, audio, document, sticker, url, invite, poll, rtl`,
+          },
           rawMsg
         );
         return;
@@ -71,7 +81,12 @@ export function registerContentCommands(registry) {
     'unlock',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
       if (args.length === 0) {
-        await reply(session, groupId, { text: `⚠️ Usage: \`${config.commands.prefix}unlock <type>\`` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `⚠️ Usage: \`${config.commands.prefix}unlock <type>\`` },
+          rawMsg
+        );
         return;
       }
       const type = args[0].toLowerCase();
@@ -91,7 +106,12 @@ export function registerContentCommands(registry) {
     async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
       const quoted = rawMsg.message?.extendedTextMessage?.contextInfo;
       if (!quoted?.stanzaId) {
-        await reply(session, groupId, { text: '⚠️ Please reply to the message you want to pin.' }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: '⚠️ Please reply to the message you want to pin.' },
+          rawMsg
+        );
         return;
       }
       try {
@@ -122,7 +142,12 @@ export function registerContentCommands(registry) {
     async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
       const quoted = rawMsg.message?.extendedTextMessage?.contextInfo;
       if (!quoted?.stanzaId) {
-        await reply(session, groupId, { text: '⚠️ Please reply to the message you want to unpin.' }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: '⚠️ Please reply to the message you want to unpin.' },
+          rawMsg
+        );
         return;
       }
       try {
@@ -156,7 +181,12 @@ export function registerContentCommands(registry) {
         await reply(session, groupId, { text: '📌 All messages unpinned successfully.' }, rawMsg);
       } catch (e) {
         logger.warn({ error: e.message, groupId }, 'Failed to unpin all messages');
-        await reply(session, groupId, { text: `❌ Failed to unpin messages: ${e.message}` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `❌ Failed to unpin messages: ${e.message}` },
+          rawMsg
+        );
       }
     },
     { adminOnly: true, help: 'Unpin all pinned messages in the group' }

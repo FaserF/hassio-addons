@@ -32,7 +32,9 @@ export function registerRoleCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: `⚠️ *Security Restriction:* You cannot promote yourself. Only existing Group Admins can promote other members.` },
+            {
+              text: `⚠️ *Security Restriction:* You cannot promote yourself. Only existing Group Admins can promote other members.`,
+            },
             rawMsg
           );
           continue;
@@ -41,7 +43,9 @@ export function registerRoleCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: `⚠️ *Security Restriction:* The bot account cannot be promoted or demoted via chat commands. Please use WhatsApp Group Info settings to change bot admin permissions.` },
+            {
+              text: `⚠️ *Security Restriction:* The bot account cannot be promoted or demoted via chat commands. Please use WhatsApp Group Info settings to change bot admin permissions.`,
+            },
             rawMsg
           );
           continue;
@@ -112,14 +116,21 @@ export function registerRoleCommands(registry) {
       const validTargets = [];
       for (const targetJid of targetMatches) {
         if (isSameUser(targetJid, userId, session)) {
-          await reply(session, groupId, { text: `⚠️ *Security Restriction:* You cannot demote yourself.` }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: `⚠️ *Security Restriction:* You cannot demote yourself.` },
+            rawMsg
+          );
           continue;
         }
         if (isSameUser(targetJid, session?.sock?.user?.id, session)) {
           await reply(
             session,
             groupId,
-            { text: `⚠️ *Security Restriction:* The bot account cannot be demoted via chat commands. Please use WhatsApp Group Info settings to change bot admin permissions.` },
+            {
+              text: `⚠️ *Security Restriction:* The bot account cannot be demoted via chat commands. Please use WhatsApp Group Info settings to change bot admin permissions.`,
+            },
             rawMsg
           );
           continue;
@@ -178,7 +189,12 @@ export function registerRoleCommands(registry) {
         targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
       }
       if (targetMatches.length === 0) {
-        await reply(session, groupId, { text: `⚠️ You must mention a user to approve them.` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `⚠️ You must mention a user to approve them.` },
+          rawMsg
+        );
         return;
       }
       const store = loadModerationStore();
@@ -216,7 +232,12 @@ export function registerRoleCommands(registry) {
         targetMatches.push(rawMsg.message.extendedTextMessage.contextInfo.participant);
       }
       if (targetMatches.length === 0) {
-        await reply(session, groupId, { text: `⚠️ You must mention a user to unapprove them.` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `⚠️ You must mention a user to unapprove them.` },
+          rawMsg
+        );
         return;
       }
       const store = loadModerationStore();

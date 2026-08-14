@@ -76,7 +76,8 @@ export function registerSecurityCommands(registry) {
       const targetText =
         args.join(' ') ||
         rawMsg?.message?.extendedTextMessage?.contextInfo?.quotedMessage?.conversation ||
-        rawMsg?.message?.extendedTextMessage?.contextInfo?.quotedMessage?.extendedTextMessage?.text ||
+        rawMsg?.message?.extendedTextMessage?.contextInfo?.quotedMessage?.extendedTextMessage
+          ?.text ||
         '';
 
       const quotedMsg = rawMsg?.message?.extendedTextMessage?.contextInfo?.quotedMessage;

@@ -1,6 +1,11 @@
 import { loadModerationStore, getGroupModerationConfig } from '../store.js';
 import { reply } from '../../actions.js';
-import { normalizeJid, resolveUserDisplayName, resolveCanonicalUserKey, isSameUser } from '../../../utils/security.js';
+import {
+  normalizeJid,
+  resolveUserDisplayName,
+  resolveCanonicalUserKey,
+  isSameUser,
+} from '../../../utils/security.js';
 import { isUserVerified } from '../engine/captcha.js';
 import { processAiModeration } from '../ai.js';
 import { gt } from '../engine/translations.js';
@@ -266,11 +271,21 @@ export function registerInfoCommands(registry) {
           };
           const aiReply = await processAiModeration(question, aiConfig, apiKey);
           if (aiReply) {
-            await reply(session, groupId, { text: `📜 *Rules Interpretation:*\n\n${aiReply}` }, rawMsg);
+            await reply(
+              session,
+              groupId,
+              { text: `📜 *Rules Interpretation:*\n\n${aiReply}` },
+              rawMsg
+            );
             return;
           }
         }
-        await reply(session, groupId, { text: `📜 *Group Rules:*\n\n${rulesText}\n\n_(AI interpretation not available)_` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: `📜 *Group Rules:*\n\n${rulesText}\n\n_(AI interpretation not available)_` },
+          rawMsg
+        );
       } else {
         await reply(session, groupId, { text: `📜 *Group Rules:*\n\n${rulesText}` }, rawMsg);
       }
