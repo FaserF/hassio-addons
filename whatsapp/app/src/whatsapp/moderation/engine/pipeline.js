@@ -291,7 +291,11 @@ export async function handleModerationMessage(session, event) {
       transResult?.translation &&
       transResult.translation.trim().toLowerCase() !== text.trim().toLowerCase()
     ) {
-      const srcCode = (transResult.sourceLang || '?').toLowerCase();
+      const srcCode = (
+        transResult.sourceLang ||
+        transResult.detectedSource ||
+        '?'
+      ).toLowerCase();
       const dstCode = targetLang.toLowerCase();
 
       // Skip translation if detected source language is already the target language

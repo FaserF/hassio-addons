@@ -38,22 +38,30 @@ export async function translateTextGatewayWithReason(
   const cacheKey = `${preferredProvider}:${targetLang}:${cleanText}`;
 
   if (cache.has(cacheKey)) {
+    const cached = cache.get(cacheKey);
+    const cachedTrans = typeof cached === 'object' ? cached.translation : cached;
+    const cachedSrc = typeof cached === 'object' ? cached.sourceLang : null;
     lastTranslationEvent = {
       timestamp: Date.now(),
       provider: preferredProvider === 'auto' ? 'cache' : preferredProvider,
       providerName: 'Cache (In-Memory)',
       status: 'success',
-      sourceLang: null,
+      sourceLang: cachedSrc,
       targetLang,
       reason: 'Served from in-memory cache',
     };
-    return { translation: cache.get(cacheKey), reason: null };
+    return {
+      translation: cachedTrans,
+      sourceLang: cachedSrc,
+      detectedSource: cachedSrc,
+      reason: null,
+    };
   }
 
   const now = Date.now();
-  const saveCache = (res) => {
+  const saveCache = (res, detected) => {
     if (cache.size > 500) cache.clear();
-    cache.set(cacheKey, res);
+    cache.set(cacheKey, { translation: res, sourceLang: detected });
   };
 
   const providersToTry = [];
@@ -93,7 +101,7 @@ export async function translateTextGatewayWithReason(
             const translated = data[0].map((item) => item[0]).join('');
             if (translated && translated.trim()) {
               const detected = data[2] || '?';
-              saveCache(translated.trim());
+              saveCache(translated.trim(), detected);
               lastTranslationEvent = {
                 timestamp: Date.now(),
                 provider: 'google',
@@ -103,7 +111,12 @@ export async function translateTextGatewayWithReason(
                 targetLang,
                 reason: 'Translated via Google Translate API',
               };
-              return { translation: translated.trim(), detectedSource: detected, reason: null };
+              return {
+                translation: translated.trim(),
+                sourceLang: detected,
+                detectedSource: detected,
+                reason: null,
+              };
             }
           }
           recordError('google', 'Empty or malformed translation payload received', targetLang);
@@ -134,20 +147,22 @@ export async function translateTextGatewayWithReason(
             const data = await res.json();
             if (data?.translation && data.translation.trim()) {
               const translated = data.translation.trim();
-              saveCache(translated);
+              const detected = data.info?.detectedSource || '?';
+              saveCache(translated, detected);
               lastTranslationEvent = {
                 timestamp: Date.now(),
                 provider: 'lingva',
                 providerName: 'Lingva Translate',
                 status: 'success',
-                sourceLang: data.info?.detectedSource || '?',
+                sourceLang: detected,
                 targetLang,
                 reason: `Translated via Lingva instance (${instance})`,
               };
               lingvaSuccess = true;
               return {
                 translation: translated,
-                detectedSource: data.info?.detectedSource || '?',
+                sourceLang: detected,
+                detectedSource: detected,
                 reason: null,
               };
             }
@@ -190,8 +205,11 @@ export async function translateTextGatewayWithReason(
               !translated.toUpperCase().includes('MYMEMORY WARNING') &&
               !translated.toUpperCase().includes('QUERY LENGTH LIMIT EXCEEDED')
             ) {
-              const detected = data.matches?.[0]?.['created-by'] || '?';
-              saveCache(translated);
+              const detected =
+                data.matches?.[0]?.['created-by'] ||
+                data.responseData?.detectedLanguage ||
+                '?';
+              saveCache(translated, detected);
               lastTranslationEvent = {
                 timestamp: Date.now(),
                 provider: 'mymemory',
@@ -201,7 +219,12 @@ export async function translateTextGatewayWithReason(
                 targetLang,
                 reason: 'Translated via MyMemory free API',
               };
-              return { translation: translated, detectedSource: detected, reason: null };
+              return {
+                translation: translated,
+                sourceLang: detected,
+                detectedSource: detected,
+                reason: null,
+              };
             }
           }
           recordError('mymemory', 'MyMemory quota exceeded or invalid response', targetLang);

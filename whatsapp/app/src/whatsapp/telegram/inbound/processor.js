@@ -621,7 +621,7 @@ export async function processTelegramUpdates() {
                 if (mapped && mapped.waMsgId && mapped.waJid) {
                   try {
                     ignoreWaEditEchoes.add(mapped.waMsgId);
-                    await session.sock.sendMessage(mapping.wa_jid, {
+                    const sentEditRes = await session.sock.sendMessage(mapping.wa_jid, {
                       text: outboundWaText,
                       edit: {
                         remoteJid: mapping.wa_jid,
@@ -629,6 +629,9 @@ export async function processTelegramUpdates() {
                         id: mapped.waMsgId,
                       },
                     });
+                    if (sentEditRes?.key?.id) {
+                      ignoreWaEditEchoes.add(sentEditRes.key.id);
+                    }
                     editSucceeded = true;
                     logger.info(
                       { tgChatId, tgMsgId: msg.message_id, waMsgId: mapped.waMsgId },

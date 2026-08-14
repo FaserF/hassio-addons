@@ -497,7 +497,14 @@ export function handleIncomingMessages(session) {
           const isGroup = targetJid.endsWith('@g.us');
           const groupName = isGroup ? session.groupCache?.get(targetJid) || targetJid : '';
           const senderName = msg.pushName || session.contactCache?.get(targetJid)?.name || '';
-          syncWhatsAppEditToTelegram(editedWaMsgId, targetJid, newText, groupName, senderName);
+          syncWhatsAppEditToTelegram(
+            editedWaMsgId,
+            targetJid,
+            newText,
+            groupName,
+            senderName,
+            msg.key?.id
+          );
           updateTranslationIfExists(session, targetJid, editedWaMsgId, newText);
           if (msg.key?.id && msg.key.id !== editedWaMsgId) {
             updateTranslationIfExists(session, targetJid, msg.key.id, newText);
@@ -559,7 +566,6 @@ export function handleIncomingMessages(session) {
         // When a user sends a bare link, .text equals the typed URL but matchedText holds
         // the fully-resolved/canonical form. We include it in the searchable text so that
         // anti-spam and blacklist checks always see the actual URL regardless of format.
-        // Unwrap message wrappers (e.g. ephemeralMessage, viewOnceMessage, viewOnceMessageV2)
         const unwrapMessage = (m) => {
           if (!m) return {};
           if (m.ephemeralMessage?.message) return unwrapMessage(m.ephemeralMessage.message);
@@ -569,6 +575,12 @@ export function handleIncomingMessages(session) {
             return unwrapMessage(m.viewOnceMessageV2Extension.message);
           if (m.documentWithCaptionMessage?.message)
             return unwrapMessage(m.documentWithCaptionMessage.message);
+          if (m.protocolMessage?.editedMessage)
+            return unwrapMessage(m.protocolMessage.editedMessage);
+          if (m.editedMessage?.message)
+            return unwrapMessage(m.editedMessage.message);
+          if (m.editedMessage)
+            return unwrapMessage(m.editedMessage);
           return m;
         };
         const realMsgObj = unwrapMessage(msg.message);

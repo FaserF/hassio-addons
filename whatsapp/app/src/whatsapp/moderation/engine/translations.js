@@ -90,7 +90,11 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
       transResult?.translation &&
       transResult.translation.trim().toLowerCase() !== newText.trim().toLowerCase()
     ) {
-      const srcCode = (transResult.sourceLang || '?').toLowerCase();
+      const srcCode = (
+        transResult.sourceLang ||
+        transResult.detectedSource ||
+        '?'
+      ).toLowerCase();
       const dstCode = targetLang.toLowerCase();
 
       if (srcCode !== '?' && srcCode === dstCode) return;

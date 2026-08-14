@@ -29,7 +29,11 @@ export async function syncWhatsAppToTelegram(
       (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound')
   );
 
-  if (mappings.length === 0) return;
+  // Guard against blank/empty messages without media (e.g. unhandled protocol nodes)
+  const hasMedia = Boolean(mediaUrl || mediaPath || mediaType);
+  if (!hasMedia && (!textContent || !textContent.trim())) {
+    return;
+  }
 
   const waMsgId = msg.key?.id;
   if (waMsgId) {

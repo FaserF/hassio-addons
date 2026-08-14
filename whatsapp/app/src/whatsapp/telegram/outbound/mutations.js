@@ -181,12 +181,17 @@ export async function syncWhatsAppEditToTelegram(
   waJid,
   newText,
   groupName = '',
-  senderName = ''
+  senderName = '',
+  rawMsgKeyId = null
 ) {
   if (!waMsgId || !newText || !newText.trim()) return;
-  if (ignoreWaEditEchoes.has(waMsgId)) {
+  if (
+    ignoreWaEditEchoes.has(waMsgId) ||
+    (rawMsgKeyId && ignoreWaEditEchoes.has(rawMsgKeyId))
+  ) {
     ignoreWaEditEchoes.delete(waMsgId);
-    logger.debug({ waMsgId }, 'Ignoring WhatsApp edit event echo from Telegram bridge');
+    if (rawMsgKeyId) ignoreWaEditEchoes.delete(rawMsgKeyId);
+    logger.debug({ waMsgId, rawMsgKeyId }, 'Ignoring WhatsApp edit event echo from Telegram bridge');
     return;
   }
 
