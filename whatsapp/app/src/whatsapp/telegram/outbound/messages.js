@@ -9,6 +9,8 @@ import { logger } from '../../../logger.js';
 import { getGroupModerationConfig } from '../../moderation/store.js';
 import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 
+const recentWaSyncMessages = new Map(); // key: waMsgId -> timestamp
+
 export async function syncWhatsAppToTelegram(
   msg,
   waJid,
@@ -22,6 +24,21 @@ export async function syncWhatsAppToTelegram(
   const store = loadTelegramStore();
   if (!store.enabled) return;
 
+  const waMsgId = msg.key?.id;
+  if (waMsgId) {
+    const now = Date.now();
+    if (recentWaSyncMessages.has(waMsgId) && now - recentWaSyncMessages.get(waMsgId) < 10000) {
+      logger.debug({ waMsgId }, 'Skipping duplicate WhatsApp to Telegram sync for identical waMsgId');
+      return;
+    }
+    recentWaSyncMessages.set(waMsgId, now);
+    if (recentWaSyncMessages.size > 2000) {
+      for (const [k, ts] of recentWaSyncMessages.entries()) {
+        if (now - ts > 30000) recentWaSyncMessages.delete(k);
+      }
+    }
+  }
+
   // Find active mappings for this WhatsApp JID
   const mappings = (store.mappings || []).filter(
     (m) =>
@@ -31,7 +48,6 @@ export async function syncWhatsAppToTelegram(
       (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound')
   );
 
-  const waMsgId = msg.key?.id;
   if (waMsgId) {
     const isBotEcho = resolveTgMsgFromWa(waMsgId);
     if (isBotEcho && isBotEcho.fromMe === true && msg.key?.fromMe) return; // Prevent echo loop only if bot itself sent it
