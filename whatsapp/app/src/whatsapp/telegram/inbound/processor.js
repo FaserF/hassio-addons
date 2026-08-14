@@ -809,6 +809,48 @@ export async function processTelegramUpdates() {
                 }
               }
 
+              if (cleanCmd === 'unpinall' || cleanCmd === 'unpin_all') {
+                const { syncWhatsAppUnpinAllToTelegram } = await import('../outbound/mutations.js');
+                const { clearTrackedPinnedMessages } = await import('../../moderation/commands/admin/content.js');
+                clearTrackedPinnedMessages(mapping.wa_jid);
+                await syncWhatsAppUnpinAllToTelegram(mapping.wa_jid);
+                await bot.deleteMessage(tgChatId, msg.message_id).catch(() => null);
+                logger.info(
+                  { tgChatId, waJid: mapping.wa_jid },
+                  '📌 Mirrored Telegram !unpinall command across Telegram and WhatsApp'
+                );
+                continue;
+              }
+
+              if (
+                (cleanCmd === 'unpin' || cleanCmd === 'entpinnen') &&
+                replyToTgId
+              ) {
+                const mapped = resolveWaMsgFromTg(tgChatId, String(replyToTgId));
+                if (mapped && mapped.waMsgId) {
+                  const isFromMe = mapped.fromMe !== undefined ? mapped.fromMe : false;
+                  await session.sock.sendMessage(mapping.wa_jid, {
+                    pin: {
+                      remoteJid: mapping.wa_jid,
+                      id: mapped.waMsgId,
+                      fromMe: isFromMe,
+                      ...(mapped.senderJid && mapped.senderJid.includes('@')
+                        ? { participant: mapped.senderJid }
+                        : {}),
+                    },
+                    type: 2,
+                    time: 0,
+                  }).catch(() => null);
+                  await bot.unpinChatMessage(tgChatId, replyToTgId).catch(() => null);
+                  await bot.deleteMessage(tgChatId, msg.message_id).catch(() => null);
+                  logger.info(
+                    { tgChatId, tgMsgId: replyToTgId, waMsgId: mapped.waMsgId },
+                    '📌 Mirrored Telegram unpin command to WhatsApp'
+                  );
+                  continue;
+                }
+              }
+
               const sendOptions = {};
               if (quotedWaMsgId) {
                 sendOptions.quoted = { key: { remoteJid: mapping.wa_jid, id: quotedWaMsgId } };
