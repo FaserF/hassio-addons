@@ -9,7 +9,7 @@ These rules apply to **every response** without exception:
 1. **Output minimal prose.** Bullet points only. No introductory sentences, no filler, no "Great question!", no "As requested".
 2. **No walkthrough unless explicitly asked.** Never create or update `walkthrough.md` unless the user writes "walkthrough" or "summary" in their request.
 3. **No implementation plan unless complex.** Skip planning artifacts for simple tweaks, single-file edits, bug fixes, or minor features. Plan only for major architectural changes.
-4. **Short change summaries only.** After making changes, output ≤5 bullet points describing *what* changed and *why* — never a line-by-line description.
+4. **Short change summaries only.** After making changes, output ≤5 bullet points describing _what_ changed and _why_ — never a line-by-line description.
 5. **No repeating file content.** Never echo back code you just wrote or edited. Reference filenames with links instead.
 6. **No tool-call narration.** Do not describe what tool you are about to call. Just call it.
 7. **Targeted file reads only.** Use `grep_search` or `view_file` with `StartLine`/`EndLine` to read only the relevant section. Never view an entire large file unless strictly necessary.
@@ -34,13 +34,13 @@ These rules apply to **every response** without exception:
 
 Use subagents proactively whenever a task has independent subtasks, requires heavy research, or would bloat the main context:
 
-| Scenario | Action |
-|---|---|
-| Reading/searching codebase before coding | Delegate to `research` subagent |
-| Parallel changes across multiple addons | Spawn one `self` subagent per addon with `branch` workspace |
-| Exploring docs / web while coding continues | Delegate to `research` subagent, continue main task |
-| Running lint/tests after a fix | Delegate to `self` subagent, await result |
-| Analyzing CI failures + applying a fix | Research subagent reads logs; main agent applies fix |
+| Scenario                                    | Action                                                      |
+| ------------------------------------------- | ----------------------------------------------------------- |
+| Reading/searching codebase before coding    | Delegate to `research` subagent                             |
+| Parallel changes across multiple addons     | Spawn one `self` subagent per addon with `branch` workspace |
+| Exploring docs / web while coding continues | Delegate to `research` subagent, continue main task         |
+| Running lint/tests after a fix              | Delegate to `self` subagent, await result                   |
+| Analyzing CI failures + applying a fix      | Research subagent reads logs; main agent applies fix        |
 
 **Workspace modes:**
 
@@ -92,40 +92,40 @@ This is a **Home Assistant Add-on repository**. Each top-level directory (with a
 
 ### Key Addons
 
-| Slug | Description |
-|---|---|
-| `ShieldDNS` | High-performance DoT/DoH proxy for AdGuard Home |
-| `AegisBot` | Telegram bot integration for Home Assistant |
-| `ShieldFile` | Secure file management addon |
-| `apache2` | Apache2 web server |
-| `nginx` | Nginx web server |
-| `planka` | Kanban project management |
-| `komodo` | Server management panel |
+| Slug         | Description                                     |
+| ------------ | ----------------------------------------------- |
+| `ShieldDNS`  | High-performance DoT/DoH proxy for AdGuard Home |
+| `AegisBot`   | Telegram bot integration for Home Assistant     |
+| `ShieldFile` | Secure file management addon                    |
+| `apache2`    | Apache2 web server                              |
+| `nginx`      | Nginx web server                                |
+| `planka`     | Kanban project management                       |
+| `komodo`     | Server management panel                         |
 
 (Full list in `project_manifest.json` → `addons`)
 
 ### Shared Infrastructure
 
-| Path | Purpose |
-|---|---|
-| `.github/workflows/` | All CI/CD orchestration (orchestrator-*.yaml) |
-| `.github/scripts/` | Shared bash scripts used by workflows |
-| `.scripts/` | Developer utility scripts (manifest generator, etc.) |
-| `tests/` | Pytest test suite for shared logic |
-| `docs/` | Repository-level documentation |
-| `repository.json` | HA repository metadata |
+| Path                 | Purpose                                              |
+| -------------------- | ---------------------------------------------------- |
+| `.github/workflows/` | All CI/CD orchestration (orchestrator-\*.yaml)       |
+| `.github/scripts/`   | Shared bash scripts used by workflows                |
+| `.scripts/`          | Developer utility scripts (manifest generator, etc.) |
+| `tests/`             | Pytest test suite for shared logic                   |
+| `docs/`              | Repository-level documentation                       |
+| `repository.json`    | HA repository metadata                               |
 
 ---
 
 ## CLI Commands
 
-| Task | Command |
-|---|---|
-| Lint Dockerfile | `hadolint <addon>/Dockerfile` |
-| Lint shell script | `shellcheck <addon>/run.sh` |
-| Lint YAML | `yamllint <addon>/config.yaml` |
-| Lint Markdown | `markdownlint '**/*.md'` |
-| Run tests | `pytest tests/` |
+| Task                | Command                                |
+| ------------------- | -------------------------------------- |
+| Lint Dockerfile     | `hadolint <addon>/Dockerfile`          |
+| Lint shell script   | `shellcheck <addon>/run.sh`            |
+| Lint YAML           | `yamllint <addon>/config.yaml`         |
+| Lint Markdown       | `markdownlint '**/*.md'`               |
+| Run tests           | `pytest tests/`                        |
 | Regenerate manifest | `python .scripts/generate_manifest.py` |
 
 ---
@@ -179,16 +179,16 @@ This is a **Home Assistant Add-on repository**. Each top-level directory (with a
 
 ## Communication Rules (Summary)
 
-| Rule | Behavior |
-|---|---|
-| Response length | Bullet points, ≤5 items per change |
-| Walkthrough artifact | Only if user explicitly requests it |
-| Implementation plan | Only for major architectural changes |
-| Asking for confirmation | Never for obvious steps |
-| Test output | Failures only |
-| Repeating written code | Never |
-| Closing remarks | None |
-| Language defaults | Code, docs, comments, and AI responses default to English (EN) unless requested otherwise |
+| Rule                    | Behavior                                                                                  |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| Response length         | Bullet points, ≤5 items per change                                                        |
+| Walkthrough artifact    | Only if user explicitly requests it                                                       |
+| Implementation plan     | Only for major architectural changes                                                      |
+| Asking for confirmation | Never for obvious steps                                                                   |
+| Test output             | Failures only                                                                             |
+| Repeating written code  | Never                                                                                     |
+| Closing remarks         | None                                                                                      |
+| Language defaults       | Code, docs, comments, and AI responses default to English (EN) unless requested otherwise |
 
 ---
 
