@@ -1,5 +1,3 @@
-import { logger } from '../../logger.js';
-
 export const BRIDGE_DEFAULT_COMMANDS = [
   { command: 'status', description: 'View WhatsApp Bridge & Gateway Connection Status' },
   { command: 'ping', description: 'Check WhatsApp Gateway responsiveness & latency' },

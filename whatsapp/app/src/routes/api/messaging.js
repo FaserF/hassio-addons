@@ -1,4 +1,5 @@
 import mime from 'mime-types';
+import { logger } from '../../logger.js';
 import { authMiddleware } from '../../middleware.js';
 import { getReqSession } from '../../session.js';
 import { getJid } from '../../utils/jid.js';

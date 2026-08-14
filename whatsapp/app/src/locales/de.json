@@ -1068,8 +1068,11 @@
     "stt_header": "🎙️ *Sprachnachricht zu Text (STT)*",
     "stt_disclaimer": "\n\n_⚠️ Hinweis: Automatische Transkription – kann Fehler enthalten._",
     "stt_error_header": "❌ *Speech-to-Text Fehler*",
+    "start_group_msg": "🛡️ *WhatsApp Gateway & Orchestrator Aktiv*\n\nDiese Gruppe (*{group}*) wird aktiv geschützt und orchestriert.\n\n• 🧠 *Anti-Spam, Raid & Namensfilter:* Aktiv\n• 🔗 *Telegram-Brücke:* Verbunden & synchronisiert\n• 🌍 *Übersetzung & Audio STT:* Bereit\n\n📌 *Wichtige Befehle:*\n• `{prefix}help` — Vollständige Befehlsübersicht\n• `{prefix}rules` — Gruppenregeln & FAQ\n• `{prefix}info` — Benutzer- & Reputationsstatus",
+    "start_private_msg": "🛡️ *Willkommen beim WhatsApp Gateway & Security Orchestrator*\n_Professionelle Gruppen-Moderation & Plattform-Integration._\n\n• 🤖 *Automatisierter Schutz:* Anti-Spam, Anti-Raid, Content-Locks & Namensfilter\n• 🔗 *Telegram-Brücke:* 2-Wege Synchronisation von Text, Medien, Pins & Reaktionen\n• 🎙️ *Speech-to-Text:* Automatische Transkription von Sprachnachrichten\n• 🌐 *Multi-Language:* Automatische Echtzeit-Übersetzung\n\n📌 *Schnellstart:*\n• `{prefix}help` — Befehlsverzeichnis anzeigen\n• `{prefix}info` — Eigenen Account- & Berechtigungsstatus prüfen\n• Web-Dashboard im Home Assistant / Web-Interface für erweiterte Konfiguration nutzen.",
     "stt_download_failed": "Audiodaten konnten nicht heruntergeladen werden.",
     "stt_transcription_failed": "Audiosignal konnte nicht transkribiert werden. (Optional: KI-Schlüssel in Moderations-Einstellungen eintragen)",
-    "stt_no_speech_recognized": "Keine Sprache erkannt."
+    "stt_no_speech_recognized": "Keine Sprache erkannt.",
+    "about_text": "🛡️ *Über WhatsApp Gateway & Security Orchestrator*\n\nWhatsApp Gateway ist ein fortschrittlicher Open-Source-Sicherheits- & Moderations-Orchestrator für Home Assistant und WhatsApp mit KI-Intenterkennung, Echtzeit-Analysen, MFA Web-UI Dashboard, Inhalts-Sperren und Telegram 2-Wege-Brücke.\n\n📚 *Dokumentation:* https://faserf.github.io/ha-whatsapp/\n🐙 *GitHub Repository:* https://github.com/FaserF/ha-whatsapp\n💖 *Projekt unterstützen & Spenden:* https://github.com/sponsors/FaserF\n💬 *Support-Gruppe:* https://t.me/AegisSupport\n🐛 *Fehler melden:* https://github.com/FaserF/ha-whatsapp/issues\n\n_Entwickelt mit ❤️ für Community-Sicherheit._"
   }
 }

@@ -3035,58 +3035,26 @@ registry.register(
   async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
     const prefix = config.commands?.prefix || '!';
     const isGroup = groupId && groupId.endsWith('@g.us');
-    const isDe = config.language === 'de' || (process.env.LANG || '').toLowerCase().includes('de');
 
     if (isGroup) {
       const groupSubject = session?.groupCache?.get(groupId) || 'Group';
-      const msg = isDe
-        ? `🛡️ *WhatsApp Gateway & Orchestrator Aktiv*\n\n` +
-          `Diese Gruppe (*${groupSubject}*) wird aktiv geschützt und orchestriert.\n\n` +
-          `• 🧠 *Anti-Spam, Raid & Namensfilter:* Aktiv\n` +
-          `• 🔗 *Telegram-Brücke:* Verbunden & synchronisiert\n` +
-          `• 🌍 *Übersetzung & Audio STT:* Bereit\n\n` +
-          `📌 *Wichtige Befehle:*\n` +
-          `• \`${prefix}help\` — Vollständige Befehlsübersicht\n` +
-          `• \`${prefix}rules\` — Gruppenregeln & FAQ\n` +
-          `• \`${prefix}info\` — Benutzer- & Reputationsstatus`
-        : `🛡️ *WhatsApp Gateway & Orchestrator Active*\n\n` +
-          `This group (*${groupSubject}*) is actively protected and orchestrated.\n\n` +
-          `• 🧠 *Anti-Spam, Raid & Name Filter:* Active\n` +
-          `• 🔗 *Telegram Bridge:* Connected & Synced\n` +
-          `• 🌍 *Translation & Audio STT:* Ready\n\n` +
-          `📌 *Key Commands:*\n` +
-          `• \`${prefix}help\` — Full commands directory\n` +
-          `• \`${prefix}rules\` — Group rules & FAQ\n` +
-          `• \`${prefix}info\` — User & reputation status`;
-
+      const msg = gt(config, 'bot_replies.start_group_msg', { group: groupSubject, prefix });
       await reply(session, groupId, { text: msg }, rawMsg);
     } else {
-      const msg = isDe
-        ? `🛡️ *Willkommen beim WhatsApp Gateway & Security Orchestrator*\n` +
-          `_Professionelle Gruppen-Moderation & Plattform-Integration._\n\n` +
-          `• 🤖 *Automatisierter Schutz:* Anti-Spam, Anti-Raid, Content-Locks & Namensfilter\n` +
-          `• 🔗 *Telegram-Brücke:* 2-Wege Synchronisation von Text, Medien, Pins & Reaktionen\n` +
-          `• 🎙️ *Speech-to-Text:* Automatische Transkription von Sprachnachrichten\n` +
-          `• 🌐 *Multi-Language:* Automatische Echtzeit-Übersetzung\n\n` +
-          `📌 *Schnellstart:*\n` +
-          `• \`${prefix}help\` — Befehlsverzeichnis anzeigen\n` +
-          `• \`${prefix}info\` — Eigenen Account- & Berechtigungsstatus prüfen\n` +
-          `• Web-Dashboard im Home Assistant / Web-Interface für erweiterte Konfiguration nutzen.`
-        : `🛡️ *Welcome to WhatsApp Gateway & Security Orchestrator*\n` +
-          `_Professional community moderation & platform bridging._\n\n` +
-          `• 🤖 *Automated Protection:* Anti-Spam, Anti-Raid, Content Locks & Name Filters\n` +
-          `• 🔗 *Telegram Bridge:* 2-Way sync of text, media, pins & reactions\n` +
-          `• 🎙️ *Speech-to-Text:* Automatic voice note transcription\n` +
-          `• 🌐 *Multi-Language:* Automated real-time translation\n\n` +
-          `📌 *Quickstart:*\n` +
-          `• \`${prefix}help\` — View commands directory\n` +
-          `• \`${prefix}info\` — Check account & permission status\n` +
-          `• Access the Web Console in Home Assistant for advanced orchestrations.`;
-
+      const msg = gt(config, 'bot_replies.start_private_msg', { prefix });
       await reply(session, groupId, { text: msg }, rawMsg);
     }
   },
   { help: 'Introduction & quickstart guide' }
+);
+
+registry.register(
+  'about',
+  async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
+    const msg = gt(config, 'bot_replies.about_text');
+    await reply(session, groupId, { text: msg }, rawMsg);
+  },
+  { help: 'Displays project description, version, docs, repo, and support links' }
 );
 
 // ---------------------------------------------------------
