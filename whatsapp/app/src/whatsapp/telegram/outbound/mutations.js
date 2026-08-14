@@ -143,7 +143,16 @@ export async function syncWhatsAppPinToTelegram(
         );
         if (sent && sent.message_id) {
           targetTgMsgId = sent.message_id;
-          recordMessageMap(waMsgId, targetTgChatId, sent.message_id, waJid, false, senderName, '', bodyText || fullMsg);
+          recordMessageMap(
+            waMsgId,
+            targetTgChatId,
+            sent.message_id,
+            waJid,
+            false,
+            senderName,
+            '',
+            bodyText || fullMsg
+          );
         }
       } catch (sendErr) {
         logger.debug(
@@ -316,7 +325,8 @@ export async function syncWhatsAppEditToTelegram(
     const isTranslateActive =
       Boolean(mapping.translate_wa_to_tg) ||
       (groupModCfg?.translation?.enabled !== false &&
-        (groupModCfg?.translation?.mode === 'auto' || groupModCfg?.translation?.mode === 'forwards'));
+        (groupModCfg?.translation?.mode === 'auto' ||
+          groupModCfg?.translation?.mode === 'forwards'));
 
     if (isTranslateActive && newText && newText.trim()) {
       try {
@@ -345,17 +355,21 @@ export async function syncWhatsAppEditToTelegram(
     if (mapped && mapped.tgMsgId && mapped.tgChatId) {
       try {
         ignoreTgEditEchoes.add(String(mapped.tgMsgId));
-        await bot.editMessageText(mapped.tgChatId, mapped.tgMsgId, fullText);
-        editSucceeded = true;
-        logger.info(
-          { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
-          '✏️ Successfully mirrored WhatsApp message edit natively to Telegram'
-        );
+        const editRes = await bot.editMessageText(mapped.tgChatId, mapped.tgMsgId, fullText);
+        if (editRes && (editRes.message_id || editRes.ok || editRes.result)) {
+          editSucceeded = true;
+          logger.info(
+            { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+            '✏️ Successfully mirrored WhatsApp message edit natively to Telegram'
+          );
+        } else {
+          throw new Error(editRes?.description || 'Telegram edit returned unexpected response');
+        }
       } catch (err) {
         ignoreTgEditEchoes.delete(String(mapped.tgMsgId));
         logger.info(
           { error: err.message, waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
-          'Native Telegram editMessageText failed (e.g. >48h old or media), attempting reply fallback'
+          'Native Telegram editMessageText failed, attempting reply fallback'
         );
       }
     }
@@ -388,7 +402,16 @@ export async function syncWhatsAppEditToTelegram(
         );
         if (sentTgMsg && sentTgMsg.message_id) {
           ignoreTgEditEchoes.add(String(sentTgMsg.message_id));
-          recordMessageMap(waMsgId, tgChatId, sentTgMsg.message_id, waJid, false);
+          recordMessageMap(
+            waMsgId,
+            tgChatId,
+            sentTgMsg.message_id,
+            waJid,
+            false,
+            effectiveSenderName,
+            '',
+            newText
+          );
         }
         logger.info(
           { waMsgId, tgChatId, newTgMsgId: sentTgMsg?.message_id },

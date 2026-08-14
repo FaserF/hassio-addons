@@ -1231,7 +1231,7 @@
     "demote_success": "✅ {count} Benutzer als Administrator abgesetzt.",
     "demote_failed": "❌ Degradierung fehlgeschlagen: {error}",
     "approve_mention_required": "⚠️ Du musst einen Benutzer erwähnen, um ihn auf die Whitelist zu setzen.",
-    "approve_success": "✅ {count} Benutzer freigegeben. Sie umgehen automatische Inhaltssperren.",
+    "approve_success": "✅ {count} Benutzer freigegeben. Diese umgehen automatische Inhaltssperren.",
     "unapprove_mention_required": "⚠️ Du musst einen Benutzer erwähnen, um die Freigabe aufzuheben.",
     "unapprove_success": "✅ Freigabe für {count} Benutzer aufgehoben."
   }

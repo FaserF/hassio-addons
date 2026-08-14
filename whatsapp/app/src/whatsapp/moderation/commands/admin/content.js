@@ -11,7 +11,13 @@ import { gt } from '../../engine/translations.js';
 // Persist pinned messages to disk so !unpinall works across bot restarts.
 // Storage: moderation_store -> groups[groupId].pinned_messages -> { [msgId]: { id, participant, fromMe } }
 
-export function trackPinnedMessage(groupId, waMsgId, participant = null, fromMe = false, text = '') {
+export function trackPinnedMessage(
+  groupId,
+  waMsgId,
+  participant = null,
+  fromMe = false,
+  text = ''
+) {
   if (!groupId || !waMsgId) return;
   try {
     const store = loadModerationStore();
@@ -205,13 +211,21 @@ export function registerContentCommands(registry) {
           type: 1,
           time: 604800,
         });
+        const quotedText =
+          quoted.conversation ||
+          quoted.text ||
+          quoted.matchedText ||
+          quoted.caption ||
+          quoted.body ||
+          '';
         trackPinnedMessage(
           groupId,
           quoted.stanzaId,
           quoted.participant,
-          quoted.participant ? false : true
+          quoted.participant ? false : true,
+          quotedText
         );
-        syncWhatsAppPinToTelegram(quoted.stanzaId, groupId, true);
+        syncWhatsAppPinToTelegram(quoted.stanzaId, groupId, true, quotedText);
         await reply(session, groupId, { text: gt(config, 'bot_replies.pin_success') }, rawMsg);
       } catch (e) {
         try {
@@ -227,13 +241,21 @@ export function registerContentCommands(registry) {
               time: 604800,
             },
           });
+          const quotedText =
+            quoted.conversation ||
+            quoted.text ||
+            quoted.matchedText ||
+            quoted.caption ||
+            quoted.body ||
+            '';
           trackPinnedMessage(
             groupId,
             quoted.stanzaId,
             quoted.participant,
-            quoted.participant ? false : true
+            quoted.participant ? false : true,
+            quotedText
           );
-          syncWhatsAppPinToTelegram(quoted.stanzaId, groupId, true);
+          syncWhatsAppPinToTelegram(quoted.stanzaId, groupId, true, quotedText);
           await reply(session, groupId, { text: gt(config, 'bot_replies.pin_success') }, rawMsg);
         } catch (e2) {
           logger.warn({ error: e2.message, groupId }, 'Failed to pin message');

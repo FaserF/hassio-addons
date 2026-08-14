@@ -547,7 +547,9 @@ body {
   padding: 4px 6px;
   font-size: 14px;
   border-radius: 4px;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 }
 
 .drawer-title-edit-btn:hover {
@@ -734,7 +736,10 @@ body {
   .drawer-title,
   .mod-hero-title,
   .mod-feature-title,
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     word-break: break-word !important;
     max-width: 100% !important;
   }
@@ -942,8 +947,8 @@ body {
   /* Hero & Card Headers wrap cleanly on mobile */
   .mod-hero,
   .mod-hero-left,
-  .mod-settings-card > div[style*="justify-content:space-between"],
-  .card > div[style*="justify-content:space-between"] {
+  .mod-settings-card > div[style*='justify-content:space-between'],
+  .card > div[style*='justify-content:space-between'] {
     flex-wrap: wrap !important;
     gap: 10px !important;
   }
@@ -3152,7 +3157,9 @@ html[data-theme='light'] .data-table tbody tr:hover {
 .mod-group-picker:hover,
 .mod-group-picker:focus-within {
   border-color: var(--primary) !important;
-  box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2), 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  box-shadow:
+    0 0 0 3px rgba(37, 211, 102, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.2) !important;
 }
 
 .mod-group-picker select,
@@ -3249,7 +3256,7 @@ label.mod-chip-checkbox {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.mod-chip-checkbox input[type="checkbox"] {
+.mod-chip-checkbox input[type='checkbox'] {
   appearance: none !important;
   -webkit-appearance: none !important;
   width: 16px !important;
@@ -3265,12 +3272,12 @@ label.mod-chip-checkbox {
   transition: all 0.2s ease !important;
 }
 
-.mod-chip-checkbox input[type="checkbox"]:checked {
+.mod-chip-checkbox input[type='checkbox']:checked {
   background-color: var(--primary, #25d366) !important;
   border-color: var(--primary, #25d366) !important;
 }
 
-.mod-chip-checkbox input[type="checkbox"]:checked::after {
+.mod-chip-checkbox input[type='checkbox']:checked::after {
   content: '' !important;
   position: absolute !important;
   left: 4px !important;
@@ -3282,7 +3289,7 @@ label.mod-chip-checkbox {
   transform: rotate(45deg) !important;
 }
 
-.mod-chip-checkbox:has(input[type="checkbox"]:checked) {
+.mod-chip-checkbox:has(input[type='checkbox']:checked) {
   background: rgba(37, 211, 102, 0.12) !important;
   border-color: var(--primary, #25d366) !important;
   color: var(--text-main) !important;
@@ -3337,12 +3344,12 @@ body.tab-chats-active .footer-info {
   padding: 8px 4px;
 }
 
-.mod-subpanel[style*="display: none"] {
+.mod-subpanel[style*='display: none'] {
   display: none !important;
 }
 
 .mod-subpanel.active,
-.mod-subpanel[style*="display: block"] {
+.mod-subpanel[style*='display: block'] {
   display: flex !important;
 }
 
@@ -3424,4 +3431,3 @@ body.tab-chats-active .footer-info {
   border-color: var(--primary-hover, var(--primary)) !important;
   transform: translateY(-1px);
 }
-

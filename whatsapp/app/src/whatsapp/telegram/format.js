@@ -32,12 +32,11 @@ export function waToTelegramHtml(text) {
  * Safely strip all HTML tags from a string without regex backtracking or incomplete sanitization.
  */
 export function stripHtmlTags(str) {
-  if (!str) return '';
+  if (typeof str !== 'string' && typeof str !== 'number') return '';
   let out = '';
   let insideTag = false;
   const val = String(str);
-  for (let i = 0; i < val.length; i++) {
-    const char = val[i];
+  for (const char of val) {
     if (char === '<') {
       insideTag = true;
     } else if (char === '>') {
