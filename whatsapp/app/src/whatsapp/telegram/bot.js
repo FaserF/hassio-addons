@@ -202,6 +202,9 @@ export class TelegramBotClient {
         parse_mode: 'HTML',
       });
     } catch (err) {
+      if (err.message && err.message.includes('message is not modified')) {
+        return { ok: true, result: true };
+      }
       if (
         err.message &&
         (err.message.includes('no text in the message') ||
@@ -215,6 +218,9 @@ export class TelegramBotClient {
             parse_mode: 'HTML',
           });
         } catch (_capErr) {
+          if (_capErr.message && _capErr.message.includes('message is not modified')) {
+            return { ok: true, result: true };
+          }
           const plainText = stripHtmlTags(text);
           return await this.request('editMessageCaption', {
             chat_id: chatId,
@@ -365,6 +371,10 @@ export class TelegramBotClient {
 
   async unpinAllChatMessages(chatId) {
     return await this.request('unpinAllChatMessages', { chat_id: chatId });
+  }
+
+  async unpinallChatMessage(chatId) {
+    return await this.unpinAllChatMessages(chatId);
   }
 }
 

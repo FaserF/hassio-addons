@@ -1,4 +1,5 @@
 import { logger } from '../logger.js';
+import { loadModerationStore } from '../whatsapp/moderation/store.js';
 
 const cache = new Map();
 const cooldowns = new Map();
@@ -22,7 +23,7 @@ function recordError(provider, errorMsg, targetLang = null) {
 
 /**
  * WhatsApp Gateway Multi-Provider Translation Helper (Node.js)
- * Failover chain: Google Translate -> Lingva -> MyMemory
+ * Failover chain: Google Translate -> Lingva -> MyMemory -> Gemini / OpenAI AI
  * Features: Rate-limit (429) cooldowns (5 min), 5s AbortSignal timeout, 1000 char truncation, in-memory caching.
  */
 export async function translateTextGatewayWithReason(
@@ -64,11 +65,17 @@ export async function translateTextGatewayWithReason(
     cache.set(cacheKey, { translation: res, sourceLang: detected });
   };
 
+  const store = loadModerationStore ? loadModerationStore() : {};
+  const hasAiKey = Boolean(store?.gemini_api_key || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY);
+
   const providersToTry = [];
   if (preferredProvider && preferredProvider !== 'auto') {
     providersToTry.push(preferredProvider);
   } else {
     providersToTry.push('google', 'lingva', 'mymemory');
+    if (hasAiKey) {
+      providersToTry.push('ai');
+    }
   }
 
   const attemptedReasons = [];
@@ -237,10 +244,112 @@ export async function translateTextGatewayWithReason(
         attemptedReasons.push(`MyMemory: Network/Timeout (${err.message})`);
       }
     }
+
+    if (provider === 'ai') {
+      try {
+        const apiKey =
+          store?.gemini_api_key || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
+        if (apiKey) {
+          const prompt = `Translate the following text into target language code "${targetLang}". Respond ONLY with valid JSON in this exact structure: {"translation": "...", "sourceLang": "..."} (where sourceLang is the 2-letter ISO code of the input text, e.g. "de", "en", "es").\nText: "${cleanText}"`;
+          const isOpenAi = Boolean(process.env.OPENAI_API_KEY && !store?.gemini_api_key);
+          if (isOpenAi) {
+            const oaKey = process.env.OPENAI_API_KEY || apiKey;
+            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${oaKey}`,
+              },
+              body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [{ role: 'user', content: prompt }],
+                response_format: { type: 'json_object' },
+                max_tokens: 500,
+              }),
+              signal: AbortSignal.timeout(6000),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const raw = data.choices?.[0]?.message?.content?.trim();
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed.translation) {
+                  const translated = parsed.translation.trim();
+                  const detected = parsed.sourceLang || '?';
+                  saveCache(translated, detected);
+                  lastTranslationEvent = {
+                    timestamp: Date.now(),
+                    provider: 'openai',
+                    providerName: 'OpenAI AI Model',
+                    status: 'success',
+                    sourceLang: detected,
+                    targetLang,
+                    reason: 'Translated via OpenAI GPT model',
+                  };
+                  return {
+                    translation: translated,
+                    sourceLang: detected,
+                    detectedSource: detected,
+                    reason: null,
+                  };
+                }
+              }
+            }
+          } else {
+            const res = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+                signal: AbortSignal.timeout(6000),
+              }
+            );
+            if (res.ok) {
+              const data = await res.json();
+              const raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+              if (raw) {
+                const cleanJson = raw.replace(/```json\n?|\n?```/g, '').trim();
+                let parsed;
+                try {
+                  parsed = JSON.parse(cleanJson);
+                } catch {
+                  parsed = { translation: raw };
+                }
+                if (parsed.translation) {
+                  const translated = parsed.translation.trim();
+                  const detected = parsed.sourceLang || '?';
+                  saveCache(translated, detected);
+                  lastTranslationEvent = {
+                    timestamp: Date.now(),
+                    provider: 'gemini',
+                    providerName: 'Gemini AI Model',
+                    status: 'success',
+                    sourceLang: detected,
+                    targetLang,
+                    reason: 'Translated via Google Gemini model',
+                  };
+                  return {
+                    translation: translated,
+                    sourceLang: detected,
+                    detectedSource: detected,
+                    reason: null,
+                  };
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        logger.debug({ err: err.message }, 'AI translation failed');
+        recordError('ai', `AI Error: ${err.message}`, targetLang);
+        attemptedReasons.push(`AI: Error (${err.message})`);
+      }
+    }
   }
 
   const failReason =
-    'All translation providers (Google, Lingva, MyMemory) failed or are currently rate-limited. Solution: Wait for cooldowns to expire or configure GEMINI_API_KEY in settings.';
+    'All translation providers (Google, Lingva, MyMemory, AI) failed or are currently rate-limited. Solution: Wait for cooldowns to expire or configure GEMINI_API_KEY in settings.';
 
   lastTranslationEvent = {
     timestamp: Date.now(),

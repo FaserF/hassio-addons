@@ -6,7 +6,7 @@ import { waToTelegramHtml } from '../format.js';
 import { applyRegexReplacements } from '../regex.js';
 import { formatHeader } from '../headers.js';
 import { logger } from '../../../logger.js';
-import { loadModerationStore, getGroupModerationConfig } from '../../moderation/store.js';
+import { getGroupModerationConfig } from '../../moderation/store.js';
 import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 
 export async function syncWhatsAppToTelegram(
@@ -128,11 +128,17 @@ export async function syncWhatsAppToTelegram(
           );
 
       let effectiveText = textContent;
-      if (mapping.translate_wa_to_tg && textContent && textContent.trim()) {
+      const groupModCfg = getGroupModerationConfig(waJid);
+      const isTranslateActive =
+        Boolean(mapping.translate_wa_to_tg) ||
+        (groupModCfg?.translation?.enabled !== false &&
+          (groupModCfg?.translation?.mode === 'auto' || groupModCfg?.translation?.mode === 'forwards'));
+
+      if (isTranslateActive && textContent && textContent.trim()) {
         try {
-          const groupModCfg = getGroupModerationConfig(waJid);
           const targetLang = groupModCfg?.translation?.target_lang || groupModCfg?.language || 'en';
-          const transRes = await translateTextGatewayWithReason(textContent, targetLang);
+          const provider = groupModCfg?.translation?.provider || 'auto';
+          const transRes = await translateTextGatewayWithReason(textContent, targetLang, provider);
           if (
             transRes?.translation &&
             transRes.translation.trim() &&
@@ -464,7 +470,8 @@ export async function syncWhatsAppToTelegram(
           waJid,
           isFromMe,
           senderName,
-          senderJid
+          senderJid,
+          textContent
         );
       }
     } catch (err) {

@@ -420,6 +420,29 @@ async function runI18nTests() {
     assertTest(usesGtForInfo, 'commands.js: uses gt() and bot_replies keys for !info command');
   }
 
+  // Test 12b: CI assertion - 100% of registered commands must have localized descriptions in all locales
+  const { registry } = await import('../src/whatsapp/moderation/commands.js');
+  const allRegisteredCmds = registry.getAllCommandNames();
+  assertTest(
+    allRegisteredCmds.length >= 15,
+    `CommandRegistry has all commands registered (found: ${allRegisteredCmds.length})`
+  );
+
+  for (const [langCode] of localesMap.entries()) {
+    const missingCmdDescs = [];
+    for (const cmd of allRegisteredCmds) {
+      const key = `bot_replies.cmd_${cmd}_desc`;
+      const translated = t(langCode, key);
+      if (!translated || translated === key) {
+        missingCmdDescs.push(`!${cmd} (${key})`);
+      }
+    }
+    assertTest(
+      missingCmdDescs.length === 0,
+      `All registered commands have localized help descriptions in [${langCode}] (missing: ${missingCmdDescs.length > 0 ? missingCmdDescs.join(', ') : 'none'})`
+    );
+  }
+
   // Test 13: Technical German terms translations verification
   assertTest(
     t('de', 'dashboard.hard_reset') === 'Zurücksetzen',

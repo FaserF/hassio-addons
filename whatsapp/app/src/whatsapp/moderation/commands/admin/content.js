@@ -11,7 +11,7 @@ import { gt } from '../../engine/translations.js';
 // Persist pinned messages to disk so !unpinall works across bot restarts.
 // Storage: moderation_store -> groups[groupId].pinned_messages -> { [msgId]: { id, participant, fromMe } }
 
-export function trackPinnedMessage(groupId, waMsgId, participant = null, fromMe = false) {
+export function trackPinnedMessage(groupId, waMsgId, participant = null, fromMe = false, text = '') {
   if (!groupId || !waMsgId) return;
   try {
     const store = loadModerationStore();
@@ -21,6 +21,7 @@ export function trackPinnedMessage(groupId, waMsgId, participant = null, fromMe 
       id: waMsgId,
       participant: participant || null,
       fromMe: Boolean(fromMe),
+      text: text || store.groups[groupId].pinned_messages[waMsgId]?.text || '',
     };
     saveModerationStore(store);
   } catch (e) {
@@ -270,7 +271,7 @@ export function registerContentCommands(registry) {
         };
         await session.sock.sendMessage(groupId, {
           pin: pinKey,
-          type: 0,
+          type: 2,
           time: 0,
         });
         untrackPinnedMessage(groupId, quoted.stanzaId);
@@ -286,7 +287,7 @@ export function registerContentCommands(registry) {
                 fromMe: quoted.participant ? false : true,
                 participant: quoted.participant,
               },
-              type: 0,
+              type: 2,
               time: 0,
             },
           });
@@ -329,7 +330,7 @@ export function registerContentCommands(registry) {
                 fromMe: Boolean(item.fromMe),
                 ...(item.participant ? { participant: item.participant } : {}),
               },
-              type: 0,
+              type: 2,
               time: 0,
             });
             unpinnedCount++;
@@ -345,7 +346,7 @@ export function registerContentCommands(registry) {
                     fromMe: Boolean(item.fromMe),
                     ...(item.participant ? { participant: item.participant } : {}),
                   },
-                  type: 0,
+                  type: 2,
                   time: 0,
                 },
               });
@@ -358,6 +359,7 @@ export function registerContentCommands(registry) {
               );
             }
           }
+          await new Promise((r) => setTimeout(r, 200));
         }
         clearTrackedPinnedMessages(groupId);
 

@@ -7,7 +7,8 @@ export function recordMessageMap(
   waJid,
   fromMe = false,
   senderName = '',
-  senderJid = ''
+  senderJid = '',
+  text = ''
 ) {
   if (!waMsgId || !tgMsgId) return;
   const store = loadTelegramStore();
@@ -24,6 +25,7 @@ export function recordMessageMap(
     fromMe: Boolean(fromMe),
     senderName: senderName || '',
     senderJid: senderJid || senderName || '',
+    text: text || '',
     timestamp: Date.now(),
   };
 

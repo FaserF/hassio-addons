@@ -41,7 +41,7 @@ loadAllLocales();
  * Returns list of dynamically available languages with metadata
  */
 export function getAvailableLanguages() {
-  loadAllLocales();
+  if (localesMap.size === 0) loadAllLocales();
   const list = [];
   for (const [code, dict] of localesMap.entries()) {
     list.push({
@@ -57,7 +57,7 @@ export function getAvailableLanguages() {
  * Returns full translation dictionary for specified language code (fallback to 'en')
  */
 export function getLocaleDictionary(langCode = 'en') {
-  loadAllLocales();
+  if (localesMap.size === 0) loadAllLocales();
   const normalized = (langCode || 'en').toLowerCase().trim();
   if (localesMap.has(normalized)) {
     return localesMap.get(normalized);

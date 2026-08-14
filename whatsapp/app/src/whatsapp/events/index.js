@@ -97,8 +97,8 @@ export function unwrapProtocolNode(m) {
       };
     return {
       type: 14,
-      editedMessage: m.editedMessage,
-      key: m.editedMessage.key || m.key,
+      editedMessage: m.editedMessage.message || m.editedMessage,
+      key: m.editedMessage.key || m.editedMessage.message?.key || m.key,
     };
   }
   if (m.ephemeralMessage?.message) return unwrapProtocolNode(m.ephemeralMessage.message);
@@ -106,6 +106,10 @@ export function unwrapProtocolNode(m) {
   if (m.viewOnceMessageV2?.message) return unwrapProtocolNode(m.viewOnceMessageV2.message);
   if (m.viewOnceMessageV2Extension?.message)
     return unwrapProtocolNode(m.viewOnceMessageV2Extension.message);
+  if (m.documentWithCaptionMessage?.message)
+    return unwrapProtocolNode(m.documentWithCaptionMessage.message);
+  if (m.deviceSentMessage?.message) return unwrapProtocolNode(m.deviceSentMessage.message);
+  if (m.botInvokeMessage?.message) return unwrapProtocolNode(m.botInvokeMessage.message);
   return null;
 }
 
@@ -117,6 +121,8 @@ export function extractEditedText(node) {
     if (typeof m === 'string') return m;
     if (m.conversation) return m.conversation;
     if (m.extendedTextMessage?.text) return m.extendedTextMessage.text;
+    if (m.text) return m.text;
+    if (m.caption) return m.caption;
     if (m.protocolMessage?.editedMessage) return unwrap(m.protocolMessage.editedMessage, depth + 1);
     if (m.protocolMessage?.message) return unwrap(m.protocolMessage.message, depth + 1);
     if (m.editedMessage?.message) return unwrap(m.editedMessage.message, depth + 1);

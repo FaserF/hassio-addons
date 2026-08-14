@@ -9,6 +9,7 @@ import { logger } from '../../../logger.js';
 import { t } from '../../../locales/loader.js';
 import { getGroupModerationConfig } from '../../moderation/store.js';
 import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
+import { registry } from '../../moderation/commands.js';
 
 export const recentWaEditEvents = new Map();
 export const ignoreWaEditEchoes = new Set();
@@ -107,7 +108,31 @@ export async function syncWhatsAppPinToTelegram(
               isGroupWa ? mapping.include_sender_name : false,
               mapping.anonymize_phone_numbers
             );
-        const body = rawText ? waToTelegramHtml(rawText) : '📌 <i>[Pinned Command / Message]</i>';
+        let bodyText = rawText;
+        if (!bodyText) {
+          const tracked = getGroupModerationConfig(waJid)?.pinned_messages?.[waMsgId];
+          if (tracked?.text) bodyText = tracked.text;
+        }
+
+        let body = '';
+        const lang = store.language || 'en';
+        if (bodyText && bodyText.trim()) {
+          const cleanText = bodyText.trim();
+          const cmdMatch = cleanText.match(/^[!/#]\s*([a-zA-Z0-9_]+)/i);
+          const cmdName = cmdMatch ? cmdMatch[1].toLowerCase() : null;
+          const regCmd = cmdName ? registry.getCommand(cmdName) : null;
+
+          if (regCmd && regCmd.help) {
+            body = t(lang, 'bot_replies.pinned_command_detail', {
+              cmd: cleanText,
+              help: regCmd.help,
+            });
+          } else {
+            body = waToTelegramHtml(cleanText);
+          }
+        } else {
+          body = t(lang, 'bot_replies.pinned_command_fallback');
+        }
         const fullMsg = `${header}${body}`;
         const sent = await bot.sendMessage(
           targetTgChatId,
@@ -118,7 +143,7 @@ export async function syncWhatsAppPinToTelegram(
         );
         if (sent && sent.message_id) {
           targetTgMsgId = sent.message_id;
-          recordMessageMap(waMsgId, targetTgChatId, sent.message_id, waJid, false, senderName);
+          recordMessageMap(waMsgId, targetTgChatId, sent.message_id, waJid, false, senderName, '', bodyText || fullMsg);
         }
       } catch (sendErr) {
         logger.debug(
@@ -287,11 +312,17 @@ export async function syncWhatsAppEditToTelegram(
         );
 
     let effectiveText = newText;
-    if (mapping.translate_wa_to_tg && newText && newText.trim()) {
+    const groupModCfg = getGroupModerationConfig(waJid);
+    const isTranslateActive =
+      Boolean(mapping.translate_wa_to_tg) ||
+      (groupModCfg?.translation?.enabled !== false &&
+        (groupModCfg?.translation?.mode === 'auto' || groupModCfg?.translation?.mode === 'forwards'));
+
+    if (isTranslateActive && newText && newText.trim()) {
       try {
-        const groupModCfg = getGroupModerationConfig(waJid);
         const targetLang = groupModCfg?.translation?.target_lang || groupModCfg?.language || 'en';
-        const transRes = await translateTextGatewayWithReason(newText, targetLang);
+        const provider = groupModCfg?.translation?.provider || 'auto';
+        const transRes = await translateTextGatewayWithReason(newText, targetLang, provider);
         if (
           transRes?.translation &&
           transRes.translation.trim() &&

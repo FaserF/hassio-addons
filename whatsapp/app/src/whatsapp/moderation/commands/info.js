@@ -29,7 +29,8 @@ export function registerInfoCommands(registry) {
   registry.register(
     'help',
     async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
-      let helpText = `📖 *Group Commands Help*\n_Prefix: ${config.commands.prefix}_\n\n*User Commands:*\n`;
+      const prefix = config.commands?.prefix || '!';
+      const headerText = gt(config, 'bot_replies.help_header', { prefix });
       const userCmds = [];
       const adminCmds = [];
 
@@ -37,7 +38,8 @@ export function registerInfoCommands(registry) {
       for (const [cmd, details] of Object.entries(registry.commands)) {
         if (seen.has(details)) continue;
         seen.add(details);
-        const line = `• \`${config.commands.prefix}${cmd}\`: ${details.help}`;
+        const localizedHelp = gt(config, `bot_replies.cmd_${cmd}_desc`) || details.help;
+        const line = `• \`${prefix}${cmd}\`: ${localizedHelp}`;
         if (details.adminOnly) {
           adminCmds.push(line);
         } else {
@@ -46,7 +48,6 @@ export function registerInfoCommands(registry) {
       }
 
       const customCmds = config.commands?.custom_commands || [];
-      const prefix = config.commands?.prefix || '!';
       for (const c of customCmds) {
         const cleanCmdName = (c.command || '').replace(/^[!/#]+/, '');
         if (!cleanCmdName) continue;
@@ -71,12 +72,13 @@ export function registerInfoCommands(registry) {
         }
       }
 
-      helpText += userCmds.join('\n') + '\n\n';
+      let helpText = `${headerText}\n${userCmds.join('\n')}\n\n`;
 
       if (isAdminUser && adminCmds.length > 0) {
-        helpText += `*Admin Commands:*\n` + adminCmds.join('\n');
+        const adminHeader = gt(config, 'bot_replies.help_admin_header');
+        helpText += `${adminHeader}\n${adminCmds.join('\n')}`;
       } else {
-        helpText += `_(Admin commands hidden for regular users)_`;
+        helpText += gt(config, 'bot_replies.help_admin_hidden');
       }
 
       await reply(session, groupId, { text: helpText }, rawMsg);

@@ -11,26 +11,33 @@ export function gt(config, key, params = {}) {
 export const _TRANSLATION_MAP = new Map(); // key: groupId:sourceWaId -> { botWaId, botKey }
 
 export function recordTranslationMap(groupId, sourceWaId, botWaId, botKey) {
-  if (!groupId || !sourceWaId || !botWaId) return;
-  const key = `${groupId}:${sourceWaId}`;
-  _TRANSLATION_MAP.set(key, { botWaId, botKey });
-  if (_TRANSLATION_MAP.size > 5000) {
+  if (!sourceWaId || !botWaId) return;
+  const cleanSourceId = String(sourceWaId).trim();
+  const entry = { botWaId, botKey, groupId: groupId || null };
+  if (groupId) {
+    _TRANSLATION_MAP.set(`${groupId}:${cleanSourceId}`, entry);
+  }
+  _TRANSLATION_MAP.set(cleanSourceId, entry);
+  if (_TRANSLATION_MAP.size > 10000) {
     const firstKey = _TRANSLATION_MAP.keys().next().value;
     _TRANSLATION_MAP.delete(firstKey);
   }
 }
 
 export async function deleteTranslationIfExists(session, groupId, sourceWaId) {
-  if (!groupId || !sourceWaId) return;
-  const key = `${groupId}:${sourceWaId}`;
-  const record = _TRANSLATION_MAP.get(key);
+  if (!sourceWaId) return;
+  const cleanSourceId = String(sourceWaId).trim();
+  const key = groupId ? `${groupId}:${cleanSourceId}` : cleanSourceId;
+  const record = _TRANSLATION_MAP.get(key) || _TRANSLATION_MAP.get(cleanSourceId);
   if (record) {
-    _TRANSLATION_MAP.delete(key);
+    if (groupId) _TRANSLATION_MAP.delete(`${groupId}:${cleanSourceId}`);
+    _TRANSLATION_MAP.delete(cleanSourceId);
     try {
       if (session?.sock?.sendMessage && record.botKey) {
-        await session.sock.sendMessage(groupId, { delete: record.botKey });
+        const targetGroup = groupId || record.groupId || record.botKey.remoteJid;
+        await session.sock.sendMessage(targetGroup, { delete: record.botKey });
         logger.info(
-          { groupId, sourceWaId, botWaId: record.botWaId },
+          { groupId: targetGroup, sourceWaId: cleanSourceId, botWaId: record.botWaId },
           '🗑️ Deleted translated WhatsApp bot message for revoked source message'
         );
       }

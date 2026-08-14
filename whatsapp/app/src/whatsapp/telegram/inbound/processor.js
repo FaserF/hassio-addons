@@ -7,7 +7,7 @@ import { getSession, sessions } from '../../../session.js';
 import { logger } from '../../../logger.js';
 import { t } from '../../../locales/loader.js';
 import { ignoreWaEditEchoes, ignoreTgEditEchoes } from '../outbound/mutations.js';
-import { loadModerationStore, getGroupModerationConfig } from '../../moderation/store.js';
+import { getGroupModerationConfig } from '../../moderation/store.js';
 import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 
 const lastUpdateIds = new Map();
@@ -561,12 +561,18 @@ export async function processTelegramUpdates() {
               ? telegramToWaFormatting(tgText, entities)
               : tgText;
 
-          if (mapping.translate_tg_to_wa && tgText && tgText.trim() && !isSystemMsg && !isPinMsg) {
+          const groupModCfg = getGroupModerationConfig(mapping.wa_jid);
+          const isTranslateActive =
+            Boolean(mapping.translate_tg_to_wa) ||
+            (groupModCfg?.translation?.enabled !== false &&
+              (groupModCfg?.translation?.mode === 'auto' || groupModCfg?.translation?.mode === 'forwards'));
+
+          if (isTranslateActive && tgText && tgText.trim() && !isSystemMsg && !isPinMsg) {
             try {
-              const groupModCfg = getGroupModerationConfig(mapping.wa_jid);
               const targetLang =
                 groupModCfg?.translation?.target_lang || groupModCfg?.language || 'de';
-              const transRes = await translateTextGatewayWithReason(tgText, targetLang);
+              const provider = groupModCfg?.translation?.provider || 'auto';
+              const transRes = await translateTextGatewayWithReason(tgText, targetLang, provider);
               if (
                 transRes?.translation &&
                 transRes.translation.trim() &&

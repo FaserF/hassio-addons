@@ -15,10 +15,13 @@ import { registerConfigCommands } from './commands/config.js';
 export class CommandRegistry {
   constructor() {
     this.commands = {};
+    this.primaryCommands = new Set();
   }
 
   register(cmd, handler, options = {}) {
+    this.primaryCommands.add(cmd);
     this.commands[cmd] = {
+      name: cmd,
       handler,
       adminOnly: options.adminOnly || false,
       help: options.help || 'No description available.',
@@ -34,6 +37,10 @@ export class CommandRegistry {
 
   getCommand(cmdStr) {
     return this.commands[cmdStr];
+  }
+
+  getPrimaryCommandNames() {
+    return Array.from(this.primaryCommands);
   }
 
   getAllCommandNames() {

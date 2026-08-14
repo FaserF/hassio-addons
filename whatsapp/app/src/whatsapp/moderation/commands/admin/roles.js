@@ -3,6 +3,7 @@ import { reply } from '../../../actions.js';
 import { logger } from '../../../../logger.js';
 import { isSameUser } from '../../../../utils/security.js';
 import { sendMissingAdminWarning } from '../../engine/penalties.js';
+import { gt } from '../../engine/translations.js';
 
 export function registerRoleCommands(registry) {
   registry.register(
@@ -21,7 +22,7 @@ export function registerRoleCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ You must mention a user or reply to their message to promote them.` },
+          { text: gt(config, 'bot_replies.promote_mention_required') },
           rawMsg
         );
         return;
@@ -32,9 +33,7 @@ export function registerRoleCommands(registry) {
           await reply(
             session,
             groupId,
-            {
-              text: `⚠️ *Security Restriction:* You cannot promote yourself. Only existing Group Admins can promote other members.`,
-            },
+            { text: gt(config, 'bot_replies.cannot_promote_self') },
             rawMsg
           );
           continue;
@@ -43,9 +42,7 @@ export function registerRoleCommands(registry) {
           await reply(
             session,
             groupId,
-            {
-              text: `⚠️ *Security Restriction:* The bot account cannot be promoted or demoted via chat commands. Please use WhatsApp Group Info settings to change bot admin permissions.`,
-            },
+            { text: gt(config, 'bot_replies.cannot_promote_bot') },
             rawMsg
           );
           continue;
@@ -61,7 +58,7 @@ export function registerRoleCommands(registry) {
           session,
           groupId,
           {
-            text: `✅ Promoted ${validTargets.length} user(s) to Admin.`,
+            text: gt(config, 'bot_replies.promote_success', { count: validTargets.length }),
             mentions: validTargets,
           },
           rawMsg
@@ -82,7 +79,7 @@ export function registerRoleCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: `❌ Failed to promote user(s): ${e.message}` },
+            { text: gt(config, 'bot_replies.promote_failed', { error: e.message }) },
             rawMsg
           );
         }
@@ -107,7 +104,7 @@ export function registerRoleCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ You must mention a user or reply to their message to demote them.` },
+          { text: gt(config, 'bot_replies.demote_mention_required') },
           rawMsg
         );
         return;
@@ -119,7 +116,7 @@ export function registerRoleCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: `⚠️ *Security Restriction:* You cannot demote yourself.` },
+            { text: gt(config, 'bot_replies.cannot_demote_self') },
             rawMsg
           );
           continue;
@@ -128,9 +125,7 @@ export function registerRoleCommands(registry) {
           await reply(
             session,
             groupId,
-            {
-              text: `⚠️ *Security Restriction:* The bot account cannot be demoted via chat commands. Please use WhatsApp Group Info settings to change bot admin permissions.`,
-            },
+            { text: gt(config, 'bot_replies.cannot_demote_bot') },
             rawMsg
           );
           continue;
@@ -146,7 +141,7 @@ export function registerRoleCommands(registry) {
           session,
           groupId,
           {
-            text: `✅ Demoted ${validTargets.length} user(s) from Admin.`,
+            text: gt(config, 'bot_replies.demote_success', { count: validTargets.length }),
             mentions: validTargets,
           },
           rawMsg
@@ -167,7 +162,7 @@ export function registerRoleCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: `❌ Failed to demote user(s): ${e.message}` },
+            { text: gt(config, 'bot_replies.demote_failed', { error: e.message }) },
             rawMsg
           );
         }
@@ -192,7 +187,7 @@ export function registerRoleCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ You must mention a user to approve them.` },
+          { text: gt(config, 'bot_replies.approve_mention_required') },
           rawMsg
         );
         return;
@@ -210,7 +205,7 @@ export function registerRoleCommands(registry) {
         session,
         groupId,
         {
-          text: `✅ Approved ${targetMatches.length} user(s). They will bypass moderation locks.`,
+          text: gt(config, 'bot_replies.approve_success', { count: targetMatches.length }),
           mentions: targetMatches,
         },
         rawMsg
@@ -235,7 +230,7 @@ export function registerRoleCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ You must mention a user to unapprove them.` },
+          { text: gt(config, 'bot_replies.unapprove_mention_required') },
           rawMsg
         );
         return;
@@ -253,7 +248,7 @@ export function registerRoleCommands(registry) {
         session,
         groupId,
         {
-          text: `✅ Removed approval for ${targetMatches.length} user(s).`,
+          text: gt(config, 'bot_replies.unapprove_success', { count: targetMatches.length }),
           mentions: targetMatches,
         },
         rawMsg
