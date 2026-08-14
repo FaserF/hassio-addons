@@ -625,6 +625,7 @@
     "ai_prompt_label": "AI System Persona Prompt",
     "ai_prompt_ph": "You are an intelligent, friendly, and professional WhatsApp Group Moderator AI. Your goals are to assist group members with accurate information, enforce group etiquette, keep responses concise, polite, and well-formatted for WhatsApp, and maintain a constructive community atmosphere.",
     "trans_settings_title": "Translation Settings",
+    "enable_trans": "Enable Language Translation for this group",
     "target_lang_label": "Target Language",
     "trans_mode_label": "Translation Mode",
     "trans_mode_manual": "Manual (via !translate command)",

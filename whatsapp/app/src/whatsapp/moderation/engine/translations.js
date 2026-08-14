@@ -1,5 +1,5 @@
 import { loadModerationStore, getGroupModerationConfig } from '../store.js';
-import { translateTextFreeWithReason } from '../../../utils/freeTranslator.js';
+import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 import { logger } from '../../../logger.js';
 import { t } from '../../../locales/loader.js';
 
@@ -84,7 +84,7 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
               }
             );
           })()
-        : await translateTextFreeWithReason(newText, targetLang, provider);
+        : await translateTextGatewayWithReason(newText, targetLang, provider);
 
     if (
       transResult?.translation &&

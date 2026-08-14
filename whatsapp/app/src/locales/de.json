@@ -639,6 +639,7 @@
     "ai_prompt_label": "KI-System-Persona-Prompt",
     "ai_prompt_ph": "Du bist eine intelligente, freundliche und professionelle WhatsApp-Gruppenmoderations-KI. Deine Ziele sind es, Gruppenmitgliedern mit genauen Informationen zu helfen, die Gruppenetikette durchzusetzen, Antworten kurz, höflich und gut formatiert für WhatsApp zu halten und eine konstruktive Community-Atmosphäre aufrechtzuerhalten.",
     "trans_settings_title": "Übersetzungseinstellungen",
+    "enable_trans": "Sprachübersetzung für diese Gruppe aktivieren",
     "target_lang_label": "Zielsprache",
     "trans_mode_label": "Übersetzungsmodus",
     "trans_mode_manual": "Manuell (über !translate-Befehl)",

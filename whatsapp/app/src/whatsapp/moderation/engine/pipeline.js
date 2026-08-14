@@ -1,6 +1,6 @@
 import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from '../store.js';
 import { processAiModeration } from '../ai.js';
-import { translateTextFreeWithReason } from '../../../utils/freeTranslator.js';
+import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 import { reply } from '../../actions.js';
 import { logger } from '../../../logger.js';
 import { checkSuspiciousName } from '../securityScanner.js';
@@ -24,7 +24,7 @@ export async function handleModerationMessage(session, event) {
   const config = getGroupModerationConfig(groupId);
 
   const isTranslationActive =
-    Boolean(config.translation?.enabled) || config.translation?.mode === 'auto';
+    config.translation?.enabled !== false && config.translation?.mode === 'auto';
   const isGroupConfigured = config.enabled || isTranslationActive || Boolean(config.stt_enabled);
   if (!store.global_enabled || !isGroupConfigured) {
     logger.debug('Skipping moderation: global_enabled is false or group features not configured');
@@ -285,7 +285,7 @@ export async function handleModerationMessage(session, event) {
               targetLang,
             });
           })()
-        : await translateTextFreeWithReason(text, targetLang, provider);
+        : await translateTextGatewayWithReason(text, targetLang, provider);
 
     if (
       transResult?.translation &&

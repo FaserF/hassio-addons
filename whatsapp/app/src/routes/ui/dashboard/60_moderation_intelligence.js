@@ -58,7 +58,9 @@ async function saveGroupAiConfig() {
   groupConfig.stt_enabled = Boolean(document.getElementById('mod-stt-enabled')?.checked);
   groupConfig.stt_engine = document.getElementById('mod-stt-engine')?.value || 'auto';
   groupConfig.translation = {
-    enabled: true,
+    enabled: document.getElementById('mod-trans-enabled')
+      ? Boolean(document.getElementById('mod-trans-enabled').checked)
+      : true,
     target_lang:
       (
         document.getElementById('mod-trans-lang') ||
@@ -214,6 +216,7 @@ function renderModerationDiagnostics(data) {
       transBadge.className = 'mod-diag-badge ' + (trans.status || 'healthy');
       let badgeText = trans.status || 'Healthy';
       if (trans.status === 'healthy') badgeText = t('moderation.status_healthy') || 'Operational';
+      else if (trans.status === 'disabled') badgeText = t('moderation.status_disabled') || 'Disabled';
       else if (trans.status === 'degraded')
         badgeText = t('moderation.status_degraded') || 'Degraded / Failover';
       else if (trans.status === 'error') badgeText = t('moderation.status_error') || 'Error';

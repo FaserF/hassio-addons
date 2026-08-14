@@ -900,6 +900,8 @@ async function selectModerationGroup(groupId) {
     aiPrompt.value =
       config.ai?.system_prompt ||
       'You are an intelligent, friendly, and professional WhatsApp Group Moderator AI. Your goals are to assist group members with accurate information, enforce group etiquette, keep responses concise, polite, and well-formatted for WhatsApp, and maintain a constructive community atmosphere.';
+  const transEnabled = document.getElementById('mod-trans-enabled');
+  if (transEnabled) transEnabled.checked = config.translation?.enabled !== false;
   const transLang =
     document.getElementById('mod-trans-lang') || document.getElementById('mod-trans-target-lang');
   if (transLang) transLang.value = config.translation?.target_lang || 'en';

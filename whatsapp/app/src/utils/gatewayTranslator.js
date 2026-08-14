@@ -1,0 +1,365 @@
+import { logger } from '../logger.js';
+
+const cache = new Map();
+const cooldowns = new Map();
+
+// Diagnostics & Error Tracking
+const recentErrors = [];
+let lastTranslationEvent = null;
+
+function recordError(provider, errorMsg, targetLang = null) {
+  const errEntry = {
+    timestamp: Date.now(),
+    provider: provider || 'unknown',
+    error: String(errorMsg),
+    target_lang: targetLang,
+  };
+  recentErrors.unshift(errEntry);
+  if (recentErrors.length > 20) {
+    recentErrors.pop();
+  }
+}
+
+/**
+ * WhatsApp Gateway Multi-Provider Translation Helper (Node.js)
+ * Failover chain: Google Translate -> Lingva -> MyMemory
+ * Features: Rate-limit (429) cooldowns (5 min), 5s AbortSignal timeout, 1000 char truncation, in-memory caching.
+ */
+export async function translateTextGatewayWithReason(
+  text,
+  targetLang = 'en',
+  preferredProvider = 'auto'
+) {
+  if (!text || !text.trim()) {
+    return { translation: null, reason: 'Empty or blank text provided for translation.' };
+  }
+
+  const cleanText = text.trim().slice(0, 1000);
+  const cacheKey = `${preferredProvider}:${targetLang}:${cleanText}`;
+
+  if (cache.has(cacheKey)) {
+    lastTranslationEvent = {
+      timestamp: Date.now(),
+      provider: preferredProvider === 'auto' ? 'cache' : preferredProvider,
+      providerName: 'Cache (In-Memory)',
+      status: 'success',
+      sourceLang: null,
+      targetLang,
+      reason: 'Served from in-memory cache',
+    };
+    return { translation: cache.get(cacheKey), reason: null };
+  }
+
+  const now = Date.now();
+  const saveCache = (res) => {
+    if (cache.size > 500) cache.clear();
+    cache.set(cacheKey, res);
+  };
+
+  const providersToTry = [];
+  if (preferredProvider && preferredProvider !== 'auto') {
+    providersToTry.push(preferredProvider);
+  } else {
+    providersToTry.push('google', 'lingva', 'mymemory');
+  }
+
+  const attemptedReasons = [];
+
+  for (const provider of providersToTry) {
+    if (provider === 'google') {
+      const cd = cooldowns.get('google') || 0;
+      if (cd > now) {
+        attemptedReasons.push(`Google Translate: in cooldown (${Math.ceil((cd - now) / 1000)}s left)`);
+        continue;
+      }
+      try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(targetLang)}&dt=t&q=${encodeURIComponent(cleanText)}`;
+        const res = await fetch(url, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+          signal: AbortSignal.timeout(5000),
+        });
+        if (res.status === 429) {
+          cooldowns.set('google', Date.now() + 5 * 60 * 1000);
+          logger.warn('Google Translate rate limit (429) reached, initiating 5 min cooldown');
+          recordError('google', 'Rate limit (429) reached - 5 min cooldown active', targetLang);
+          attemptedReasons.push('Google Translate: Rate limited (429)');
+          continue;
+        }
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data[0])) {
+            const translated = data[0].map((item) => item[0]).join('');
+            if (translated && translated.trim()) {
+              const detected = data[2] || '?';
+              saveCache(translated.trim());
+              lastTranslationEvent = {
+                timestamp: Date.now(),
+                provider: 'google',
+                providerName: 'Google Translate',
+                status: 'success',
+                sourceLang: detected,
+                targetLang,
+                reason: 'Translated via Google Translate API',
+              };
+              return { translation: translated.trim(), detectedSource: detected, reason: null };
+            }
+          }
+          recordError('google', 'Empty or malformed translation payload received', targetLang);
+          attemptedReasons.push('Google Translate: Malformed response format');
+        } else {
+          recordError('google', `HTTP ${res.status}: ${res.statusText}`, targetLang);
+          attemptedReasons.push(`Google Translate: HTTP ${res.status}`);
+        }
+      } catch (err) {
+        logger.debug({ err: err.message }, 'Google Translate request failed, trying fallback');
+        recordError('google', `Network error: ${err.message}`, targetLang);
+        attemptedReasons.push(`Google Translate: Network/Timeout (${err.message})`);
+      }
+    }
+
+    if (provider === 'lingva') {
+      const instances = [
+        'https://lingva.ml',
+        'https://translate.plausibility.cloud',
+        'https://lingva.lunar.icu',
+      ];
+      let lingvaSuccess = false;
+      for (const instance of instances) {
+        try {
+          const url = `${instance}/api/v1/auto/${encodeURIComponent(targetLang)}/${encodeURIComponent(cleanText)}`;
+          const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.translation && data.translation.trim()) {
+              const translated = data.translation.trim();
+              saveCache(translated);
+              lastTranslationEvent = {
+                timestamp: Date.now(),
+                provider: 'lingva',
+                providerName: 'Lingva Translate',
+                status: 'success',
+                sourceLang: data.info?.detectedSource || '?',
+                targetLang,
+                reason: `Translated via Lingva instance (${instance})`,
+              };
+              lingvaSuccess = true;
+              return {
+                translation: translated,
+                detectedSource: data.info?.detectedSource || '?',
+                reason: null,
+              };
+            }
+          }
+        } catch (err) {
+          logger.debug(
+            { instance, err: err.message },
+            'Lingva Translate instance failed, trying next instance'
+          );
+        }
+      }
+      if (!lingvaSuccess) {
+        recordError('lingva', 'All public Lingva instances unreachable or timed out', targetLang);
+        attemptedReasons.push('Lingva Translate: All public instances unreachable');
+      }
+    }
+
+    if (provider === 'mymemory') {
+      const cd = cooldowns.get('mymemory') || 0;
+      if (cd > now) {
+        attemptedReasons.push(`MyMemory: in cooldown (${Math.ceil((cd - now) / 1000)}s left)`);
+        continue;
+      }
+      try {
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanText)}&langpair=autodetect|${encodeURIComponent(targetLang)}`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        if (res.status === 429) {
+          cooldowns.set('mymemory', Date.now() + 5 * 60 * 1000);
+          logger.warn('MyMemory rate limit (429) reached, initiating 5 min cooldown');
+          recordError('mymemory', 'Rate limit (429) reached - 5 min cooldown active', targetLang);
+          attemptedReasons.push('MyMemory: Rate limited (429)');
+          continue;
+        }
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.responseData?.translatedText) {
+            const translated = data.responseData.translatedText.trim();
+            if (
+              translated &&
+              !translated.toUpperCase().includes('MYMEMORY WARNING') &&
+              !translated.toUpperCase().includes('QUERY LENGTH LIMIT EXCEEDED')
+            ) {
+              const detected = data.matches?.[0]?.['created-by'] || '?';
+              saveCache(translated);
+              lastTranslationEvent = {
+                timestamp: Date.now(),
+                provider: 'mymemory',
+                providerName: 'MyMemory Translate',
+                status: 'success',
+                sourceLang: detected,
+                targetLang,
+                reason: 'Translated via MyMemory free API',
+              };
+              return { translation: translated, detectedSource: detected, reason: null };
+            }
+          }
+          recordError('mymemory', 'MyMemory quota exceeded or invalid response', targetLang);
+          attemptedReasons.push('MyMemory: Quota limit or invalid response');
+        } else {
+          recordError('mymemory', `HTTP ${res.status}: ${res.statusText}`, targetLang);
+          attemptedReasons.push(`MyMemory: HTTP ${res.status}`);
+        }
+      } catch (err) {
+        logger.debug({ err: err.message }, 'MyMemory translation failed');
+        recordError('mymemory', `Network error: ${err.message}`, targetLang);
+        attemptedReasons.push(`MyMemory: Network/Timeout (${err.message})`);
+      }
+    }
+  }
+
+  const failReason =
+    'All translation providers (Google, Lingva, MyMemory) failed or are currently rate-limited. Solution: Wait for cooldowns to expire or configure GEMINI_API_KEY in settings.';
+
+  lastTranslationEvent = {
+    timestamp: Date.now(),
+    provider: 'none',
+    providerName: 'None (All providers failed)',
+    status: 'failed',
+    sourceLang: null,
+    targetLang,
+    reason: failReason,
+    attempted: attemptedReasons,
+  };
+
+  return {
+    translation: null,
+    reason: failReason,
+  };
+}
+
+export async function translateTextGateway(text, targetLang = 'en') {
+  const { translation } = await translateTextGatewayWithReason(text, targetLang);
+  return translation;
+}
+
+// Backward compatibility alias
+export const translateTextFreeWithReason = translateTextGatewayWithReason;
+export const translateTextFree = translateTextGateway;
+
+/**
+ * Returns real-time diagnostics on translation providers, health, active engine, and reasons.
+ */
+export function getTranslationDiagnostics(groupConfig = {}, store = {}) {
+  const now = Date.now();
+  const configuredProvider = groupConfig?.translation?.provider || 'auto';
+  const hasAiKey = Boolean(
+    store?.gemini_api_key ||
+    groupConfig?.ai?.api_key ||
+    process.env.GEMINI_API_KEY ||
+    process.env.OPENAI_API_KEY
+  );
+
+  const googleCooldown = cooldowns.get('google') || 0;
+  const mymemoryCooldown = cooldowns.get('mymemory') || 0;
+
+  const health = {
+    google: {
+      name: 'Google Translate',
+      status: googleCooldown > now ? 'cooldown' : 'healthy',
+      cooldown_remaining_sec: googleCooldown > now ? Math.ceil((googleCooldown - now) / 1000) : 0,
+    },
+    lingva: {
+      name: 'Lingva Translate',
+      status: 'healthy',
+    },
+    mymemory: {
+      name: 'MyMemory',
+      status: mymemoryCooldown > now ? 'cooldown' : 'healthy',
+      cooldown_remaining_sec:
+        mymemoryCooldown > now ? Math.ceil((mymemoryCooldown - now) / 1000) : 0,
+    },
+    ai: {
+      name: 'Gemini / OpenAI AI Model',
+      status: hasAiKey ? 'healthy' : 'no_key',
+    },
+  };
+
+  let activeProvider;
+  let activeProviderName;
+  let selectionReason;
+
+  const isTranslationEnabled = groupConfig?.translation?.enabled !== false;
+  if (!isTranslationEnabled) {
+    return {
+      status: 'disabled',
+      configured_provider: configuredProvider,
+      active_provider: 'disabled',
+      active_provider_name: 'Disabled',
+      selection_reason: 'Translation Disabled: Translation feature is switched off for this group.',
+      health,
+      last_activity_sec_ago: null,
+      recent_errors: [],
+    };
+  }
+
+  if (configuredProvider === 'ai') {
+    activeProvider = 'ai';
+    activeProviderName = 'Gemini / OpenAI AI Model';
+    selectionReason = hasAiKey
+      ? 'Configured AI Provider: Using multimodal AI model with verified API key.'
+      : 'AI Provider Selected: Warning — No API key configured. Translation will fail until API key is set.';
+  } else if (configuredProvider === 'google') {
+    activeProvider = 'google';
+    activeProviderName = 'Google Translate';
+    selectionReason =
+      googleCooldown > now
+        ? `Manual Selection: Google Translate is selected, but currently in cooldown (${Math.ceil((googleCooldown - now) / 1000)}s remaining) due to rate-limiting (429).`
+        : 'Manual Selection: Group is explicitly set to Google Translate.';
+  } else if (configuredProvider === 'lingva') {
+    activeProvider = 'lingva';
+    activeProviderName = 'Lingva Translate';
+    selectionReason = 'Manual Selection: Group is explicitly set to Lingva Translate.';
+  } else if (configuredProvider === 'mymemory') {
+    activeProvider = 'mymemory';
+    activeProviderName = 'MyMemory';
+    selectionReason =
+      mymemoryCooldown > now
+        ? `Manual Selection: MyMemory is selected, but currently in cooldown (${Math.ceil((mymemoryCooldown - now) / 1000)}s remaining) due to rate-limiting (429).`
+        : 'Manual Selection: Group is explicitly set to MyMemory.';
+  } else {
+    // auto
+    if (googleCooldown <= now) {
+      activeProvider = 'google';
+      activeProviderName = 'Google Translate';
+      selectionReason = 'Auto-Failover: Primary engine (Google Translate) is active and healthy.';
+    } else if (mymemoryCooldown <= now) {
+      activeProvider = 'lingva';
+      activeProviderName = 'Lingva Translate';
+      selectionReason = `Auto-Failover: Google Translate is rate-limited (cooldown: ${Math.ceil((googleCooldown - now) / 1000)}s remaining). Switched to Lingva Translate.`;
+    } else {
+      activeProvider = 'mymemory';
+      activeProviderName = 'MyMemory';
+      selectionReason =
+        'Auto-Failover: Primary & secondary engines unavailable. Switched to MyMemory.';
+    }
+  }
+
+  let status = 'healthy';
+  if (configuredProvider === 'ai' && !hasAiKey) {
+    status = 'error';
+  } else if (googleCooldown > now && configuredProvider === 'google') {
+    status = 'degraded';
+  } else if (googleCooldown > now && activeProvider !== 'google') {
+    status = 'degraded';
+  }
+
+  return {
+    active_provider: activeProvider,
+    active_provider_name: activeProviderName,
+    configured_provider: configuredProvider,
+    selection_reason: selectionReason,
+    status,
+    health,
+    last_event: lastTranslationEvent,
+    recent_errors: recentErrors.slice(0, 10),
+  };
+}

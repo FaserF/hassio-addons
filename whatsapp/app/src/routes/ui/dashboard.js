@@ -1648,6 +1648,8 @@ async function selectModerationGroup(groupId) {
     aiPrompt.value =
       config.ai?.system_prompt ||
       'You are an intelligent, friendly, and professional WhatsApp Group Moderator AI. Your goals are to assist group members with accurate information, enforce group etiquette, keep responses concise, polite, and well-formatted for WhatsApp, and maintain a constructive community atmosphere.';
+  const transEnabled = document.getElementById('mod-trans-enabled');
+  if (transEnabled) transEnabled.checked = config.translation?.enabled !== false;
   const transLang = document.getElementById('mod-trans-lang');
   if (transLang) transLang.value = config.translation?.target_lang || 'en';
   const transMode = document.getElementById('mod-trans-mode');
@@ -2972,7 +2974,9 @@ async function saveGroupAiConfig() {
   groupConfig.stt_enabled = Boolean(document.getElementById('mod-stt-enabled')?.checked);
   groupConfig.stt_engine = document.getElementById('mod-stt-engine')?.value || 'auto';
   groupConfig.translation = {
-    enabled: true,
+    enabled: document.getElementById('mod-trans-enabled')
+      ? Boolean(document.getElementById('mod-trans-enabled').checked)
+      : true,
     target_lang:
       (
         document.getElementById('mod-trans-lang') ||
@@ -3128,6 +3132,7 @@ function renderModerationDiagnostics(data) {
       transBadge.className = 'mod-diag-badge ' + (trans.status || 'healthy');
       let badgeText = trans.status || 'Healthy';
       if (trans.status === 'healthy') badgeText = t('moderation.status_healthy') || 'Operational';
+      else if (trans.status === 'disabled') badgeText = t('moderation.status_disabled') || 'Disabled';
       else if (trans.status === 'degraded')
         badgeText = t('moderation.status_degraded') || 'Degraded / Failover';
       else if (trans.status === 'error') badgeText = t('moderation.status_error') || 'Error';

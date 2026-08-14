@@ -1,5 +1,5 @@
 import { logger } from '../../logger.js';
-import { translateTextFreeWithReason } from '../../utils/freeTranslator.js';
+import { translateTextGatewayWithReason } from '../../utils/gatewayTranslator.js';
 
 export async function processAiModeration(
   text,
@@ -97,8 +97,8 @@ export async function processAiModeration(
       }
     }
 
-    // Fallback for translation mode: Free multi-provider engine (Google -> Lingva -> MyMemory)
-    const freeRes = await translateTextFreeWithReason(text, targetLang);
+    // Fallback for translation mode: Gateway multi-provider engine (Google -> Lingva -> MyMemory)
+    const freeRes = await translateTextGatewayWithReason(text, targetLang);
     if (freeRes.translation) return { translation: freeRes.translation, reason: null };
 
     const finalReason =

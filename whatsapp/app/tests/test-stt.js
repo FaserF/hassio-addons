@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { getSTTDiagnostics } from '../src/whatsapp/sttHandler.js';
-import { getTranslationDiagnostics } from '../src/utils/freeTranslator.js';
+import { getTranslationDiagnostics } from '../src/utils/gatewayTranslator.js';
 
 console.log('🧪 Running STT & Diagnostics Unit Tests...');
 

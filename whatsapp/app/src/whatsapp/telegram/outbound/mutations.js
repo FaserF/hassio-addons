@@ -268,7 +268,9 @@ export async function syncWhatsAppEditToTelegram(
             isGroupWa ? mapping.include_sender_name : false,
             mapping.anonymize_phone_numbers
           );
-      const fallbackText = `${fallbackHeader}${editIndicator}\n${formattedBody || '<i>[No text]</i>'}`;
+      const fallbackText = fallbackHeader
+        ? `${fallbackHeader}${editIndicator}\n${formattedBody || '<i>[No text]</i>'}`
+        : `${editIndicator}\n${formattedBody || '<i>[No text]</i>'}`;
       const replyToId = mapped?.tgMsgId ? mapped.tgMsgId : null;
 
       try {

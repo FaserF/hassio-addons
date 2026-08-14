@@ -23,7 +23,7 @@ import { sessions } from '../../session.js';
 
 import { logger } from '../../logger.js';
 import { reply } from '../../whatsapp/actions.js';
-import { getTranslationDiagnostics } from '../../utils/freeTranslator.js';
+import { getTranslationDiagnostics } from '../../utils/gatewayTranslator.js';
 import { getSTTDiagnostics } from '../../whatsapp/sttHandler.js';
 
 export function registerModerationRoutes(app) {

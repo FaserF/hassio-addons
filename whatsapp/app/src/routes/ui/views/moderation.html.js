@@ -535,6 +535,10 @@ export default () => `
                             <div class="mod-feature-icon-wrap mod-color-primary"><i class="fas fa-language"></i></div>
                             <div><div class="mod-feature-title" data-i18n="moderation.trans_settings_title">Translation Settings</div></div>
                         </div>
+                        <div class="mod-inline-controls" style="margin-bottom:12px;">
+                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-trans-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
+                            <span class="mod-option-label" data-i18n="moderation.enable_trans">Enable Language Translation for this group</span>
+                        </div>
                         <div class="mod-inline-controls" style="flex-wrap:wrap; gap:12px;">
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.target_lang_label">Target Language:</label>
@@ -550,10 +554,10 @@ export default () => `
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.trans_provider_label">Translation Engine:</label>
                                 <select id="mod-trans-provider" class="mod-select mod-select-sm" onchange="if(window.refreshModerationDiagnostics) refreshModerationDiagnostics()">
-                                    <option value="auto" data-i18n="moderation.trans_prov_auto">⚡ Free Auto-Failover (Google → Lingva → MyMemory)</option>
-                                    <option value="google" data-i18n="moderation.trans_prov_google">🌐 Google Translate (Free)</option>
-                                    <option value="lingva" data-i18n="moderation.trans_prov_lingva">🛡️ Lingva Translate (Free Privacy API)</option>
-                                    <option value="mymemory" data-i18n="moderation.trans_prov_mymemory">💾 MyMemory (Free)</option>
+                                    <option value="auto" data-i18n="moderation.trans_prov_auto">⚡ Gateway Auto-Failover (Google → Lingva → MyMemory)</option>
+                                    <option value="google" data-i18n="moderation.trans_prov_google">🌐 Google Translate</option>
+                                    <option value="lingva" data-i18n="moderation.trans_prov_lingva">🛡️ Lingva Translate</option>
+                                    <option value="mymemory" data-i18n="moderation.trans_prov_mymemory">💾 MyMemory</option>
                                     <option value="ai" data-i18n="moderation.trans_prov_ai">🧠 Gemini / OpenAI Model (Requires API Key)</option>
                                 </select>
                             </div>
