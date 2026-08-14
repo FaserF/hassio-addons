@@ -23,8 +23,31 @@ import { sessions } from '../../session.js';
 
 import { logger } from '../../logger.js';
 import { reply } from '../../whatsapp/actions.js';
+import { getTranslationDiagnostics } from '../../utils/freeTranslator.js';
+import { getSTTDiagnostics } from '../../whatsapp/sttHandler.js';
 
 export function registerModerationRoutes(app) {
+  // GET /api/moderation/diagnostics — Real-time health, active providers & reasons for STT & Translation
+  app.get('/api/moderation/diagnostics', (req, res) => {
+    try {
+      const store = loadModerationStore();
+      const groupId = req.query.group_id;
+      const groupConfig = groupId ? getGroupModerationConfig(groupId) : null;
+      const translationDiag = getTranslationDiagnostics(groupConfig, store);
+      const sttDiag = getSTTDiagnostics(groupConfig, store);
+      res.json({
+        success: true,
+        data: {
+          translation: translationDiag,
+          stt: sttDiag,
+        },
+      });
+    } catch (err) {
+      logger.error({ error: err.message }, 'Failed to generate moderation diagnostics');
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // GET /api/moderation/commands — Dynamically list all registered built-in commands
   app.get('/api/moderation/commands', (req, res) => {
     const list = [];

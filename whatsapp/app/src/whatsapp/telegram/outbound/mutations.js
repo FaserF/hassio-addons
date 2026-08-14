@@ -218,13 +218,14 @@ export async function syncWhatsAppEditToTelegram(
     const bot = getTelegramBotClient(mapping.bot_id);
     if (!bot) continue;
 
+    const effectiveSenderName = senderName || mapped?.senderName || '';
     const isGroupWa = waJid.endsWith('@g.us');
     const isDirectMirror = Boolean(mapping.is_direct_chat_mirror);
     const header = isDirectMirror
       ? ''
       : formatHeader(
           groupName,
-          senderName,
+          effectiveSenderName,
           isGroupWa ? mapping.include_group_name : false,
           isGroupWa ? mapping.include_sender_name : false,
           mapping.anonymize_phone_numbers
@@ -258,7 +259,6 @@ export async function syncWhatsAppEditToTelegram(
       const lang = store.language || 'de';
       const editIndicator = t(lang, 'bot_replies.edited_msg_indicator_html');
       const tgChatId = mapping.tg_chat_id;
-      const effectiveSenderName = senderName || '';
       const fallbackHeader = isDirectMirror
         ? ''
         : formatHeader(

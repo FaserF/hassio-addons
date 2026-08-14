@@ -1076,6 +1076,9 @@ async function selectModerationGroup(groupId) {
   if (typeof populateAutoTestMemberSelect === 'function') {
     populateAutoTestMemberSelect(groupId);
   }
+  if (typeof refreshModerationDiagnostics === 'function') {
+    refreshModerationDiagnostics();
+  }
 }
 
 async function toggleGroupModeration(enabled) {
@@ -1112,8 +1115,13 @@ function _doSwitchModSubTab(subTab) {
     activeP.classList.add('active');
   }
 
-  if (subTab === 'ai' && typeof populateAutoTestMemberSelect === 'function' && currentModGroup) {
-    populateAutoTestMemberSelect(currentModGroup);
+  if (subTab === 'ai') {
+    if (typeof populateAutoTestMemberSelect === 'function' && currentModGroup) {
+      populateAutoTestMemberSelect(currentModGroup);
+    }
+    if (typeof refreshModerationDiagnostics === 'function') {
+      refreshModerationDiagnostics();
+    }
   }
 
   // Update active button state

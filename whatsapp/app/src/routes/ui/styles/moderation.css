@@ -471,3 +471,165 @@
 .mod-actions-split {
   justify-content: flex-start;
 }
+
+/* ===============================================================
+   DIAGNOSTICS & PROVIDER INFO CARDS
+   =============================================================== */
+.mod-diag-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: border-color 0.2s;
+}
+.mod-diag-card:hover {
+  border-color: rgba(0, 168, 132, 0.35);
+}
+.mod-diag-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(0, 168, 132, 0.05);
+  border-bottom: 1px solid var(--border-color);
+}
+.mod-diag-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mod-diag-title i {
+  color: var(--primary);
+}
+.mod-diag-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(128, 128, 128, 0.15);
+  color: var(--text-muted);
+}
+.mod-diag-badge.healthy {
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.3);
+}
+.mod-diag-badge.degraded {
+  background: rgba(241, 196, 15, 0.15);
+  color: #f1c40f;
+  border: 1px solid rgba(241, 196, 15, 0.3);
+}
+.mod-diag-badge.error,
+.mod-diag-badge.no_key {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+}
+.mod-diag-badge.disabled {
+  background: rgba(149, 165, 166, 0.15);
+  color: #95a5a6;
+  border: 1px solid rgba(149, 165, 166, 0.25);
+}
+.mod-diag-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mod-diag-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.mod-diag-label {
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 120px;
+  flex-shrink: 0;
+}
+.mod-diag-val {
+  color: var(--text-main);
+  flex-grow: 1;
+}
+.mod-diag-health-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.mod-diag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+}
+.mod-diag-chip.chip-healthy {
+  border-color: rgba(46, 204, 113, 0.4);
+  color: #2ecc71;
+}
+.mod-diag-chip.chip-cooldown {
+  border-color: rgba(241, 196, 15, 0.4);
+  color: #f1c40f;
+  background: rgba(241, 196, 15, 0.08);
+}
+.mod-diag-chip.chip-error,
+.mod-diag-chip.chip-no_key {
+  border-color: rgba(231, 76, 60, 0.4);
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.08);
+}
+.mod-diag-errors {
+  margin-top: 4px;
+  padding: 8px 12px;
+  background: rgba(231, 76, 60, 0.08);
+  border: 1px solid rgba(231, 76, 60, 0.25);
+  border-radius: 8px;
+}
+.mod-diag-errors-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e74c3c;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mod-diag-errors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mod-diag-error-item {
+  font-size: 11px;
+  color: var(--text-main);
+  background: var(--bg-card);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border-left: 3px solid #e74c3c;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.mod-diag-error-msg {
+  flex-grow: 1;
+  word-break: break-word;
+}
+.mod-diag-error-time {
+  color: var(--text-muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+

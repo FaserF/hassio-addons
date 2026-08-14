@@ -500,11 +500,35 @@ export default () => `
                         </div>
                         <div class="mod-inline-controls" style="margin-bottom:12px;">
                             <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.stt_engine_label">STT Engine:</label>
-                            <select id="mod-stt-engine" class="mod-select mod-select-sm">
-                                <option value="auto" data-i18n="moderation.stt_engine_auto">⚡ Free Auto Web STT (No API Key required, Default)</option>
-                                <option value="gemini" data-i18n="moderation.stt_engine_gemini">✨ Gemini 1.5 Multimodal Audio (Requires API Key)</option>
+                            <select id="mod-stt-engine" class="mod-select mod-select-sm" onchange="if(window.refreshModerationDiagnostics) refreshModerationDiagnostics()">
+                                <option value="gemini" data-i18n="moderation.stt_engine_gemini">✨ Gemini 1.5 Multimodal Audio (Requires API Key, Default)</option>
                                 <option value="openai" data-i18n="moderation.stt_engine_openai">🤖 OpenAI Whisper API (Requires API Key)</option>
                             </select>
+                        </div>
+                        <!-- STT Diagnostics / Active Provider & Error Info -->
+                        <div id="mod-stt-diag-card" class="mod-diag-card" style="margin-bottom:16px;">
+                            <div class="mod-diag-header">
+                                <div class="mod-diag-title"><i class="fas fa-info-circle"></i> <span data-i18n="moderation.diag_stt_title">Speech-to-Text Status &amp; Engine Info</span></div>
+                                <span id="mod-stt-status-badge" class="mod-diag-badge">Loading...</span>
+                            </div>
+                            <div class="mod-diag-body">
+                                <div class="mod-diag-row">
+                                    <span class="mod-diag-label" data-i18n="moderation.diag_active_engine">Active Engine:</span>
+                                    <span id="mod-stt-active-engine" class="mod-diag-val font-bold">...</span>
+                                </div>
+                                <div class="mod-diag-row">
+                                    <span class="mod-diag-label" data-i18n="moderation.diag_reason_label">Selection Reason:</span>
+                                    <span id="mod-stt-reason" class="mod-diag-val">...</span>
+                                </div>
+                                <div class="mod-diag-row" id="mod-stt-last-activity-row" style="display:none;">
+                                    <span class="mod-diag-label" data-i18n="moderation.diag_last_activity">Last Activity:</span>
+                                    <span id="mod-stt-last-activity" class="mod-diag-val">...</span>
+                                </div>
+                                <div id="mod-stt-errors-container" class="mod-diag-errors" style="display:none;">
+                                    <div class="mod-diag-errors-title"><i class="fas fa-exclamation-triangle"></i> <span data-i18n="moderation.diag_recent_errors">Recent Errors &amp; Warnings:</span></div>
+                                    <div id="mod-stt-errors-list" class="mod-diag-errors-list"></div>
+                                </div>
+                            </div>
                         </div>
                         <div class="mod-divider"></div>
                         <div class="mod-feature-header">
@@ -525,13 +549,42 @@ export default () => `
                             </div>
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.trans_provider_label">Translation Engine:</label>
-                                <select id="mod-trans-provider" class="mod-select mod-select-sm">
+                                <select id="mod-trans-provider" class="mod-select mod-select-sm" onchange="if(window.refreshModerationDiagnostics) refreshModerationDiagnostics()">
                                     <option value="auto" data-i18n="moderation.trans_prov_auto">⚡ Free Auto-Failover (Google → Lingva → MyMemory)</option>
                                     <option value="google" data-i18n="moderation.trans_prov_google">🌐 Google Translate (Free)</option>
                                     <option value="lingva" data-i18n="moderation.trans_prov_lingva">🛡️ Lingva Translate (Free Privacy API)</option>
                                     <option value="mymemory" data-i18n="moderation.trans_prov_mymemory">💾 MyMemory (Free)</option>
                                     <option value="ai" data-i18n="moderation.trans_prov_ai">🧠 Gemini / OpenAI Model (Requires API Key)</option>
                                 </select>
+                            </div>
+                        </div>
+                        <!-- Translation Diagnostics / Active Provider & Failover Info -->
+                        <div id="mod-trans-diag-card" class="mod-diag-card" style="margin-top:14px; margin-bottom:8px;">
+                            <div class="mod-diag-header">
+                                <div class="mod-diag-title"><i class="fas fa-info-circle"></i> <span data-i18n="moderation.diag_trans_title">Translation Engine Status &amp; Failover Info</span></div>
+                                <span id="mod-trans-status-badge" class="mod-diag-badge">Loading...</span>
+                            </div>
+                            <div class="mod-diag-body">
+                                <div class="mod-diag-row">
+                                    <span class="mod-diag-label" data-i18n="moderation.diag_active_provider">Active Provider:</span>
+                                    <span id="mod-trans-active-provider" class="mod-diag-val font-bold">...</span>
+                                </div>
+                                <div class="mod-diag-row">
+                                    <span class="mod-diag-label" data-i18n="moderation.diag_reason_label">Selection Reason:</span>
+                                    <span id="mod-trans-reason" class="mod-diag-val">...</span>
+                                </div>
+                                <div class="mod-diag-row">
+                                    <span class="mod-diag-label" data-i18n="moderation.diag_provider_health">Provider Health:</span>
+                                    <div id="mod-trans-providers-health" class="mod-diag-health-chips"></div>
+                                </div>
+                                <div class="mod-diag-row" id="mod-trans-last-activity-row" style="display:none;">
+                                    <span class="mod-diag-label" data-i18n="moderation.diag_last_activity">Last Activity:</span>
+                                    <span id="mod-trans-last-activity" class="mod-diag-val">...</span>
+                                </div>
+                                <div id="mod-trans-errors-container" class="mod-diag-errors" style="display:none;">
+                                    <div class="mod-diag-errors-title"><i class="fas fa-exclamation-triangle"></i> <span data-i18n="moderation.diag_recent_errors">Recent Errors &amp; Warnings:</span></div>
+                                    <div id="mod-trans-errors-list" class="mod-diag-errors-list"></div>
+                                </div>
                             </div>
                         </div>
                         <div class="mod-actions" style="margin-top:16px;"><button class="btn btn-primary btn-sm" onclick="saveGroupAiConfig()"><i class="fas fa-save"></i> <span data-i18n="moderation.save_ai_settings">Save AI &amp; Translation Settings</span></button></div>

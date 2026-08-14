@@ -68,9 +68,23 @@ export function unwrapProtocolNode(m) {
   if (m.pinInChatMessage)
     return { type: 5, pinInChatMessage: m.pinInChatMessage, key: m.pinInChatMessage.key };
   if (m.editedMessage) {
-    if (m.editedMessage.message?.protocolMessage) return m.editedMessage.message.protocolMessage;
-    if (m.editedMessage.protocolMessage) return m.editedMessage.protocolMessage;
-    return { type: 14, editedMessage: m.editedMessage, key: m.editedMessage.key };
+    if (m.editedMessage.message?.protocolMessage)
+      return {
+        type: 14,
+        editedMessage: m.editedMessage.message.protocolMessage.editedMessage || m.editedMessage.message,
+        key: m.editedMessage.message.protocolMessage.key || m.editedMessage.key || m.key,
+      };
+    if (m.editedMessage.protocolMessage)
+      return {
+        type: 14,
+        editedMessage: m.editedMessage.protocolMessage.editedMessage || m.editedMessage,
+        key: m.editedMessage.protocolMessage.key || m.editedMessage.key || m.key,
+      };
+    return {
+      type: 14,
+      editedMessage: m.editedMessage,
+      key: m.editedMessage.key || m.key,
+    };
   }
   if (m.ephemeralMessage?.message) return unwrapProtocolNode(m.ephemeralMessage.message);
   if (m.viewOnceMessage?.message) return unwrapProtocolNode(m.viewOnceMessage.message);
@@ -83,24 +97,27 @@ export function unwrapProtocolNode(m) {
 export function extractEditedText(node) {
   if (!node) return '';
   if (typeof node === 'string') return node.trim();
-  const unwrap = (m) => {
-    if (!m) return null;
+  const unwrap = (m, depth = 0) => {
+    if (!m || depth > 8) return null;
     if (typeof m === 'string') return m;
     if (m.conversation) return m.conversation;
     if (m.extendedTextMessage?.text) return m.extendedTextMessage.text;
-    if (m.protocolMessage?.editedMessage) return unwrap(m.protocolMessage.editedMessage);
-    if (m.protocolMessage?.message) return unwrap(m.protocolMessage.message);
-    if (m.editedMessage) return unwrap(m.editedMessage);
-    if (m.ephemeralMessage?.message) return unwrap(m.ephemeralMessage.message);
-    if (m.viewOnceMessage?.message) return unwrap(m.viewOnceMessage.message);
-    if (m.viewOnceMessageV2?.message) return unwrap(m.viewOnceMessageV2.message);
-    if (m.viewOnceMessageV2Extension?.message) return unwrap(m.viewOnceMessageV2Extension.message);
-    if (m.documentWithCaptionMessage?.message) return unwrap(m.documentWithCaptionMessage.message);
+    if (m.protocolMessage?.editedMessage) return unwrap(m.protocolMessage.editedMessage, depth + 1);
+    if (m.protocolMessage?.message) return unwrap(m.protocolMessage.message, depth + 1);
+    if (m.editedMessage?.message) return unwrap(m.editedMessage.message, depth + 1);
+    if (m.editedMessage) return unwrap(m.editedMessage, depth + 1);
+    if (m.ephemeralMessage?.message) return unwrap(m.ephemeralMessage.message, depth + 1);
+    if (m.viewOnceMessage?.message) return unwrap(m.viewOnceMessage.message, depth + 1);
+    if (m.viewOnceMessageV2?.message) return unwrap(m.viewOnceMessageV2.message, depth + 1);
+    if (m.viewOnceMessageV2Extension?.message)
+      return unwrap(m.viewOnceMessageV2Extension.message, depth + 1);
+    if (m.documentWithCaptionMessage?.message)
+      return unwrap(m.documentWithCaptionMessage.message, depth + 1);
     if (m.imageMessage?.caption) return m.imageMessage.caption;
     if (m.videoMessage?.caption) return m.videoMessage.caption;
     if (m.documentMessage?.caption) return m.documentMessage.caption;
     if (m.audioMessage?.caption) return m.audioMessage.caption;
-    if (m.message) return unwrap(m.message);
+    if (m.message) return unwrap(m.message, depth + 1);
     return null;
   };
   const res = unwrap(node);
@@ -1207,6 +1224,7 @@ export function handleIncomingMessages(session) {
               const groupName = isGroup ? session.groupCache?.get(targetJid) || targetJid : '';
               const senderName = session.contactCache?.get(targetJid)?.name || '';
               syncWhatsAppEditToTelegram(editedWaMsgId, targetJid, newText, groupName, senderName);
+              updateTranslationIfExists(session, targetJid, editedWaMsgId, newText);
             }
           } else if (
             prot &&
