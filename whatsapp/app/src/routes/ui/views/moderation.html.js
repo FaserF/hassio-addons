@@ -509,7 +509,7 @@ export default () => `
                         <div id="mod-stt-diag-card" class="mod-diag-card" style="margin-bottom:16px;">
                             <div class="mod-diag-header">
                                 <div class="mod-diag-title"><i class="fas fa-info-circle"></i> <span data-i18n="moderation.diag_stt_title">Speech-to-Text Status &amp; Engine Info</span></div>
-                                <span id="mod-stt-status-badge" class="mod-diag-badge">Loading...</span>
+                                <span id="mod-stt-status-badge" class="mod-diag-badge" data-i18n="moderation.status_loading">Loading...</span>
                             </div>
                             <div class="mod-diag-body">
                                 <div class="mod-diag-row">
@@ -562,7 +562,7 @@ export default () => `
                         <div id="mod-trans-diag-card" class="mod-diag-card" style="margin-top:14px; margin-bottom:8px;">
                             <div class="mod-diag-header">
                                 <div class="mod-diag-title"><i class="fas fa-info-circle"></i> <span data-i18n="moderation.diag_trans_title">Translation Engine Status &amp; Failover Info</span></div>
-                                <span id="mod-trans-status-badge" class="mod-diag-badge">Loading...</span>
+                                <span id="mod-trans-status-badge" class="mod-diag-badge" data-i18n="moderation.status_loading">Loading...</span>
                             </div>
                             <div class="mod-diag-body">
                                 <div class="mod-diag-row">

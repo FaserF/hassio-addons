@@ -1087,10 +1087,6 @@
     "start_private_msg": "🛡️ *Willkommen beim WhatsApp Gateway & Security Orchestrator*\n_Professionelle Gruppen-Moderation & Plattform-Integration._\n\n• 🤖 *Automatisierter Schutz:* Anti-Spam, Anti-Raid, Content-Locks & Namensfilter\n• 🔗 *Telegram-Brücke:* 2-Wege Synchronisation von Text, Medien, Pins & Reaktionen\n• 🎙️ *Speech-to-Text:* Automatische Transkription von Sprachnachrichten\n• 🌐 *Multi-Language:* Automatische Echtzeit-Übersetzung\n\n📌 *Schnellstart:*\n• `{prefix}help` — Befehlsverzeichnis anzeigen\n• `{prefix}info` — Eigenen Account- & Berechtigungsstatus prüfen\n• Web-Dashboard im Home Assistant / Web-Interface für erweiterte Konfiguration nutzen.",
     "stt_error_details_header": "*Details / Ursache:*",
     "stt_prompt_text": "Transkribiere dieses Audiosignal exakt in Text. Gib NUR den transkribierten Text ohne Erklärung zurück.",
-    "stt_err_free_no_speech": "Kostenlose Web-Erkennung: Keine deutliche Sprache im Audiosignal erkannt.",
-    "stt_err_free_rate_limit": "Kostenlose Web-Erkennung: Rate-Limit erreicht (HTTP 429).",
-    "stt_err_free_http_error": "Kostenlose Web-Erkennung antwortete mit HTTP {status}. (Hinweis: Google schränkt den anonymen Web-Zugriff zunehmend ein. Bitte hinterlege einen kostenlosen Gemini API-Schlüssel in den Moderations-Einstellungen für zuverlässige Transkription)",
-    "stt_err_free_network": "Kostenlose Web-Erkennung Netzwerkfehler: {error}",
     "stt_err_gemini_empty": "Gemini AI: Antwort enthielt keinen transkribierten Text.",
     "stt_err_gemini_rate_limit": "Gemini AI API: Rate-Limit / Quota überschritten (HTTP 429).",
     "stt_err_gemini_auth": "Gemini AI API: Ungültiger oder abgelaufener API-Schlüssel (HTTP 401/403).",
@@ -1102,7 +1098,7 @@
     "stt_err_whisper_http_error": "OpenAI Whisper API Fehler (HTTP {status}).",
     "stt_err_whisper_network": "OpenAI Whisper Verbindungsfehler: {error}",
     "stt_download_failed": "Die Audiodatei konnte nicht von den WhatsApp-Servern heruntergeladen werden.",
-    "stt_transcription_failed": "Über die kostenlose Web-Erkennung konnte keine Sprache im Audio erkannt werden. Für eine deutlich höhere Erkennungsrate kannst du optional einen Gemini- oder OpenAI-Schlüssel in den Einstellungen hinterlegen.",
+    "stt_transcription_failed": "Die Sprachnachricht konnte nicht transkribiert werden. Bitte prüfe deinen konfigurierten Gemini- oder OpenAI-API-Schlüssel in den Moderations-Einstellungen.",
     "stt_no_speech_recognized": "Das Audio wurde verarbeitet, es konnte jedoch keine deutliche Sprache erkannt werden.",
     "about_text": "🛡️ *Über WhatsApp Gateway & Security Orchestrator*\n\nWhatsApp Gateway ist ein fortschrittlicher Open-Source-Sicherheits- & Moderations-Orchestrator für Home Assistant und WhatsApp mit KI-Intenterkennung, Echtzeit-Analysen, MFA Web-UI Dashboard, Inhalts-Sperren und Telegram 2-Wege-Brücke.\n\n📚 *Dokumentation:* https://faserf.github.io/ha-whatsapp/\n🐙 *GitHub Repository:* https://github.com/FaserF/ha-whatsapp\n💖 *Projekt unterstützen & Spenden:* https://github.com/sponsors/FaserF\n🐛 *Fehler melden:* https://github.com/FaserF/ha-whatsapp/issues\n\n_Entwickelt mit ❤️ für Community-Sicherheit._"
   }

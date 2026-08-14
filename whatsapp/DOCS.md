@@ -92,7 +92,7 @@ The WhatsApp Addon incorporates a full-featured group moderation, defender, and 
   - 🤖 **Auto Reply**: Bot sends an automated text response.
   - 🏠 **HA / Webhook**: Event is forwarded to Home Assistant/Webhooks with no auto-reply (appears in `!help`).
   - 🔗 **Alias**: Redirects execution to any built-in or custom command target.
-- **Speech-to-Text (STT) Auto-Transcription**: Native, free Speech-to-Text engine for incoming voice notes and audio messages (`stt_enabled: true/false`). Quotes original audio message with multi-language (DE/EN) transcription and automated diagnostic error feedback if audio decoding fails.
+- **Speech-to-Text (STT) Auto-Transcription**: Cloud Speech-to-Text engine for incoming voice notes and audio messages (`stt_enabled: true/false`). Powered by Google Gemini 1.5 Multimodal Audio or OpenAI Whisper API (requires API key in Moderation settings). Quotes original audio message with multi-language (DE/EN) transcription and automated diagnostic error feedback.
 - **Warnings System**: Configurable warning thresholds, warn decay (`decay_hours`), and automated penalties (`!warn`, `!unwarn`, `!warns`).
 - **Granular Content Locks**: Toggle content locks per group for images, videos, audio, documents, stickers, URLs/links, group invite links, polls, contact cards, location shares, forwarded messages, and RTL text (`!lock`, `!unlock`, `!locks`, `!locktypes`).
 - **Blacklist & Word Filters**: Match prohibited words or regex patterns with automated penalties.
