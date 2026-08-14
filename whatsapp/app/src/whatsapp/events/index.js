@@ -320,7 +320,7 @@ export function handleIncomingMessages(session) {
         }
 
         // Normalize participants array to ensure full clean JID strings (e.g. "49123456789@s.whatsapp.net")
-        const normalizedParticipants = rawParticipants
+        const rawNormalized = rawParticipants
           .map((p) => {
             let str =
               typeof p === 'object' && p !== null
@@ -347,6 +347,17 @@ export function handleIncomingMessages(session) {
             return `${digits}@s.whatsapp.net`;
           })
           .filter(Boolean);
+
+        // Deduplicate participants to prevent duplicate entries when Baileys passes both PN and LID for the same user
+        const seenPNs = new Set();
+        const normalizedParticipants = [];
+        for (const p of rawNormalized) {
+          const pn = p.split('@')[0];
+          if (!seenPNs.has(pn)) {
+            seenPNs.add(pn);
+            normalizedParticipants.push(p);
+          }
+        }
 
         if (action && normalizedParticipants.length > 0) {
           // Deduplicate events to prevent double processing (since Baileys emits both group-participants.update and messageStubType for the same change)

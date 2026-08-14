@@ -213,7 +213,7 @@ export function isSameUser(jidA, jidB, session = null) {
 
 /**
  * Resolves a raw User ID or LID into the canonical phone number (PN) string,
- * avoiding LID duplication (e.g. mapping 157608354779256 -> 4917647365403).
+ * avoiding LID duplication (e.g. mapping 123456789012345 -> 491761234567).
  */
 export function resolveCanonicalUserKey(rawUserId, session = null) {
   if (!rawUserId) return '';

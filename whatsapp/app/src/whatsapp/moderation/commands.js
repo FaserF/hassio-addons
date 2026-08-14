@@ -375,7 +375,7 @@ registry.register(
       return;
     }
 
-    // Filter out args that are mention tokens (e.g. @4917647365403)
+    // Filter out args that are mention tokens (e.g. @491761234567)
     const cleanedArgs = args.filter((a) => !a.startsWith('@'));
     const text = cleanedArgs.join(' ').trim();
     const reasonText = text ? text : 'No reason provided';
@@ -1032,7 +1032,7 @@ registry.register(
       return;
     }
 
-    // Filter out mention tokens from args for the reason string (e.g., remove "@4917647365403")
+    // Filter out mention tokens from args for the reason string (e.g., remove "@491761234567")
     const cleanedArgs = args.filter((a) => !a.startsWith('@'));
     const reason = cleanedArgs.join(' ').trim() || 'No reason provided';
 

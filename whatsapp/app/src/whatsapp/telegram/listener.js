@@ -1364,6 +1364,7 @@ export async function processTelegramUpdates() {
                 const mappedWaMsg = pinnedTgMsgId
                   ? resolveWaMsgFromTg(tgChatId, String(pinnedTgMsgId))
                   : null;
+                let nativePinOk = false;
                 if (mappedWaMsg && mappedWaMsg.waMsgId) {
                   try {
                     await session.sock.sendMessage(mapping.wa_jid, {
@@ -1377,6 +1378,7 @@ export async function processTelegramUpdates() {
                         time: 604800,
                       },
                     });
+                    nativePinOk = true;
                     logger.info(
                       { tgChatId, tgPinnedId: pinnedTgMsgId, waMsgId: mappedWaMsg.waMsgId },
                       '📌 Mirrored Telegram message pin natively to WhatsApp'
@@ -1384,10 +1386,11 @@ export async function processTelegramUpdates() {
                   } catch (pinErr) {
                     logger.debug(
                       { error: pinErr.message },
-                      'Native WhatsApp pin failed, sending fallback text'
+                      'Native WhatsApp pin failed'
                     );
                   }
                 }
+                if (nativePinOk) continue; // If native pin succeeded, do not send secondary notification text to WA
               }
 
               if (isEdit) {

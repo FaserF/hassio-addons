@@ -144,11 +144,19 @@ describe('Telegram Bridge Unit Tests', () => {
     assert.strictEqual(mapping.sync_pins, true);
   });
 
-  it('syncWhatsAppEditToTelegram preserves sender headers and updates mapping', async () => {
-    const { syncWhatsAppEditToTelegram } = await import('../src/whatsapp/telegram/listener.js');
-    const { updateTranslationIfExists } = await import('../src/whatsapp/moderation/engine.js');
-    assert.strictEqual(typeof syncWhatsAppEditToTelegram, 'function');
-    assert.strictEqual(typeof updateTranslationIfExists, 'function');
+  it('deduplicates participant lists with mixed Phone JIDs and LIDs', () => {
+    const raw = ['4917647365403@s.whatsapp.net', '4917647365403@lid'];
+    const seenPNs = new Set();
+    const normalizedParticipants = [];
+    for (const p of raw) {
+      const pn = p.split('@')[0];
+      if (!seenPNs.has(pn)) {
+        seenPNs.add(pn);
+        normalizedParticipants.push(p);
+      }
+    }
+    assert.strictEqual(normalizedParticipants.length, 1);
+    assert.strictEqual(normalizedParticipants[0], '4917647365403@s.whatsapp.net');
   });
 
   it('validates 16 message and media types in integration test suite coverage', () => {

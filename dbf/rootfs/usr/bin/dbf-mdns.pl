@@ -11,9 +11,10 @@ use Socket qw(inet_aton sockaddr_in INADDR_ANY);
 
 my $PORT = 8092;
 my $SERVICE_TYPE = "_ha-db_infoscreen._tcp.local";
-my $INSTANCE_NAME = "DBF (DB-Infoscreen)";
+my $INSTANCE_NAME = "dbf";
 my $FULL_NAME = "$INSTANCE_NAME.$SERVICE_TYPE";
 my $HOST_NAME = "dbf.local";
+
 my $MCAST_ADDR = "224.0.0.251";
 my $MCAST_PORT = 5353;
 
