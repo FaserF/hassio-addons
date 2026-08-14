@@ -33,12 +33,19 @@ export function waToTelegramHtml(text) {
  */
 export function stripHtmlTags(str) {
   if (!str) return '';
-  let out = String(str);
-  let prev;
-  do {
-    prev = out;
-    out = out.replace(/<[^>]*>/g, '');
-  } while (out !== prev && out.includes('<'));
+  let out = '';
+  let insideTag = false;
+  const val = String(str);
+  for (let i = 0; i < val.length; i++) {
+    const char = val[i];
+    if (char === '<') {
+      insideTag = true;
+    } else if (char === '>') {
+      insideTag = false;
+    } else if (!insideTag) {
+      out += char;
+    }
+  }
   return out;
 }
 
