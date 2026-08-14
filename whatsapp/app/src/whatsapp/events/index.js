@@ -538,7 +538,10 @@ export function handleIncomingMessages(session) {
           } else {
             untrackPinnedMessage(targetJid, pinnedWaMsgId);
           }
-          syncWhatsAppPinToTelegram(pinnedWaMsgId, targetJid, isPinned);
+          const isGroup = targetJid.endsWith('@g.us');
+          const groupName = isGroup ? session.groupCache?.get(targetJid) || targetJid : '';
+          const senderName = msg.pushName || session.contactCache?.get(targetJid)?.name || '';
+          syncWhatsAppPinToTelegram(pinnedWaMsgId, targetJid, isPinned, '', senderName, groupName);
         }
       }
     }

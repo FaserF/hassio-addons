@@ -596,9 +596,36 @@ export async function processTelegramUpdates() {
               if (isPinMsg) {
                 const pinnedTgMsg = msg.pinned_message;
                 const pinnedTgMsgId = pinnedTgMsg?.message_id;
-                const mappedWaMsg = pinnedTgMsgId
+                let mappedWaMsg = pinnedTgMsgId
                   ? resolveWaMsgFromTg(tgChatId, String(pinnedTgMsgId))
                   : null;
+
+                // Fallback: If the Telegram message was not yet bridged to WhatsApp, bridge it now and pin it
+                if (!mappedWaMsg && pinnedTgMsg && pinnedTgMsgId) {
+                  try {
+                    const fallbackSent = await session.sock.sendMessage(mapping.wa_jid, {
+                      text: `${cleanHeader}${tgText}`,
+                    });
+                    if (fallbackSent?.key?.id) {
+                      mappedWaMsg = {
+                        waMsgId: fallbackSent.key.id,
+                        fromMe: true,
+                        senderJid: null,
+                      };
+                      recordMessageMap(
+                        fallbackSent.key.id,
+                        tgChatId,
+                        pinnedTgMsgId,
+                        mapping.wa_jid,
+                        true,
+                        senderName
+                      );
+                    }
+                  } catch (bridgeErr) {
+                    logger.debug({ error: bridgeErr.message }, 'Failed to send unmapped pinned TG message to WhatsApp');
+                  }
+                }
+
                 if (mappedWaMsg && mappedWaMsg.waMsgId) {
                   try {
                     const isFromMe = mappedWaMsg.fromMe !== undefined ? mappedWaMsg.fromMe : false;
@@ -654,7 +681,7 @@ export async function processTelegramUpdates() {
                 } else {
                   logger.warn(
                     { tgChatId, tgPinnedId: pinnedTgMsgId, waJid: mapping.wa_jid },
-                    '📌 Cannot mirror TG pin to WA: no message mapping found. The pinned message was likely sent before bridge sync was active or was not synced through the bridge.'
+                    '📌 Cannot mirror TG pin to WA: message could not be resolved or bridged.'
                   );
                 }
                 // Always skip sending the raw notification text in WhatsApp

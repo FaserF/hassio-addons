@@ -59,14 +59,12 @@ export async function syncWhatsAppDeleteToTelegram(waMsgId, waJid) {
   }
 }
 
-export async function syncWhatsAppPinToTelegram(waMsgId, waJid, isPinned = true) {
+export async function syncWhatsAppPinToTelegram(waMsgId, waJid, isPinned = true, rawText = '', senderName = '', groupName = '') {
   if (!waMsgId) return;
   const store = loadTelegramStore();
   if (!store.enabled) return;
 
   const mapped = resolveTgMsgFromWa(waMsgId);
-  if (!mapped || !mapped.tgMsgId || !mapped.tgChatId) return;
-
   const mappings = (store.mappings || []).filter(
     (m) =>
       m.enabled &&
@@ -77,29 +75,68 @@ export async function syncWhatsAppPinToTelegram(waMsgId, waJid, isPinned = true)
   const targetMappings = mappings.filter(
     (m) =>
       (m.wa_jid && m.wa_jid.toLowerCase() === (waJid || '').toLowerCase()) ||
-      String(m.tg_chat_id) === String(mapped.tgChatId)
+      (mapped?.tgChatId && String(m.tg_chat_id) === String(mapped.tgChatId))
   );
 
   for (const mapping of targetMappings) {
     const bot = getTelegramBotClient(mapping.bot_id);
     if (!bot) continue;
+
+    let targetTgMsgId = mapped?.tgMsgId ? Number(mapped.tgMsgId) : null;
+    let targetTgChatId = mapped?.tgChatId || mapping.tg_chat_id;
+
+    // Fallback: If message was never sent to Telegram (e.g. was a command that was ignored by bridge prefix filter),
+    // and is now being pinned, send a representation to Telegram and pin it!
+    if (!targetTgMsgId && isPinned) {
+      try {
+        const isGroupWa = waJid.endsWith('@g.us');
+        const isDirectMirror = Boolean(mapping.is_direct_chat_mirror);
+        const header = isDirectMirror
+          ? ''
+          : formatHeader(
+              groupName,
+              senderName,
+              isGroupWa ? mapping.include_group_name : false,
+              isGroupWa ? mapping.include_sender_name : false,
+              mapping.anonymize_phone_numbers
+            );
+        const body = rawText ? waToTelegramHtml(rawText) : '📌 <i>[Pinned Command / Message]</i>';
+        const fullMsg = `${header}${body}`;
+        const sent = await bot.sendMessage(
+          targetTgChatId,
+          fullMsg,
+          null,
+          mapping.tg_thread_id || null,
+          Boolean(mapping.silent_delivery)
+        );
+        if (sent && sent.message_id) {
+          targetTgMsgId = sent.message_id;
+          recordMessageMap(waMsgId, targetTgChatId, sent.message_id, waJid, false, senderName);
+        }
+      } catch (sendErr) {
+        logger.debug({ error: sendErr.message }, 'Failed to send unmapped pinned message to Telegram');
+      }
+    }
+
+    if (!targetTgMsgId) continue;
+
     try {
       if (isPinned) {
-        await bot.pinChatMessage(mapped.tgChatId, Number(mapped.tgMsgId), true);
+        await bot.pinChatMessage(targetTgChatId, targetTgMsgId, true);
         logger.info(
-          { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+          { waMsgId, tgChatId: targetTgChatId, tgMsgId: targetTgMsgId },
           '📌 Successfully mirrored WhatsApp pin to Telegram'
         );
       } else {
-        await bot.unpinChatMessage(mapped.tgChatId, Number(mapped.tgMsgId));
+        await bot.unpinChatMessage(targetTgChatId, targetTgMsgId);
         logger.info(
-          { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+          { waMsgId, tgChatId: targetTgChatId, tgMsgId: targetTgMsgId },
           '📌 Successfully mirrored WhatsApp unpin to Telegram'
         );
       }
     } catch (err) {
       logger.debug(
-        { error: err.message, waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+        { error: err.message, waMsgId, tgChatId: targetTgChatId, tgMsgId: targetTgMsgId },
         'Failed to pin/unpin Telegram message'
       );
     }
@@ -211,7 +248,7 @@ export async function syncWhatsAppEditToTelegram(
   const store = loadTelegramStore();
   if (!store.enabled) return;
 
-  const mapped = resolveTgMsgFromWa(waMsgId);
+  const mapped = resolveTgMsgFromWa(waMsgId) || (rawMsgKeyId ? resolveTgMsgFromWa(rawMsgKeyId) : null);
   const targetMappings = (store.mappings || []).filter((m) => {
     if (!m.enabled) return false;
     if (m.sync_mode !== 'bidirectional' && m.sync_mode !== 'outbound') return false;
@@ -281,10 +318,10 @@ export async function syncWhatsAppEditToTelegram(
       }
     }
 
-    if (!editSucceeded) {
+    if (!editSucceeded && mapped && (mapped.tgMsgId || mapped.tgChatId)) {
       const lang = store.language || 'de';
       const editIndicator = t(lang, 'bot_replies.edited_msg_indicator_html');
-      const tgChatId = mapping.tg_chat_id;
+      const tgChatId = mapped?.tgChatId || mapping.tg_chat_id;
       const fallbackHeader = isDirectMirror
         ? ''
         : formatHeader(

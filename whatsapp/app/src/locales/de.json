@@ -1087,7 +1087,7 @@
     "unpin_success": "📌 Nachricht erfolgreich gelöst.",
     "unpin_failed": "❌ Lösen der Nachricht fehlgeschlagen: {error}",
     "unpinall_success_count": "📌 {count} getrackte Nachricht(en) erfolgreich gelöst.\n\n_Hinweis: WhatsApp erlaubt das automatische Lösen nur für Nachrichten, die während der Bot-Laufzeit erfasst wurden._",
-    "unpinall_success": "📌 Alle getrackten Nachrichten gelöst.\n\n_Hinweis: Ältere Pins vor Bot-Start können über WhatsApp nicht automatisch ermittelt werden und müssen manuell gelöst werden._",
+    "unpinall_success": "📌 Es wurden keine gepinnten Nachrichten mehr erkannt.\n\n_Hinweis: Ältere Pins vor Bot-Start können über WhatsApp nicht automatisch ermittelt werden und müssen manuell gelöst werden._",
     "unpinall_failed": "❌ Lösen der Nachrichten fehlgeschlagen: {error}",
     "mute_mention_required": "⚠️ Du musst einen Benutzer erwähnen oder auf seine Nachricht antworten, um ihn stummzuschalten.",
     "cannot_mute_self": "⚠️ Du kannst dich nicht selbst stummschalten.",
