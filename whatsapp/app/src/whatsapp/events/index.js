@@ -52,7 +52,11 @@ const processedParticipantEvents = new Map();
 export function unwrapProtocolNode(m) {
   if (!m) return null;
   if (m.protocolMessage) {
-    if (m.protocolMessage.type === 5 || m.protocolMessage.type === 'PIN_IN_CHAT' || m.protocolMessage.pinInChatMessage) {
+    if (
+      m.protocolMessage.type === 5 ||
+      m.protocolMessage.type === 'PIN_IN_CHAT' ||
+      m.protocolMessage.pinInChatMessage
+    ) {
       return {
         type: 5,
         pinInChatMessage: m.protocolMessage.pinInChatMessage || m.protocolMessage,
