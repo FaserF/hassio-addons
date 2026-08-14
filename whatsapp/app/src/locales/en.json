@@ -856,7 +856,13 @@
     "status_running": "RUNNING",
     "run_id_initializing": "Run ID: Initializing...",
     "starting_test_log": "Starting integration test...\n",
-    "status_failed": "FAILED"
+    "status_failed": "FAILED",
+    "offline_catchup_title": "Offline Message Catchup",
+    "offline_catchup_desc": "Synchronize unread messages received while the server or docker container was offline within a defined time window.",
+    "catchup_enabled_label": "Catchup Active",
+    "catchup_window_label": "Max History Window:",
+    "catchup_saved": "Offline catchup settings saved",
+    "catchup_save_failed": "Failed to save offline catchup settings"
   },
   "shell": {
     "logo_title": "WhatsApp Gateway",

@@ -26,6 +26,10 @@ let telegramStoreMemory = null;
 export function getDefaultTelegramStore() {
   return {
     enabled: true,
+    offline_catchup: {
+      enabled: true,
+      max_age_minutes: 2,
+    },
     bots: [], // [{ id, name, token, username, info, enabled }]
     cached_chats: {}, // chatId -> { id, title, type, username, bot_id, last_seen }
     mappings: [], // [{ id, bot_id, wa_jid, wa_name, tg_chat_id, tg_chat_title, tg_chat_type, sync_mode, include_group_name, include_sender_name, sync_self_messages, is_direct_chat_mirror, enabled }]

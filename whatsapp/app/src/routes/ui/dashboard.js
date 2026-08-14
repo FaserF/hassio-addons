@@ -3574,6 +3574,15 @@ async function loadTelegramBridgeData() {
       if (toggle) toggle.checked = Boolean(cfg.enabled);
       updateTelegramBridgeDisabledState(Boolean(cfg.enabled));
 
+      const catchupEnabled = document.getElementById('tg-catchup-enabled');
+      if (catchupEnabled) {
+        catchupEnabled.checked = cfg.offline_catchup?.enabled !== false;
+      }
+      const catchupWindow = document.getElementById('tg-catchup-window');
+      if (catchupWindow && cfg.offline_catchup?.max_age_minutes) {
+        catchupWindow.value = String(cfg.offline_catchup.max_age_minutes);
+      }
+
       cachedTelegramBots = cfg.bots || [];
       renderTelegramBots(cachedTelegramBots);
       renderTelegramMappings(cfg.mappings || [], cachedTelegramBots);
@@ -3581,6 +3590,29 @@ async function loadTelegramBridgeData() {
     }
   } catch (err) {
     console.error('Failed to load Telegram bridge config', err);
+  }
+}
+
+async function saveTelegramCatchupConfig() {
+  const enabled = document.getElementById('tg-catchup-enabled')?.checked ?? true;
+  const max_age_minutes = Number(document.getElementById('tg-catchup-window')?.value) || 2;
+  try {
+    const res = await fetch(basePath + 'api/telegram/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        offline_catchup: {
+          enabled: Boolean(enabled),
+          max_age_minutes,
+        },
+      }),
+    });
+    if (res.ok) {
+      showToast(window.t ? window.t('telegram.catchup_saved') || 'Offline-Nachholen gespeichert' : 'Offline Catchup settings saved', 'success');
+    }
+  } catch (err) {
+    console.error('Failed to save offline catchup config', err);
+    showToast(window.t ? window.t('telegram.catchup_save_failed') || 'Fehler beim Speichern' : 'Failed to save offline catchup settings', 'danger');
   }
 }
 
@@ -4741,6 +4773,6 @@ window.toggleAutoTestModeUI = toggleAutoTestModeUI;
 window.runAutonomousModerationTest = runAutonomousModerationTest;
 window.selectAllModSubtests = selectAllModSubtests;
 window.clearAutoTestLogs = clearAutoTestLogs;
-window.exportAutoTestLogs = exportAutoTestLogs;
 window.refreshModerationDiagnostics = refreshModerationDiagnostics;
 window.renderModerationDiagnostics = renderModerationDiagnostics;
+window.saveTelegramCatchupConfig = saveTelegramCatchupConfig;

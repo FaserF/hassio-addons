@@ -17,10 +17,17 @@ export function registerTelegramRoutes(app) {
   // POST /api/telegram/config & POST /api/telegram/toggle
   const handleTelegramConfigUpdate = async (req, res) => {
     const store = loadTelegramStore();
-    const { enabled } = req.body || {};
+    const { enabled, offline_catchup } = req.body || {};
 
     if (enabled !== undefined) {
       store.enabled = Boolean(enabled);
+    }
+
+    if (offline_catchup !== undefined && typeof offline_catchup === 'object') {
+      store.offline_catchup = {
+        enabled: offline_catchup.enabled !== undefined ? Boolean(offline_catchup.enabled) : true,
+        max_age_minutes: Math.max(1, Number(offline_catchup.max_age_minutes) || 2),
+      };
     }
 
     saveTelegramStore(store);

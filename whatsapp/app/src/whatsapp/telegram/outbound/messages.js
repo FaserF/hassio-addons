@@ -39,6 +39,24 @@ export async function syncWhatsAppToTelegram(
     }
   }
 
+  // Check offline catchup message age filter
+  const catchupCfg = store.offline_catchup || { enabled: true, max_age_minutes: 2 };
+  if (catchupCfg.enabled !== false && msg.messageTimestamp) {
+    const rawTs = Number(msg.messageTimestamp?.low || msg.messageTimestamp);
+    if (rawTs && !isNaN(rawTs)) {
+      const msgTimeMs = rawTs > 1e11 ? rawTs : rawTs * 1000;
+      const maxAgeMs = Math.max(1, Number(catchupCfg.max_age_minutes || 2)) * 60 * 1000;
+      const ageMs = Date.now() - msgTimeMs;
+      if (ageMs > maxAgeMs) {
+        logger.info(
+          { waMsgId, ageSeconds: Math.round(ageMs / 1000), maxAgeSeconds: Math.round(maxAgeMs / 1000) },
+          '⏳ Skipping outdated offline WhatsApp message beyond catchup window'
+        );
+        return;
+      }
+    }
+  }
+
   // Find active mappings for this WhatsApp JID
   const mappings = (store.mappings || []).filter(
     (m) =>

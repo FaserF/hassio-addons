@@ -308,6 +308,21 @@ export async function processTelegramUpdates() {
 
         if (mappings.length === 0) continue;
 
+        // Check offline catchup message age filter for Telegram inbound messages
+        const catchupCfg = store.offline_catchup || { enabled: true, max_age_minutes: 2 };
+        if (catchupCfg.enabled !== false && msg.date) {
+          const msgTimeMs = Number(msg.date) * 1000;
+          const maxAgeMs = Math.max(1, Number(catchupCfg.max_age_minutes || 2)) * 60 * 1000;
+          const ageMs = Date.now() - msgTimeMs;
+          if (ageMs > maxAgeMs) {
+            logger.info(
+              { tgMsgId: msg.message_id, ageSeconds: Math.round(ageMs / 1000), maxAgeSeconds: Math.round(maxAgeMs / 1000) },
+              '⏳ Skipping outdated offline Telegram message beyond catchup window'
+            );
+            continue;
+          }
+        }
+
         const senderName = msg.from
           ? `${msg.from.first_name || ''} ${msg.from.last_name || ''}`.trim() ||
             msg.from.username ||

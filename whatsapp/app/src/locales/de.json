@@ -870,7 +870,13 @@
     "status_running": "WIRD AUSGEFÜHRT",
     "run_id_initializing": "Run-ID: Initialisierung...",
     "starting_test_log": "Integrationstest wird gestartet...\n",
-    "status_failed": "FEHLGESCHLAGEN"
+    "status_failed": "FEHLGESCHLAGEN",
+    "offline_catchup_title": "Offline-Nachrichten nachholen",
+    "offline_catchup_desc": "Synchronisiert ungelesene Nachrichten, die eingegangen sind während der Server oder Docker offline war, innerhalb des eingestellten Zeitfensters.",
+    "catchup_enabled_label": "Nachholen aktiv",
+    "catchup_window_label": "Max. Zeitfenster:",
+    "catchup_saved": "Offline-Nachholen Einstellungen gespeichert",
+    "catchup_save_failed": "Fehler beim Speichern der Offline-Nachholen Einstellungen"
   },
   "shell": {
     "logo_title": "WhatsApp Gateway",
