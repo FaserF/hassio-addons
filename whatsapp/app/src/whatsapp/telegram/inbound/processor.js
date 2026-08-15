@@ -572,6 +572,20 @@ export async function processTelegramUpdates() {
           if (isSystemMsg && mapping.sync_system_events === false) continue;
           if (isPinMsg && mapping.sync_pins === false) continue;
 
+          if (mapping.ignore_command_prefixes && tgText) {
+            const cleanText = tgText.trim();
+            const prefixes = String(mapping.ignore_command_prefixes)
+              .split(/[,;\s]+/)
+              .map((s) => s.trim())
+              .filter(Boolean);
+            if (!prefixes.includes('/')) {
+              prefixes.push('/');
+            }
+            if (prefixes.some((p) => cleanText.startsWith(p))) {
+              continue;
+            }
+          }
+
           const isGroupChat = msg.chat.type === 'group' || msg.chat.type === 'supergroup';
           const isDirectMirror = Boolean(mapping.is_direct_chat_mirror);
           const rawHeader = isDirectMirror
@@ -758,7 +772,7 @@ export async function processTelegramUpdates() {
                 }
 
                 if (!editSucceeded) {
-                  const lang = store.language || 'de';
+                  const lang = groupModCfg?.language || store.language || 'en';
                   const editIndicator = t(lang, 'bot_replies.edited_msg_indicator');
                   const editOldText = t(lang, 'bot_replies.edited_msg_old');
                   let fallbackWaText = `${cleanHeader}${editIndicator}\n${tgQuoteSnippet}${formattedTgText}`;

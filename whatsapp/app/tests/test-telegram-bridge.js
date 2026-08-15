@@ -193,4 +193,29 @@ describe('Telegram Bridge Unit Tests', () => {
     ];
     assert.strictEqual(featureTypes.length, 16);
   });
+
+  it('filters command prefixes and ensures / is always included for Telegram inbound', () => {
+    const mapping = {
+      ignore_command_prefixes: '!, #',
+    };
+    const filterCommand = (text, map) => {
+      if (!map.ignore_command_prefixes || !text) return false;
+      const cleanText = text.trim();
+      const prefixes = String(map.ignore_command_prefixes)
+        .split(/[,;\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (!prefixes.includes('/')) {
+        prefixes.push('/');
+      }
+      return prefixes.some((p) => cleanText.startsWith(p));
+    };
+
+    assert.strictEqual(filterCommand('/start', mapping), true);
+    assert.strictEqual(filterCommand('/start @tcl_group_mgmt_bot', mapping), true);
+    assert.strictEqual(filterCommand('!help', mapping), true);
+    assert.strictEqual(filterCommand('#rules', mapping), true);
+    assert.strictEqual(filterCommand('Hello world', mapping), false);
+  });
 });
+

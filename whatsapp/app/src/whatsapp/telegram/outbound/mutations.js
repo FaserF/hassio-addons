@@ -139,7 +139,7 @@ export async function syncWhatsAppPinToTelegram(
 
         let body = '';
         const groupModCfg = getGroupModerationConfig(waJid);
-        const lang = groupModCfg?.language || store.language || 'de';
+        const lang = groupModCfg?.language || store.language || 'en';
         if (bodyText && bodyText.trim()) {
           const cleanText = bodyText.trim();
           const cmdMatch = cleanText.match(/^[!/#]\s*([a-zA-Z0-9_]+)/i);
@@ -439,7 +439,8 @@ export async function syncWhatsAppEditToTelegram(
     }
 
     if (!editSucceeded && mapped && (mapped.tgMsgId || mapped.tgChatId)) {
-      const lang = store.language || 'de';
+      const groupModCfg = getGroupModerationConfig(mapping.wa_jid);
+      const lang = groupModCfg?.language || store.language || 'en';
       const editIndicator = t(lang, 'bot_replies.edited_msg_indicator_html');
       const tgChatId = mapped?.tgChatId || mapping.tg_chat_id;
       const fallbackHeader = isDirectMirror

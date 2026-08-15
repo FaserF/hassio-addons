@@ -166,4 +166,108 @@ export function registerSettingsCommands(registry) {
     },
     { help: 'Show current pinned message' }
   );
+
+  registry.register(
+    'settings',
+    async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+      const store = loadModerationStore();
+      const c = store.groups[groupId] || getGroupModerationConfig(groupId);
+
+      const statusIcon = (val) => (val ? '🟢 ON' : '🔴 OFF');
+      const prefix = config.commands?.prefix || '!';
+      const isGroup = groupId && groupId.endsWith('@g.us');
+      const groupTitle = session.groupCache?.get(groupId) || (isGroup ? groupId.split('@')[0] : 'Private Chat');
+
+      // Check if user provided sub-arguments for quick inline configuration (e.g. !settings antispam off)
+      if (args.length > 0) {
+        const subCmd = args[0].toLowerCase();
+        const subVal = (args[1] || '').toLowerCase();
+        const enableState = subVal === 'on' || subVal === 'enable' || subVal === 'true' || subVal === '1'
+          ? true
+          : subVal === 'off' || subVal === 'disable' || subVal === 'false' || subVal === '0'
+          ? false
+          : null;
+
+        if (subCmd === 'antispam') {
+          if (enableState !== null) {
+            if (!c.antispam) c.antispam = {};
+            c.antispam.enabled = enableState;
+            saveModerationStore(store);
+            return await reply(session, groupId, { text: `🛡️ *Anti-Spam:* Set to *${statusIcon(enableState)}*.` }, rawMsg);
+          }
+        } else if (subCmd === 'antiraid' || subCmd === 'raid') {
+          if (enableState !== null) {
+            if (!c.antiraid) c.antiraid = {};
+            c.antiraid.enabled = enableState;
+            saveModerationStore(store);
+            return await reply(session, groupId, { text: `🛡️ *Anti-Raid:* Set to *${statusIcon(enableState)}*.` }, rawMsg);
+          }
+        } else if (subCmd === 'antiflood' || subCmd === 'flood') {
+          if (enableState !== null) {
+            if (!c.flood) c.flood = {};
+            c.flood.enabled = enableState;
+            saveModerationStore(store);
+            return await reply(session, groupId, { text: `🌊 *Anti-Flood:* Set to *${statusIcon(enableState)}*.` }, rawMsg);
+          }
+        } else if (subCmd === 'captcha') {
+          if (enableState !== null) {
+            if (!c.captcha) c.captcha = {};
+            c.captcha.enabled = enableState;
+            saveModerationStore(store);
+            return await reply(session, groupId, { text: `🧩 *Captcha:* Set to *${statusIcon(enableState)}*.` }, rawMsg);
+          }
+        } else if (subCmd === 'welcome') {
+          if (enableState !== null) {
+            if (!c.greetings) c.greetings = {};
+            c.greetings.welcome_enabled = enableState;
+            saveModerationStore(store);
+            return await reply(session, groupId, { text: `👋 *Welcome Message:* Set to *${statusIcon(enableState)}*.` }, rawMsg);
+          }
+        } else if (subCmd === 'goodbye') {
+          if (enableState !== null) {
+            if (!c.greetings) c.greetings = {};
+            c.greetings.goodbye_enabled = enableState;
+            saveModerationStore(store);
+            return await reply(session, groupId, { text: `🚪 *Goodbye Message:* Set to *${statusIcon(enableState)}*.` }, rawMsg);
+          }
+        } else if (subCmd === 'reports') {
+          if (enableState !== null) {
+            c.reports_enabled = enableState;
+            saveModerationStore(store);
+            return await reply(session, groupId, { text: `🚨 *User Reports:* Set to *${statusIcon(enableState)}*.` }, rawMsg);
+          }
+        }
+      }
+
+      const activeLocks = [];
+      if (c.locks) {
+        for (const [lockKey, lockVal] of Object.entries(c.locks)) {
+          if (lockVal && lockVal.enabled) activeLocks.push(lockKey);
+        }
+      }
+
+      let text = `⚙️ *AegisBot Configuration & Settings*\n📍 *Target:* ${groupTitle}\n\n`;
+      text += `🛡️ *Security & Protection:*\n`;
+      text += `• Anti-Spam: ${statusIcon(c.antispam?.enabled !== false)}\n`;
+      text += `• Anti-Raid: ${statusIcon(c.antiraid?.enabled)}\n`;
+      text += `• Anti-Flood: ${statusIcon(c.flood?.enabled)}\n`;
+      text += `• Captcha: ${statusIcon(c.captcha?.enabled)}\n`;
+      text += `• Security Scanner: ${statusIcon(c.security_scanner?.enabled)}\n\n`;
+
+      text += `💬 *Chat & Features:*\n`;
+      text += `• Welcome Message: ${statusIcon(c.greetings?.welcome_enabled)}\n`;
+      text += `• Goodbye Message: ${statusIcon(c.greetings?.goodbye_enabled)}\n`;
+      text += `• AI Moderation / FAQ: ${statusIcon(c.ai?.enabled)}\n`;
+      text += `• User Reports: ${statusIcon(c.reports_enabled)}\n`;
+      text += `• Command Prefix: \`${prefix}\`\n\n`;
+
+      text += `🔒 *Active Locks (${activeLocks.length}):*\n`;
+      text += activeLocks.length > 0 ? activeLocks.map((l) => `• \`${l}\``).join('\n') : '• _No active locks_';
+      text += `\n\n💡 *Quick Adjust:* \`${prefix}settings <module> <on|off>\`\n_Modules: antispam, antiraid, flood, captcha, welcome, goodbye, reports_`;
+
+      await reply(session, groupId, { text }, rawMsg);
+    },
+    { adminOnly: true, aliases: ['config', 'groupinfo'], help: 'View and adjust group moderation & security settings' }
+  );
 }
+

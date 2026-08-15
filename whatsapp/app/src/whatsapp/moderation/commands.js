@@ -83,7 +83,11 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
 
   // Escape prefix for regex
   const escapedPrefix = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const prefixRegex = new RegExp(`^(${escapedPrefix}|[!/#])\\s*([a-zA-Z0-9_]+)(.*)$`, 'i');
+  // Match prefix followed by command name, optional @botname (direct or space-separated), and remaining arguments
+  const prefixRegex = new RegExp(
+    `^(${escapedPrefix}|[!/#])\\s*([a-zA-Z0-9_]+)(?:\\s*@([a-zA-Z0-9_]+))?(?:\\s+(.*)|$)`,
+    'i'
+  );
 
   // Split into lines to support multi-line command blocks
   const rawLines = rawText
@@ -101,14 +105,15 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
   for (const line of rawLines) {
     const match = line.match(prefixRegex);
     if (match) {
-      const normalizedCmd = `${prefix}${match[2]}${match[3] ? ' ' + match[3].trim() : ''}`.trim();
       const cmdName = match[2].toLowerCase();
+      const restArgs = match[4] ? match[4].trim() : '';
+      const normalizedCmd = `${prefix}${cmdName}${restArgs ? ' ' + restArgs : ''}`.trim();
       // Check if command is known or line is strictly a single short command line
       if (registry.getCommand(cmdName) !== undefined || rawLines.length === 1) {
         validCommandLines.push(normalizedCmd);
       }
     } else if (isPrivateChat) {
-      const firstWord = line.split(/\s+/)[0].toLowerCase();
+      const firstWord = line.split(/\s+/)[0].replace(/@.*$/, '').toLowerCase();
       if (registry.getCommand(firstWord) !== undefined) {
         validCommandLines.push(line);
       }
