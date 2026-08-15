@@ -198,9 +198,8 @@ export async function handleModerationMessage(session, event) {
               rawMsg
             );
           }
-          return true;
         }
-        break;
+        return true;
       }
     }
   }

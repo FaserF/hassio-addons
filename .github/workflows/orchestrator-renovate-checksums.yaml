@@ -3,6 +3,7 @@ name: Orchestrator Renovate Checksums
 permissions:
   contents: write
   pull-requests: read
+  actions: write
 
 on:
   pull_request:
@@ -78,10 +79,26 @@ jobs:
             "${{ steps.detect.outputs.version }}"
 
       - name: 📝 Commit updated checksums
+        id: commit
         if: steps.detect.outputs.addon != '' && steps.detect.outputs.version != ''
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: "chore: update checksums for ${{ steps.detect.outputs.addon }} ${{ steps.detect.outputs.version }} [skip-tests]"
+          commit_message: "chore: update checksums for ${{ steps.detect.outputs.addon }} ${{ steps.detect.outputs.version }}"
           commit_user_name: "github-actions[bot]"
           commit_user_email: "github-actions[bot]@users.noreply.github.com"
           file_pattern: "*/Dockerfile"
+
+      - name: 🔄 Re-trigger Orchestrator CI on Checksum Update
+        if: steps.commit.outputs.changes_detected == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          echo "Checksums updated and committed. Checking for active or failed Orchestrator CI runs..."
+          sleep 5
+          FAILED_RUN_ID=$(gh run list --workflow=orchestrator-ci.yaml --branch "$HEAD_REF" --limit 5 --json databaseId,conclusion,status --jq '[.[] | select(.status == "completed" and .conclusion != "success")][0].databaseId' 2>/dev/null || echo "")
+          if [ -n "$FAILED_RUN_ID" ] && [ "$FAILED_RUN_ID" != "null" ]; then
+            echo "Rerunning failed CI run with updated checksums: $FAILED_RUN_ID"
+            gh run rerun "$FAILED_RUN_ID" 2>/dev/null || true
+          fi
+
