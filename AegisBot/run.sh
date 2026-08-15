@@ -566,7 +566,7 @@ install_from_archive() {
 	# Copy VERSION file
 	local BASE_VERSION="0.1.1"
 	if [ -f "$extract_dir/VERSION" ]; then
-		BASE_VERSION=$(tr -d '\r\n' < "$extract_dir/VERSION")
+		BASE_VERSION=$(tr -d '\r\n' <"$extract_dir/VERSION")
 		cp "$extract_dir/VERSION" /app/VERSION 2>/dev/null || true
 		cp "$extract_dir/VERSION" /app/backend/VERSION 2>/dev/null || true
 	fi
@@ -574,8 +574,8 @@ install_from_archive() {
 	# Determine calculated version
 	local CALCULATED_VERSION="$BASE_VERSION"
 	if [ -n "$DETECTED_SHA" ]; then
-		echo "$DETECTED_SHA" > /app/.git_commit 2>/dev/null || true
-		echo "$DETECTED_SHA" > /app/backend/.git_commit 2>/dev/null || true
+		echo "$DETECTED_SHA" >/app/.git_commit 2>/dev/null || true
+		echo "$DETECTED_SHA" >/app/backend/.git_commit 2>/dev/null || true
 		export GIT_COMMIT="$DETECTED_SHA"
 		export VITE_GIT_COMMIT="$DETECTED_SHA"
 		if [[ "$BASE_VERSION" != *"-"* ]] && [[ "$BASE_VERSION" != *"b"* ]]; then
