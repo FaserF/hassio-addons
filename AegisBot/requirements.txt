@@ -23,7 +23,7 @@ webauthn==3.0.0
 PyYAML==6.0.3
 qrcode[pil]==8.2
 Pillow==12.3.0
-openai==3.0.0
+openai==3.1.0
 jinja2==3.1.6
 SpeechRecognition==3.17.0
 zeroconf==0.150.0
