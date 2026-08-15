@@ -218,4 +218,3 @@ describe('Telegram Bridge Unit Tests', () => {
     assert.strictEqual(filterCommand('Hello world', mapping), false);
   });
 });
-

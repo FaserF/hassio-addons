@@ -176,65 +176,102 @@ export function registerSettingsCommands(registry) {
       const statusIcon = (val) => (val ? '🟢 ON' : '🔴 OFF');
       const prefix = config.commands?.prefix || '!';
       const isGroup = groupId && groupId.endsWith('@g.us');
-      const groupTitle = session.groupCache?.get(groupId) || (isGroup ? groupId.split('@')[0] : 'Private Chat');
+      const groupTitle =
+        session.groupCache?.get(groupId) || (isGroup ? groupId.split('@')[0] : 'Private Chat');
 
       // Check if user provided sub-arguments for quick inline configuration (e.g. !settings antispam off)
       if (args.length > 0) {
         const subCmd = args[0].toLowerCase();
         const subVal = (args[1] || '').toLowerCase();
-        const enableState = subVal === 'on' || subVal === 'enable' || subVal === 'true' || subVal === '1'
-          ? true
-          : subVal === 'off' || subVal === 'disable' || subVal === 'false' || subVal === '0'
-          ? false
-          : null;
+        const enableState =
+          subVal === 'on' || subVal === 'enable' || subVal === 'true' || subVal === '1'
+            ? true
+            : subVal === 'off' || subVal === 'disable' || subVal === 'false' || subVal === '0'
+              ? false
+              : null;
 
         if (subCmd === 'antispam') {
           if (enableState !== null) {
             if (!c.antispam) c.antispam = {};
             c.antispam.enabled = enableState;
             saveModerationStore(store);
-            return await reply(session, groupId, { text: `🛡️ *Anti-Spam:* Set to *${statusIcon(enableState)}*.` }, rawMsg);
+            return await reply(
+              session,
+              groupId,
+              { text: `🛡️ *Anti-Spam:* Set to *${statusIcon(enableState)}*.` },
+              rawMsg
+            );
           }
         } else if (subCmd === 'antiraid' || subCmd === 'raid') {
           if (enableState !== null) {
             if (!c.antiraid) c.antiraid = {};
             c.antiraid.enabled = enableState;
             saveModerationStore(store);
-            return await reply(session, groupId, { text: `🛡️ *Anti-Raid:* Set to *${statusIcon(enableState)}*.` }, rawMsg);
+            return await reply(
+              session,
+              groupId,
+              { text: `🛡️ *Anti-Raid:* Set to *${statusIcon(enableState)}*.` },
+              rawMsg
+            );
           }
         } else if (subCmd === 'antiflood' || subCmd === 'flood') {
           if (enableState !== null) {
             if (!c.flood) c.flood = {};
             c.flood.enabled = enableState;
             saveModerationStore(store);
-            return await reply(session, groupId, { text: `🌊 *Anti-Flood:* Set to *${statusIcon(enableState)}*.` }, rawMsg);
+            return await reply(
+              session,
+              groupId,
+              { text: `🌊 *Anti-Flood:* Set to *${statusIcon(enableState)}*.` },
+              rawMsg
+            );
           }
         } else if (subCmd === 'captcha') {
           if (enableState !== null) {
             if (!c.captcha) c.captcha = {};
             c.captcha.enabled = enableState;
             saveModerationStore(store);
-            return await reply(session, groupId, { text: `🧩 *Captcha:* Set to *${statusIcon(enableState)}*.` }, rawMsg);
+            return await reply(
+              session,
+              groupId,
+              { text: `🧩 *Captcha:* Set to *${statusIcon(enableState)}*.` },
+              rawMsg
+            );
           }
         } else if (subCmd === 'welcome') {
           if (enableState !== null) {
             if (!c.greetings) c.greetings = {};
             c.greetings.welcome_enabled = enableState;
             saveModerationStore(store);
-            return await reply(session, groupId, { text: `👋 *Welcome Message:* Set to *${statusIcon(enableState)}*.` }, rawMsg);
+            return await reply(
+              session,
+              groupId,
+              { text: `👋 *Welcome Message:* Set to *${statusIcon(enableState)}*.` },
+              rawMsg
+            );
           }
         } else if (subCmd === 'goodbye') {
           if (enableState !== null) {
             if (!c.greetings) c.greetings = {};
             c.greetings.goodbye_enabled = enableState;
             saveModerationStore(store);
-            return await reply(session, groupId, { text: `🚪 *Goodbye Message:* Set to *${statusIcon(enableState)}*.` }, rawMsg);
+            return await reply(
+              session,
+              groupId,
+              { text: `🚪 *Goodbye Message:* Set to *${statusIcon(enableState)}*.` },
+              rawMsg
+            );
           }
         } else if (subCmd === 'reports') {
           if (enableState !== null) {
             c.reports_enabled = enableState;
             saveModerationStore(store);
-            return await reply(session, groupId, { text: `🚨 *User Reports:* Set to *${statusIcon(enableState)}*.` }, rawMsg);
+            return await reply(
+              session,
+              groupId,
+              { text: `🚨 *User Reports:* Set to *${statusIcon(enableState)}*.` },
+              rawMsg
+            );
           }
         }
       }
@@ -262,12 +299,18 @@ export function registerSettingsCommands(registry) {
       text += `• Command Prefix: \`${prefix}\`\n\n`;
 
       text += `🔒 *Active Locks (${activeLocks.length}):*\n`;
-      text += activeLocks.length > 0 ? activeLocks.map((l) => `• \`${l}\``).join('\n') : '• _No active locks_';
+      text +=
+        activeLocks.length > 0
+          ? activeLocks.map((l) => `• \`${l}\``).join('\n')
+          : '• _No active locks_';
       text += `\n\n💡 *Quick Adjust:* \`${prefix}settings <module> <on|off>\`\n_Modules: antispam, antiraid, flood, captcha, welcome, goodbye, reports_`;
 
       await reply(session, groupId, { text }, rawMsg);
     },
-    { adminOnly: true, aliases: ['config', 'groupinfo'], help: 'View and adjust group moderation & security settings' }
+    {
+      adminOnly: true,
+      aliases: ['config', 'groupinfo'],
+      help: 'View and adjust group moderation & security settings',
+    }
   );
 }
-

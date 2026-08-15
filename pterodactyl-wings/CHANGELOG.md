@@ -3,14 +3,15 @@
 ## 2.4.4 (2026-08-15)
 
 ### ✨ Features
+
 - configure specific startup phases and integration discovery for relevant addons ([`2f939fbd`](https://github.com/FaserF/hassio-addons/commit/2f939fbd8771f1d02798081dff4759e5c67fcc88))
 - add restart loop protection to startup banners and fix gt import error ([`da300834`](https://github.com/FaserF/hassio-addons/commit/da3008348fc12ea389004b10665cbae4d7a8e112))
 
 ### 🐛 Bug Fixes
+
 - CI linter fixes ([`9ca6bd76`](https://github.com/FaserF/hassio-addons/commit/9ca6bd762a6407dc2edd20c327df5d6fc212e6a2))
 - harden parameter expansion in startup banner for set -u strict mode ([`cb8ad15b`](https://github.com/FaserF/hassio-addons/commit/cb8ad15bd5df93dd1da6081ac20ab2332f4d3b29))
 - use safe expansion \ for set -u compatibility ([`560bc0fc`](https://github.com/FaserF/hassio-addons/commit/560bc0fce19cd258f025a328ffd5f6addd78f688))
-
 
 ## 2.4.3 (2026-08-04)
 
