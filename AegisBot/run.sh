@@ -552,7 +552,41 @@ install_from_archive() {
 	bashio::log.info "Extracting archive..."
 	rm -rf "$extract_dir"
 	mkdir -p "$extract_dir"
+
+	# Extract Git commit from archive tarball root directory name
+	local ARCHIVE_ROOT
+	ARCHIVE_ROOT=$(tar -tzf "$archive_path" | head -1 | cut -d'/' -f1 2>/dev/null || echo "")
+	local DETECTED_SHA=""
+	if [ -n "$ARCHIVE_ROOT" ]; then
+		DETECTED_SHA=$(echo "$ARCHIVE_ROOT" | awk -F'-' '{print $NF}' | cut -c1-7)
+	fi
+
 	tar -xzf "$archive_path" -C "$extract_dir" --strip-components=1
+
+	# Copy VERSION file
+	local BASE_VERSION="0.1.1"
+	if [ -f "$extract_dir/VERSION" ]; then
+		BASE_VERSION=$(tr -d '\r\n' < "$extract_dir/VERSION")
+		cp "$extract_dir/VERSION" /app/VERSION 2>/dev/null || true
+		cp "$extract_dir/VERSION" /app/backend/VERSION 2>/dev/null || true
+	fi
+
+	# Determine calculated version
+	local CALCULATED_VERSION="$BASE_VERSION"
+	if [ -n "$DETECTED_SHA" ]; then
+		echo "$DETECTED_SHA" > /app/.git_commit 2>/dev/null || true
+		echo "$DETECTED_SHA" > /app/backend/.git_commit 2>/dev/null || true
+		export GIT_COMMIT="$DETECTED_SHA"
+		export VITE_GIT_COMMIT="$DETECTED_SHA"
+		if [[ "$BASE_VERSION" != *"-"* ]] && [[ "$BASE_VERSION" != *"b"* ]]; then
+			CALCULATED_VERSION="${BASE_VERSION}-dev0+${DETECTED_SHA}"
+		else
+			CALCULATED_VERSION="${BASE_VERSION}+${DETECTED_SHA}"
+		fi
+	fi
+	export APP_VERSION="$CALCULATED_VERSION"
+	export VITE_APP_VERSION="$CALCULATED_VERSION"
+	bashio::log.info "Resolved AegisBot Core Version: $CALCULATED_VERSION (Commit: ${DETECTED_SHA:-unknown})"
 
 	# Install Backend
 	bashio::log.info "Installing Backend..."
@@ -577,8 +611,8 @@ install_from_archive() {
 
 		bashio::log.info "Running 'npm install'..."
 		if npm install; then
-			bashio::log.info "Running 'npm run build'..."
-			if npm run build; then
+			bashio::log.info "Running 'npm run build' with VITE_APP_VERSION=$VITE_APP_VERSION..."
+			if VITE_APP_VERSION="$CALCULATED_VERSION" VITE_GIT_COMMIT="$DETECTED_SHA" npm run build; then
 				bashio::log.info "Frontend build successful. Installing..."
 				if [ -d "dist" ]; then
 					# Safety clear for updates
@@ -818,9 +852,9 @@ bashio::log.info "Creating .env file for backend..."
 	[ -n "${FIRST_ADMIN_PASSWORD:-}" ] && echo "FIRST_ADMIN_PASSWORD=${FIRST_ADMIN_PASSWORD:-}"
 	echo "ENVIRONMENT=${ENVIRONMENT:-production}"
 	echo "API_V1_STR=${API_V1_STR:-/api/v1}"
-	echo "DEFAULT_LOCALE=${DEFAULT_LOCALE:-}"
-	echo "ADDON_VERSION=${VERSION:-unknown}"
-	echo "SERVER_VERSION=${VERSION:-unknown}"
+	echo "ADDON_VERSION=${VERSION:-0.6.1}"
+	[ -n "${APP_VERSION:-}" ] && echo "APP_VERSION=${APP_VERSION}"
+	[ -n "${GIT_COMMIT:-}" ] && echo "GIT_COMMIT=${GIT_COMMIT}"
 } >/app/backend/.env
 
 # Run integration manager (install/update integration)
