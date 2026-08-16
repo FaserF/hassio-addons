@@ -295,8 +295,7 @@ jobs:
           npm install -g prettier
           prettier --check "${{ matrix.App }}/**/*.{json,js,md,yaml}" --ignore-path .prettierignore
 
-      - name: 🧩 ESLint
-        continue-on-error: false # Fail on logic errors
+      - name: 🧩 ESLint & Tests
         run: |
           # Find directory with package.json (root or app/)
           LINT_DIR=""
@@ -307,18 +306,22 @@ jobs:
           fi
 
           if [ -n "$LINT_DIR" ]; then
-            echo "🔍 Running ESLint in $LINT_DIR"
+            echo "🔍 Processing Node.js project in $LINT_DIR"
             cd "$LINT_DIR"
-            # Only run if lint script exists
+            npm ci --prefer-offline || npm install
+
             if npm run | grep -q "lint"; then
-              npm install
-              npm run lint
+              echo "::group::🔍 Running ESLint"
+              npm run lint -- --format stylish
+              echo "::endgroup::"
             else
               echo "⏭️ No lint script found in package.json, skipping."
             fi
+
             if npm run | grep -q "test"; then
-              echo "🧪 Running npm test in $LINT_DIR"
+              echo "::group::🧪 Running Tests"
               npm test
+              echo "::endgroup::"
             fi
           else
             echo "⏭️ No package.json found, skipping ESLint."

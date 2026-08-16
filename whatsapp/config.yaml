@@ -17,7 +17,6 @@ map:
   - media:rw
 panel_icon: mdi:whatsapp
 panel_title: "WhatsApp Gateway"
-ingress_title: "WhatsApp Gateway"
 options:
   log_level: "info"
   reset_session: false
