@@ -503,9 +503,17 @@ function checkUiDesignStandards() {
       }
 
       // Rule: User identifiers in flex containers must truncate to prevent overflow
-      if (/\b(?:user_id|jid|phone)\b/.test(line) && /font-mono/.test(line) && !/truncate/.test(line)) {
+      if (
+        /\b(?:user_id|jid|phone)\b/.test(line) &&
+        /font-mono/.test(line) &&
+        !/truncate/.test(line)
+      ) {
         if (lines[idx - 1] && /flex\b/.test(lines[idx - 1]) && !/min-w-0/.test(lines[idx - 1])) {
-          error(f, idx + 1, 'Identifier in flex layout missing `truncate` / parent missing `min-w-0` (risk of layout blowout).');
+          error(
+            f,
+            idx + 1,
+            'Identifier in flex layout missing `truncate` / parent missing `min-w-0` (risk of layout blowout).'
+          );
         }
       }
     });
@@ -522,14 +530,24 @@ function checkUiDesignStandards() {
       vLines.forEach((line, idx) => {
         const trimmed = line.trim();
         if (trimmed.startsWith('<!--')) return;
-        if (/(?:class|className)=["'][^"']*\bbg-white\b[^"']*["']/.test(line) && !/dark:bg-/.test(line) && !/qr|rounded-full/i.test(line)) {
-          error(join('views', vf), idx + 1, 'Solid bg-white container missing dark mode counterpart.');
+        if (
+          /(?:class|className)=["'][^"']*\bbg-white\b[^"']*["']/.test(line) &&
+          !/dark:bg-/.test(line) &&
+          !/qr|rounded-full/i.test(line)
+        ) {
+          error(
+            join('views', vf),
+            idx + 1,
+            'Solid bg-white container missing dark mode counterpart.'
+          );
         }
       });
     }
   }
 
-  info('UI Design Standards check complete (No native popups, layout overflow safe, dark mode compliant)');
+  info(
+    'UI Design Standards check complete (No native popups, layout overflow safe, dark mode compliant)'
+  );
 }
 
 // --------------------------------------------------------------------------

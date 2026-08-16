@@ -296,7 +296,9 @@ export async function triggerHAAutomation(baseUrl, token, automationId) {
             resolve({
               success,
               statusCode: res.statusCode,
-              status: success ? `✅ Automation '${cleanId}' erfolgreich ausgelöst` : `❌ Fehler (${res.statusCode}): ${body}`,
+              status: success
+                ? `✅ Automation '${cleanId}' erfolgreich ausgelöst`
+                : `❌ Fehler (${res.statusCode}): ${body}`,
               data: parsed,
             });
           });
@@ -360,7 +362,10 @@ export async function queryWebAPI(url, jsonPath = null, headers = {}) {
                 const extracted = jsonPath ? extractJsonPath(parsed, jsonPath) : parsed;
                 resolve({
                   success: true,
-                  result: typeof extracted === 'object' ? JSON.stringify(extracted) : String(extracted ?? ''),
+                  result:
+                    typeof extracted === 'object'
+                      ? JSON.stringify(extracted)
+                      : String(extracted ?? ''),
                   raw: parsed,
                 });
               } catch {
@@ -385,4 +390,3 @@ export async function queryWebAPI(url, jsonPath = null, headers = {}) {
     return { success: false, result: `Error: ${err.message}` };
   }
 }
-
