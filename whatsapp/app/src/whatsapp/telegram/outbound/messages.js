@@ -297,12 +297,17 @@ export async function syncWhatsAppToTelegram(
           );
         }
       } else if (mediaType === 'buttons') {
-        const btnObj = msg.message?.buttonsMessage || msg.message?.templateMessage?.hydratedTemplate;
+        const btnObj =
+          msg.message?.buttonsMessage || msg.message?.templateMessage?.hydratedTemplate;
         const bodyText = btnObj?.contentText || btnObj?.hydratedContentText || fullText;
         const footer = btnObj?.footerText || btnObj?.hydratedFooterText || '';
         const rawBtns = btnObj?.buttons || btnObj?.hydratedButtons || [];
         const inlineKeyboard = rawBtns.map((b, i) => {
-          const label = b.buttonText?.displayText || b.quickReplyButton?.displayText || b.displayText || `Option ${i + 1}`;
+          const label =
+            b.buttonText?.displayText ||
+            b.quickReplyButton?.displayText ||
+            b.displayText ||
+            `Option ${i + 1}`;
           const id = b.buttonId || b.quickReplyButton?.id || b.id || `btn_${i + 1}`;
           return [{ text: label, callback_data: `btn:${id}` }];
         });
@@ -325,7 +330,9 @@ export async function syncWhatsAppToTelegram(
         const inlineKeyboard = [];
         for (const s of sections) {
           for (const r of s.rows || []) {
-            inlineKeyboard.push([{ text: r.title || 'Option', callback_data: `list:${r.rowId || r.id || r.title}` }]);
+            inlineKeyboard.push([
+              { text: r.title || 'Option', callback_data: `list:${r.rowId || r.id || r.title}` },
+            ]);
           }
         }
         const listCaption = `${header}📋 <b>${title}</b>${description ? `\n${description}` : ''}`;
@@ -384,14 +391,9 @@ export async function syncWhatsAppToTelegram(
           ]);
           const pollText = `${header}📊 <b>[Poll: ${question}]</b>\nSelect an option below:`;
           tgResult = await bot
-            .sendMessage(
-              mapping.tg_chat_id,
-              pollText,
-              replyToTgMsgId,
-              threadId,
-              silent,
-              { inline_keyboard: inlineKeyboard }
-            )
+            .sendMessage(mapping.tg_chat_id, pollText, replyToTgMsgId, threadId, silent, {
+              inline_keyboard: inlineKeyboard,
+            })
             .catch(() => null);
         } else if (pollMode === 'once_no_update') {
           const shortPollText = `${header}📊 [Poll: ${question}]\nOptions: ${options.join(', ')}`;

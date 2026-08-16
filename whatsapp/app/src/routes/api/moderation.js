@@ -70,7 +70,9 @@ export function registerModerationRoutes(app) {
     try {
       const groupId = req.params.groupId || req.query.group_id;
       if (!groupId) {
-        return res.status(400).json({ success: false, error: 'Missing required parameter: group_id' });
+        return res
+          .status(400)
+          .json({ success: false, error: 'Missing required parameter: group_id' });
       }
       const timeframe = req.query.timeframe || '24h';
       const types = req.query.types || 'all';

@@ -34,9 +34,8 @@ export function createZipBuffer(files) {
     // Current DOS Date/Time (2026-08-16)
     const now = new Date();
     const dosTime =
-      (now.getHours() << 11) | (now.getMinutes() << 5) | (Math.floor(now.getSeconds() / 2));
-    const dosDate =
-      ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+      (now.getHours() << 11) | (now.getMinutes() << 5) | Math.floor(now.getSeconds() / 2);
+    const dosDate = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
 
     // Local file header (30 bytes + filename length)
     const localHeader = Buffer.alloc(30);
@@ -105,7 +104,9 @@ export function createZipBuffer(files) {
  * @returns {number} cutoff timestamp in ms (0 for 'all')
  */
 export function parseTimeframeCutoff(timeframe = '24h') {
-  const tf = String(timeframe || '24h').trim().toLowerCase();
+  const tf = String(timeframe || '24h')
+    .trim()
+    .toLowerCase();
   if (tf === 'all') return 0;
 
   const now = Date.now();
@@ -133,7 +134,12 @@ export function parseTimeframeCutoff(timeframe = '24h') {
  * @param {string|Array<string>} componentTypes Subparameter specifying what to export ('all', 'history', 'stats', 'info', 'participants', 'security')
  * @returns {Promise<{ buffer: Buffer, filename: string, totalMessages: number, summary: Object }>}
  */
-export async function generateChatExport(session, groupId, timeframe = '24h', componentTypes = 'all') {
+export async function generateChatExport(
+  session,
+  groupId,
+  timeframe = '24h',
+  componentTypes = 'all'
+) {
   const cutoffMs = parseTimeframeCutoff(timeframe);
   const requestedTypes = Array.isArray(componentTypes)
     ? componentTypes.map((t) => t.toLowerCase())
@@ -143,11 +149,16 @@ export async function generateChatExport(session, groupId, timeframe = '24h', co
         .filter(Boolean);
 
   const exportAll = requestedTypes.includes('all');
-  const exportHistory = exportAll || requestedTypes.includes('history') || requestedTypes.includes('chat');
-  const exportInfo = exportAll || requestedTypes.includes('info') || requestedTypes.includes('metadata');
-  const exportSecurity = exportAll || requestedTypes.includes('security') || requestedTypes.includes('moderation');
-  const exportStats = exportAll || requestedTypes.includes('stats') || requestedTypes.includes('statistics');
-  const exportParticipants = exportAll || requestedTypes.includes('participants') || requestedTypes.includes('users');
+  const exportHistory =
+    exportAll || requestedTypes.includes('history') || requestedTypes.includes('chat');
+  const exportInfo =
+    exportAll || requestedTypes.includes('info') || requestedTypes.includes('metadata');
+  const exportSecurity =
+    exportAll || requestedTypes.includes('security') || requestedTypes.includes('moderation');
+  const exportStats =
+    exportAll || requestedTypes.includes('stats') || requestedTypes.includes('statistics');
+  const exportParticipants =
+    exportAll || requestedTypes.includes('participants') || requestedTypes.includes('users');
 
   const files = [];
   const exportDate = new Date().toISOString();
@@ -173,7 +184,9 @@ export async function generateChatExport(session, groupId, timeframe = '24h', co
     export_timestamp: exportDate,
     timeframe_filter: timeframe,
     group_owner: groupMetadata?.owner || null,
-    creation_timestamp: groupMetadata?.creation ? new Date(groupMetadata.creation * 1000).toISOString() : null,
+    creation_timestamp: groupMetadata?.creation
+      ? new Date(groupMetadata.creation * 1000).toISOString()
+      : null,
     description: groupMetadata?.desc || '',
     ephemeral_duration: groupMetadata?.ephemeralDuration || null,
     member_count: groupMetadata?.participants?.length || 0,
@@ -211,7 +224,9 @@ export async function generateChatExport(session, groupId, timeframe = '24h', co
         continue; // Exclude messages older than cutoff
       }
 
-      const senderJid = msg.key.participant || (msg.key.fromMe ? (session.stats?.my_number || 'Bot') : msg.key.remoteJid);
+      const senderJid =
+        msg.key.participant ||
+        (msg.key.fromMe ? session.stats?.my_number || 'Bot' : msg.key.remoteJid);
       const pushName = msg.pushName || 'Unknown';
       const m = msg.message || {};
 
@@ -232,7 +247,8 @@ export async function generateChatExport(session, groupId, timeframe = '24h', co
       else if (m.stickerMessage) mediaType = 'sticker';
       else if (m.locationMessage) mediaType = 'location';
       else if (m.contactMessage || m.contactsArrayMessage) mediaType = 'contact';
-      else if (m.pollCreationMessage || m.pollCreationMessageV2 || m.pollCreationMessageV3) mediaType = 'poll';
+      else if (m.pollCreationMessage || m.pollCreationMessageV2 || m.pollCreationMessageV3)
+        mediaType = 'poll';
 
       storedMessages.push({
         id: msg.key.id,
@@ -265,7 +281,9 @@ export async function generateChatExport(session, groupId, timeframe = '24h', co
 
     for (const item of storedMessages) {
       const timeStr = item.timestamp ? item.timestamp.replace('T', ' ').replace(/\..+/, '') : '';
-      const senderTag = item.is_from_me ? '🤖 [Bot]' : `${item.sender_name} (${item.sender_jid.split('@')[0]})`;
+      const senderTag = item.is_from_me
+        ? '🤖 [Bot]'
+        : `${item.sender_name} (${item.sender_jid.split('@')[0]})`;
       const mediaTag = item.media_type !== 'text' ? `[${item.media_type.toUpperCase()}] ` : '';
       txtLines.push(`[${timeStr}] ${senderTag}: ${mediaTag}${item.text}`);
     }
@@ -281,7 +299,8 @@ export async function generateChatExport(session, groupId, timeframe = '24h', co
     const participantsList = groupMetadata.participants.map((p) => ({
       jid: p.id,
       phone: p.id.split('@')[0],
-      role: p.admin === 'superadmin' ? 'Owner / Superadmin' : p.admin === 'admin' ? 'Admin' : 'Member',
+      role:
+        p.admin === 'superadmin' ? 'Owner / Superadmin' : p.admin === 'admin' ? 'Admin' : 'Member',
       is_admin: Boolean(p.admin),
     }));
     files.push({
@@ -307,7 +326,10 @@ export async function generateChatExport(session, groupId, timeframe = '24h', co
       warnings: groupConfig.warnings || {},
       warn_actions: groupConfig.warn_actions || [],
       filter_stats: groupConfig.stats || {},
-      recent_violations_count: Object.values(groupConfig.warnings || {}).reduce((acc, val) => acc + (val || 0), 0),
+      recent_violations_count: Object.values(groupConfig.warnings || {}).reduce(
+        (acc, val) => acc + (val || 0),
+        0
+      ),
     };
 
     files.push({

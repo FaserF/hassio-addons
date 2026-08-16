@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createZipBuffer, parseTimeframeCutoff, generateChatExport } from '../src/whatsapp/export.js';
+import {
+  createZipBuffer,
+  parseTimeframeCutoff,
+  generateChatExport,
+} from '../src/whatsapp/export.js';
 
 test('createZipBuffer creates valid uncorrupted ZIP with files', () => {
   const files = [
@@ -34,7 +38,12 @@ test('generateChatExport creates structured package with all required files', as
       [
         'msg1',
         {
-          key: { id: 'msg1', remoteJid: '123456789@g.us', fromMe: false, participant: '49170111@s.whatsapp.net' },
+          key: {
+            id: 'msg1',
+            remoteJid: '123456789@g.us',
+            fromMe: false,
+            participant: '49170111@s.whatsapp.net',
+          },
           messageTimestamp: Math.floor(Date.now() / 1000) - 300,
           pushName: 'Alice',
           message: { conversation: 'Hello export test' },

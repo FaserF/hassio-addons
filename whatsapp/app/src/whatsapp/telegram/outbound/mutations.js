@@ -365,8 +365,7 @@ export async function syncWhatsAppEditToTelegram(
     const groupModCfg = getGroupModerationConfig(targetWaJid);
     const isTranslateActive =
       Boolean(mapping.translate_wa_to_tg) ||
-      (groupModCfg?.translation?.enabled !== false &&
-        Boolean(groupModCfg?.translation));
+      (groupModCfg?.translation?.enabled !== false && Boolean(groupModCfg?.translation));
 
     let translationBanner = '';
     if (isTranslateActive && newText && newText.trim()) {

@@ -802,15 +802,21 @@ export function handleIncomingMessages(session) {
           text = `📊 [Poll: ${question}]${optStr}`;
         } else if (messageType === 'buttonsMessage' || messageType === 'templateMessage') {
           mediaType = 'buttons';
-          const btnObj = msg.message?.buttonsMessage || msg.message?.templateMessage?.hydratedTemplate;
+          const btnObj =
+            msg.message?.buttonsMessage || msg.message?.templateMessage?.hydratedTemplate;
           const bodyText = btnObj?.contentText || btnObj?.hydratedContentText || 'Buttons';
           const footer = btnObj?.footerText || btnObj?.hydratedFooterText || '';
           const buttonsList = (btnObj?.buttons || btnObj?.hydratedButtons || []).map((b, i) => {
-            const label = b.buttonText?.displayText || b.quickReplyButton?.displayText || b.displayText || `Option ${i + 1}`;
+            const label =
+              b.buttonText?.displayText ||
+              b.quickReplyButton?.displayText ||
+              b.displayText ||
+              `Option ${i + 1}`;
             const id = b.buttonId || b.quickReplyButton?.id || b.id || `btn_${i + 1}`;
             return { id, label };
           });
-          const optStr = buttonsList.length > 0 ? `\n${buttonsList.map((b) => `🔘 ${b.label}`).join('\n')}` : '';
+          const optStr =
+            buttonsList.length > 0 ? `\n${buttonsList.map((b) => `🔘 ${b.label}`).join('\n')}` : '';
           text = `🔘 [Buttons: ${bodyText}]${footer ? `\n_${footer}_` : ''}${optStr}`;
         } else if (messageType === 'listMessage') {
           mediaType = 'list';
@@ -822,7 +828,9 @@ export function handleIncomingMessages(session) {
           for (const s of sections) {
             if (s.title) rowsFormatted.push(`*${s.title}*`);
             for (const r of s.rows || []) {
-              rowsFormatted.push(`  • ${r.title || 'Item'}${r.description ? ` (${r.description})` : ''}`);
+              rowsFormatted.push(
+                `  • ${r.title || 'Item'}${r.description ? ` (${r.description})` : ''}`
+              );
             }
           }
           text = `📋 [List: ${title}]${description ? `\n${description}` : ''}${rowsFormatted.length > 0 ? `\n${rowsFormatted.join('\n')}` : ''}`;
@@ -1323,7 +1331,13 @@ export function handleIncomingMessages(session) {
               const isGroup = targetJid.endsWith('@g.us');
               const groupName = isGroup ? session.groupCache?.get(targetJid) || targetJid : '';
               const senderName = session.contactCache?.get(targetJid)?.name || '';
-              await syncWhatsAppEditToTelegram(editedWaMsgId, targetJid, newText, groupName, senderName);
+              await syncWhatsAppEditToTelegram(
+                editedWaMsgId,
+                targetJid,
+                newText,
+                groupName,
+                senderName
+              );
               await updateTranslationIfExists(session, targetJid, editedWaMsgId, newText);
             }
           } else if (

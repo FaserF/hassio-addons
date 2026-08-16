@@ -466,7 +466,10 @@ export function registerContentCommands(registry) {
             sentExportMsg = await session.sock.sendMessage(targetRecipient, documentPayload);
             sentViaDm = true;
           } catch (dmErr) {
-            logger.debug({ error: dmErr.message }, 'Failed to deliver export via DM, falling back to group');
+            logger.debug(
+              { error: dmErr.message },
+              'Failed to deliver export via DM, falling back to group'
+            );
           }
         }
 
@@ -479,7 +482,10 @@ export function registerContentCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: `✅ *Export Dispatched:* Sent securely via private message to @${userId.split('@')[0]}.`, mentions: [userId] },
+            {
+              text: `✅ *Export Dispatched:* Sent securely via private message to @${userId.split('@')[0]}.`,
+              mentions: [userId],
+            },
             rawMsg
           );
         }
@@ -494,7 +500,10 @@ export function registerContentCommands(registry) {
             try {
               if (session?.sock?.sendMessage) {
                 await session.sock.sendMessage(deleteTarget, { delete: deleteKey });
-                logger.info({ deleteTarget }, '🗑️ Auto-deleted export archive file after retention window');
+                logger.info(
+                  { deleteTarget },
+                  '🗑️ Auto-deleted export archive file after retention window'
+                );
               }
             } catch (delErr) {
               logger.debug({ error: delErr.message }, 'Could not auto-delete export archive file');
@@ -503,14 +512,12 @@ export function registerContentCommands(registry) {
         }
       } catch (err) {
         logger.error({ error: err.message, groupId }, 'Failed to generate chat export');
-        await reply(
-          session,
-          groupId,
-          { text: `❌ *Export Failed:* ${err.message}` },
-          rawMsg
-        );
+        await reply(session, groupId, { text: `❌ *Export Failed:* ${err.message}` }, rawMsg);
       }
     },
-    { adminOnly: true, help: 'Export chat history, metadata, and security logs as a structured ZIP archive. Usage: !export [24h|7d|30d|all] [history,stats,info,security,all]' }
+    {
+      adminOnly: true,
+      help: 'Export chat history, metadata, and security logs as a structured ZIP archive. Usage: !export [24h|7d|30d|all] [history,stats,info,security,all]',
+    }
   );
 }

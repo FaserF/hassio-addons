@@ -3,6 +3,7 @@
 ## 2.1.0 (2026-08-16)
 
 ### ✨ Features
+
 - filter bot commands on inbound and ensure strict i18n localization ([`e60573bd`](https://github.com/FaserF/hassio-addons/commit/e60573bd29a796791465ca91bc28362477d95654))
 - implement configurable offline message catchup window for WA and Telegram bridges ([`78e16a81`](https://github.com/FaserF/hassio-addons/commit/78e16a81c8f1e26f932591b2cd6562806482933a))
 - add message ID deduplication to prevent repeated WA to Telegram forwards ([`23711b38`](https://github.com/FaserF/hassio-addons/commit/23711b38579199795c7cb93dc3d7932deea0eed2))
@@ -20,6 +21,7 @@
 - finalize translation edit sync, telegram edit headers, and pin mirroring ([`cc2af023`](https://github.com/FaserF/hassio-addons/commit/cc2af0233c145c61edea3bc27564c1fbab87b620))
 
 ### 🐛 Bug Fixes
+
 - CI Workflow fixes ([`f4f8cbaa`](https://github.com/FaserF/hassio-addons/commit/f4f8cbaafb89befbb946712ea4a678401d1e7e06))
 - CI linter fixes ([`9ca6bd76`](https://github.com/FaserF/hassio-addons/commit/9ca6bd762a6407dc2edd20c327df5d6fc212e6a2))
 - ensure active Telegram bot client resolves dynamically for edit synchronization ([`d7f36010`](https://github.com/FaserF/hassio-addons/commit/d7f360102841018f8dffae4304b3312eb18e772f))
@@ -37,24 +39,28 @@
 - general fixes & improvements ([`3c7b5e70`](https://github.com/FaserF/hassio-addons/commit/3c7b5e70d28f4a8c136c855097e79a62f5f6bf92))
 
 ### 📦 Dependencies
+
 - ⬆️ Update dependency uvicorn to v0.52.3 (#974) ([`d372d687`](https://github.com/FaserF/hassio-addons/commit/d372d687d92aae6b52e9e26ded6178d5b69ec453))
 - ⬆️ Update dependency uvicorn to v0.52.2 (#972) ([`1699c2a5`](https://github.com/FaserF/hassio-addons/commit/1699c2a5e13ef5fb5bc7b971ac61ebf88cb6f69e))
 - ⬆️ Update dependency globals to v17.11.0 (#971) ([`2dface99`](https://github.com/FaserF/hassio-addons/commit/2dface997d5b7c0c80e8e5f746d17ee628f1e6af))
 - ⬆️ Update dependency globals to v17.10.0 (#970) ([`f31e9c6b`](https://github.com/FaserF/hassio-addons/commit/f31e9c6b295f1093a4bd2b81483632a35cb988e6))
 
 ### 🎨 Style
+
 - move URL & File Security Scanner to Anti-Spam & Security panel ([`c060f7b0`](https://github.com/FaserF/hassio-addons/commit/c060f7b00f145d6c234110850936abbe42548a17))
 
 ### ♻️ Refactor
+
 - modularize monolithic listener, engine, and commands modules into subfiles ([`a47b2348`](https://github.com/FaserF/hassio-addons/commit/a47b23489862e37e7624577fa0b8a22a379ee11e))
 
 ### 🔒 Security
+
 - security: redact raw malicious URLs/filenames from Security Shield warning messages ([`ade96603`](https://github.com/FaserF/hassio-addons/commit/ade966039b2598e67454d06150f65b21032bfa5e))
 
 ### 🚀 Other
+
 - code optimization ([`d3820493`](https://github.com/FaserF/hassio-addons/commit/d3820493782ebd59c1380a5bc079ae16a309efa3))
 - small fix ([`fbf11168`](https://github.com/FaserF/hassio-addons/commit/fbf111681f949629e1690ff83e2c6a71b7a5d385))
-
 
 ## 2.0.0 (2026-08-10)
 

@@ -490,7 +490,11 @@ function checkUiDesignStandards() {
 
       // Rule: No native alert/confirm/prompt in client scripts (use showToast or custom modals)
       if (/(?:^|[^\w.])window\.(?:alert|confirm|prompt)\s*\(/.test(line)) {
-        error(f, idx + 1, 'Native window.alert/confirm/prompt detected. Use showToast() or custom modal dialogs.');
+        error(
+          f,
+          idx + 1,
+          'Native window.alert/confirm/prompt detected. Use showToast() or custom modal dialogs.'
+        );
       }
 
       // Rule: No distracting animate-pulse on active tab / persistent UI indicators
