@@ -88,9 +88,11 @@ The WhatsApp Addon incorporates a full-featured group moderation, defender, and 
 - **Greetings, Goodbyes & Welcome Captcha**: Customizable welcome/goodbye templates (`!setwelcome`, `!setgoodbye`, `!welcome`, `!goodbye`), placeholders (`{mention}`, `{name}`, `{pushname}`, `{group}`, `{subject}`, `{title}`, `{count}`, `{members}`, `{rules}`, `{date}`, `{time}`), verification captchas (button/math/code), delivery target (group vs. private DM chat), and automated farewell messages with detailed kick/leave reasons (voluntary leave, captcha timeout, group ban, federation ban, warning threshold, admin removal).
 - **Captcha Verification Dashboard & DM Resolution**: Web UI Overview panel to view pending/verified users per group and manually toggle verification status. Full support for solving captchas via Private Chat (DM) with automatic confirmation and group notifications.
 - **Configurable User Addressing**: Configurable name resolution order (`Contact Name > Pushname > Phone Number`, `Pushname > Contact Name > Phone Number`, or `Phone Number Only`) and fallback preferences (`Phone Number` vs `@User`).
-- **Custom Command Handler Modes**: Define custom group commands (`!wifi`, `!faq`, etc.) with 3 flexible execution modes:
-  - 🤖 **Auto Reply**: Bot sends an automated text response.
-  - 🏠 **HA / Webhook**: Event is forwarded to Home Assistant/Webhooks with no auto-reply (appears in `!help`).
+- **Custom Command Handler Modes**: Define custom group commands (`!wifi`, `!faq`, etc.) with 5 flexible execution modes:
+  - 🤖 **Auto Reply**: Bot sends an automated text response with Markdown formatting.
+  - ⚡ **Home Assistant Automation Trigger**: Calls `POST /api/services/automation/trigger` with HA Base URL, Long-Lived Token, and Automation ID. Returns execution status `{ha_status}` and API payload `{ha_response}` in chat.
+  - 🌐 **Web API Query**: Fetches JSON from any public or private Web API (e.g. GitHub Releases, Weather, Currency) and extracts target properties via dot-notated JSON Path (e.g. `tag_name`, `data.version`), providing `{api_result}` as a template variable.
+  - 🏠 **HA / Webhook (Silent)**: Event is forwarded to Home Assistant/Webhooks with no auto-reply (appears in `!help`).
   - 🔗 **Alias**: Redirects execution to any built-in or custom command target.
 - **Speech-to-Text (STT) Auto-Transcription**: Cloud Speech-to-Text engine for incoming voice notes and audio messages (`stt_enabled: true/false`). Powered by Google Gemini 1.5 Multimodal Audio or OpenAI Whisper API (requires API key in Moderation settings). Quotes original audio message with multi-language (DE/EN) transcription and automated diagnostic error feedback.
 - **Warnings System**: Configurable warning thresholds, warn decay (`decay_hours`), and automated penalties (`!warn`, `!unwarn`, `!warns`).

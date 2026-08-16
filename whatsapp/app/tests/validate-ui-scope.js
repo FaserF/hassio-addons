@@ -501,10 +501,35 @@ function checkUiDesignStandards() {
       if (/activeTab === [a-zA-Z.'"`]+\s*\?\s*['"][^'"]*animate-pulse/.test(line)) {
         error(f, idx + 1, 'Do not use animate-pulse on active navigation tab icons.');
       }
+
+      // Rule: User identifiers in flex containers must truncate to prevent overflow
+      if (/\b(?:user_id|jid|phone)\b/.test(line) && /font-mono/.test(line) && !/truncate/.test(line)) {
+        if (lines[idx - 1] && /flex\b/.test(lines[idx - 1]) && !/min-w-0/.test(lines[idx - 1])) {
+          error(f, idx + 1, 'Identifier in flex layout missing `truncate` / parent missing `min-w-0` (risk of layout blowout).');
+        }
+      }
     });
   }
 
-  info('UI Design Standards check complete (No native popups or banned animations)');
+  // Also validate view templates for hardcoded solid white containers without dark mode counterparts
+  const viewsDir = join(uiDir, 'views');
+  if (existsSync(viewsDir)) {
+    const viewFiles = readdirSync(viewsDir).filter((f) => f.endsWith('.html.js'));
+    for (const vf of viewFiles) {
+      const vp = join(viewsDir, vf);
+      const vContent = readFileSync(vp, 'utf8');
+      const vLines = vContent.split('\n');
+      vLines.forEach((line, idx) => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('<!--')) return;
+        if (/(?:class|className)=["'][^"']*\bbg-white\b[^"']*["']/.test(line) && !/dark:bg-/.test(line) && !/qr|rounded-full/i.test(line)) {
+          error(join('views', vf), idx + 1, 'Solid bg-white container missing dark mode counterpart.');
+        }
+      });
+    }
+  }
+
+  info('UI Design Standards check complete (No native popups, layout overflow safe, dark mode compliant)');
 }
 
 // --------------------------------------------------------------------------

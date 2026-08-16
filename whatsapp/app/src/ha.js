@@ -253,3 +253,136 @@ export function isHANetwork() {
   // Fallback to true if SUPERVISOR_TOKEN is present but IP check is ambiguous
   return true;
 }
+
+/**
+ * Triggers a Home Assistant automation via REST API.
+ * @param {string} baseUrl - Home Assistant Base URL (e.g. http://homeassistant.local:8123)
+ * @param {string} token - Home Assistant Long-Lived Access Token
+ * @param {string} automationId - ID or entity_id of the automation (e.g. 'morning_routine')
+ * @returns {Promise<{success: boolean, status: string, data?: any}>}
+ */
+export async function triggerHAAutomation(baseUrl, token, automationId) {
+  try {
+    const cleanId = (automationId || '').replace(/^automation\./, '');
+    const cleanUrl = (baseUrl || 'http://supervisor/core').replace(/\/+$/, '');
+    const targetUrl = new URL(`${cleanUrl}/api/services/automation/trigger`);
+    const payload = JSON.stringify({ entity_id: `automation.${cleanId}` });
+
+    const isHttps = targetUrl.protocol === 'https:';
+    const client = isHttps ? await import('https') : http;
+
+    return new Promise((resolve) => {
+      const req = client.request(
+        targetUrl,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token || SUPERVISOR_TOKEN}`,
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(payload),
+          },
+        },
+        (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk));
+          res.on('end', () => {
+            const success = res.statusCode >= 200 && res.statusCode < 300;
+            let parsed = null;
+            try {
+              parsed = JSON.parse(body);
+            } catch {
+              parsed = body;
+            }
+            resolve({
+              success,
+              statusCode: res.statusCode,
+              status: success ? `✅ Automation '${cleanId}' erfolgreich ausgelöst` : `❌ Fehler (${res.statusCode}): ${body}`,
+              data: parsed,
+            });
+          });
+        }
+      );
+      req.on('error', (err) => {
+        resolve({ success: false, status: `❌ Verbindungsfehler: ${err.message}` });
+      });
+      req.write(payload);
+      req.end();
+    });
+  } catch (err) {
+    return { success: false, status: `❌ Fehler: ${err.message}` };
+  }
+}
+
+/**
+ * Helper to extract dot-notated json path (e.g. 'tag_name' or 'data.version').
+ */
+function extractJsonPath(data, path) {
+  if (!path) return data;
+  const parts = path.split('.');
+  let current = data;
+  for (const part of parts) {
+    if (current === null || current === undefined) return undefined;
+    current = current[part];
+  }
+  return current;
+}
+
+/**
+ * Queries a public or private Web API and extracts a field from the JSON response.
+ * @param {string} url - API Endpoint URL
+ * @param {string} [jsonPath] - Dot-notated property path (e.g. 'tag_name', 'version')
+ * @param {object} [headers] - Request headers
+ * @returns {Promise<{success: boolean, result: string, raw?: any}>}
+ */
+export async function queryWebAPI(url, jsonPath = null, headers = {}) {
+  try {
+    const targetUrl = new URL(url);
+    const isHttps = targetUrl.protocol === 'https:';
+    const client = isHttps ? await import('https') : http;
+
+    return new Promise((resolve) => {
+      const req = client.request(
+        targetUrl,
+        {
+          method: 'GET',
+          headers: {
+            'User-Agent': 'AegisBot-WhatsApp-Gateway/1.0',
+            ...headers,
+          },
+        },
+        (res) => {
+          let body = '';
+          res.on('data', (chunk) => (body += chunk));
+          res.on('end', () => {
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              try {
+                const parsed = JSON.parse(body);
+                const extracted = jsonPath ? extractJsonPath(parsed, jsonPath) : parsed;
+                resolve({
+                  success: true,
+                  result: typeof extracted === 'object' ? JSON.stringify(extracted) : String(extracted ?? ''),
+                  raw: parsed,
+                });
+              } catch {
+                resolve({ success: true, result: body, raw: body });
+              }
+            } else {
+              resolve({
+                success: false,
+                result: `HTTP ${res.statusCode}`,
+                raw: body,
+              });
+            }
+          });
+        }
+      );
+      req.on('error', (err) => {
+        resolve({ success: false, result: `Error: ${err.message}` });
+      });
+      req.end();
+    });
+  } catch (err) {
+    return { success: false, result: `Error: ${err.message}` };
+  }
+}
+
