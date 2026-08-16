@@ -13,6 +13,21 @@ export async function ensureConnected(session, maxWaitMs = 3000) {
   return session.isConnected;
 }
 
+/**
+ * Validates session and active connection, sending HTTP 503 error response if not connected.
+ * Returns session if connected, or null if response was handled.
+ */
+export async function requireConnectedSession(req, res, maxWaitMs = 3000) {
+  const { getReqSession } = await import('../../session.js');
+  const session = getReqSession(req);
+  const connected = await ensureConnected(session, maxWaitMs);
+  if (!connected) {
+    res.status(503).json({ detail: 'Not connected to WhatsApp' });
+    return null;
+  }
+  return session;
+}
+
 export function getMessageText(msg) {
   if (!msg) return '';
   if (typeof msg === 'string') return msg;
