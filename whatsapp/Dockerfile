@@ -10,8 +10,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.0.0"
-ENV APP_NAME="WhatsApp Home Assistant App"
+ENV APP_VERSION="2.1.0"
+ENV APP_NAME="WhatsApp Gateway"
 ENV APP_SLUG="whatsapp"
 ENV APP_UNSUPPORTED="false"
 

@@ -1,5 +1,61 @@
 # Changelog
 
+## 2.1.0 (2026-08-16)
+
+### ✨ Features
+- filter bot commands on inbound and ensure strict i18n localization ([`e60573bd`](https://github.com/FaserF/hassio-addons/commit/e60573bd29a796791465ca91bc28362477d95654))
+- implement configurable offline message catchup window for WA and Telegram bridges ([`78e16a81`](https://github.com/FaserF/hassio-addons/commit/78e16a81c8f1e26f932591b2cd6562806482933a))
+- add message ID deduplication to prevent repeated WA to Telegram forwards ([`23711b38`](https://github.com/FaserF/hassio-addons/commit/23711b38579199795c7cb93dc3d7932deea0eed2))
+- prevent duplicate auto-translation spam for identical messages in groups ([`30dc0019`](https://github.com/FaserF/hassio-addons/commit/30dc00199fa6f4c1fa8fc3913a2ce4a1463c9916))
+- localize all bot replies, commands, and add comprehensive CI parity checks ([`609909e8`](https://github.com/FaserF/hassio-addons/commit/609909e848de76c8895055a8759d912bf10bcca7))
+- send server and addon version in /about command for WhatsApp and AegisBot ([`c60f954e`](https://github.com/FaserF/hassio-addons/commit/c60f954ed28a0113750d3b1c6ca19b372a5ac9b9))
+- fix WA edit sync, pin mirroring, and unpinall handling; add bidirectional translation toggles ([`867bc17d`](https://github.com/FaserF/hassio-addons/commit/867bc17d40033905362a21c683ad1557e4b24bba))
+- configure specific startup phases and integration discovery for relevant addons ([`2f939fbd`](https://github.com/FaserF/hassio-addons/commit/2f939fbd8771f1d02798081dff4759e5c67fcc88))
+- fix pin TG->WA participant key, edit fallback text and translation update resolution ([`bf79e6ac`](https://github.com/FaserF/hassio-addons/commit/bf79e6acdf2d0b5f2d7172e8ee5d5f21c5d15827))
+- add live STT and translation diagnostics and error status chips ([`e63566f7`](https://github.com/FaserF/hassio-addons/commit/e63566f7127c4d767665d75c343967fb60841761))
+- handle deep Baileys edit protocol nodes and translation updates ([`5e0b6832`](https://github.com/FaserF/hassio-addons/commit/5e0b68325a0069e4da0e77106bfff44e8c6a8129))
+- resolve bridge mutation sync, translation triggers, unpinall and STT issues ([`da1a7c6c`](https://github.com/FaserF/hassio-addons/commit/da1a7c6c37397e454a974de6008bbeb2ee35409d))
+- fix TG pin suppression, translator loop, clean edit fallback and add resilient STT keys ([`e2bb21ae`](https://github.com/FaserF/hassio-addons/commit/e2bb21aeb7056de636df5aa2dd120037074adf06))
+- add Wit.ai free public speech recognition fallback engine ([`b4a98356`](https://github.com/FaserF/hassio-addons/commit/b4a9835699eec90a7281a3057c5479c2ef80f09f))
+- finalize translation edit sync, telegram edit headers, and pin mirroring ([`cc2af023`](https://github.com/FaserF/hassio-addons/commit/cc2af0233c145c61edea3bc27564c1fbab87b620))
+
+### 🐛 Bug Fixes
+- CI Workflow fixes ([`f4f8cbaa`](https://github.com/FaserF/hassio-addons/commit/f4f8cbaafb89befbb946712ea4a678401d1e7e06))
+- CI linter fixes ([`9ca6bd76`](https://github.com/FaserF/hassio-addons/commit/9ca6bd762a6407dc2edd20c327df5d6fc212e6a2))
+- ensure active Telegram bot client resolves dynamically for edit synchronization ([`d7f36010`](https://github.com/FaserF/hassio-addons/commit/d7f360102841018f8dffae4304b3312eb18e772f))
+- fallback to mapped waJid and robustify target group matching for WA edit sync ([`8623576b`](https://github.com/FaserF/hassio-addons/commit/8623576be7d06c493e3d4af37c562508085c5bc7))
+- support unpinall and unpin bidirectional bridging between Telegram and WhatsApp ([`5dc33a3f`](https://github.com/FaserF/hassio-addons/commit/5dc33a3f378b4a6bdc8cab03b56650afafc4be66))
+- correctly distinguish message origins to ensure edits sync and update across WA and TG ([`e6a4475b`](https://github.com/FaserF/hassio-addons/commit/e6a4475b65660ed46d7470e649c578ab3a46d05d))
+- restore bi-directional reaction synchronization between WhatsApp and Telegram ([`33f0997a`](https://github.com/FaserF/hassio-addons/commit/33f0997ab6ee261795440bede17f2cb65825b37b))
+- prevent edit echo loop when message originated from Telegram ([`43fcdf80`](https://github.com/FaserF/hassio-addons/commit/43fcdf80c2403eed86219236d93de3f3b4540ef8))
+- localize pinned command detail cards using group language and registry description ([`77dfadf1`](https://github.com/FaserF/hassio-addons/commit/77dfadf188ec995c3348442452429eac29f03d3f))
+- ensure robust native edit execution and store synchronization for WhatsApp edits ([`75c485f8`](https://github.com/FaserF/hassio-addons/commit/75c485f8f02130e0258b6844e79a7e689a0c4f99))
+- support space after prefix and improve command detection in multi-line messages ([`1962f968`](https://github.com/FaserF/hassio-addons/commit/1962f968ae34c2d69d88dbd1eba9ad96fcc865ab))
+- improve bidirectional pin fallback, unpinall messages, and edit sync ([`3ce5b9f4`](https://github.com/FaserF/hassio-addons/commit/3ce5b9f45c688ed7e663927a14b1948cd6ac84a6))
+- persist pinned message tracking to disk; fix !unpinall across bot restarts ([`abb06ce6`](https://github.com/FaserF/hassio-addons/commit/abb06ce6e648960f0acc1c5ceb74ad34d598aee7))
+- small fixes ([`529ae299`](https://github.com/FaserF/hassio-addons/commit/529ae2990dd4276be9cc6ec4fc63747187849f58))
+- general fixes & improvements ([`3c7b5e70`](https://github.com/FaserF/hassio-addons/commit/3c7b5e70d28f4a8c136c855097e79a62f5f6bf92))
+
+### 📦 Dependencies
+- ⬆️ Update dependency uvicorn to v0.52.3 (#974) ([`d372d687`](https://github.com/FaserF/hassio-addons/commit/d372d687d92aae6b52e9e26ded6178d5b69ec453))
+- ⬆️ Update dependency uvicorn to v0.52.2 (#972) ([`1699c2a5`](https://github.com/FaserF/hassio-addons/commit/1699c2a5e13ef5fb5bc7b971ac61ebf88cb6f69e))
+- ⬆️ Update dependency globals to v17.11.0 (#971) ([`2dface99`](https://github.com/FaserF/hassio-addons/commit/2dface997d5b7c0c80e8e5f746d17ee628f1e6af))
+- ⬆️ Update dependency globals to v17.10.0 (#970) ([`f31e9c6b`](https://github.com/FaserF/hassio-addons/commit/f31e9c6b295f1093a4bd2b81483632a35cb988e6))
+
+### 🎨 Style
+- move URL & File Security Scanner to Anti-Spam & Security panel ([`c060f7b0`](https://github.com/FaserF/hassio-addons/commit/c060f7b00f145d6c234110850936abbe42548a17))
+
+### ♻️ Refactor
+- modularize monolithic listener, engine, and commands modules into subfiles ([`a47b2348`](https://github.com/FaserF/hassio-addons/commit/a47b23489862e37e7624577fa0b8a22a379ee11e))
+
+### 🔒 Security
+- security: redact raw malicious URLs/filenames from Security Shield warning messages ([`ade96603`](https://github.com/FaserF/hassio-addons/commit/ade966039b2598e67454d06150f65b21032bfa5e))
+
+### 🚀 Other
+- code optimization ([`d3820493`](https://github.com/FaserF/hassio-addons/commit/d3820493782ebd59c1380a5bc079ae16a309efa3))
+- small fix ([`fbf11168`](https://github.com/FaserF/hassio-addons/commit/fbf111681f949629e1690ff83e2c6a71b7a5d385))
+
+
 ## 2.0.0 (2026-08-10)
 
 ### ✨ Features
