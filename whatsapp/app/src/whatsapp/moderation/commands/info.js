@@ -1,4 +1,5 @@
 import { loadModerationStore, getGroupModerationConfig } from '../store.js';
+import { ADDON_VERSION, BAILEYS_VERSION } from '../../../config.js';
 import { reply } from '../../actions.js';
 import {
   normalizeJid,
@@ -316,16 +317,11 @@ export function registerInfoCommands(registry) {
   registry.register(
     'about',
     async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
-      const version = process.env.npm_package_version || '2.0.0';
-      const serverVersion =
-        process.env.ADDON_VERSION ||
-        process.env.SERVER_VERSION ||
-        process.env.APP_VERSION ||
-        process.env.VERSION ||
-        'standalone';
+      const version = ADDON_VERSION;
+      const baileysVersion = BAILEYS_VERSION;
       const msg = gt(config, 'bot_replies.about_text', {
         version,
-        server_version: serverVersion,
+        baileys_version: baileysVersion,
       });
       await reply(session, groupId, { text: msg }, rawMsg);
     },

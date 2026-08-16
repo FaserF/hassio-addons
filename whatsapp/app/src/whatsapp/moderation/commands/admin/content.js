@@ -410,4 +410,107 @@ export function registerContentCommands(registry) {
     },
     { adminOnly: true, help: 'Unpin all pinned messages in the group' }
   );
+
+  registry.register(
+    'export',
+    async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
+      const isGroup = groupId.endsWith('@g.us');
+      if (isGroup && !isAdminUser) {
+        await sendMissingAdminWarning(session, groupId, userId, rawMsg);
+        return;
+      }
+
+      const timeframe = args[0] || '24h';
+      const componentTypes = args[1] || 'all';
+
+      await reply(
+        session,
+        groupId,
+        {
+          text: `⏳ *Exporting Chat & Security Data...*\n• *Timeframe:* \`${timeframe}\`\n• *Scope:* \`${componentTypes}\`\nCompiling structured archive...`,
+        },
+        rawMsg
+      );
+
+      try {
+        const { generateChatExport } = await import('../../../export.js');
+        const { buffer, filename, totalMessages, summary } = await generateChatExport(
+          session,
+          groupId,
+          timeframe,
+          componentTypes
+        );
+
+        const caption =
+          `📦 *Export Archive Ready*\n` +
+          `• *Chat:* ${summary.chat_name}\n` +
+          `• *Timeframe:* ${summary.timeframe}\n` +
+          `• *Messages:* ${totalMessages}\n` +
+          `• *Files:* ${summary.included_files.join(', ')}\n\n` +
+          `_🔒 For privacy, this file will auto-delete automatically._`;
+
+        const documentPayload = {
+          document: buffer,
+          fileName: filename,
+          mimetype: 'application/zip',
+          caption,
+        };
+
+        let targetRecipient = userId && userId.includes('@') ? userId : groupId;
+        let sentExportMsg = null;
+        let sentViaDm = false;
+
+        // Preferred: send via Private Message (DM) to caller
+        if (targetRecipient !== groupId && session?.sock?.sendMessage) {
+          try {
+            sentExportMsg = await session.sock.sendMessage(targetRecipient, documentPayload);
+            sentViaDm = true;
+          } catch (dmErr) {
+            logger.debug({ error: dmErr.message }, 'Failed to deliver export via DM, falling back to group');
+          }
+        }
+
+        // Fallback: send directly into group chat
+        if (!sentExportMsg && session?.sock?.sendMessage) {
+          sentExportMsg = await session.sock.sendMessage(groupId, documentPayload);
+        }
+
+        if (sentViaDm) {
+          await reply(
+            session,
+            groupId,
+            { text: `✅ *Export Dispatched:* Sent securely via private message to @${userId.split('@')[0]}.`, mentions: [userId] },
+            rawMsg
+          );
+        }
+
+        // Auto-deletion handling (default enabled)
+        const autoDeleteSec = config.export_auto_delete_seconds || 300;
+        const autoDeleteEnabled = config.export_auto_delete !== false;
+        if (autoDeleteEnabled && sentExportMsg?.key) {
+          const deleteKey = sentExportMsg.key;
+          const deleteTarget = sentViaDm ? targetRecipient : groupId;
+          setTimeout(async () => {
+            try {
+              if (session?.sock?.sendMessage) {
+                await session.sock.sendMessage(deleteTarget, { delete: deleteKey });
+                logger.info({ deleteTarget }, '🗑️ Auto-deleted export archive file after retention window');
+              }
+            } catch (delErr) {
+              logger.debug({ error: delErr.message }, 'Could not auto-delete export archive file');
+            }
+          }, autoDeleteSec * 1000);
+        }
+      } catch (err) {
+        logger.error({ error: err.message, groupId }, 'Failed to generate chat export');
+        await reply(
+          session,
+          groupId,
+          { text: `❌ *Export Failed:* ${err.message}` },
+          rawMsg
+        );
+      }
+    },
+    { adminOnly: true, help: 'Export chat history, metadata, and security logs as a structured ZIP archive. Usage: !export [24h|7d|30d|all] [history,stats,info,security,all]' }
+  );
 }

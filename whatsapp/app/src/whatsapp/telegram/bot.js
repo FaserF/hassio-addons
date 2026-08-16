@@ -31,6 +31,7 @@ const ALLOWED_METHODS = new Map([
   ['sendLocation', 'sendLocation'],
   ['sendPoll', 'sendPoll'],
   ['sendContact', 'sendContact'],
+  ['answerCallbackQuery', 'answerCallbackQuery'],
   ['editMessageLiveLocation', 'editMessageLiveLocation'],
   ['stopMessageLiveLocation', 'stopMessageLiveLocation'],
   ['pinChatMessage', 'pinChatMessage'],
@@ -111,7 +112,8 @@ export class TelegramBotClient {
     text,
     replyToMessageId = null,
     threadId = null,
-    disableNotification = false
+    disableNotification = false,
+    replyMarkup = null
   ) {
     const payload = {
       chat_id: chatId,
@@ -122,85 +124,28 @@ export class TelegramBotClient {
     };
     if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
     if (threadId) payload.message_thread_id = threadId;
+    if (replyMarkup) payload.reply_markup = replyMarkup;
     return await this.request('sendMessage', payload);
   }
 
-  async sendPhoto(
-    chatId,
-    photoUrlOrBuffer,
-    caption = '',
-    replyToMessageId = null,
-    threadId = null,
-    disableNotification = false
-  ) {
-    const payload = {
-      chat_id: chatId,
-      photo: photoUrlOrBuffer,
-      caption: caption,
-      parse_mode: 'HTML',
-      disable_notification: Boolean(disableNotification),
-    };
-    if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
-    if (threadId) payload.message_thread_id = threadId;
-    return await this.request('sendPhoto', payload);
-  }
-
-  async sendVoice(
-    chatId,
-    voiceUrlOrBuffer,
-    caption = '',
-    replyToMessageId = null,
-    threadId = null,
-    disableNotification = false
-  ) {
-    const payload = {
-      chat_id: chatId,
-      voice: voiceUrlOrBuffer,
-      caption: caption,
-      parse_mode: 'HTML',
-      disable_notification: Boolean(disableNotification),
-    };
-    if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
-    if (threadId) payload.message_thread_id = threadId;
-    return await this.request('sendVoice', payload);
-  }
-
-  async sendDocument(
-    chatId,
-    documentUrlOrBuffer,
-    caption = '',
-    replyToMessageId = null,
-    threadId = null,
-    disableNotification = false
-  ) {
-    const payload = {
-      chat_id: chatId,
-      document: documentUrlOrBuffer,
-      caption: caption,
-      parse_mode: 'HTML',
-      disable_notification: Boolean(disableNotification),
-    };
-    if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
-    if (threadId) payload.message_thread_id = threadId;
-    return await this.request('sendDocument', payload);
-  }
-
-  async setMessageReaction(chatId, messageId, emoji) {
-    return await this.request('setMessageReaction', {
-      chat_id: chatId,
-      message_id: messageId,
-      reaction: emoji ? [{ type: 'emoji', emoji }] : [],
+  async answerCallbackQuery(callbackQueryId, text = '', showAlert = false) {
+    return await this.request('answerCallbackQuery', {
+      callback_query_id: callbackQueryId,
+      text: text || undefined,
+      show_alert: Boolean(showAlert),
     });
   }
 
-  async editMessageText(chatId, messageId, text) {
+  async editMessageText(chatId, messageId, text, replyMarkup = null) {
     try {
-      return await this.request('editMessageText', {
+      const payload = {
         chat_id: chatId,
         message_id: messageId,
         text: text,
         parse_mode: 'HTML',
-      });
+      };
+      if (replyMarkup) payload.reply_markup = replyMarkup;
+      return await this.request('editMessageText', payload);
     } catch (err) {
       if (err.message && err.message.includes('message is not modified')) {
         return { ok: true, result: true };
@@ -211,12 +156,14 @@ export class TelegramBotClient {
           err.message.includes('message text is empty'))
       ) {
         try {
-          return await this.request('editMessageCaption', {
+          const capPayload = {
             chat_id: chatId,
             message_id: messageId,
             caption: text,
             parse_mode: 'HTML',
-          });
+          };
+          if (replyMarkup) capPayload.reply_markup = replyMarkup;
+          return await this.request('editMessageCaption', capPayload);
         } catch (_capErr) {
           if (_capErr.message && _capErr.message.includes('message is not modified')) {
             return { ok: true, result: true };

@@ -474,6 +474,36 @@ function checkHtmlViewTagBalance() {
 }
 
 // --------------------------------------------------------------------------
+// Test 7: UI Design Standards & UX Integrity Validation
+// --------------------------------------------------------------------------
+function checkUiDesignStandards() {
+  const files = ['helpers.js', 'dashboard.js', 'chat.js'];
+  for (const f of files) {
+    const p = join(uiDir, f);
+    if (!existsSync(p)) continue;
+    const content = readFileSync(p, 'utf8');
+    const lines = content.split('\n');
+
+    lines.forEach((line, idx) => {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) return;
+
+      // Rule: No native alert/confirm/prompt in client scripts (use showToast or custom modals)
+      if (/(?:^|[^\w.])window\.(?:alert|confirm|prompt)\s*\(/.test(line)) {
+        error(f, idx + 1, 'Native window.alert/confirm/prompt detected. Use showToast() or custom modal dialogs.');
+      }
+
+      // Rule: No distracting animate-pulse on active tab / persistent UI indicators
+      if (/activeTab === [a-zA-Z.'"`]+\s*\?\s*['"][^'"]*animate-pulse/.test(line)) {
+        error(f, idx + 1, 'Do not use animate-pulse on active navigation tab icons.');
+      }
+    });
+  }
+
+  info('UI Design Standards check complete (No native popups or banned animations)');
+}
+
+// --------------------------------------------------------------------------
 // Run all checks
 // --------------------------------------------------------------------------
 console.log('\n🔍 WhatsApp UI Scope & Reference Validation\n');
@@ -501,6 +531,9 @@ checkHAEndpoints();
 
 console.log('\n📋 Test 6: HTML View Tag Balance & DOM Structure Validation\n');
 checkHtmlViewTagBalance();
+
+console.log('\n📋 Test 7: UI Design Standards & Modal Quality Validation\n');
+checkUiDesignStandards();
 
 console.log('\n' + '='.repeat(60));
 console.log(`\n📊 Results: ${errors} error(s), ${warnings} warning(s)\n`);

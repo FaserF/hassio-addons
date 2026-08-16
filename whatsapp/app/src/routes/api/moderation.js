@@ -64,6 +64,43 @@ export function registerModerationRoutes(app) {
     }
     res.json({ success: true, data: list });
   });
+
+  // GET /api/moderation/export & GET /api/moderation/export/:groupId — Download structured chat & security archive ZIP
+  app.get(['/api/moderation/export', '/api/moderation/export/:groupId'], async (req, res) => {
+    try {
+      const groupId = req.params.groupId || req.query.group_id;
+      if (!groupId) {
+        return res.status(400).json({ success: false, error: 'Missing required parameter: group_id' });
+      }
+      const timeframe = req.query.timeframe || '24h';
+      const types = req.query.types || 'all';
+
+      let session = sessions.get('default');
+      if (!session || !session.isConnected) {
+        for (const s of sessions.values()) {
+          if (s.isConnected) {
+            session = s;
+            break;
+          }
+        }
+      }
+      if (!session) {
+        return res.status(503).json({ success: false, error: 'No active WhatsApp session found' });
+      }
+
+      const { generateChatExport } = await import('../../whatsapp/export.js');
+      const { buffer, filename } = await generateChatExport(session, groupId, timeframe, types);
+
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', buffer.length);
+      res.send(buffer);
+    } catch (err) {
+      logger.error({ error: err.message }, 'Failed to export moderation archive via Web UI');
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // GET /api/moderation/config
   app.get('/api/moderation/config', (req, res) => {
     const store = loadModerationStore();

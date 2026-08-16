@@ -37,8 +37,11 @@ async function run() {
     console.log('\n--- 8/8 Testing STT Engine Parsers ---');
     await import('./test-stt.js');
 
-    console.log('\n--- 9/9 Testing RBAC & WhatsApp Login ---');
+    console.log('\n--- 9/10 Testing RBAC & WhatsApp Login ---');
     await import('./test-rbac-auth.js');
+
+    console.log('\n--- 10/10 Testing Data Export Engine ---');
+    await import('./test-export.js');
 
     const duration = ((performance.now() - startTime) / 1000).toFixed(2);
     console.log(`\n🎉 ALL TEST SUITES PASSED IN ${duration}s!`);

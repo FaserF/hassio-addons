@@ -1,4 +1,5 @@
 import { anyAuthMiddleware, apiLimiter } from '../../middleware.js';
+import { ADMIN_NUMBERS } from '../../config.js';
 import {
   getReqSession,
   getSession,
@@ -121,6 +122,7 @@ export function registerSessionRoutes(app) {
         session_id: session.id,
         user: session.sock?.user || null,
         stats: session.stats,
+        admin_numbers: ADMIN_NUMBERS || [],
       });
     } catch (err) {
       res.status(500).json({ detail: err.message });

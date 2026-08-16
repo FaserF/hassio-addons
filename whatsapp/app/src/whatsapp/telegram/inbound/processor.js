@@ -124,6 +124,58 @@ export async function processTelegramUpdates() {
           continue;
         }
 
+        // Handle Telegram Callback Queries (Inline button clicks)
+        if (update.callback_query) {
+          const cq = update.callback_query;
+          const cqId = cq.id;
+          const data = cq.data || '';
+          const user = cq.from;
+          const voterName = user
+            ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username || 'Telegram User'
+            : 'Telegram User';
+          const tgChatId = String(cq.message?.chat?.id || '');
+
+          const bot = getTelegramBotClient(botConfig.id);
+          if (bot) {
+            await bot.answerCallbackQuery(cqId, '✅ Received', false).catch(() => null);
+          }
+
+          let buttonText = data;
+          if (data.startsWith('btn:') || data.startsWith('list:') || data.startsWith('poll_vote:')) {
+            buttonText = data.split(':')[1] || data;
+          }
+
+          const responseText = `🔘 [Telegram Button Interaction]\n👤 User: ${voterName}\n🗳️ Selected: ${buttonText}`;
+
+          const mappings = (store.mappings || []).filter(
+            (m) =>
+              m.enabled &&
+              (!tgChatId || String(m.tg_chat_id) === tgChatId) &&
+              (!m.bot_id || m.bot_id === botConfig.id) &&
+              (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
+          );
+
+          for (const mapping of mappings) {
+            let session = getSession('default');
+            if (!session || !session.sock || !session.isConnected) {
+              for (const s of sessions.values()) {
+                if (s.sock && s.isConnected) {
+                  session = s;
+                  break;
+                }
+              }
+            }
+            if (session && session.sock && session.isConnected) {
+              try {
+                await session.sock.sendMessage(mapping.wa_jid, { text: responseText });
+              } catch (e) {
+                logger.debug({ error: e.message }, 'Failed to mirror Telegram callback query to WA');
+              }
+            }
+          }
+          continue;
+        }
+
         // Handle Telegram Poll Updates (when poll options or total voters change)
         if (update.poll) {
           const p = update.poll;
@@ -571,6 +623,58 @@ export async function processTelegramUpdates() {
           const isPinMsg = Boolean(msg.pinned_message);
           if (isSystemMsg && mapping.sync_system_events === false) continue;
           if (isPinMsg && mapping.sync_pins === false) continue;
+
+          if (tgText && (tgText.trim().startsWith('/unpin') || tgText.trim().startsWith('!unpin'))) {
+            if (mapping.sync_pins !== false) {
+              const isUnpinAll = tgText.trim().startsWith('/unpinall') || tgText.trim().startsWith('!unpinall');
+              let session = getSession('default');
+              if (!session || !session.sock || !session.isConnected) {
+                for (const s of sessions.values()) {
+                  if (s.sock && s.isConnected) {
+                    session = s;
+                    break;
+                  }
+                }
+              }
+              if (session && session.sock && session.isConnected) {
+                try {
+                  const bot = getTelegramBotClient(botConfig.id);
+                  if (isUnpinAll) {
+                    if (bot) {
+                      await bot.request('unpinAllChatMessages', { chat_id: tgChatId }).catch(() => null);
+                    }
+                    logger.info({ tgChatId, waJid: mapping.wa_jid }, '📌 Mirrored /unpinall from Telegram to WhatsApp');
+                  } else {
+                    const targetTgMsgId = msg.reply_to_message?.message_id;
+                    let mappedWaMsg = targetTgMsgId ? resolveWaMsgFromTg(tgChatId, String(targetTgMsgId)) : null;
+                    if (mappedWaMsg && mappedWaMsg.waMsgId) {
+                      const isFromMe = mappedWaMsg.fromMe !== undefined ? mappedWaMsg.fromMe : false;
+                      const unpinKey = {
+                        remoteJid: mapping.wa_jid,
+                        fromMe: isFromMe,
+                        id: mappedWaMsg.waMsgId,
+                      };
+                      if (!isFromMe && mappedWaMsg.senderJid && mappedWaMsg.senderJid.includes('@')) {
+                        unpinKey.participant = mappedWaMsg.senderJid;
+                      }
+                      await session.sock.sendMessage(mapping.wa_jid, {
+                        pin: unpinKey,
+                        type: 0,
+                        time: 0,
+                      });
+                      if (bot && targetTgMsgId) {
+                        await bot.request('unpinChatMessage', { chat_id: tgChatId, message_id: targetTgMsgId }).catch(() => null);
+                      }
+                      logger.info({ tgChatId, waMsgId: mappedWaMsg.waMsgId }, '📌 Mirrored /unpin from Telegram to WhatsApp');
+                    }
+                  }
+                } catch (unpinErr) {
+                  logger.warn({ error: unpinErr.message }, 'Failed to unpin message in WhatsApp from TG command');
+                }
+              }
+            }
+            continue;
+          }
 
           if (mapping.ignore_command_prefixes && tgText) {
             const cleanText = tgText.trim();

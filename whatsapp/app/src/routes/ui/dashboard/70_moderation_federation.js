@@ -98,6 +98,27 @@ async function exportGroupModerationConfig() {
   }
 }
 
+async function downloadChatAndSecurityExport(timeframe = '24h', types = 'all') {
+  if (!currentModGroup) return showToast(t('moderation.select_group_warning'), 'warning');
+  try {
+    showToast(t('moderation.export_compiling'), 'info');
+    const url =
+      basePath +
+      `api/moderation/export/${encodeURIComponent(currentModGroup)}?timeframe=${encodeURIComponent(
+        timeframe
+      )}&types=${encodeURIComponent(types)}`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `whatsapp_export_${currentModGroup.split('@')[0]}_${timeframe}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast(t('moderation.export_downloaded'), 'success');
+  } catch (e) {
+    showToast(t('moderation.export_failed'), 'danger');
+  }
+}
+
 async function handleModConfigFileUpload(inputEl) {
   const file = inputEl?.files?.[0];
   const filenameEl = document.getElementById('mod-import-config-filename');

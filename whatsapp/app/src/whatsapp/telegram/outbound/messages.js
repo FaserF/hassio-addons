@@ -296,8 +296,51 @@ export async function syncWhatsAppToTelegram(
             silent
           );
         }
+      } else if (mediaType === 'buttons') {
+        const btnObj = msg.message?.buttonsMessage || msg.message?.templateMessage?.hydratedTemplate;
+        const bodyText = btnObj?.contentText || btnObj?.hydratedContentText || fullText;
+        const footer = btnObj?.footerText || btnObj?.hydratedFooterText || '';
+        const rawBtns = btnObj?.buttons || btnObj?.hydratedButtons || [];
+        const inlineKeyboard = rawBtns.map((b, i) => {
+          const label = b.buttonText?.displayText || b.quickReplyButton?.displayText || b.displayText || `Option ${i + 1}`;
+          const id = b.buttonId || b.quickReplyButton?.id || b.id || `btn_${i + 1}`;
+          return [{ text: label, callback_data: `btn:${id}` }];
+        });
+        const btnCaption = `${header}🔘 <b>${bodyText}</b>${footer ? `\n<i>${footer}</i>` : ''}`;
+        tgResult = await bot
+          .sendMessage(
+            mapping.tg_chat_id,
+            btnCaption,
+            replyToTgMsgId,
+            threadId,
+            silent,
+            inlineKeyboard.length > 0 ? { inline_keyboard: inlineKeyboard } : null
+          )
+          .catch(() => null);
+      } else if (mediaType === 'list') {
+        const listObj = msg.message?.listMessage;
+        const title = listObj?.title || 'Menu';
+        const description = listObj?.description || '';
+        const sections = listObj?.sections || [];
+        const inlineKeyboard = [];
+        for (const s of sections) {
+          for (const r of s.rows || []) {
+            inlineKeyboard.push([{ text: r.title || 'Option', callback_data: `list:${r.rowId || r.id || r.title}` }]);
+          }
+        }
+        const listCaption = `${header}📋 <b>${title}</b>${description ? `\n${description}` : ''}`;
+        tgResult = await bot
+          .sendMessage(
+            mapping.tg_chat_id,
+            listCaption,
+            replyToTgMsgId,
+            threadId,
+            silent,
+            inlineKeyboard.length > 0 ? { inline_keyboard: inlineKeyboard } : null
+          )
+          .catch(() => null);
       } else if (mediaType === 'poll') {
-        const pollMode = mapping.poll_sync_mode || 'text_diagram';
+        const pollMode = mapping.poll_sync_mode || 'native_sync';
         const pollObj =
           msg.message?.pollCreationMessage ||
           msg.message?.pollCreationMessageV2 ||
@@ -335,6 +378,21 @@ export async function syncWhatsAppToTelegram(
               .sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent)
               .catch(() => null);
           }
+        } else if (pollMode === 'buttons') {
+          const inlineKeyboard = options.map((opt, i) => [
+            { text: opt, callback_data: `poll_vote:${i}` },
+          ]);
+          const pollText = `${header}📊 <b>[Poll: ${question}]</b>\nSelect an option below:`;
+          tgResult = await bot
+            .sendMessage(
+              mapping.tg_chat_id,
+              pollText,
+              replyToTgMsgId,
+              threadId,
+              silent,
+              { inline_keyboard: inlineKeyboard }
+            )
+            .catch(() => null);
         } else if (pollMode === 'once_no_update') {
           const shortPollText = `${header}📊 [Poll: ${question}]\nOptions: ${options.join(', ')}`;
           tgResult = await bot
@@ -349,7 +407,7 @@ export async function syncWhatsAppToTelegram(
           }
         }
       } else if (mediaType === 'poll_update') {
-        const pollMode = mapping.poll_sync_mode || 'text_diagram';
+        const pollMode = mapping.poll_sync_mode || 'native_sync';
         if (
           pollMode === 'once_no_update' ||
           pollMode === 'native_sync' ||
@@ -382,100 +440,75 @@ export async function syncWhatsAppToTelegram(
         continue;
       }
 
-      const mediaSource = mediaPath && fs.existsSync(mediaPath) ? mediaPath : mediaUrl;
-      if (!tgResult && mediaSource) {
-        if (mediaType === 'sticker') {
-          tgResult = await bot
-            .sendMediaFile(
-              'sendSticker',
-              mapping.tg_chat_id,
-              mediaSource,
-              'sticker',
-              '',
-              replyToTgMsgId,
-              threadId,
-              silent
-            )
-            .catch(() => null);
-          if (tgResult && fullText.trim()) {
-            await bot
-              .sendMessage(
+      if (!tgResult) {
+        const mediaSource = mediaPath && fs.existsSync(mediaPath) ? mediaPath : mediaUrl;
+        if (mediaSource) {
+          if (mediaType === 'sticker') {
+            tgResult = await bot
+              .sendMediaFile(
+                'sendSticker',
                 mapping.tg_chat_id,
-                fullText.trim(),
-                tgResult.message_id,
+                mediaSource,
+                'sticker',
+                '',
+                replyToTgMsgId,
                 threadId,
                 silent
               )
               .catch(() => null);
-          }
-        } else if (mediaType === 'image') {
-          tgResult = await bot
-            .sendMediaFile(
-              'sendPhoto',
-              mapping.tg_chat_id,
-              mediaSource,
-              'photo',
-              fullText,
-              replyToTgMsgId,
-              threadId,
-              silent
-            )
-            .catch(() => null);
-        } else if (mediaType === 'video') {
-          tgResult = await bot
-            .sendMediaFile(
-              'sendVideo',
-              mapping.tg_chat_id,
-              mediaSource,
-              'video',
-              fullText,
-              replyToTgMsgId,
-              threadId,
-              silent
-            )
-            .catch(() => null);
-        } else if (mediaType === 'audio') {
-          tgResult = await bot
-            .sendMediaFile(
-              'sendVoice',
-              mapping.tg_chat_id,
-              mediaSource,
-              'voice',
-              fullText,
-              replyToTgMsgId,
-              threadId,
-              silent
-            )
-            .catch(() => null);
-        } else if (mediaType === 'document') {
-          tgResult = await bot
-            .sendMediaFile(
-              'sendDocument',
-              mapping.tg_chat_id,
-              mediaSource,
-              'document',
-              fullText,
-              replyToTgMsgId,
-              threadId,
-              silent
-            )
-            .catch(() => null);
-        }
-
-        if (!tgResult) {
-          tgResult = await bot
-            .sendMediaFile(
-              'sendPhoto',
-              mapping.tg_chat_id,
-              mediaSource,
-              'photo',
-              fullText,
-              replyToTgMsgId,
-              threadId,
-              silent
-            )
-            .catch(() =>
-              bot.sendMediaFile(
+            if (tgResult && fullText.trim()) {
+              await bot
+                .sendMessage(
+                  mapping.tg_chat_id,
+                  fullText.trim(),
+                  tgResult.message_id,
+                  threadId,
+                  silent
+                )
+                .catch(() => null);
+            }
+          } else if (mediaType === 'image') {
+            tgResult = await bot
+              .sendMediaFile(
+                'sendPhoto',
+                mapping.tg_chat_id,
+                mediaSource,
+                'photo',
+                fullText,
+                replyToTgMsgId,
+                threadId,
+                silent
+              )
+              .catch(() => null);
+          } else if (mediaType === 'video') {
+            tgResult = await bot
+              .sendMediaFile(
+                'sendVideo',
+                mapping.tg_chat_id,
+                mediaSource,
+                'video',
+                fullText,
+                replyToTgMsgId,
+                threadId,
+                silent
+              )
+              .catch(() => null);
+          } else if (mediaType === 'audio') {
+            tgResult = await bot
+              .sendMediaFile(
+                'sendVoice',
+                mapping.tg_chat_id,
+                mediaSource,
+                'voice',
+                fullText,
+                replyToTgMsgId,
+                threadId,
+                silent
+              )
+              .catch(() => null);
+          } else if (mediaType === 'document') {
+            tgResult = await bot
+              .sendMediaFile(
                 'sendDocument',
                 mapping.tg_chat_id,
                 mediaSource,
@@ -485,26 +518,53 @@ export async function syncWhatsAppToTelegram(
                 threadId,
                 silent
               )
-            )
-            .catch(() => {
-              const mediaFallbackText = `${fullText}\n<i>[Media File Attached]</i>`;
-              return bot.sendMessage(
+              .catch(() => null);
+          }
+
+          if (!tgResult) {
+            tgResult = await bot
+              .sendMediaFile(
+                'sendPhoto',
                 mapping.tg_chat_id,
-                mediaFallbackText,
+                mediaSource,
+                'photo',
+                fullText,
                 replyToTgMsgId,
                 threadId,
                 silent
-              );
-            });
+              )
+              .catch(() =>
+                bot.sendMediaFile(
+                  'sendDocument',
+                  mapping.tg_chat_id,
+                  mediaSource,
+                  'document',
+                  fullText,
+                  replyToTgMsgId,
+                  threadId,
+                  silent
+                )
+              )
+              .catch(() => {
+                const mediaFallbackText = `${fullText}\n<i>[Media File Attached]</i>`;
+                return bot.sendMessage(
+                  mapping.tg_chat_id,
+                  mediaFallbackText,
+                  replyToTgMsgId,
+                  threadId,
+                  silent
+                );
+              });
+          }
+        } else {
+          tgResult = await bot.sendMessage(
+            mapping.tg_chat_id,
+            fullText,
+            replyToTgMsgId,
+            threadId,
+            silent
+          );
         }
-      } else {
-        tgResult = await bot.sendMessage(
-          mapping.tg_chat_id,
-          fullText,
-          replyToTgMsgId,
-          threadId,
-          silent
-        );
       }
 
       const sentTgMsgId = tgResult?.message_id || tgResult?.result?.message_id;

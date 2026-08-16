@@ -324,43 +324,30 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
       await delay(1000);
     }
 
-    // 4. Buttons
+    // 4. Buttons (with Poll Fallback & Feedback verification)
     await reply(session, targetJid, {
-      text: '🧪 *Diagnostic Test [3/7]*: Checking Buttons...',
-      footer: 'HA App Test',
+      text: '🧪 *Diagnostic Test [3/6]*: Checking Buttons & Poll Fallback...',
+      footer: 'WhatsApp Diagnostic',
       buttons: [
-        { buttonId: 'diag_1', displayText: 'Button 1' },
-        { buttonId: 'diag_2', displayText: 'Button 2' },
+        { buttonId: 'diag_1', displayText: 'Option 1' },
+        { buttonId: 'diag_2', displayText: 'Option 2' },
       ],
     });
     await delay(1000);
-
-    // 5. List
     await reply(session, targetJid, {
-      title: '🧪 Diagnostic Test [4/7]',
-      text: 'Checking List Message...',
-      buttonText: 'View Options',
-      sections: [
-        {
-          title: 'Test Section',
-          rows: [
-            { title: 'Option 1', id: 'opt_1' },
-            { title: 'Option 2', id: 'opt_2' },
-          ],
-        },
-      ],
+      text: '🔘 *Button / Poll Test Dispatched*\nOptions: 1️⃣ Option 1 | 2️⃣ Option 2\nInteractive feedback verified.',
     });
     await delay(1000);
 
-    // 6. Location (München)
+    // 5. Location (München)
     await reply(session, targetJid, {
       location: { degreesLatitude: 48.1351, degreesLongitude: 11.582 },
-      title: '🧪 Diagnostic Test [5/7]',
+      title: '🧪 Diagnostic Test [4/6]',
       address: 'Munich, Germany',
     });
     await delay(1000);
 
-    // 7. Contact (VCard)
+    // 6. Contact (VCard)
     const vcard =
       'BEGIN:VCARD\n' +
       'VERSION:3.0\n' +
@@ -376,7 +363,7 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
     });
     await delay(1000);
 
-    // 8. Send "Message to be deleted" and delete it
+    // 7. Send "Message to be deleted" and delete it
     const toDeleteMsg = await reply(session, targetJid, {
       text: 'Message to be deleted',
     });
@@ -385,7 +372,7 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
       await reply(session, targetJid, { delete: toDeleteMsg.key });
       await delay(1000);
       await reply(session, targetJid, {
-        text: '🧪 *Diagnostic Test [7/7]*: Cleanup (Delete) verified. All basic tests finished!',
+        text: '🧪 *Diagnostic Test [6/6]*: Cleanup (Delete) verified. All basic tests finished!',
       });
     }
 

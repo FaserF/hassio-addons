@@ -41,6 +41,7 @@ window.openGlobalRulesModal = openGlobalRulesModal;
 window.closeGlobalRulesModal = closeGlobalRulesModal;
 window.saveGlobalRulesFromModal = saveGlobalRulesFromModal;
 window.exportGroupModerationConfig = exportGroupModerationConfig;
+window.downloadChatAndSecurityExport = downloadChatAndSecurityExport;
 window.importGroupModerationConfig = importGroupModerationConfig;
 window.clearUserWarnInUi = clearUserWarnInUi;
 window.updateFedBlacklistTagsInUi = updateFedBlacklistTagsInUi;

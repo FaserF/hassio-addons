@@ -504,7 +504,7 @@ export function handleIncomingMessages(session) {
           const isGroup = targetJid.endsWith('@g.us');
           const groupName = isGroup ? session.groupCache?.get(targetJid) || targetJid : '';
           const senderName = msg.pushName || session.contactCache?.get(targetJid)?.name || '';
-          syncWhatsAppEditToTelegram(
+          await syncWhatsAppEditToTelegram(
             editedWaMsgId,
             targetJid,
             newText,
@@ -512,9 +512,9 @@ export function handleIncomingMessages(session) {
             senderName,
             msg.key?.id
           );
-          updateTranslationIfExists(session, targetJid, editedWaMsgId, newText);
+          await updateTranslationIfExists(session, targetJid, editedWaMsgId, newText);
           if (msg.key?.id && msg.key.id !== editedWaMsgId) {
-            updateTranslationIfExists(session, targetJid, msg.key.id, newText);
+            await updateTranslationIfExists(session, targetJid, msg.key.id, newText);
           }
         }
       } else if (
@@ -800,6 +800,37 @@ export function handleIncomingMessages(session) {
               ? `\nOptions:\n${options.map((o, i) => `  ${i + 1}️⃣ ${o}`).join('\n')}`
               : '';
           text = `📊 [Poll: ${question}]${optStr}`;
+        } else if (messageType === 'buttonsMessage' || messageType === 'templateMessage') {
+          mediaType = 'buttons';
+          const btnObj = msg.message?.buttonsMessage || msg.message?.templateMessage?.hydratedTemplate;
+          const bodyText = btnObj?.contentText || btnObj?.hydratedContentText || 'Buttons';
+          const footer = btnObj?.footerText || btnObj?.hydratedFooterText || '';
+          const buttonsList = (btnObj?.buttons || btnObj?.hydratedButtons || []).map((b, i) => {
+            const label = b.buttonText?.displayText || b.quickReplyButton?.displayText || b.displayText || `Option ${i + 1}`;
+            const id = b.buttonId || b.quickReplyButton?.id || b.id || `btn_${i + 1}`;
+            return { id, label };
+          });
+          const optStr = buttonsList.length > 0 ? `\n${buttonsList.map((b) => `🔘 ${b.label}`).join('\n')}` : '';
+          text = `🔘 [Buttons: ${bodyText}]${footer ? `\n_${footer}_` : ''}${optStr}`;
+        } else if (messageType === 'listMessage') {
+          mediaType = 'list';
+          const listObj = msg.message?.listMessage;
+          const title = listObj?.title || 'List';
+          const description = listObj?.description || '';
+          const sections = listObj?.sections || [];
+          const rowsFormatted = [];
+          for (const s of sections) {
+            if (s.title) rowsFormatted.push(`*${s.title}*`);
+            for (const r of s.rows || []) {
+              rowsFormatted.push(`  • ${r.title || 'Item'}${r.description ? ` (${r.description})` : ''}`);
+            }
+          }
+          text = `📋 [List: ${title}]${description ? `\n${description}` : ''}${rowsFormatted.length > 0 ? `\n${rowsFormatted.join('\n')}` : ''}`;
+        } else if (messageType === 'interactiveMessage') {
+          mediaType = 'interactive';
+          const intObj = msg.message?.interactiveMessage;
+          const body = intObj?.body?.text || intObj?.header?.title || 'Interactive Message';
+          text = `🔘 [Interactive: ${body}]`;
         }
 
         const innerMsgObj = msg.message?.[messageType];
@@ -1292,8 +1323,8 @@ export function handleIncomingMessages(session) {
               const isGroup = targetJid.endsWith('@g.us');
               const groupName = isGroup ? session.groupCache?.get(targetJid) || targetJid : '';
               const senderName = session.contactCache?.get(targetJid)?.name || '';
-              syncWhatsAppEditToTelegram(editedWaMsgId, targetJid, newText, groupName, senderName);
-              updateTranslationIfExists(session, targetJid, editedWaMsgId, newText);
+              await syncWhatsAppEditToTelegram(editedWaMsgId, targetJid, newText, groupName, senderName);
+              await updateTranslationIfExists(session, targetJid, editedWaMsgId, newText);
             }
           } else if (
             prot &&

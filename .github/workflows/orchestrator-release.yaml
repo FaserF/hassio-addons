@@ -980,8 +980,8 @@ jobs:
             if git push origin master; then
               echo "✅ Push successful!"
               if [ "$HAS_CHANGES" = "true" ] && [ "${{ github.event.inputs.changelog_only }}" != "true" ]; then
-                echo "🔄 Triggering Orchestrator Edge Sync..."
-                gh workflow run orchestrator-edge-sync.yaml --ref master || echo "⚠️ Failed to trigger edge sync workflow"
+                echo "🔄 Triggering Orchestrator Edge Sync for ${{ matrix.App }}..."
+                gh workflow run orchestrator-edge-sync.yaml --ref master -f app="${{ matrix.App }}" || echo "⚠️ Failed to trigger edge sync workflow"
               fi
               exit 0
             fi

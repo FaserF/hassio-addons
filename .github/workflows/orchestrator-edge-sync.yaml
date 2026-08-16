@@ -12,6 +12,11 @@ on:
       - ".github/workflows/**"
   workflow_dispatch:
     inputs:
+      app:
+        description: "Specific App to bump (leave empty to bump detected or all)"
+        required: false
+        default: ""
+        type: string
       force_sync:
         description: "Force sync edge branch"
         required: false
@@ -213,8 +218,11 @@ jobs:
           # Get all App directories
           ALL_AppS=$(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" | sed 's|^\./||' | sed 's|/config.yaml||' | grep -v "^\." | sort -u)
 
-          # For workflow_dispatch, bump all Apps
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          # For workflow_dispatch, bump specific App if specified, otherwise all
+          if [ -n "${{ github.event.inputs.app }}" ]; then
+            echo "📦 workflow_dispatch: Bumping SPECIFIC App: ${{ github.event.inputs.app }}"
+            CHANGED_AppS="${{ github.event.inputs.app }}"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "📦 workflow_dispatch: Bumping ALL Apps"
             CHANGED_AppS="$ALL_AppS"
           else
