@@ -441,9 +441,7 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
   if (waSelect) {
     const rawWaT = window.t ? window.t('telegram.modal.select_wa_chat') : null;
     const selectPlaceholder =
-      rawWaT &&
-      rawWaT !== 'telegram.modal.select_wa_chat' &&
-      rawWaT !== 'telegram.select_wa_chat'
+      rawWaT && rawWaT !== 'telegram.modal.select_wa_chat' && rawWaT !== 'telegram.select_wa_chat'
         ? rawWaT
         : window.t
           ? window.t('telegram.select_wa_chat')
@@ -497,9 +495,7 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
   if (tgSelect) {
     const rawTgT = window.t ? window.t('telegram.modal.select_tg_chat') : null;
     const selectTgPlaceholder =
-      rawTgT &&
-      rawTgT !== 'telegram.modal.select_tg_chat' &&
-      rawTgT !== 'telegram.select_tg_chat'
+      rawTgT && rawTgT !== 'telegram.modal.select_tg_chat' && rawTgT !== 'telegram.select_tg_chat'
         ? rawTgT
         : window.t
           ? window.t('telegram.select_tg_chat')

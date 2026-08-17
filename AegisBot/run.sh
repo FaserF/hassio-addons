@@ -474,27 +474,27 @@ check_github_status() {
 	local context="${2:-GitHub request}"
 
 	case "$http_code" in
-		000)
-			bashio::log.warning "⚠️ $context: Connection timeout or unreachable network (HTTP 000)."
-			;;
-		401)
-			bashio::log.warning "⚠️ $context: Authentication failed (HTTP 401 Unauthorized). Please check your token."
-			;;
-		403)
-			bashio::log.warning "⚠️ $context: Access forbidden or API rate limit exceeded (HTTP 403)."
-			;;
-		404)
-			bashio::log.warning "⚠️ $context: Resource not found or repository is private without adequate permissions (HTTP 404)."
-			;;
-		429)
-			bashio::log.warning "⚠️ $context: Too many requests / API rate limit exceeded (HTTP 429)."
-			;;
-		500|502|503|504)
-			bashio::log.warning "⚠️ $context: GitHub server error (HTTP $http_code)."
-			;;
-		*)
-			bashio::log.warning "⚠️ $context returned HTTP $http_code."
-			;;
+	000)
+		bashio::log.warning "⚠️ $context: Connection timeout or unreachable network (HTTP 000)."
+		;;
+	401)
+		bashio::log.warning "⚠️ $context: Authentication failed (HTTP 401 Unauthorized). Please check your token."
+		;;
+	403)
+		bashio::log.warning "⚠️ $context: Access forbidden or API rate limit exceeded (HTTP 403)."
+		;;
+	404)
+		bashio::log.warning "⚠️ $context: Resource not found or repository is private without adequate permissions (HTTP 404)."
+		;;
+	429)
+		bashio::log.warning "⚠️ $context: Too many requests / API rate limit exceeded (HTTP 429)."
+		;;
+	500 | 502 | 503 | 504)
+		bashio::log.warning "⚠️ $context: GitHub server error (HTTP $http_code)."
+		;;
+	*)
+		bashio::log.warning "⚠️ $context returned HTTP $http_code."
+		;;
 	esac
 
 	# If server error (5xx) or connection timeout (000), check GitHub Status API
