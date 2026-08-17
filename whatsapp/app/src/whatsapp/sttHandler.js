@@ -122,12 +122,10 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     return false;
   }
 
-  // Check group configuration toggle (stt_enabled, default false)
-  if (groupId && groupId.endsWith('@g.us')) {
-    const config = getGroupModerationConfig(groupId);
-    if (!config || !config.stt_enabled) {
-      return false;
-    }
+  // Check configuration toggle (stt_enabled, default false) for all chats (groups & private chats alike)
+  const config = groupId ? getGroupModerationConfig(groupId) : null;
+  if (!config || !config.stt_enabled) {
+    return false;
   }
 
   try {

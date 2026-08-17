@@ -287,7 +287,7 @@ export async function triggerHAAutomation(baseUrl, token, automationId) {
           res.on('data', (chunk) => (body += chunk));
           res.on('end', () => {
             const success = res.statusCode >= 200 && res.statusCode < 300;
-            let parsed = null;
+            let parsed;
             try {
               parsed = JSON.parse(body);
             } catch {

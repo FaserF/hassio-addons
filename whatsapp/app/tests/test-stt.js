@@ -58,4 +58,35 @@ assert.strictEqual(diagTransAuto.status, 'healthy');
 assert.ok(diagTransAuto.selection_reason.includes('Auto-Failover'));
 console.log('✅ PASSED: Translation Diagnostics correctly reports auto-failover provider & health');
 
+// Test 7: handleWhatsAppVoiceSTT correctly rejects private chats when stt_enabled is false (Issue #982)
+const { handleWhatsAppVoiceSTT } = await import('../src/whatsapp/sttHandler.js');
+const dummyVoiceMsg = {
+  key: { remoteJid: '4915902242000@s.whatsapp.net', fromMe: false },
+  message: {
+    audioMessage: {
+      url: 'https://example.com/audio.ogg',
+      mimetype: 'audio/ogg; codecs=opus',
+      seconds: 5,
+    },
+  },
+};
+
+const dmResult = await handleWhatsAppVoiceSTT({}, '4915902242000@s.whatsapp.net', dummyVoiceMsg);
+assert.strictEqual(dmResult, false, 'Private chat must not transcribe when stt_enabled is false');
+console.log('✅ PASSED: handleWhatsAppVoiceSTT rejects private 1:1 chat voice notes by default');
+
+// Test 8: handleWhatsAppVoiceSTT correctly rejects unconfigured group chats
+const groupResult = await handleWhatsAppVoiceSTT({}, '123456789@g.us', dummyVoiceMsg);
+assert.strictEqual(groupResult, false, 'Group chat must not transcribe when stt_enabled is false');
+console.log('✅ PASSED: handleWhatsAppVoiceSTT rejects unconfigured group voice notes by default');
+
+// Test 9: handleWhatsAppVoiceSTT ignores outgoing bot messages (fromMe: true)
+const fromMeVoiceMsg = {
+  key: { remoteJid: '4915902242000@s.whatsapp.net', fromMe: true },
+  message: { audioMessage: { seconds: 5 } },
+};
+const fromMeResult = await handleWhatsAppVoiceSTT({}, '4915902242000@s.whatsapp.net', fromMeVoiceMsg);
+assert.strictEqual(fromMeResult, false, 'Outgoing audio fromMe must be ignored');
+console.log('✅ PASSED: handleWhatsAppVoiceSTT ignores outgoing bot voice messages');
+
 console.log('✅ ALL STT & DIAGNOSTICS TESTS PASSED');
