@@ -1,0 +1,71 @@
+---
+configuration:
+  version:
+    name: Version
+    description: >-
+      Zu installierende Version von EntraMirror. 'latest' für das neueste Release
+      oder ein Versions-Tag wie 'v0.1.0'.
+
+  github_token:
+    name: GitHub Token
+    description: >-
+      Optional: Personal Access Token (Classic oder Fine-grained) für den Zugriff
+      auf private Repositories. Erforderlich, solange das EntraMirror-Repository privat ist.
+
+  github_repo:
+    name: GitHub Repository
+    description: >-
+      GitHub-Repository zum Herunterladen (Format: owner/repo).
+      Standard: FaserF/EntraMirror
+
+  developer_mode:
+    name: Entwicklermodus
+    description: >-
+      Wenn aktiviert, lädt das Addon bei jedem Neustart den neuesten Code aus
+      dem 'main'-Branch herunter. ACHTUNG: Kann instabile Features enthalten!
+
+  reset_database:
+    name: Datenbank zurücksetzen
+    description: >-
+      ⚠️ WARNUNG: Dies löscht ALLE DATEN inklusive Tenants, Snapshots,
+      Zugangsdaten und Zeitpläne! Kann nicht rückgängig gemacht werden.
+      Erfordert auch 'reset_database_confirm'.
+
+  reset_database_confirm:
+    name: Zurücksetzen bestätigen
+    description: >-
+      Zusätzliche Bestätigung zum Zurücksetzen der Datenbank.
+
+  log_level:
+    name: Protokollierungsstufe
+    description: Bestimmt die Detailtiefe der Protokolle.
+
+  secret_key:
+    name: Secret Key
+    description: >-
+      Geheimer Schlüssel für Verschlüsselung und Tokens. Leer lassen für
+      automatische Generierung beim ersten Start (empfohlen).
+
+  debug:
+    name: Debug-Modus
+    description: Aktiviert den Debug-Modus für detaillierte Fehlermeldungen.
+
+  sso_enabled:
+    name: Entra ID SSO aktivieren
+    description: >-
+      Aktiviert "Mit Microsoft anmelden" über Microsoft Entra ID SSO.
+
+  sso_client_id:
+    name: SSO Client-ID
+    description: >-
+      Anwendungs-(Client-)ID aus der Microsoft Entra App-Registrierung.
+
+  sso_tenant_id:
+    name: SSO Mandanten-ID
+    description: >-
+      Verzeichnis-(Mandanten-)ID oder 'common' für Multi-Tenant SSO.
+
+  first_admin_password:
+    name: Initiales Admin-Passwort
+    description: >-
+      Initiales Passwort für den Standard-Admin-Benutzer.

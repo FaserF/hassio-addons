@@ -113,6 +113,15 @@
       "customType": "regex",
       "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": [
+        "ARG ENTRAMIRROR_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s*"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "FaserF/EntraMirror"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+      "matchStrings": [
         "ARG SWITCH_LAN_PLAY_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
       "datasourceTemplate": "github-releases",
@@ -341,6 +350,7 @@
         "requarks/wiki",
         "ghcr.io/requarks/wiki",
         "FaserF/AegisBot",
+        "FaserF/EntraMirror",
         "FaserF/Solumati",
         "spacemeowx2/switch-lan-play",
         "Eidolf/Docker-AntiGravity",

@@ -1,0 +1,150 @@
+ARG BUILD_FROM=ghcr.io/home-assistant/base-python:3.14-alpine3.23
+# hadolint ignore=DL3006
+FROM ${BUILD_FROM}
+ARG BUILD_DATE="1970-01-01T00:00:00Z"
+
+# Set shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Setup Environment
+ENV LANG=C.UTF-8
+ENV PIP_ROOT_USER_ACTION=ignore
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/usr/local/bin:/root/.local/bin:${PATH}"
+
+# Install System Requirements including Node.js
+
+# hadolint ignore=DL3018
+
+# App metadata (injected by CI)
+ENV ADDON_VERSION="0.1.0"
+ENV APP_NAME="EntraMirror"
+ENV APP_SLUG="entramirror"
+ENV APP_UNSUPPORTED="false"
+
+RUN \
+    apk add --no-cache \
+    libssl3 \
+    libcrypto3 \
+    musl \
+    nginx \
+    gcc \
+    g++ \
+    make \
+    cmake \
+    musl-dev \
+    libffi-dev \
+    openssl-dev \
+    python3-dev \
+    curl \
+    xz \
+    nodejs \
+    npm \
+    unzip \
+    linux-headers \
+    pkgconf \
+    jq && \
+    # Verify Node.js version
+    node --version && \
+    npm --version
+
+# Copy and pre-install core Python dependencies into system Python
+COPY requirements.txt /tmp/requirements.txt
+RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
+
+# Try to download and build during Docker build if repo is public.
+# If this fails (e.g. private repo), we continue and let run.sh handle it.
+# CR-Skip-TarballIntegrity: Dynamic tarball from GitHub API, checksum not applicable
+
+ARG ENTRAMIRROR_VERSION="latest"
+ENV ENTRAMIRROR_VERSION=${ENTRAMIRROR_VERSION}
+
+WORKDIR /tmp/build
+# hadolint ignore=DL3018
+RUN \
+    echo "Attempting to fetch EntraMirror version: ${ENTRAMIRROR_VERSION}" && \
+    # 1. Resolve Version URL
+    DOWNLOAD_URL="" && \
+    if [ "${ENTRAMIRROR_VERSION}" = "latest" ]; then \
+        # Try to find latest tag via API (with Accept header for better rate limits)
+        TAG_NAME=$(curl -s -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/FaserF/EntraMirror/releases/latest | grep '"tag_name":' | sed -E 's/.*"tag_name": "([^"]+)".*/\1/'); \
+        if [ -n "$TAG_NAME" ]; then \
+            echo "Resolved latest version to: ${TAG_NAME}"; \
+            DOWNLOAD_URL="https://api.github.com/repos/FaserF/EntraMirror/tarball/${TAG_NAME}"; \
+        else \
+            echo "Could not resolve latest version tag. Skipping build stage."; \
+        fi; \
+    else \
+        DOWNLOAD_URL="https://api.github.com/repos/FaserF/EntraMirror/tarball/${ENTRAMIRROR_VERSION}"; \
+    fi && \
+    # 2. Try Download & Build (If URL found)
+    if [ -n "$DOWNLOAD_URL" ]; then \
+        echo "Attempting download from: ${DOWNLOAD_URL}"; \
+        if curl -L -f -o source.tar.gz "$DOWNLOAD_URL"; then \
+            echo "✅ Download successful (Public Repo). Building image..."; \
+            \
+            # Extract \
+            tar -xzf source.tar.gz --strip-components=1 && \
+            \
+            # Setup Backend \
+            mkdir -p /app/backend && \
+            cp -r backend/* /app/backend/ && \
+            if [ -f "/app/backend/requirements.txt" ]; then \
+                pip3 install --no-cache-dir -r /app/backend/requirements.txt; \
+            fi && \
+            \
+            # Build Docs \
+            if [ -f "mkdocs.yml" ]; then \
+                mkdocs build -f mkdocs.yml -d /app/docs; \
+            fi && \
+            \
+            # Setup Frontend \
+            mkdir -p /app/frontend && \
+            npm --prefix frontend install && \
+            npm --prefix frontend run build && \
+            cp -r frontend/dist/* /app/frontend/ && \
+            \
+            # Cleanup \
+            rm -rf /tmp/build && \
+            echo "✅ Build complete. Image is self-contained."; \
+        else \
+            echo "⚠️ Download failed (likely Private Repository or Invalid Version)."; \
+            echo "Skipping build stage. 'run.sh' will handle download with Token."; \
+            # Ensure directories are clean/empty so run.sh detects missing code \
+            rm -rf /app/backend/* /app/frontend/* /app/docs/*; \
+            rm -f /tmp/build/source.tar.gz; \
+        fi; \
+    fi
+
+# Create app directories (if not created by build step)
+WORKDIR /app
+RUN \
+    mkdir -p /app/backend && \
+    mkdir -p /app/frontend && \
+    mkdir -p /app/docs
+
+# Setup Nginx
+COPY nginx.conf /etc/nginx/http.d/default.conf
+
+# Copy Run Script
+COPY rootfs /
+COPY run.sh /run.sh
+RUN chmod a+x /run.sh
+
+# Health check - faster detection with startup grace period
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
+    CMD ["/bin/sh", "-c", "curl -fsS http://127.0.0.1:8077/health || exit 1"]
+
+CMD [ "/run.sh" ]
+
+# Labels
+LABEL org.opencontainers.image.title="EntraMirror"
+LABEL org.opencontainers.image.description="Microsoft Entra ID Tenant Backup, Restore, Synchronization & Cloning for Home Assistant."
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Apps"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/EntraMirror"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/EntraMirror"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/EntraMirror#readme"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"

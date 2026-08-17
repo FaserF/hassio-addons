@@ -1,0 +1,71 @@
+---
+configuration:
+  version:
+    name: Version
+    description: >-
+      Version of EntraMirror to install. Use 'latest' for the newest release,
+      or specify a version tag like 'v0.1.0'.
+
+  github_token:
+    name: GitHub Token
+    description: >-
+      Optional: Personal Access Token (Classic or Fine-grained) for accessing
+      private repositories. Required if the EntraMirror repository is private.
+
+  github_repo:
+    name: GitHub Repository
+    description: >-
+      GitHub repository to download from (format: owner/repo).
+      Default: FaserF/EntraMirror
+
+  developer_mode:
+    name: Developer Mode
+    description: >-
+      When enabled, the App will always download and use the latest code
+      from the main branch on every restart. WARNING: This may include unstable features!
+
+  reset_database:
+    name: Reset Database
+    description: >-
+      ⚠️ WARNING: This will DELETE ALL DATA including tenants, snapshots,
+      credentials and schedules! This action cannot be undone.
+      Requires 'reset_database_confirm' to be enabled as well.
+
+  reset_database_confirm:
+    name: Confirm Database Reset
+    description: >-
+      Additional confirmation for database reset. Must be enabled together with 'reset_database'.
+
+  log_level:
+    name: Log Level
+    description: Controls the verbosity of log output.
+
+  secret_key:
+    name: Secret Key
+    description: >-
+      Secret key for encryption and session tokens. Leave empty to
+      auto-generate a secure key on first run (recommended).
+
+  debug:
+    name: Debug Mode
+    description: Enable debug mode for detailed error messages (not recommended for production).
+
+  sso_enabled:
+    name: Enable Entra ID SSO
+    description: >-
+      Enable "Sign in with Microsoft" using Microsoft Entra ID SSO tokens.
+
+  sso_client_id:
+    name: SSO Client ID
+    description: >-
+      Application (client) ID from Microsoft Entra App Registration.
+
+  sso_tenant_id:
+    name: SSO Tenant ID
+    description: >-
+      Directory (tenant) ID or 'common' for multi-tenant Microsoft Entra SSO.
+
+  first_admin_password:
+    name: Initial Admin Password
+    description: >-
+      Initial password for the default admin user.

@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-08-16T12:37:27.861133",
+  "timestamp": "2026-08-17T14:25:00.264512",
   "connections": {
     "AegisBot": {
       "name": "AegisBot",
@@ -25,6 +25,26 @@
           "AegisBot/rootfs/usr/lib/bashio/banner.sh"
         ],
         "translations": ["AegisBot/translations/de.yaml", "AegisBot/translations/en.yaml"]
+      }
+    },
+    "EntraMirror": {
+      "name": "EntraMirror",
+      "version": "0.1.0",
+      "description": "Microsoft Entra ID Tenant Backup, Restore, Synchronization & Cloning for Home Assistant.",
+      "arch": ["aarch64", "amd64"],
+      "image": "ghcr.io/faserf/hassio-addons-entramirror-{arch}",
+      "files": {
+        "core": [
+          "EntraMirror/config.yaml",
+          "EntraMirror/Dockerfile",
+          "EntraMirror/run.sh",
+          "EntraMirror/build.yaml",
+          "EntraMirror/CHANGELOG.md",
+          "EntraMirror/README.md",
+          "EntraMirror/DOCS.md"
+        ],
+        "rootfs": ["EntraMirror/rootfs/usr/lib/bashio/app.sh"],
+        "translations": ["EntraMirror/translations/de.yaml", "EntraMirror/translations/en.yaml"]
       }
     },
     "ShieldDNS": {

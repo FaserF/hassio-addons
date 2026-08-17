@@ -35,6 +35,7 @@ body:
       options:
         - Other
         - AegisBot
+        - EntraMirror
         - ShieldDNS
         - ShieldFile
         - antigravity-server
