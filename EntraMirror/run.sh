@@ -381,10 +381,6 @@ get_auth_header() {
 	local token="$1"
 	if [[ -z "$token" ]]; then
 		echo ""
-	elif [[ "$token" == github_pat_* ]]; then
-		echo "Authorization: Bearer $token"
-	elif [[ "$token" == ghp_* ]]; then
-		echo "Authorization: token $token"
 	else
 		echo "Authorization: Bearer $token"
 	fi
@@ -399,7 +395,7 @@ download_file() {
 
 	# 1. Try Public Access (No Token)
 	bashio::log.debug "Trying public access..."
-	if curl -L -f -H "Accept: application/vnd.github.v3+json" "$url" -o "$output" 2>/dev/null; then
+	if curl -sSL -f -A "HomeAssistant-Addon" -H "Accept: application/vnd.github.v3+json" "$url" -o "$output" 2>/dev/null; then
 		bashio::log.info "✅ Public download successful."
 		return 0
 	fi
@@ -413,27 +409,41 @@ download_file() {
 		bashio::log.info "Token found (length: ${#token}). Retrying with authentication..."
 
 		local http_code
-		http_code=$(curl -L -w "%{http_code}" -H "$auth_header" -H "Accept: application/vnd.github.v3+json" "$url" -o "$output" 2>/dev/null)
-		if [ "$http_code" = "200" ]; then
-			bashio::log.info "✅ Authenticated download successful."
-			return 0
+		http_code=$(curl -sSL -w "%{http_code}" -A "HomeAssistant-Addon" -H "$auth_header" -H "Accept: application/vnd.github.v3+json" "$url" -o "$output" 2>/dev/null)
+		if [ "$http_code" = "200" ] || [ "$http_code" = "302" ]; then
+			if [ -s "$output" ]; then
+				bashio::log.info "✅ Authenticated download successful."
+				return 0
+			fi
 		fi
 		bashio::log.warning "API download returned HTTP $http_code"
 
+		# Try raw tarball URL endpoint (https://api.github.com/repos/OWNER/REPO/tarball/REF with raw accept header)
+		http_code=$(curl -sSL -w "%{http_code}" -A "HomeAssistant-Addon" -H "$auth_header" -H "Accept: application/vnd.github.raw" "$url" -o "$output" 2>/dev/null)
+		if [ "$http_code" = "200" ] || [ "$http_code" = "302" ]; then
+			if [ -s "$output" ]; then
+				bashio::log.info "✅ Authenticated raw download successful."
+				return 0
+			fi
+		fi
+
+		# Try alternative: Direct GitHub archive URL
 		local direct_url
 		direct_url=$(echo "$url" | sed 's|api.github.com/repos/|github.com/|' | sed 's|/tarball/|/archive/|')
 		direct_url="${direct_url}.tar.gz"
 		bashio::log.info "Trying direct archive URL: $direct_url"
 
-		http_code=$(curl -L -w "%{http_code}" -H "$auth_header" "$direct_url" -o "$output" 2>/dev/null)
-		if [ "$http_code" = "200" ]; then
-			bashio::log.info "✅ Direct archive download successful."
-			return 0
+		http_code=$(curl -sSL -w "%{http_code}" -A "HomeAssistant-Addon" -H "$auth_header" "$direct_url" -o "$output" 2>/dev/null)
+		if [ "$http_code" = "200" ] || [ "$http_code" = "302" ]; then
+			if [ -s "$output" ]; then
+				bashio::log.info "✅ Direct archive download successful."
+				return 0
+			fi
 		fi
 		bashio::log.warning "Direct download returned HTTP $http_code"
 
 		bashio::log.error "❌ Download failed even with token."
-		bashio::log.error "Please ensure your token has 'repo' scope for private repositories."
+		bashio::log.error "Please ensure your token has 'repo' scope (Classic) or 'Contents: Read-only' + selected repository (Fine-grained)."
 		return 1
 	else
 		bashio::log.error "❌ Public access failed and no 'github_token' is configured."
@@ -569,7 +579,7 @@ if [ ! -f "/app/backend/app/main.py" ] || [ ! -f "/app/frontend/index.html" ]; t
 		LATEST_RELEASE_TAG=""
 
 		bashio::log.info "1. Trying public GitHub API..."
-		if curl -s -f -o /tmp/latest_release.json "https://api.github.com/repos/${GITHUB_REPO_CONFIG}/releases/latest"; then
+		if curl -sSL -f -A "HomeAssistant-Addon" -o /tmp/latest_release.json "https://api.github.com/repos/${GITHUB_REPO_CONFIG}/releases/latest"; then
 			bashio::log.info "✅ Public API request successful."
 			LATEST_RELEASE_TAG=$(grep '"tag_name":' /tmp/latest_release.json | sed -E 's/.*"tag_name": "([^"]+)".*/\1/')
 		else
@@ -577,7 +587,7 @@ if [ ! -f "/app/backend/app/main.py" ] || [ ! -f "/app/frontend/index.html" ]; t
 			if [ -n "$GITHUB_TOKEN" ]; then
 				bashio::log.info "2. Retrying with provided GitHub Token (${#GITHUB_TOKEN} chars)..."
 				AUTH_HEADER=$(get_auth_header "$GITHUB_TOKEN")
-				if curl -s -f -H "$AUTH_HEADER" -o /tmp/latest_release.json "https://api.github.com/repos/${GITHUB_REPO_CONFIG}/releases/latest"; then
+				if curl -sSL -f -A "HomeAssistant-Addon" -H "$AUTH_HEADER" -o /tmp/latest_release.json "https://api.github.com/repos/${GITHUB_REPO_CONFIG}/releases/latest"; then
 					bashio::log.info "✅ Authenticated API request successful."
 					LATEST_RELEASE_TAG=$(grep '"tag_name":' /tmp/latest_release.json | sed -E 's/.*"tag_name": "([^"]+)".*/\1/')
 				else
