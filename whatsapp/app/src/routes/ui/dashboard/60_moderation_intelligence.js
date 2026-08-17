@@ -372,14 +372,31 @@ async function testAegisBotConnection() {
         feedback.style.color = '#22c55e';
         feedback.innerHTML = `<i class="fas fa-check-circle"></i> ${data.version || 'AegisBot'} (${data.latency}ms) — ${data.engine || 'OK'}`;
       }
-      if (window.showToast) window.showToast(`✅ AegisBot Server erreichbar (${data.latency}ms)!`, 'success');
+      if (window.showToast) {
+        window.showToast(
+          window.t
+            ? window.t('moderation.stt_aegisbot_test_success', {
+                latency: data.latency,
+                version: data.version || 'v0.1.1',
+              })
+            : `✅ AegisBot (${data.latency}ms)`,
+          'success'
+        );
+      }
       if (window.refreshModerationDiagnostics) refreshModerationDiagnostics();
     } else {
       if (feedback) {
         feedback.style.color = '#ef4444';
         feedback.innerHTML = `<i class="fas fa-times-circle"></i> ${data.error || 'Fehlgeschlagen'}`;
       }
-      if (window.showToast) window.showToast(`❌ ${data.error || 'Verbindung fehlgeschlagen'}`, 'error');
+      if (window.showToast) {
+        window.showToast(
+          window.t
+            ? window.t('moderation.stt_aegisbot_test_failed', { error: data.error || 'Error' })
+            : `❌ ${data.error || 'Error'}`,
+          'error'
+        );
+      }
     }
   } catch (err) {
     if (btn) btn.disabled = false;

@@ -8,6 +8,7 @@ import { isSameUser, resolveUserDisplayName } from '../../../utils/security.js';
 import { isSelfParticipant } from '../engine/penalties.js';
 import { processAiModeration } from '../ai.js';
 import { gt } from '../engine/translations.js';
+import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 
 export function registerConfigCommands(registry) {
   registry.register(
@@ -398,57 +399,83 @@ export function registerConfigCommands(registry) {
   registry.register(
     'translate',
     async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
-      const store = loadModerationStore();
-      const apiKey = store.gemini_api_key || process.env.GEMINI_API_KEY;
-
-      if (!apiKey) {
-        await reply(
-          session,
-          groupId,
-          { text: '❌ Gemini API key not configured. Set it in the Addon UI.' },
-          rawMsg
-        );
-        return;
-      }
-
+      let targetLang = config.translation?.target_lang || 'en';
       let textToTranslate = '';
-      if (rawMsg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.conversation) {
-        textToTranslate = rawMsg.message.extendedTextMessage.contextInfo.quotedMessage.conversation;
-      } else if (
-        rawMsg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.extendedTextMessage?.text
-      ) {
-        textToTranslate =
-          rawMsg.message.extendedTextMessage.contextInfo.quotedMessage.extendedTextMessage.text;
+
+      const quoted =
+        rawMsg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.conversation ||
+        rawMsg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.extendedTextMessage?.text;
+
+      const supportedLangs = [
+        'en',
+        'de',
+        'es',
+        'fr',
+        'it',
+        'pt',
+        'ru',
+        'zh',
+        'ja',
+        'ar',
+        'nl',
+        'tr',
+        'pl',
+        'uk',
+      ];
+
+      if (quoted) {
+        textToTranslate = quoted;
+        if (args.length > 0 && supportedLangs.includes(args[0].toLowerCase())) {
+          targetLang = args[0].toLowerCase();
+        }
+      } else if (args.length >= 2 && supportedLangs.includes(args[0].toLowerCase())) {
+        targetLang = args[0].toLowerCase();
+        textToTranslate = args.slice(1).join(' ');
       } else if (args.length > 0) {
         textToTranslate = args.join(' ');
       }
 
-      if (!textToTranslate) {
+      if (!textToTranslate || !textToTranslate.trim()) {
         await reply(
           session,
           groupId,
-          { text: '⚠️ Reply to a message or provide text to translate.' },
+          {
+            text: gt(config, 'bot_replies.translate_prompt_usage', {
+              prefix: config.commands?.prefix || '!',
+            }),
+          },
           rawMsg
         );
         return;
       }
 
-      const targetLang = config.translation?.target_lang || 'en';
-      const aiConfig = {
-        system_prompt: `You are a translator. Translate the following text to ${targetLang}. Reply ONLY with the translation, nothing else.`,
-        faq_auto_reply: true,
-      };
+      const { translation, reason } = await translateTextGatewayWithReason(
+        textToTranslate,
+        targetLang,
+        'auto',
+        config
+      );
 
-      const translated = await processAiModeration(textToTranslate, aiConfig, apiKey);
-      if (translated) {
+      if (translation) {
         await reply(
           session,
           groupId,
-          { text: `🌐 *Translation (${targetLang}):*\n\n${translated}` },
+          {
+            text: gt(config, 'bot_replies.translate_result_header', {
+              targetLang: targetLang.toUpperCase(),
+              translation,
+            }),
+          },
           rawMsg
         );
       } else {
-        await reply(session, groupId, { text: '❌ Translation failed.' }, rawMsg);
+        logger.warn({ reason, targetLang }, 'Manual translation command failed');
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.translate_failed') },
+          rawMsg
+        );
       }
     },
     { adminOnly: false, help: 'Translate a message or text', aliases: ['tr'] }
