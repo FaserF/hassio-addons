@@ -552,6 +552,7 @@ export function registerConfigCommands(registry) {
       } else {
         c.translation.enabled = !c.translation.enabled;
       }
+      c.translation.mode = c.translation.enabled ? 'auto' : 'manual';
       saveModerationStore(store);
       await reply(
         session,

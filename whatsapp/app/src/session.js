@@ -66,6 +66,7 @@ export function getSession(rawSessionId) {
       recentReceived: [],
       recentFailures: [],
       messageStore: new LRUCache({ max: 5000, ttl: 1000 * 60 * 60 * 24 * 7 }), // 5000 messages or 7 days
+      processedMessageIds: new LRUCache({ max: 5000, ttl: 1000 * 60 * 15 }), // 15 minutes deduplication window
       chatCache: new Map(),
       groupCache: new Map(),
       contactCache: new Map(),

@@ -583,6 +583,18 @@ export function handleIncomingMessages(session) {
           msg.message?.pinInChatMessage
         )
           return false; // Skip protocol control nodes (edits, deletes, pins) from raw text forwarding
+
+        // Deduplicate incoming messages to prevent double execution on Signal ratchet / network retries
+        if (msg.key?.id) {
+          if (session.processedMessageIds?.has(msg.key.id)) {
+            logger.debug(
+              { msgId: msg.key.id },
+              'Skipping duplicate message upsert (already processed)'
+            );
+            return false;
+          }
+          session.processedMessageIds?.set(msg.key.id, Date.now());
+        }
         if (msg.key.fromMe) {
           // Allow outgoing messages if they are to an admin (usually to self) OR in a group
           const isToAdminPrimary = isAdmin(msg.key.remoteJid, session);
