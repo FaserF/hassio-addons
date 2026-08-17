@@ -464,38 +464,38 @@ export async function syncWhatsAppEditToTelegram(
         : `${editIndicator}\n${formattedBody || '<i>[No text]</i>'}`;
       const replyToId = mapped?.tgMsgId ? mapped.tgMsgId : null;
 
-        try {
-          const sentTgMsg = await bot.sendMessage(
+      try {
+        const sentTgMsg = await bot.sendMessage(
+          tgChatId,
+          fallbackText,
+          replyToId,
+          mapping.tg_thread_id || null,
+          Boolean(mapping.silent_delivery)
+        );
+        if (sentTgMsg && sentTgMsg.message_id) {
+          ignoreTgEditEchoes.add(String(sentTgMsg.message_id));
+          recordMessageMap(
+            waMsgId,
             tgChatId,
-            fallbackText,
-            replyToId,
-            mapping.tg_thread_id || null,
-            Boolean(mapping.silent_delivery)
-          );
-          if (sentTgMsg && sentTgMsg.message_id) {
-            ignoreTgEditEchoes.add(String(sentTgMsg.message_id));
-            recordMessageMap(
-              waMsgId,
-              tgChatId,
-              sentTgMsg.message_id,
-              waJid,
-              false,
-              effectiveSenderName,
-              '',
-              newText
-            );
-          }
-          logger.info(
-            { waMsgId, tgChatId, newTgMsgId: sentTgMsg?.message_id },
-            '✏️ Sent contextual WhatsApp message edit notification to Telegram'
-          );
-        } catch (fallbackErr) {
-          logger.warn(
-            { error: fallbackErr.message, waMsgId, tgChatId },
-            '⚠️ Failed to send Telegram edit fallback message'
+            sentTgMsg.message_id,
+            waJid,
+            false,
+            effectiveSenderName,
+            '',
+            newText
           );
         }
-      } else if (!editSucceeded && !mapped) {
+        logger.info(
+          { waMsgId, tgChatId, newTgMsgId: sentTgMsg?.message_id },
+          '✏️ Sent contextual WhatsApp message edit notification to Telegram'
+        );
+      } catch (fallbackErr) {
+        logger.warn(
+          { error: fallbackErr.message, waMsgId, tgChatId },
+          '⚠️ Failed to send Telegram edit fallback message'
+        );
+      }
+    } else if (!editSucceeded && !mapped) {
       // If original message was never mapped (e.g. self message or fast diagnostic), send the edited content directly
       try {
         const sentTgMsg = await bot.sendMessage(

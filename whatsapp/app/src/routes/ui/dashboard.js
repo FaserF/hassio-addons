@@ -4349,8 +4349,7 @@ async function saveTelegramMappingModal() {
   const is_direct_chat_mirror = document.getElementById('tg-modal-direct-mirror')?.checked || false;
   const sync_edits = document.getElementById('tg-modal-sync-edits')?.checked || false;
   const sync_deletions = document.getElementById('tg-modal-sync-deletions')?.checked || false;
-  const poll_sync_mode =
-    document.getElementById('tg-modal-poll-sync-mode')?.value || 'native_sync';
+  const poll_sync_mode = document.getElementById('tg-modal-poll-sync-mode')?.value || 'native_sync';
   const poll_send_text_diagram =
     document.getElementById('tg-modal-poll-diagram-text')?.checked || false;
   const poll_send_update_message =
