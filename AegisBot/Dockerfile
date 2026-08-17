@@ -32,6 +32,7 @@ RUN \
     gcc \
     g++ \
     make \
+    cmake \
     musl-dev \
     libffi-dev \
     openssl-dev \
@@ -44,6 +45,10 @@ RUN \
     unzip \
     ffmpeg \
     ffmpeg-dev \
+    openblas-dev \
+    openblas \
+    gfortran \
+    linux-headers \
     pkgconf \
     jq && \
     # Verify Node.js version
