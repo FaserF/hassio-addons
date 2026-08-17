@@ -276,6 +276,48 @@ export class TelegramBotClient {
     return await this.request('sendPoll', payload);
   }
 
+  async sendLocation(
+    chatId,
+    latitude,
+    longitude,
+    replyToMessageId = null,
+    threadId = null,
+    disableNotification = false
+  ) {
+    const payload = {
+      chat_id: chatId,
+      latitude: Number(latitude),
+      longitude: Number(longitude),
+      disable_notification: Boolean(disableNotification),
+    };
+    if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
+    if (threadId) payload.message_thread_id = threadId;
+    return await this.request('sendLocation', payload);
+  }
+
+  async sendContact(
+    chatId,
+    phoneNumber,
+    firstName,
+    lastName = '',
+    vcard = '',
+    replyToMessageId = null,
+    threadId = null,
+    disableNotification = false
+  ) {
+    const payload = {
+      chat_id: chatId,
+      phone_number: String(phoneNumber),
+      first_name: String(firstName),
+      disable_notification: Boolean(disableNotification),
+    };
+    if (lastName) payload.last_name = String(lastName);
+    if (vcard) payload.vcard = String(vcard);
+    if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
+    if (threadId) payload.message_thread_id = threadId;
+    return await this.request('sendContact', payload);
+  }
+
   async sendSticker(
     chatId,
     stickerUrlOrBuffer,

@@ -10,6 +10,7 @@ import { generateMessageID } from '../../utils/security.js';
 import {
   syncWhatsAppDeleteToTelegram,
   syncWhatsAppEditToTelegram,
+  syncWhatsAppReactionToTelegram,
 } from '../../whatsapp/telegram/listener.js';
 
 export function registerMessagingRoutes(app) {
@@ -475,6 +476,7 @@ export function registerMessagingRoutes(app) {
             key: msgKey,
           },
         });
+        syncWhatsAppReactionToTelegram(messageId, jid, reaction || '').catch(() => null);
 
         // Update reaction locally in messageStore immediately
         if (targetMsg) {
