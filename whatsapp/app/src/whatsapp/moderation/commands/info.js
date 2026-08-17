@@ -336,27 +336,18 @@ export function registerInfoCommands(registry) {
 
       // 0. Subcommand: Help
       if (lowerArgs === 'help' || lowerArgs === 'hilfe' || lowerArgs === '?') {
-        const p = config.commands?.prefix || '!';
-        const helpText =
-          `🎲 *Roll / Dice Commands:*\n\n` +
-          `• \`${p}roll\` - Standard 6-sided dice (1-6)\n` +
-          `• \`${p}roll 20\` or \`${p}roll d20\` - 20-sided dice (1-20)\n` +
-          `• \`${p}roll 2d6\` - Two 6-sided dice with sum\n` +
-          `• \`${p}roll 100\` or \`${p}roll d100\` - Percentile roll (1-100)\n` +
-          `• \`${p}roll coin\` or \`${p}roll flip\` - Coin flip (Heads / Tails 🪙)\n` +
-          `• \`${p}roll pick <opt1>, <opt2>, ...\` - Random pick from options\n` +
-          `• \`${p}roll all\` - Rolls for all group members with rankings\n` +
-          `• \`${p}roll all unique\` - Rolls unique numbers without duplicates\n` +
-          `• \`${p}roll all 20 unique\` - 20-sided unique dice for all`;
+        const prefix = config.commands?.prefix || '!';
+        const helpText = gt(config, 'bot_replies.dice_usage', { prefix });
         await reply(session, groupId, { text: helpText }, rawMsg);
         return;
       }
 
       // 1. Subcommand: Coin Flip
       if (['coin', 'flip', 'coinflip', 'münze', 'muenze', 'kopfoderzahl'].includes(lowerArgs)) {
-        const outcomes = ['Kopf (Heads) 🪙', 'Zahl (Tails) 🪙'];
-        const chosen = outcomes[Math.floor(Math.random() * outcomes.length)];
-        await reply(session, groupId, { text: `🪙 *Coin Flip:* *${chosen}*` }, rawMsg);
+        const outcome = Math.random() < 0.5
+          ? gt(config, 'bot_replies.dice_coin_heads')
+          : gt(config, 'bot_replies.dice_coin_tails');
+        await reply(session, groupId, { text: gt(config, 'bot_replies.dice_coin_result', { outcome }) }, rawMsg);
         return;
       }
 
@@ -369,16 +360,22 @@ export function registerInfoCommands(registry) {
           : optRaw.split(/\s+/).map((s) => s.trim()).filter(Boolean);
 
         if (options.length < 2) {
+          const prefix = config.commands?.prefix || '!';
           await reply(
             session,
             groupId,
-            { text: `⚠️ Please provide at least 2 options (e.g. \`!roll pick Pizza, Burger, Pasta\`).` },
+            { text: gt(config, 'bot_replies.dice_pick_error', { prefix }) },
             rawMsg
           );
           return;
         }
         const picked = options[Math.floor(Math.random() * options.length)];
-        await reply(session, groupId, { text: `🎯 *Random Choice:* *${picked}*` }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.dice_pick_result', { choice: picked }) },
+          rawMsg
+        );
         return;
       }
 
@@ -437,7 +434,7 @@ export function registerInfoCommands(registry) {
             await reply(
               session,
               groupId,
-              { text: `🎲 *Dice Result:* ${sym} *${val}* (1-6)` },
+              { text: gt(config, 'bot_replies.dice_result_single', { formula: '1d6', result: `${sym} *${val}*` }) },
               rawMsg
             );
             return;
@@ -447,11 +444,11 @@ export function registerInfoCommands(registry) {
         }
 
         if (count < 1 || count > 20) {
-          await reply(session, groupId, { text: `⚠️ Number of dice must be between 1 and 20.` }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.dice_count_error') }, rawMsg);
           return;
         }
         if (sides < 2 || sides > 1000) {
-          await reply(session, groupId, { text: `⚠️ Number of sides must be between 2 and 1000.` }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.dice_sides_error') }, rawMsg);
           return;
         }
 
@@ -463,7 +460,7 @@ export function registerInfoCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: `🎲 *Dice Result (1d${sides}):* ${sym}*${rolls[0]}*` },
+            { text: gt(config, 'bot_replies.dice_result_single', { formula: `1d${sides}`, result: `${sym}*${rolls[0]}*` }) },
             rawMsg
           );
         } else {
@@ -471,7 +468,7 @@ export function registerInfoCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: `🎲 *Dice Result (${count}d${sides}):*\n${rollsStr} = *${total}*` },
+            { text: gt(config, 'bot_replies.dice_result_multi', { formula: `${count}d${sides}`, rolls: rollsStr, total }) },
             rawMsg
           );
         }
@@ -484,7 +481,7 @@ export function registerInfoCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `ℹ️ The \`all\` parameter can only be used in groups to roll for all group members.` },
+          { text: gt(config, 'bot_replies.dice_all_group_only') },
           rawMsg
         );
         return;
@@ -506,11 +503,11 @@ export function registerInfoCommands(registry) {
       }
 
       if (count < 1 || count > 20) {
-        await reply(session, groupId, { text: `⚠️ Number of dice must be between 1 and 20.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.dice_count_error') }, rawMsg);
         return;
       }
       if (sides < 2 || sides > 1000) {
-        await reply(session, groupId, { text: `⚠️ Number of sides must be between 2 and 1000.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.dice_sides_error') }, rawMsg);
         return;
       }
 
@@ -526,7 +523,7 @@ export function registerInfoCommands(registry) {
         });
 
         if (eligible.length === 0) {
-          await reply(session, groupId, { text: `⚠️ No eligible group members found.` }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.dice_all_no_members') }, rawMsg);
           return;
         }
 
@@ -559,12 +556,10 @@ export function registerInfoCommands(registry) {
         const lines = [];
 
         if (isUnique) {
-          lines.push(`🎲 *Group Roll (Turn Order / No Duplicates)*`);
-          lines.push(`🎯 Range: 1–${results[0]?.sides || sides} • 👥 ${numMembers} Members\n`);
+          lines.push(gt(config, 'bot_replies.dice_group_header_unique', { sides: results[0]?.sides || sides, members: numMembers }));
         } else {
           const formulaDesc = count > 1 ? `${count}d${sides}` : `1d${sides}`;
-          lines.push(`🎲 *Group Roll (${formulaDesc})*`);
-          lines.push(`👥 ${numMembers} Members\n`);
+          lines.push(gt(config, 'bot_replies.dice_group_header', { formula: formulaDesc, members: numMembers }));
         }
 
         const mentions = [];
@@ -590,10 +585,21 @@ export function registerInfoCommands(registry) {
 
         await reply(session, groupId, { text: lines.join('\n'), mentions }, rawMsg);
       } catch (err) {
-        await reply(session, groupId, { text: `❌ Failed to execute group roll: ${err.message}` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.dice_group_error', { error: err.message }) }, rawMsg);
       }
     },
     { adminOnly: false, aliases: ['dice', 'wuerfel'], help: 'Roll dice, flip a coin, or pick random options' }
+  );
+
+  registry.register(
+    'coin',
+    async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
+      const outcome = Math.random() < 0.5
+        ? gt(config, 'bot_replies.dice_coin_heads')
+        : gt(config, 'bot_replies.dice_coin_tails');
+      await reply(session, groupId, { text: gt(config, 'bot_replies.dice_coin_result', { outcome }) }, rawMsg);
+    },
+    { adminOnly: false, aliases: ['coinflip', 'münze', 'muenze', 'flip'], help: 'Flip a coin (Heads or Tails 🪙)' }
   );
 }
 

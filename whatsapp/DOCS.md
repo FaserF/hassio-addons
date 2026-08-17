@@ -127,6 +127,9 @@ The bot command engine supports configurable prefixes per group (default `!`) an
 | `!rules [question]`         |     No     | Show group rules or ask a question about rules (AI interpretation)                                                   |
 | `!info [@user]`             |     No     | View user information, warning history, Captcha status, and Whitelist approval status                                |
 | `!adminlist` / `!admins`    |     No     | List all group administrators with superadmin/admin roles                                                            |
+| `!roll [formula] [all]`     |     No     | Roll random dice (default 1d6, `d20`, `2d6`, `all` for all members, `all unique` for turn order)                     |
+| `!dice`                     |     No     | Alias for `!roll`                                                                                                    |
+| `!coin` / `!coinflip`       |     No     | Flip a coin (Heads or Tails 🪙)                                                                                      |
 | `!locktypes`                |     No     | List all available content lock types                                                                                |
 | `!report`                   |     No     | Tag all group admins with optional reason and quoted message                                                         |
 | `!get <note>`               |     No     | Retrieve content of a saved note                                                                                     |
