@@ -370,9 +370,18 @@ export async function syncWhatsAppEditToTelegram(
     let translationBanner = '';
     if (isTranslateActive && newText && newText.trim()) {
       try {
-        const targetLang = groupModCfg?.translation?.target_lang || groupModCfg?.language || 'en';
+        const targetLang =
+          mapping.translate_wa_to_tg_lang ||
+          groupModCfg?.translation?.target_lang ||
+          groupModCfg?.language ||
+          'en';
         const provider = groupModCfg?.translation?.provider || 'auto';
-        const transRes = await translateTextGatewayWithReason(newText, targetLang, provider);
+        const transRes = await translateTextGatewayWithReason(
+          newText,
+          targetLang,
+          provider,
+          groupModCfg
+        );
         if (
           transRes?.translation &&
           transRes.translation.trim() &&
@@ -476,14 +485,79 @@ export async function syncWhatsAppEditToTelegram(
             newText
           );
         }
-        logger.info(
-          { waMsgId, tgChatId, newTgMsgId: sentTgMsg?.message_id },
-          '✏️ Sent contextual WhatsApp message edit notification to Telegram'
+    } else if (!editSucceeded && !mapped) {
+      // If original message was never mapped (e.g. self message or fast diagnostic), send the edited content directly
+      try {
+        const sentTgMsg = await bot.sendMessage(
+          mapping.tg_chat_id,
+          fullText,
+          null,
+          mapping.tg_thread_id || null,
+          Boolean(mapping.silent_delivery)
         );
-      } catch (fallbackErr) {
+        if (sentTgMsg && sentTgMsg.message_id) {
+          ignoreTgEditEchoes.add(String(sentTgMsg.message_id));
+          recordMessageMap(
+            waMsgId,
+            mapping.tg_chat_id,
+            sentTgMsg.message_id,
+            targetWaJid || waJid,
+            false,
+            effectiveSenderName,
+            '',
+            newText
+          );
+        }
+        logger.info(
+          { waMsgId, tgChatId: mapping.tg_chat_id, newTgMsgId: sentTgMsg?.message_id },
+          '✏️ Forwarded unmapped WhatsApp message edit to Telegram'
+        );
+      } catch (unmappedErr) {
         logger.warn(
-          { error: fallbackErr.message, waMsgId, tgChatId },
-          '⚠️ Failed to send Telegram edit fallback message'
+          { error: unmappedErr.message, waMsgId },
+          '⚠️ Failed to send unmapped Telegram edit message'
+        );
+      }
+    }
+  }
+}
+
+export async function syncWhatsAppReactionToTelegram(waMsgId, waJid, emoji = '') {
+  if (!waMsgId) return;
+  const store = loadTelegramStore();
+  if (!store.enabled) return;
+
+  const mapped = resolveTgMsgFromWa(waMsgId);
+  if (!mapped || !mapped.tgMsgId || !mapped.tgChatId) return;
+
+  const mappings = (store.mappings || []).filter(
+    (m) =>
+      m.enabled &&
+      (m.sync_mode === 'bidirectional' || m.sync_mode === 'outbound') &&
+      m.sync_reactions !== false
+  );
+
+  const targetMappings = mappings.filter(
+    (m) =>
+      (m.wa_jid && m.wa_jid.toLowerCase() === (waJid || '').toLowerCase()) ||
+      String(m.tg_chat_id) === String(mapped.tgChatId)
+  );
+
+  const listToProcess = targetMappings.length > 0 ? targetMappings : mappings;
+
+  for (const mapping of listToProcess) {
+    const bot = getTelegramBotClient(mapping.bot_id);
+    if (bot) {
+      try {
+        await bot.setMessageReaction(mapped.tgChatId, mapped.tgMsgId, emoji);
+        logger.info(
+          { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId, emoji },
+          '👍 Successfully synced WhatsApp reaction to Telegram'
+        );
+      } catch (err) {
+        logger.warn(
+          { error: err.message, waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
+          '⚠️ Failed to sync reaction to Telegram'
         );
       }
     }

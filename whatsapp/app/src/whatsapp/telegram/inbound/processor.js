@@ -82,7 +82,7 @@ export async function processTelegramUpdates() {
           );
 
           for (const mapping of mappings) {
-            const pollMode = mapping.poll_sync_mode || 'text_diagram';
+            const pollMode = mapping.poll_sync_mode || 'native_sync';
             if (pollMode === 'once_no_update') continue;
             if (mapping.poll_send_update_message === false) continue;
 
@@ -212,7 +212,7 @@ export async function processTelegramUpdates() {
           );
 
           for (const mapping of pollMappings) {
-            const pollMode = mapping.poll_sync_mode || 'text_diagram';
+            const pollMode = mapping.poll_sync_mode || 'native_sync';
             if (pollMode === 'once_no_update' || pollMode === 'native_no_vote') continue;
 
             const totalVotes = p.total_voter_count || 0;
@@ -753,9 +753,17 @@ export async function processTelegramUpdates() {
           if (isTranslateActive && tgText && tgText.trim() && !isSystemMsg && !isPinMsg) {
             try {
               const targetLang =
-                groupModCfg?.translation?.target_lang || groupModCfg?.language || 'de';
+                mapping.translate_tg_to_wa_lang ||
+                groupModCfg?.translation?.target_lang ||
+                groupModCfg?.language ||
+                'de';
               const provider = groupModCfg?.translation?.provider || 'auto';
-              const transRes = await translateTextGatewayWithReason(tgText, targetLang, provider);
+              const transRes = await translateTextGatewayWithReason(
+                tgText,
+                targetLang,
+                provider,
+                groupModCfg
+              );
               if (
                 transRes?.translation &&
                 transRes.translation.trim() &&
@@ -1053,7 +1061,7 @@ export async function processTelegramUpdates() {
                     },
                   };
                 } else if (mediaPayload.type === 'poll') {
-                  const pollMode = mapping.poll_sync_mode || 'text_diagram';
+                  const pollMode = mapping.poll_sync_mode || 'native_sync';
                   if (
                     (pollMode === 'native_sync' || pollMode === 'native_no_vote') &&
                     mediaPayload.options?.length > 0

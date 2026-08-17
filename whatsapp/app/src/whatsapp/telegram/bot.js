@@ -266,7 +266,7 @@ export class TelegramBotClient {
     const payload = {
       chat_id: chatId,
       question: question,
-      options: JSON.stringify(options),
+      options: Array.isArray(options) ? options : [],
       is_anonymous: Boolean(isAnonymous),
       allows_multiple_answers: Boolean(allowsMultipleAnswers),
       disable_notification: Boolean(disableNotification),
@@ -318,6 +318,16 @@ export class TelegramBotClient {
 
   async unpinAllChatMessages(chatId) {
     return await this.request('unpinAllChatMessages', { chat_id: chatId });
+  }
+
+  async setMessageReaction(chatId, messageId, emoji = '', isBig = false) {
+    const reactionArray = emoji ? [{ type: 'emoji', emoji: String(emoji) }] : [];
+    return await this.request('setMessageReaction', {
+      chat_id: chatId,
+      message_id: messageId,
+      reaction: reactionArray,
+      is_big: Boolean(isBig),
+    });
   }
 
   async unpinallChatMessage(chatId) {

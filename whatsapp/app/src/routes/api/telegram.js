@@ -214,7 +214,9 @@ export function registerTelegramRoutes(app) {
       sync_system_events,
       sync_pins,
       translate_tg_to_wa,
+      translate_tg_to_wa_lang,
       translate_wa_to_tg,
+      translate_wa_to_tg_lang,
       enabled,
     } = req.body || {};
 
@@ -263,7 +265,7 @@ export function registerTelegramRoutes(app) {
       sync_edits: sync_edits !== undefined ? Boolean(sync_edits) : true,
       sync_deletions: sync_deletions !== undefined ? Boolean(sync_deletions) : true,
       is_direct_chat_mirror: Boolean(is_direct_chat_mirror),
-      poll_sync_mode: poll_sync_mode || 'text_diagram',
+      poll_sync_mode: poll_sync_mode || 'native_sync',
       poll_send_text_diagram:
         poll_send_text_diagram !== undefined ? Boolean(poll_send_text_diagram) : true,
       poll_send_update_message:
@@ -273,7 +275,9 @@ export function registerTelegramRoutes(app) {
       sync_system_events: sync_system_events !== undefined ? Boolean(sync_system_events) : true,
       sync_pins: sync_pins !== undefined ? Boolean(sync_pins) : true,
       translate_tg_to_wa: Boolean(translate_tg_to_wa),
+      translate_tg_to_wa_lang: translate_tg_to_wa_lang ? String(translate_tg_to_wa_lang) : 'de',
       translate_wa_to_tg: Boolean(translate_wa_to_tg),
+      translate_wa_to_tg_lang: translate_wa_to_tg_lang ? String(translate_wa_to_tg_lang) : 'en',
       enabled: enabled !== undefined ? Boolean(enabled) : true,
     };
 

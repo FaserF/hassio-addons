@@ -303,9 +303,10 @@ export default () => `
                 <div>
                     <label class="mod-field-label"><i class="fas fa-poll"></i> <span data-i18n="telegram.poll_sync_mode">Poll Sync Mode (WhatsApp &amp; Telegram)</span></label>
                     <select id="tg-modal-poll-sync-mode" class="mod-select" style="width:100%;">
-                        <option value="text_diagram" data-i18n="telegram.poll_option_text_diagram">Text Diagram &amp; Updates (Default: Status text diagram + update messages)</option>
-                        <option value="native_sync" data-i18n="telegram.poll_option_native_sync">Native Poll Sync &amp; Auto-Vote (Send poll to target + vote for current winner)</option>
+                        <option value="native_sync" selected data-i18n="telegram.poll_option_native_sync">Native Poll Sync &amp; Auto-Vote (Default: Send poll to target + vote for current winner)</option>
                         <option value="native_no_vote" data-i18n="telegram.poll_option_native_no_vote">Native Poll Sync (Send poll to target without voting)</option>
+                        <option value="buttons" data-i18n="telegram.poll_option_buttons">Inline Buttons Keyboard (Send as clickable Telegram buttons)</option>
+                        <option value="text_diagram" data-i18n="telegram.poll_option_text_diagram">Text Diagram &amp; Updates (Status text diagram + update messages)</option>
                         <option value="once_no_update" data-i18n="telegram.poll_option_once">Single Notification Only (Send initial info once, no updates/votes)</option>
                     </select>
                 </div>
@@ -350,12 +351,36 @@ export default () => `
                     <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                         <input type="checkbox" id="tg-modal-sync-pins" checked> <span data-i18n="telegram.opt_sync_pins">Sync Pinned Messages</span>
                     </label>
-                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
-                        <input type="checkbox" id="tg-modal-translate-tg-to-wa"> <span data-i18n="telegram.opt_translate_tg_to_wa">Translate TG -&gt; WA</span>
-                    </label>
-                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
-                        <input type="checkbox" id="tg-modal-translate-wa-to-tg"> <span data-i18n="telegram.opt_translate_wa_to_tg">Translate WA -&gt; TG</span>
-                    </label>
+                    <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px;">
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                            <input type="checkbox" id="tg-modal-translate-tg-to-wa"> <span data-i18n="telegram.opt_translate_tg_to_wa">Translate TG -&gt; WA</span>
+                        </label>
+                        <div id="tg-modal-trans-tg-wa-box" style="display:flex; align-items:center; gap:6px; margin-left:22px;">
+                            <label class="text-xs text-muted" style="margin:0; font-size:11px;" data-i18n="moderation.target_lang_label">Target Language:</label>
+                            <select id="tg-modal-trans-tg-wa-lang" class="mod-select mod-select-sm" style="font-size:11px; padding:2px 6px; height:24px;">
+                                <option value="de" data-i18n="moderation.lang_de_opt">German</option>
+                                <option value="en" data-i18n="moderation.lang_en_opt">English</option>
+                                <option value="es" data-i18n="moderation.lang_es_opt">Spanish</option>
+                                <option value="fr" data-i18n="moderation.lang_fr_opt">French</option>
+                                <option value="it" data-i18n="moderation.lang_it_opt">Italian</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px;">
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                            <input type="checkbox" id="tg-modal-translate-wa-to-tg"> <span data-i18n="telegram.opt_translate_wa_to_tg">Translate WA -&gt; TG</span>
+                        </label>
+                        <div id="tg-modal-trans-wa-tg-box" style="display:flex; align-items:center; gap:6px; margin-left:22px;">
+                            <label class="text-xs text-muted" style="margin:0; font-size:11px;" data-i18n="moderation.target_lang_label">Target Language:</label>
+                            <select id="tg-modal-trans-wa-tg-lang" class="mod-select mod-select-sm" style="font-size:11px; padding:2px 6px; height:24px;">
+                                <option value="en" data-i18n="moderation.lang_en_opt">English</option>
+                                <option value="de" data-i18n="moderation.lang_de_opt">German</option>
+                                <option value="es" data-i18n="moderation.lang_es_opt">Spanish</option>
+                                <option value="fr" data-i18n="moderation.lang_fr_opt">French</option>
+                                <option value="it" data-i18n="moderation.lang_it_opt">Italian</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
 

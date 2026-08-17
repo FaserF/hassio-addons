@@ -7,6 +7,7 @@ export {
   syncWhatsAppUnpinAllToTelegram,
   syncTelegramDeleteToWhatsApp,
   syncWhatsAppEditToTelegram,
+  syncWhatsAppReactionToTelegram,
   recentWaEditEvents,
   ignoreWaEditEchoes,
   ignoreTgEditEchoes,

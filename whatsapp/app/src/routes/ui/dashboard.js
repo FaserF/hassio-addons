@@ -4112,7 +4112,7 @@ function getTgMappingCurrentState() {
     direct_mirror: document.getElementById('tg-modal-direct-mirror')?.checked || false,
     sync_edits: document.getElementById('tg-modal-sync-edits')?.checked || false,
     sync_deletions: document.getElementById('tg-modal-sync-deletions')?.checked || false,
-    poll_sync_mode: document.getElementById('tg-modal-poll-sync-mode')?.value || 'text_diagram',
+    poll_sync_mode: document.getElementById('tg-modal-poll-sync-mode')?.value || 'native_sync',
     poll_diagram_text: document.getElementById('tg-modal-poll-diagram-text')?.checked || false,
     poll_update_msg: document.getElementById('tg-modal-poll-update-msg')?.checked || false,
     poll_delete_old: document.getElementById('tg-modal-poll-delete-old')?.checked || false,
@@ -4152,7 +4152,7 @@ function openAddTelegramMappingModal() {
   if (syncDeletionsEl) syncDeletionsEl.checked = true;
 
   const pollModeEl = document.getElementById('tg-modal-poll-sync-mode');
-  if (pollModeEl) pollModeEl.value = 'text_diagram';
+  if (pollModeEl) pollModeEl.value = 'native_sync';
   const pollDiagramEl = document.getElementById('tg-modal-poll-diagram-text');
   if (pollDiagramEl) pollDiagramEl.checked = true;
   const pollUpdateEl = document.getElementById('tg-modal-poll-update-msg');
@@ -4237,7 +4237,7 @@ async function editTelegramMapping(id) {
     if (syncDeletionsEl) syncDeletionsEl.checked = mapping.sync_deletions !== false;
 
     const pollModeEl = document.getElementById('tg-modal-poll-sync-mode');
-    if (pollModeEl) pollModeEl.value = mapping.poll_sync_mode || 'text_diagram';
+    if (pollModeEl) pollModeEl.value = mapping.poll_sync_mode || 'native_sync';
 
     const pollDiagramEl = document.getElementById('tg-modal-poll-diagram-text');
     if (pollDiagramEl) pollDiagramEl.checked = mapping.poll_send_text_diagram !== false;
@@ -4350,7 +4350,7 @@ async function saveTelegramMappingModal() {
   const sync_edits = document.getElementById('tg-modal-sync-edits')?.checked || false;
   const sync_deletions = document.getElementById('tg-modal-sync-deletions')?.checked || false;
   const poll_sync_mode =
-    document.getElementById('tg-modal-poll-sync-mode')?.value || 'text_diagram';
+    document.getElementById('tg-modal-poll-sync-mode')?.value || 'native_sync';
   const poll_send_text_diagram =
     document.getElementById('tg-modal-poll-diagram-text')?.checked || false;
   const poll_send_update_message =

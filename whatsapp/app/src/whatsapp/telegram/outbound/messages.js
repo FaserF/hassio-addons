@@ -183,9 +183,18 @@ export async function syncWhatsAppToTelegram(
       let translationBanner = '';
       if (isTranslateActive && textContent && textContent.trim()) {
         try {
-          const targetLang = groupModCfg?.translation?.target_lang || groupModCfg?.language || 'en';
+          const targetLang =
+            mapping.translate_wa_to_tg_lang ||
+            groupModCfg?.translation?.target_lang ||
+            groupModCfg?.language ||
+            'en';
           const provider = groupModCfg?.translation?.provider || 'auto';
-          const transRes = await translateTextGatewayWithReason(textContent, targetLang, provider);
+          const transRes = await translateTextGatewayWithReason(
+            textContent,
+            targetLang,
+            provider,
+            groupModCfg
+          );
           if (
             transRes?.translation &&
             transRes.translation.trim() &&
@@ -371,7 +380,33 @@ export async function syncWhatsAppToTelegram(
                 isAnon,
                 isMulti
               )
-              .catch(() => null);
+              .catch((err) => {
+                logger.warn({ error: err.message }, '⚠️ Failed to send Telegram native poll');
+                return null;
+              });
+          }
+          if (tgResult?.poll?.id) {
+            const tgPollId = String(tgResult.poll.id);
+            if (!store.cached_polls) store.cached_polls = {};
+            store.cached_polls[tgPollId] = {
+              id: tgPollId,
+              question,
+              options,
+              chat_id: mapping.tg_chat_id,
+              wa_jid: mapping.wa_jid,
+              wa_msg_id: msg.key?.id,
+            };
+            if (msg.key?.id) {
+              store.cached_polls[String(msg.key.id)] = {
+                id: String(msg.key.id),
+                tg_poll_id: tgPollId,
+                question,
+                options,
+                chat_id: mapping.tg_chat_id,
+                wa_jid: mapping.wa_jid,
+              };
+            }
+            saveTelegramStore(store);
           }
           // Also send header so sender is known (polls have no caption in Telegram)
           if (tgResult && header.trim()) {
