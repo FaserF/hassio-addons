@@ -193,6 +193,10 @@ ADDON_INFO=$(curl -s --connect-timeout 5 --max-time 10 -H "Authorization: Bearer
 SLUG=$(echo "$ADDON_INFO" | jq -r '.data.slug // empty' 2>/dev/null || echo "")
 NAME=$(echo "$ADDON_INFO" | jq -r '.data.name // empty' 2>/dev/null || echo "")
 VERSION=$(echo "$ADDON_INFO" | jq -r '.data.version // empty' 2>/dev/null || echo "")
+export ADDON_VERSION="${VERSION}"
+export APP_VERSION="${VERSION}"
+export ADDON_SLUG="${SLUG}"
+export APP_SLUG="${SLUG}"
 
 bashio::log.info "Channel Detection - Slug: ${SLUG:-aegisbot}, Name: ${NAME:-AegisBot}, Version: ${VERSION:-unknown}"
 
@@ -214,7 +218,6 @@ else
 		CURL_AUTH=("-H" "Authorization: Bearer ${GITHUB_TOKEN}")
 	fi
 
-	local rel_code
 	rel_code=$(curl -s --connect-timeout 10 --max-time 30 -w "%{http_code}" "${CURL_AUTH[@]}" -A "HomeAssistant-Addon" -o /tmp/aegisbot_releases.json "https://api.github.com/repos/${REPO}/releases" 2>/dev/null || echo "000")
 	if [ "$rel_code" = "200" ] && [ -s /tmp/aegisbot_releases.json ]; then
 		RELEASES_JSON=$(cat /tmp/aegisbot_releases.json)

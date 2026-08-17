@@ -139,7 +139,9 @@ SLUG=$(echo "$ADDON_INFO" | jq -r '.data.slug // empty' 2>/dev/null || echo "")
 NAME=$(echo "$ADDON_INFO" | jq -r '.data.name // empty' 2>/dev/null || echo "")
 VERSION=$(echo "$ADDON_INFO" | jq -r '.data.version // empty' 2>/dev/null || echo "")
 export ADDON_VERSION="${VERSION}"
+export APP_VERSION="${VERSION}"
 export ADDON_SLUG="${SLUG}"
+export APP_SLUG="${SLUG}"
 
 bashio::log.info "Channel Detection - Slug: ${SLUG}, Name: ${NAME}, Version: ${VERSION}"
 
@@ -165,7 +167,6 @@ else
 	if [ -n "${GITHUB_TOKEN:-}" ] && [ "$GITHUB_TOKEN" != "null" ]; then
 		CURL_AUTH=("-H" "Authorization: Bearer ${GITHUB_TOKEN}")
 	fi
-	local rel_code
 	rel_code=$(curl -s --connect-timeout 10 --max-time 30 -w "%{http_code}" "${CURL_AUTH[@]}" -A "HomeAssistant-Addon" -o /tmp/whatsapp_releases.json "https://api.github.com/repos/FaserF/ha-whatsapp/releases" 2>/dev/null || echo "000")
 	if [ "$rel_code" = "200" ] && [ -s /tmp/whatsapp_releases.json ]; then
 		RELEASES_JSON=$(cat /tmp/whatsapp_releases.json)

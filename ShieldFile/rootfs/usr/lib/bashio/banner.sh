@@ -45,10 +45,10 @@ bashio::app.print_banner() {
 
 			printf "%s\n0\n" "$App_version" >"$STATE_FILE" 2>/dev/null
 
-			if type bashio::addon.stop >/dev/null 2>&1; then
-				bashio::addon.stop 2>/dev/null || true
-			elif type bashio::app.stop >/dev/null 2>&1; then
+			if type bashio::app.stop >/dev/null 2>&1; then
 				bashio::app.stop 2>/dev/null || true
+			elif type bashio::addon.stop >/dev/null 2>&1; then
+				bashio::addon.stop 2>/dev/null || true
 			fi
 			sleep 3600
 			exit 0

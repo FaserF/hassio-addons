@@ -25,6 +25,10 @@ ADDON_INFO=$(curl -s --connect-timeout 5 --max-time 10 -H "Authorization: Bearer
 SLUG=$(echo "$ADDON_INFO" | jq -r '.data.slug // empty')
 NAME=$(echo "$ADDON_INFO" | jq -r '.data.name // empty')
 VERSION=$(echo "$ADDON_INFO" | jq -r '.data.version // empty')
+export ADDON_VERSION="${VERSION}"
+export APP_VERSION="${VERSION}"
+export ADDON_SLUG="${SLUG}"
+export APP_SLUG="${SLUG}"
 
 if [[ "${SLUG}" == *"edge"* ]] || [[ "${NAME,,}" == *"edge"* ]] || [[ "${VERSION}" == *"dev"* ]] || [[ "${VERSION}" == *"git"* ]] || [[ "${VERSION}" =~ [0-9a-f]{7,40} ]]; then
 	CHANNEL="edge"
@@ -80,7 +84,6 @@ check_github_status() {
 }
 
 bashio::log.info "Fetching release information from GitHub..."
-local rel_code
 rel_code=$(curl -s --connect-timeout 10 --max-time 30 -w "%{http_code}" -A "HomeAssistant-Addon" -o /tmp/webserver_releases.json "https://api.github.com/repos/FaserF/ha-webserver/releases" 2>/dev/null || echo "000")
 
 if [ "$rel_code" = "200" ] && [ -s /tmp/webserver_releases.json ]; then
@@ -129,7 +132,6 @@ if [ "$UPDATE_NEEDED" = "true" ]; then
 	mkdir -p "/tmp/webserver_install"
 
 	ZIP_URL="https://github.com/FaserF/ha-webserver/releases/download/${TARGET_TAG}/webserver_app.zip"
-	local dl_code
 	dl_code=$(curl -L -s --connect-timeout 10 --max-time 60 -w "%{http_code}" -o "/tmp/webserver_app.zip" "$ZIP_URL" 2>/dev/null)
 	if [ "$dl_code" != "200" ] || [ ! -s "/tmp/webserver_app.zip" ]; then
 		check_github_status "$dl_code" "Release package download"
