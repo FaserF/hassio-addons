@@ -17,5 +17,5 @@ options:
   log_level: "info"
 schema:
   config_path: str
-  log_level: info|debug
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
 stage: deprecated
