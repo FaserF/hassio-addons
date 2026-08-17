@@ -377,10 +377,59 @@ export APP_VERSION="${BUILD_VERSION:-0.1.0-dev}"
 
 # --- HELPER FUNCTIONS FOR DOWNLOAD ---
 
+# Helper to check GitHub status and diagnose failures
+check_github_status() {
+	local http_code="$1"
+	local context="${2:-GitHub request}"
+
+	case "$http_code" in
+		000)
+			bashio::log.warning "⚠️ $context: Connection timeout or unreachable network (HTTP 000)."
+			;;
+		401)
+			bashio::log.warning "⚠️ $context: Authentication failed (HTTP 401 Unauthorized). Please check your token."
+			;;
+		403)
+			bashio::log.warning "⚠️ $context: Access forbidden or API rate limit exceeded (HTTP 403)."
+			;;
+		404)
+			bashio::log.warning "⚠️ $context: Resource not found or repository is private without adequate permissions (HTTP 404)."
+			;;
+		429)
+			bashio::log.warning "⚠️ $context: Too many requests / API rate limit exceeded (HTTP 429)."
+			;;
+		500|502|503|504)
+			bashio::log.warning "⚠️ $context: GitHub server error (HTTP $http_code)."
+			;;
+		*)
+			bashio::log.warning "⚠️ $context returned HTTP $http_code."
+			;;
+	esac
+
+	# If server error (5xx) or connection timeout (000), check GitHub Status API
+	if [[ "$http_code" =~ ^(000|500|502|503|504)$ ]]; then
+		local gh_status
+		gh_status=$(curl -s --connect-timeout 5 --max-time 10 "https://www.githubstatus.com/api/v2/status.json" 2>/dev/null || echo "")
+		if [ -n "$gh_status" ]; then
+			local indicator description
+			indicator=$(echo "$gh_status" | jq -r '.status.indicator // "none"' 2>/dev/null || echo "none")
+			description=$(echo "$gh_status" | jq -r '.status.description // empty' 2>/dev/null || echo "")
+			if [ "$indicator" != "none" ] && [ -n "$description" ]; then
+				bashio::log.error "🚨 GitHub Incident active: $description (Status: $indicator)"
+				bashio::log.error "   Please check https://www.githubstatus.com for live status updates."
+			fi
+		fi
+	fi
+}
+
 get_auth_header() {
 	local token="$1"
 	if [[ -z "$token" ]]; then
 		echo ""
+	elif [[ "$token" == github_pat_* ]]; then
+		echo "Authorization: Bearer $token"
+	elif [[ "$token" == ghp_* ]]; then
+		echo "Authorization: token $token"
 	else
 		echo "Authorization: Bearer $token"
 	fi
@@ -395,13 +444,17 @@ download_file() {
 
 	# 1. Try Public Access (No Token)
 	bashio::log.debug "Trying public access..."
-	if curl -sSL -f -A "HomeAssistant-Addon" -H "Accept: application/vnd.github.v3+json" "$url" -o "$output" 2>/dev/null; then
-		bashio::log.info "✅ Public download successful."
-		return 0
+	local pub_code
+	pub_code=$(curl -sSL --connect-timeout 15 --max-time 180 -w "%{http_code}" -A "HomeAssistant-Addon" -H "Accept: application/vnd.github.v3+json" "$url" -o "$output" 2>/dev/null)
+	if [ "$pub_code" = "200" ] || [ "$pub_code" = "302" ]; then
+		if [ -s "$output" ]; then
+			bashio::log.info "✅ Public download successful."
+			return 0
+		fi
 	fi
 
 	# 2. If failed, retry with token if available
-	bashio::log.info "Public access failed. Checking for token..."
+	bashio::log.info "Public access failed (HTTP $pub_code). Checking for token..."
 
 	if [ -n "$token" ]; then
 		local auth_header
@@ -409,17 +462,17 @@ download_file() {
 		bashio::log.info "Token found (length: ${#token}). Retrying with authentication..."
 
 		local http_code
-		http_code=$(curl -sSL -w "%{http_code}" -A "HomeAssistant-Addon" -H "$auth_header" -H "Accept: application/vnd.github.v3+json" "$url" -o "$output" 2>/dev/null)
+		http_code=$(curl -sSL --connect-timeout 15 --max-time 180 -w "%{http_code}" -A "HomeAssistant-Addon" -H "$auth_header" -H "Accept: application/vnd.github.v3+json" "$url" -o "$output" 2>/dev/null)
 		if [ "$http_code" = "200" ] || [ "$http_code" = "302" ]; then
 			if [ -s "$output" ]; then
 				bashio::log.info "✅ Authenticated download successful."
 				return 0
 			fi
 		fi
-		bashio::log.warning "API download returned HTTP $http_code"
+		check_github_status "$http_code" "API download"
 
 		# Try raw tarball URL endpoint (https://api.github.com/repos/OWNER/REPO/tarball/REF with raw accept header)
-		http_code=$(curl -sSL -w "%{http_code}" -A "HomeAssistant-Addon" -H "$auth_header" -H "Accept: application/vnd.github.raw" "$url" -o "$output" 2>/dev/null)
+		http_code=$(curl -sSL --connect-timeout 15 --max-time 180 -w "%{http_code}" -A "HomeAssistant-Addon" -H "$auth_header" -H "Accept: application/vnd.github.raw" "$url" -o "$output" 2>/dev/null)
 		if [ "$http_code" = "200" ] || [ "$http_code" = "302" ]; then
 			if [ -s "$output" ]; then
 				bashio::log.info "✅ Authenticated raw download successful."
@@ -433,19 +486,20 @@ download_file() {
 		direct_url="${direct_url}.tar.gz"
 		bashio::log.info "Trying direct archive URL: $direct_url"
 
-		http_code=$(curl -sSL -w "%{http_code}" -A "HomeAssistant-Addon" -H "$auth_header" "$direct_url" -o "$output" 2>/dev/null)
+		http_code=$(curl -sSL --connect-timeout 15 --max-time 180 -w "%{http_code}" -A "HomeAssistant-Addon" -H "$auth_header" "$direct_url" -o "$output" 2>/dev/null)
 		if [ "$http_code" = "200" ] || [ "$http_code" = "302" ]; then
 			if [ -s "$output" ]; then
 				bashio::log.info "✅ Direct archive download successful."
 				return 0
 			fi
 		fi
-		bashio::log.warning "Direct download returned HTTP $http_code"
+		check_github_status "$http_code" "Direct archive download"
 
 		bashio::log.error "❌ Download failed even with token."
 		bashio::log.error "Please ensure your token has 'repo' scope (Classic) or 'Contents: Read-only' + selected repository (Fine-grained)."
 		return 1
 	else
+		check_github_status "$pub_code" "Public download"
 		bashio::log.error "❌ Public access failed and no 'github_token' is configured."
 		bashio::log.error "If this is a private repository, please add a token in the configuration."
 		return 1
@@ -579,22 +633,28 @@ if [ ! -f "/app/backend/app/main.py" ] || [ ! -f "/app/frontend/index.html" ]; t
 		LATEST_RELEASE_TAG=""
 
 		bashio::log.info "1. Trying public GitHub API..."
-		if curl -sSL -f -A "HomeAssistant-Addon" -o /tmp/latest_release.json "https://api.github.com/repos/${GITHUB_REPO_CONFIG}/releases/latest"; then
+		local pub_api_code
+		pub_api_code=$(curl -sSL --connect-timeout 10 --max-time 20 -w "%{http_code}" -A "HomeAssistant-Addon" -o /tmp/latest_release.json "https://api.github.com/repos/${GITHUB_REPO_CONFIG}/releases/latest" 2>/dev/null)
+		if [ "$pub_api_code" = "200" ]; then
 			bashio::log.info "✅ Public API request successful."
 			LATEST_RELEASE_TAG=$(grep '"tag_name":' /tmp/latest_release.json | sed -E 's/.*"tag_name": "([^"]+)".*/\1/')
 		else
-			bashio::log.info "⚠️ Public API request failed (likely 404/403 or private repo)."
+			bashio::log.info "⚠️ Public API request failed (HTTP $pub_api_code)."
 			if [ -n "$GITHUB_TOKEN" ]; then
 				bashio::log.info "2. Retrying with provided GitHub Token (${#GITHUB_TOKEN} chars)..."
 				AUTH_HEADER=$(get_auth_header "$GITHUB_TOKEN")
-				if curl -sSL -f -A "HomeAssistant-Addon" -H "$AUTH_HEADER" -o /tmp/latest_release.json "https://api.github.com/repos/${GITHUB_REPO_CONFIG}/releases/latest"; then
+				local auth_api_code
+				auth_api_code=$(curl -sSL --connect-timeout 10 --max-time 20 -w "%{http_code}" -A "HomeAssistant-Addon" -H "$AUTH_HEADER" -o /tmp/latest_release.json "https://api.github.com/repos/${GITHUB_REPO_CONFIG}/releases/latest" 2>/dev/null)
+				if [ "$auth_api_code" = "200" ]; then
 					bashio::log.info "✅ Authenticated API request successful."
 					LATEST_RELEASE_TAG=$(grep '"tag_name":' /tmp/latest_release.json | sed -E 's/.*"tag_name": "([^"]+)".*/\1/')
 				else
-					bashio::log.warning "❌ Authenticated API request also failed. Please check your token permissions."
-					bashio::log.warning "   Required scopes for private repos: 'repo' or 'contents:read'"
+					check_github_status "$auth_api_code" "Authenticated releases check"
+					bashio::log.warning "❌ Authenticated API request failed (HTTP $auth_api_code). Please check token permissions."
+					bashio::log.warning "   Required scopes for private repos: 'repo' (Classic) or 'contents:read' (Fine-grained)"
 				fi
 			else
+				check_github_status "$pub_api_code" "Public releases check"
 				bashio::log.warning "⚠️ No GitHub Token available for authenticated retry."
 				bashio::log.info "   If this is a private repository, please configure 'github_token'."
 			fi

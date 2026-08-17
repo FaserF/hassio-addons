@@ -7,6 +7,51 @@ version_gt() {
 	test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"
 }
 
+# Helper to check GitHub status and diagnose failures
+check_github_status() {
+	local http_code="$1"
+	local context="${2:-GitHub request}"
+
+	case "$http_code" in
+		000)
+			bashio::log.warning "⚠️ $context: Connection timeout or unreachable network (HTTP 000)."
+			;;
+		401)
+			bashio::log.warning "⚠️ $context: Authentication failed (HTTP 401 Unauthorized)."
+			;;
+		403)
+			bashio::log.warning "⚠️ $context: Access forbidden or API rate limit exceeded (HTTP 403)."
+			;;
+		404)
+			bashio::log.warning "⚠️ $context: Resource not found (HTTP 404)."
+			;;
+		429)
+			bashio::log.warning "⚠️ $context: Too many requests / API rate limit exceeded (HTTP 429)."
+			;;
+		500|502|503|504)
+			bashio::log.warning "⚠️ $context: GitHub server error (HTTP $http_code)."
+			;;
+		*)
+			bashio::log.warning "⚠️ $context returned HTTP $http_code."
+			;;
+	esac
+
+	# If server error (5xx) or connection timeout (000), check GitHub Status API
+	if [[ "$http_code" =~ ^(000|500|502|503|504)$ ]]; then
+		local gh_status
+		gh_status=$(curl -s --connect-timeout 5 --max-time 10 "https://www.githubstatus.com/api/v2/status.json" 2>/dev/null || echo "")
+		if [ -n "$gh_status" ]; then
+			local indicator description
+			indicator=$(echo "$gh_status" | jq -r '.status.indicator // "none"' 2>/dev/null || echo "none")
+			description=$(echo "$gh_status" | jq -r '.status.description // empty' 2>/dev/null || echo "")
+			if [ "$indicator" != "none" ] && [ -n "$description" ]; then
+				bashio::log.error "🚨 GitHub Incident active: $description (Status: $indicator)"
+				bashio::log.error "   Please check https://www.githubstatus.com for live status updates."
+			fi
+		fi
+	fi
+}
+
 # Function to install/update integration
 install_integration() {
 	local TAG_NAME=$1
@@ -23,7 +68,9 @@ install_integration() {
 	if [ -n "$TAG_NAME" ]; then
 		local ZIP_URL="https://github.com/FaserF/ha-whatsapp/releases/download/${TAG_NAME}/whatsapp.zip"
 		bashio::log.info "Downloading ${ZIP_URL}..."
-		if curl -L -s -f -o "/tmp/whatsapp.zip" "${ZIP_URL}"; then
+		local dl_code
+		dl_code=$(curl -L -s --connect-timeout 10 --max-time 60 -w "%{http_code}" -o "/tmp/whatsapp.zip" "${ZIP_URL}" 2>/dev/null)
+		if [ "$dl_code" = "200" ] && [ -s "/tmp/whatsapp.zip" ]; then
 			mkdir -p "/tmp/ha-whatsapp_install/custom_components/whatsapp"
 			if unzip -q "/tmp/whatsapp.zip" -d "/tmp/ha-whatsapp_install/custom_components/whatsapp"; then
 				SUCCESS="true"
@@ -32,7 +79,9 @@ install_integration() {
 			fi
 			rm -f "/tmp/whatsapp.zip"
 		else
-			bashio::log.error "❌ Failed to download release zip."
+			check_github_status "$dl_code" "Release download"
+			bashio::log.error "❌ Failed to download release zip (HTTP $dl_code)."
+			rm -f "/tmp/whatsapp.zip"
 		fi
 	else
 		# Fallback to cloning main branch
@@ -116,14 +165,16 @@ else
 	if [ -n "${GITHUB_TOKEN:-}" ] && [ "$GITHUB_TOKEN" != "null" ]; then
 		CURL_AUTH=("-H" "Authorization: Bearer ${GITHUB_TOKEN}")
 	fi
-	RELEASES_JSON=$(curl -s -f "${CURL_AUTH[@]}" -A "HomeAssistant-Addon" "https://api.github.com/repos/FaserF/ha-whatsapp/releases" || echo "[]")
-	bashio::log.trace "GitHub Releases API response length: ${#RELEASES_JSON}"
-
-	# Valid JSON check
-	if ! echo "$RELEASES_JSON" | jq -e 'if type=="array" then true else false end' >/dev/null 2>&1; then
-		bashio::log.info "Note: Could not fetch releases (GitHub API may be rate-limited). Skipping update checks."
+	local rel_code
+	rel_code=$(curl -s --connect-timeout 10 --max-time 30 -w "%{http_code}" "${CURL_AUTH[@]}" -A "HomeAssistant-Addon" -o /tmp/whatsapp_releases.json "https://api.github.com/repos/FaserF/ha-whatsapp/releases" 2>/dev/null || echo "000")
+	if [ "$rel_code" = "200" ] && [ -s /tmp/whatsapp_releases.json ]; then
+		RELEASES_JSON=$(cat /tmp/whatsapp_releases.json)
+	else
+		check_github_status "$rel_code" "Releases check"
 		RELEASES_JSON="[]"
 	fi
+	rm -f /tmp/whatsapp_releases.json
+	bashio::log.trace "GitHub Releases API response length: ${#RELEASES_JSON}"
 
 	# Determine Latest Versions based on channel
 	TARGET_TAG=""

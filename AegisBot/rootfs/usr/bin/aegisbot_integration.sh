@@ -13,6 +13,51 @@ version_gt() {
 	test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"
 }
 
+# Helper to check GitHub status and diagnose failures
+check_github_status() {
+	local http_code="$1"
+	local context="${2:-GitHub request}"
+
+	case "$http_code" in
+		000)
+			bashio::log.warning "⚠️ $context: Connection timeout or unreachable network (HTTP 000)."
+			;;
+		401)
+			bashio::log.warning "⚠️ $context: Authentication failed (HTTP 401 Unauthorized). Please check your token."
+			;;
+		403)
+			bashio::log.warning "⚠️ $context: Access forbidden or API rate limit exceeded (HTTP 403)."
+			;;
+		404)
+			bashio::log.warning "⚠️ $context: Resource not found (HTTP 404)."
+			;;
+		429)
+			bashio::log.warning "⚠️ $context: Too many requests / API rate limit exceeded (HTTP 429)."
+			;;
+		500|502|503|504)
+			bashio::log.warning "⚠️ $context: GitHub server error (HTTP $http_code)."
+			;;
+		*)
+			bashio::log.warning "⚠️ $context returned HTTP $http_code."
+			;;
+	esac
+
+	# If server error (5xx) or connection timeout (000), check GitHub Status API
+	if [[ "$http_code" =~ ^(000|500|502|503|504)$ ]]; then
+		local gh_status
+		gh_status=$(curl -s --connect-timeout 5 --max-time 10 "https://www.githubstatus.com/api/v2/status.json" 2>/dev/null || echo "")
+		if [ -n "$gh_status" ]; then
+			local indicator description
+			indicator=$(echo "$gh_status" | jq -r '.status.indicator // "none"' 2>/dev/null || echo "none")
+			description=$(echo "$gh_status" | jq -r '.status.description // empty' 2>/dev/null || echo "")
+			if [ "$indicator" != "none" ] && [ -n "$description" ]; then
+				bashio::log.error "🚨 GitHub Incident active: $description (Status: $indicator)"
+				bashio::log.error "   Please check https://www.githubstatus.com for live status updates."
+			fi
+		fi
+	fi
+}
+
 DOMAIN="aegisbot"
 REPO="FaserF/ha-aegisbot"
 
@@ -64,7 +109,9 @@ install_integration() {
 	if [ -n "$TAG_NAME" ]; then
 		local ZIP_URL="https://github.com/${REPO}/releases/download/${TAG_NAME}/aegisbot.zip"
 		bashio::log.info "Downloading integration package from ${ZIP_URL}..."
-		if curl "${CURL_AUTH[@]}" -L -s -f -o "/tmp/aegisbot.zip" "${ZIP_URL}"; then
+		local zip_code
+		zip_code=$(curl "${CURL_AUTH[@]}" -L -s --connect-timeout 10 --max-time 60 -w "%{http_code}" -o "/tmp/aegisbot.zip" "${ZIP_URL}" 2>/dev/null)
+		if [ "$zip_code" = "200" ] && [ -s "/tmp/aegisbot.zip" ]; then
 			mkdir -p "${TMP_BUILD}/custom_components/aegisbot"
 			if unzip -q "/tmp/aegisbot.zip" -d "${TMP_BUILD}/custom_components/aegisbot"; then
 				SUCCESS="true"
@@ -73,7 +120,9 @@ install_integration() {
 			fi
 			rm -f "/tmp/aegisbot.zip"
 		else
-			bashio::log.error "❌ Failed to download release zip: ${ZIP_URL}"
+			check_github_status "$zip_code" "Release package download"
+			bashio::log.error "❌ Failed to download release zip (HTTP $zip_code): ${ZIP_URL}"
+			rm -f "/tmp/aegisbot.zip"
 		fi
 	fi
 
@@ -81,7 +130,9 @@ install_integration() {
 	if [ "$SUCCESS" != "true" ]; then
 		local FALLBACK_URL="https://github.com/${REPO}/archive/refs/heads/main.zip"
 		bashio::log.info "Attempting fallback download from ${FALLBACK_URL}..."
-		if curl "${CURL_AUTH[@]}" -L -s -f -o "/tmp/aegisbot_fallback.zip" "${FALLBACK_URL}"; then
+		local fb_code
+		fb_code=$(curl "${CURL_AUTH[@]}" -L -s --connect-timeout 10 --max-time 60 -w "%{http_code}" -o "/tmp/aegisbot_fallback.zip" "${FALLBACK_URL}" 2>/dev/null)
+		if [ "$fb_code" = "200" ] && [ -s "/tmp/aegisbot_fallback.zip" ]; then
 			mkdir -p "${TMP_BUILD}/extracted"
 			if unzip -q "/tmp/aegisbot_fallback.zip" -d "${TMP_BUILD}/extracted"; then
 				local NESTED_DIR
@@ -92,6 +143,9 @@ install_integration() {
 					SUCCESS="true"
 				fi
 			fi
+			rm -f "/tmp/aegisbot_fallback.zip"
+		else
+			check_github_status "$fb_code" "Fallback zip download"
 			rm -f "/tmp/aegisbot_fallback.zip"
 		fi
 	fi
@@ -160,7 +214,15 @@ else
 		CURL_AUTH=("-H" "Authorization: Bearer ${GITHUB_TOKEN}")
 	fi
 
-	RELEASES_JSON=$(curl -s -f "${CURL_AUTH[@]}" -A "HomeAssistant-Addon" "https://api.github.com/repos/${REPO}/releases" 2>/dev/null || echo "[]")
+	local rel_code
+	rel_code=$(curl -s --connect-timeout 10 --max-time 30 -w "%{http_code}" "${CURL_AUTH[@]}" -A "HomeAssistant-Addon" -o /tmp/aegisbot_releases.json "https://api.github.com/repos/${REPO}/releases" 2>/dev/null || echo "000")
+	if [ "$rel_code" = "200" ] && [ -s /tmp/aegisbot_releases.json ]; then
+		RELEASES_JSON=$(cat /tmp/aegisbot_releases.json)
+	else
+		check_github_status "$rel_code" "Releases check"
+		RELEASES_JSON="[]"
+	fi
+	rm -f /tmp/aegisbot_releases.json
 
 	if ! echo "$RELEASES_JSON" | jq -e 'if type=="array" then true else false end' >/dev/null 2>&1; then
 		bashio::log.info "Note: Could not fetch releases (GitHub API rate limit or no internet). Skipping update checks."

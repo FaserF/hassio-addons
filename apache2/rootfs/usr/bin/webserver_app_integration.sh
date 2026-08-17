@@ -34,13 +34,62 @@ else
 	bashio::log.info "🔵 Stable channel detected."
 fi
 
-bashio::log.info "Fetching release information from GitHub..."
-RELEASES_JSON=$(curl -s --connect-timeout 10 --max-time 30 -A "HomeAssistant-Addon" "https://api.github.com/repos/FaserF/ha-webserver/releases")
+# Helper to check GitHub status and diagnose failures
+check_github_status() {
+	local http_code="$1"
+	local context="${2:-GitHub request}"
 
-if ! echo "$RELEASES_JSON" | jq -e 'if type=="array" then true else false end' >/dev/null 2>&1; then
-	bashio::log.info "Note: Could not fetch releases (GitHub API may be rate-limited). Skipping update checks."
+	case "$http_code" in
+		000)
+			bashio::log.warning "⚠️ $context: Connection timeout or unreachable network (HTTP 000)."
+			;;
+		401)
+			bashio::log.warning "⚠️ $context: Authentication failed (HTTP 401 Unauthorized)."
+			;;
+		403)
+			bashio::log.warning "⚠️ $context: Access forbidden or API rate limit exceeded (HTTP 403)."
+			;;
+		404)
+			bashio::log.warning "⚠️ $context: Resource not found (HTTP 404)."
+			;;
+		429)
+			bashio::log.warning "⚠️ $context: Too many requests / API rate limit exceeded (HTTP 429)."
+			;;
+		500|502|503|504)
+			bashio::log.warning "⚠️ $context: GitHub server error (HTTP $http_code)."
+			;;
+		*)
+			bashio::log.warning "⚠️ $context returned HTTP $http_code."
+			;;
+	esac
+
+	# If server error (5xx) or connection timeout (000), check GitHub Status API
+	if [[ "$http_code" =~ ^(000|500|502|503|504)$ ]]; then
+		local gh_status
+		gh_status=$(curl -s --connect-timeout 5 --max-time 10 "https://www.githubstatus.com/api/v2/status.json" 2>/dev/null || echo "")
+		if [ -n "$gh_status" ]; then
+			local indicator description
+			indicator=$(echo "$gh_status" | jq -r '.status.indicator // "none"' 2>/dev/null || echo "none")
+			description=$(echo "$gh_status" | jq -r '.status.description // empty' 2>/dev/null || echo "")
+			if [ "$indicator" != "none" ] && [ -n "$description" ]; then
+				bashio::log.error "🚨 GitHub Incident active: $description (Status: $indicator)"
+				bashio::log.error "   Please check https://www.githubstatus.com for live status updates."
+			fi
+		fi
+	fi
+}
+
+bashio::log.info "Fetching release information from GitHub..."
+local rel_code
+rel_code=$(curl -s --connect-timeout 10 --max-time 30 -w "%{http_code}" -A "HomeAssistant-Addon" -o /tmp/webserver_releases.json "https://api.github.com/repos/FaserF/ha-webserver/releases" 2>/dev/null || echo "000")
+
+if [ "$rel_code" = "200" ] && [ -s /tmp/webserver_releases.json ]; then
+	RELEASES_JSON=$(cat /tmp/webserver_releases.json)
+else
+	check_github_status "$rel_code" "Releases check"
 	RELEASES_JSON="[]"
 fi
+rm -f /tmp/webserver_releases.json
 
 TARGET_TAG=""
 if [ "$RELEASES_JSON" != "[]" ]; then
@@ -80,13 +129,14 @@ if [ "$UPDATE_NEEDED" = "true" ]; then
 	mkdir -p "/tmp/webserver_install"
 
 	ZIP_URL="https://github.com/FaserF/ha-webserver/releases/download/${TARGET_TAG}/webserver_app.zip"
-	if ! curl -L -s -f -o "/tmp/webserver_app.zip" "$ZIP_URL"; then
+	local dl_code
+	dl_code=$(curl -L -s --connect-timeout 10 --max-time 60 -w "%{http_code}" -o "/tmp/webserver_app.zip" "$ZIP_URL" 2>/dev/null)
+	if [ "$dl_code" != "200" ] || [ ! -s "/tmp/webserver_app.zip" ]; then
+		check_github_status "$dl_code" "Release package download"
 		# Fallback to main branch zip if no target tag or error
-		if [ -z "$TARGET_TAG" ]; then
-			ZIP_URL="https://github.com/FaserF/ha-webserver/archive/refs/heads/main.zip"
-			bashio::log.info "No target release tag, attempting main branch zip: $ZIP_URL"
-			curl -L -s -f -o "/tmp/webserver_app.zip" "$ZIP_URL"
-		fi
+		ZIP_URL="https://github.com/FaserF/ha-webserver/archive/refs/heads/main.zip"
+		bashio::log.info "Attempting main branch zip fallback: $ZIP_URL"
+		curl -L -s --connect-timeout 10 --max-time 60 -o "/tmp/webserver_app.zip" "$ZIP_URL" 2>/dev/null
 	fi
 
 	if [ -f "/tmp/webserver_app.zip" ]; then
