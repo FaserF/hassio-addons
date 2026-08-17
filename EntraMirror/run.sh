@@ -55,7 +55,9 @@ _show_app_banner() {
 			bashio::log.error "💡 Update the App or fix configuration issues to try again."
 			bashio::log.error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-			printf "%s\n0\n" "$VERSION" >"$STATE_FILE" 2>/dev/null
+			printf "%s
+0
+" "$VERSION" >"$STATE_FILE" 2>/dev/null
 
 			if type bashio::addon.stop >/dev/null 2>&1; then
 				bashio::addon.stop 2>/dev/null || true
@@ -66,12 +68,16 @@ _show_app_banner() {
 			exit 0
 		fi
 
-		printf "%s\n%s\n" "$VERSION" "$FAIL_COUNT" >"$STATE_FILE" 2>/dev/null
+		printf "%s
+%s
+" "$VERSION" "$FAIL_COUNT" >"$STATE_FILE" 2>/dev/null
 
 		(
 			sleep 120
 			if [ -d "/data" ]; then
-				printf "%s\n0\n" "$VERSION" >"/data/.boot_loop_protection" 2>/dev/null
+				printf "%s
+0
+" "$VERSION" >"/data/.boot_loop_protection" 2>/dev/null
 			fi
 		) &
 	fi
@@ -338,10 +344,12 @@ fi
 if bashio::config.true 'sso_enabled'; then
 	export ENTRAMIRROR_SSO_ENABLED="true"
 	if bashio::config.has_value 'sso_client_id'; then
-		export ENTRAMIRROR_SSO_CLIENT_ID=$(bashio::config 'sso_client_id')
+		ENTRAMIRROR_SSO_CLIENT_ID=$(bashio::config 'sso_client_id')
+		export ENTRAMIRROR_SSO_CLIENT_ID
 	fi
 	if bashio::config.has_value 'sso_tenant_id'; then
-		export ENTRAMIRROR_SSO_TENANT_ID=$(bashio::config 'sso_tenant_id')
+		ENTRAMIRROR_SSO_TENANT_ID=$(bashio::config 'sso_tenant_id')
+		export ENTRAMIRROR_SSO_TENANT_ID
 	fi
 	bashio::log.info "SSO Mode: ENABLED (Tenant: ${ENTRAMIRROR_SSO_TENANT_ID:-common})"
 else

@@ -112,13 +112,16 @@ export async function translateTextGatewayWithReason(
       }
 
       try {
-        const cleanUrl = aegisUrl.trim().replace(/\/+$/, '');
+        let cleanUrl = String(aegisUrl).trim();
+        while (cleanUrl.endsWith('/')) {
+          cleanUrl = cleanUrl.slice(0, -1);
+        }
         const headers = {
           'Content-Type': 'application/json',
           'User-Agent': 'AegisBot-WhatsApp-Gateway/1.0',
         };
         if (aegisKey) {
-          headers['Authorization'] = `Bearer ${aegisKey.trim()}`;
+          headers['Authorization'] = `Bearer ${String(aegisKey).trim()}`;
         }
 
         const res = await fetch(`${cleanUrl}/api/v1/ai/translate`, {

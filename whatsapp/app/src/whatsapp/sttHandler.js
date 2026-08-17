@@ -215,8 +215,11 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       if (sttEngine === 'aegisbot' || (sttEngine === 'auto' && aegisbotUrl)) {
         usedEngine = 'aegisbot';
         try {
-          const targetBaseUrl = aegisbotUrl || 'http://localhost:8000';
-          const endpoint = `${targetBaseUrl.replace(/\/+$/, '')}/api/v1/ai/transcribe`;
+          let targetBaseUrl = String(aegisbotUrl || 'http://localhost:8000').trim();
+          while (targetBaseUrl.endsWith('/')) {
+            targetBaseUrl = targetBaseUrl.slice(0, -1);
+          }
+          const endpoint = `${targetBaseUrl}/api/v1/ai/transcribe`;
 
           const formData = new Blob([stream], { type: 'audio/ogg' });
           const body = new FormData();

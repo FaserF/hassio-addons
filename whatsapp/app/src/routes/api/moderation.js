@@ -52,15 +52,37 @@ export function registerModerationRoutes(app) {
   app.post('/api/moderation/test-aegisbot', async (req, res) => {
     try {
       const { url, token } = req.body || {};
-      if (!url || !String(url).trim()) {
+      if (!url || typeof url !== 'string' || !url.trim()) {
         return res.json({ success: false, error: 'AegisBot Server URL is required.' });
       }
 
-      const cleanUrl = String(url).trim().replace(/\/+$/, '');
+      let parsedUrl;
+      try {
+        parsedUrl = new URL(url.trim());
+      } catch {
+        return res.json({ success: false, error: 'Invalid AegisBot Server URL format.' });
+      }
+
+      if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+        return res.json({
+          success: false,
+          error: 'AegisBot Server URL must use http or https protocol.',
+        });
+      }
+
+      let basePath = parsedUrl.pathname;
+      while (basePath.endsWith('/')) {
+        basePath = basePath.slice(0, -1);
+      }
+
+      const cleanUrl = `${parsedUrl.origin}${basePath}`;
+      const healthUrl = new URL(`${basePath}/api/v1/health`, parsedUrl.origin).href;
+      const configUrl = new URL(`${basePath}/api/v1/ai/stt/config`, parsedUrl.origin).href;
+
       const startTime = Date.now();
       const headers = { 'User-Agent': 'AegisBot-WhatsApp-Gateway/1.0' };
-      if (token && String(token).trim()) {
-        headers['Authorization'] = `Bearer ${String(token).trim()}`;
+      if (token && typeof token === 'string' && token.trim()) {
+        headers['Authorization'] = `Bearer ${token.trim()}`;
       }
 
       const controller = new AbortController();
@@ -68,7 +90,7 @@ export function registerModerationRoutes(app) {
 
       let response;
       try {
-        response = await fetch(`${cleanUrl}/api/v1/health`, {
+        response = await fetch(healthUrl, {
           method: 'GET',
           headers,
           signal: controller.signal,
@@ -76,7 +98,7 @@ export function registerModerationRoutes(app) {
       } catch (_err) {
         // Fallback check to /api/v1/ai/stt/config
         try {
-          response = await fetch(`${cleanUrl}/api/v1/ai/stt/config`, {
+          response = await fetch(configUrl, {
             method: 'GET',
             headers,
             signal: controller.signal,
