@@ -351,6 +351,15 @@ export async function generateChatExport(
   }
 
   // 5. README & Manifest
+  const oldestMsg = storedMessages.length > 0 ? storedMessages[0] : null;
+  let oldestDateFormatted = null;
+  if (oldestMsg?.timestamp) {
+    const d = new Date(oldestMsg.timestamp);
+    if (!isNaN(d.getTime())) {
+      oldestDateFormatted = d.toISOString().split('T')[0];
+    }
+  }
+
   const manifestObj = {
     export_version: '1.0.0',
     gateway_version: ADDON_VERSION,
@@ -358,6 +367,7 @@ export async function generateChatExport(
     chat_id: groupId,
     chat_name: groupSubject,
     timeframe: timeframe,
+    oldest_message_date: oldestDateFormatted,
     total_messages_exported: storedMessages.length,
     included_files: files.map((f) => f.name),
   };

@@ -441,13 +441,24 @@ export function registerContentCommands(registry) {
           componentTypes
         );
 
-        const caption =
-          `📦 *Export Archive Ready*\n` +
-          `• *Chat:* ${summary.chat_name}\n` +
-          `• *Timeframe:* ${summary.timeframe}\n` +
-          `• *Messages:* ${totalMessages}\n` +
-          `• *Files:* ${summary.included_files.join(', ')}\n\n` +
-          `_🔒 For privacy, this file will auto-delete automatically._`;
+        const oldestDate = summary.oldest_message_date || 'N/A';
+        const timeframeDisplay =
+          timeframe === 'all' && oldestDate !== 'N/A'
+            ? `all (${oldestDate})`
+            : summary.timeframe;
+
+        let caption =
+          `${gt(config, 'bot_replies.export_caption_header')}\n` +
+          `${gt(config, 'bot_replies.export_field_chat', { name: summary.chat_name })}\n` +
+          `${gt(config, 'bot_replies.export_field_timeframe', { timeframe: timeframeDisplay })}\n` +
+          `${gt(config, 'bot_replies.export_field_messages', { count: totalMessages })}\n` +
+          `${gt(config, 'bot_replies.export_field_files', { files: summary.included_files.join(', ') })}\n\n`;
+
+        if (timeframe === 'all') {
+          caption += `${gt(config, 'bot_replies.export_all_notice', { oldestDate })}\n\n`;
+        }
+
+        caption += gt(config, 'bot_replies.export_privacy_footer');
 
         const documentPayload = {
           document: buffer,
