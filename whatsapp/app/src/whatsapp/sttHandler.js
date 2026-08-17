@@ -82,7 +82,8 @@ export function getSTTDiagnostics(groupConfig = {}, store = {}) {
       if (hasAegisBotUrl) {
         activeEngine = 'aegisbot';
         activeEngineName = '⚡ Auto: AegisBot Server';
-        selectionReason = 'Auto STT: AegisBot Server selected (Local Whisper active, zero cloud cost).';
+        selectionReason =
+          'Auto STT: AegisBot Server selected (Local Whisper active, zero cloud cost).';
       } else if (hasGeminiKey) {
         activeEngine = 'gemini';
         activeEngineName = '⚡ Auto: Gemini 1.5 Flash';
@@ -187,20 +188,11 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     }
 
     // 2. Perform STT transcription using AegisBot Server, Gemini Multimodal Audio API, or OpenAI Whisper API
-    const geminiKey =
-      store.gemini_api_key ||
-      config.ai?.api_key ||
-      process.env.GEMINI_API_KEY;
+    const geminiKey = store.gemini_api_key || config.ai?.api_key || process.env.GEMINI_API_KEY;
     const openAiKey = config.ai?.openai_api_key || process.env.OPENAI_API_KEY;
-    const aegisbotUrl =
-      config.stt_aegisbot_url ||
-      store.aegisbot_url ||
-      process.env.AEGISBOT_URL;
+    const aegisbotUrl = config.stt_aegisbot_url || store.aegisbot_url || process.env.AEGISBOT_URL;
     const aegisbotKey =
-      config.stt_aegisbot_key ||
-      store.aegisbot_api_key ||
-      process.env.AEGISBOT_API_KEY ||
-      '';
+      config.stt_aegisbot_key || store.aegisbot_api_key || process.env.AEGISBOT_API_KEY || '';
 
     let transcribedText = null;
     let failureReason = null;
@@ -220,10 +212,7 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       recordSttError(sttEngine, failureReason, groupId);
     } else {
       // 1. Try AegisBot Server (Local Self-Hosted Faster-Whisper)
-      if (
-        sttEngine === 'aegisbot' ||
-        (sttEngine === 'auto' && aegisbotUrl)
-      ) {
+      if (sttEngine === 'aegisbot' || (sttEngine === 'auto' && aegisbotUrl)) {
         usedEngine = 'aegisbot';
         try {
           const targetBaseUrl = aegisbotUrl || 'http://localhost:8000';
@@ -283,11 +272,7 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       }
 
       // 2. Try Gemini 1.5 Multimodal Audio API
-      if (
-        !transcribedText &&
-        (sttEngine === 'gemini' ||
-          (sttEngine === 'auto' && geminiKey))
-      ) {
+      if (!transcribedText && (sttEngine === 'gemini' || (sttEngine === 'auto' && geminiKey))) {
         usedEngine = 'gemini';
         try {
           const gKey = geminiKey;
@@ -341,11 +326,7 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       }
 
       // 3. Try OpenAI Whisper API
-      if (
-        !transcribedText &&
-        (sttEngine === 'openai' ||
-          (sttEngine === 'auto' && openAiKey))
-      ) {
+      if (!transcribedText && (sttEngine === 'openai' || (sttEngine === 'auto' && openAiKey))) {
         usedEngine = 'openai';
         try {
           const oaKey = openAiKey;

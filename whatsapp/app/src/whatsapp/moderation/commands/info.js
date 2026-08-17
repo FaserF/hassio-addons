@@ -344,20 +344,35 @@ export function registerInfoCommands(registry) {
 
       // 1. Subcommand: Coin Flip
       if (['coin', 'flip', 'coinflip', 'münze', 'muenze', 'kopfoderzahl'].includes(lowerArgs)) {
-        const outcome = Math.random() < 0.5
-          ? gt(config, 'bot_replies.dice_coin_heads')
-          : gt(config, 'bot_replies.dice_coin_tails');
-        await reply(session, groupId, { text: gt(config, 'bot_replies.dice_coin_result', { outcome }) }, rawMsg);
+        const outcome =
+          Math.random() < 0.5
+            ? gt(config, 'bot_replies.dice_coin_heads')
+            : gt(config, 'bot_replies.dice_coin_tails');
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.dice_coin_result', { outcome }) },
+          rawMsg
+        );
         return;
       }
 
       // 2. Subcommand: Pick / Choice
       const tokens = lowerArgs.split(/\s+/).filter(Boolean);
-      if (tokens.length > 0 && ['pick', 'choose', 'choice', 'auswahl', 'select'].includes(tokens[0])) {
+      if (
+        tokens.length > 0 &&
+        ['pick', 'choose', 'choice', 'auswahl', 'select'].includes(tokens[0])
+      ) {
         const optRaw = argsStr.slice(tokens[0].length).trim();
         const options = optRaw.includes(',')
-          ? optRaw.split(',').map((s) => s.trim()).filter(Boolean)
-          : optRaw.split(/\s+/).map((s) => s.trim()).filter(Boolean);
+          ? optRaw
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : optRaw
+              .split(/\s+/)
+              .map((s) => s.trim())
+              .filter(Boolean);
 
         if (options.length < 2) {
           const prefix = config.commands?.prefix || '!';
@@ -434,7 +449,12 @@ export function registerInfoCommands(registry) {
             await reply(
               session,
               groupId,
-              { text: gt(config, 'bot_replies.dice_result_single', { formula: '1d6', result: `${sym} *${val}*` }) },
+              {
+                text: gt(config, 'bot_replies.dice_result_single', {
+                  formula: '1d6',
+                  result: `${sym} *${val}*`,
+                }),
+              },
               rawMsg
             );
             return;
@@ -444,11 +464,21 @@ export function registerInfoCommands(registry) {
         }
 
         if (count < 1 || count > 20) {
-          await reply(session, groupId, { text: gt(config, 'bot_replies.dice_count_error') }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.dice_count_error') },
+            rawMsg
+          );
           return;
         }
         if (sides < 2 || sides > 1000) {
-          await reply(session, groupId, { text: gt(config, 'bot_replies.dice_sides_error') }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.dice_sides_error') },
+            rawMsg
+          );
           return;
         }
 
@@ -460,15 +490,28 @@ export function registerInfoCommands(registry) {
           await reply(
             session,
             groupId,
-            { text: gt(config, 'bot_replies.dice_result_single', { formula: `1d${sides}`, result: `${sym}*${rolls[0]}*` }) },
+            {
+              text: gt(config, 'bot_replies.dice_result_single', {
+                formula: `1d${sides}`,
+                result: `${sym}*${rolls[0]}*`,
+              }),
+            },
             rawMsg
           );
         } else {
-          const rollsStr = rolls.map((r) => (sides === 6 ? `${diceSymbols[r] || ''} ${r}`.trim() : r)).join(' + ');
+          const rollsStr = rolls
+            .map((r) => (sides === 6 ? `${diceSymbols[r] || ''} ${r}`.trim() : r))
+            .join(' + ');
           await reply(
             session,
             groupId,
-            { text: gt(config, 'bot_replies.dice_result_multi', { formula: `${count}d${sides}`, rolls: rollsStr, total }) },
+            {
+              text: gt(config, 'bot_replies.dice_result_multi', {
+                formula: `${count}d${sides}`,
+                rolls: rollsStr,
+                total,
+              }),
+            },
             rawMsg
           );
         }
@@ -523,7 +566,12 @@ export function registerInfoCommands(registry) {
         });
 
         if (eligible.length === 0) {
-          await reply(session, groupId, { text: gt(config, 'bot_replies.dice_all_no_members') }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.dice_all_no_members') },
+            rawMsg
+          );
           return;
         }
 
@@ -540,11 +588,19 @@ export function registerInfoCommands(registry) {
           }
           for (let i = 0; i < numMembers; i++) {
             const val = pool[i];
-            results.push({ participant: eligible[i], total: val, rolls: [val], sides: actualSides });
+            results.push({
+              participant: eligible[i],
+              total: val,
+              rolls: [val],
+              sides: actualSides,
+            });
           }
         } else {
           for (const member of eligible) {
-            const rolls = Array.from({ length: count }, () => Math.floor(Math.random() * sides) + 1);
+            const rolls = Array.from(
+              { length: count },
+              () => Math.floor(Math.random() * sides) + 1
+            );
             const total = rolls.reduce((a, b) => a + b, 0);
             results.push({ participant: member, total, rolls, sides });
           }
@@ -556,10 +612,20 @@ export function registerInfoCommands(registry) {
         const lines = [];
 
         if (isUnique) {
-          lines.push(gt(config, 'bot_replies.dice_group_header_unique', { sides: results[0]?.sides || sides, members: numMembers }));
+          lines.push(
+            gt(config, 'bot_replies.dice_group_header_unique', {
+              sides: results[0]?.sides || sides,
+              members: numMembers,
+            })
+          );
         } else {
           const formulaDesc = count > 1 ? `${count}d${sides}` : `1d${sides}`;
-          lines.push(gt(config, 'bot_replies.dice_group_header', { formula: formulaDesc, members: numMembers }));
+          lines.push(
+            gt(config, 'bot_replies.dice_group_header', {
+              formula: formulaDesc,
+              members: numMembers,
+            })
+          );
         }
 
         const mentions = [];
@@ -585,21 +651,39 @@ export function registerInfoCommands(registry) {
 
         await reply(session, groupId, { text: lines.join('\n'), mentions }, rawMsg);
       } catch (err) {
-        await reply(session, groupId, { text: gt(config, 'bot_replies.dice_group_error', { error: err.message }) }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.dice_group_error', { error: err.message }) },
+          rawMsg
+        );
       }
     },
-    { adminOnly: false, aliases: ['dice', 'wuerfel'], help: 'Roll dice, flip a coin, or pick random options' }
+    {
+      adminOnly: false,
+      aliases: ['dice', 'wuerfel'],
+      help: 'Roll dice, flip a coin, or pick random options',
+    }
   );
 
   registry.register(
     'coin',
     async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
-      const outcome = Math.random() < 0.5
-        ? gt(config, 'bot_replies.dice_coin_heads')
-        : gt(config, 'bot_replies.dice_coin_tails');
-      await reply(session, groupId, { text: gt(config, 'bot_replies.dice_coin_result', { outcome }) }, rawMsg);
+      const outcome =
+        Math.random() < 0.5
+          ? gt(config, 'bot_replies.dice_coin_heads')
+          : gt(config, 'bot_replies.dice_coin_tails');
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.dice_coin_result', { outcome }) },
+        rawMsg
+      );
     },
-    { adminOnly: false, aliases: ['coinflip', 'münze', 'muenze', 'flip'], help: 'Flip a coin (Heads or Tails 🪙)' }
+    {
+      adminOnly: false,
+      aliases: ['coinflip', 'münze', 'muenze', 'flip'],
+      help: 'Flip a coin (Heads or Tails 🪙)',
+    }
   );
 }
-

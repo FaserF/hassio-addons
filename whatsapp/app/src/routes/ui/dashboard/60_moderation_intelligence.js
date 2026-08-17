@@ -57,8 +57,10 @@ async function saveGroupAiConfig() {
   };
   groupConfig.stt_enabled = Boolean(document.getElementById('mod-stt-enabled')?.checked);
   groupConfig.stt_engine = document.getElementById('mod-stt-engine')?.value || 'aegisbot';
-  groupConfig.stt_aegisbot_url = document.getElementById('mod-stt-aegisbot-url')?.value?.trim() || '';
-  groupConfig.stt_aegisbot_key = document.getElementById('mod-stt-aegisbot-key')?.value?.trim() || '';
+  groupConfig.stt_aegisbot_url =
+    document.getElementById('mod-stt-aegisbot-url')?.value?.trim() || '';
+  groupConfig.stt_aegisbot_key =
+    document.getElementById('mod-stt-aegisbot-key')?.value?.trim() || '';
   groupConfig.translation = {
     enabled: document.getElementById('mod-trans-enabled')
       ? Boolean(document.getElementById('mod-trans-enabled').checked)
@@ -310,8 +312,7 @@ function updateSttEngineNotice() {
   const engine = document.getElementById('mod-stt-engine')?.value;
   const aegisConfig = document.getElementById('mod-stt-aegisbot-config');
   if (aegisConfig) {
-    aegisConfig.style.display = (engine === 'aegisbot' || engine === 'auto') ? 'block' : 'none';
+    aegisConfig.style.display = engine === 'aegisbot' || engine === 'auto' ? 'block' : 'none';
   }
 }
 window.updateSttEngineNotice = updateSttEngineNotice;
-
