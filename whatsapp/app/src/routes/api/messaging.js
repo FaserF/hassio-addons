@@ -81,6 +81,26 @@ export function registerMessagingRoutes(app) {
           return res.status(400).json({ detail: 'Missing number, name, or options array' });
         }
 
+        const cleanedOptions = options.map((opt) => String(opt).trim()).filter(Boolean);
+        if (cleanedOptions.length < 2) {
+          return res.status(400).json({
+            detail:
+              'WhatsApp polls require at least 2 voting options (maximum 12). If you need a single confirmation button, provide at least two distinct choices.',
+          });
+        }
+        if (cleanedOptions.length > 12) {
+          return res.status(400).json({
+            detail: 'WhatsApp polls support a maximum of 12 options.',
+          });
+        }
+        const uniqueSet = new Set(cleanedOptions);
+        if (uniqueSet.size !== cleanedOptions.length) {
+          return res.status(400).json({
+            detail:
+              'WhatsApp polls require unique voting options. Duplicate options are not supported by WhatsApp.',
+          });
+        }
+
         const connected = await ensureConnected(session);
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
@@ -88,7 +108,7 @@ export function registerMessagingRoutes(app) {
         const sentMsg = await session.sock.sendMessage(jid, {
           poll: {
             name: pollTitle,
-            values: options,
+            values: cleanedOptions,
             selectableCount: selectableCount || 1,
           },
         });
