@@ -7,12 +7,7 @@
 [![Docker Image](https://img.shields.io/badge/docker-2.0.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-matterbridge)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> [!CAUTION]
-> **UNSUPPORTED App**
->
-> This app is **no longer supported**. The upstream Matterbridge project has not been developed since **January 2023** and is considered abandoned.
->
-> 👉 **Recommended Alternative**: Please use the [**WhatsApp Gateway**](../../whatsapp) add-on instead for WhatsApp integration.
+> A simple chat bridge (Unsupported - Matterbridge not developed since Jan 2023) (Unsupported)
 
 ---
 

@@ -180,7 +180,10 @@ export function registerInfoCommands(registry) {
 
       // 1. Detailed lookup for a specific command: !help <command>
       if (args && args.length > 0) {
-        const targetCmd = args[0].replace(/^[!/#]+/, '').toLowerCase().trim();
+        const targetCmd = args[0]
+          .replace(/^[!/#]+/, '')
+          .toLowerCase()
+          .trim();
         const cmdDetails = registry.getCommand(targetCmd);
 
         if (cmdDetails) {

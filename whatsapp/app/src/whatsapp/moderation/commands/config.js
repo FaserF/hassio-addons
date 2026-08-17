@@ -470,12 +470,7 @@ export function registerConfigCommands(registry) {
         );
       } else {
         logger.warn({ reason, targetLang }, 'Manual translation command failed');
-        await reply(
-          session,
-          groupId,
-          { text: gt(config, 'bot_replies.translate_failed') },
-          rawMsg
-        );
+        await reply(session, groupId, { text: gt(config, 'bot_replies.translate_failed') }, rawMsg);
       }
     },
     { adminOnly: false, help: 'Translate a message or text', aliases: ['tr'] }

@@ -354,7 +354,9 @@ async function testAegisBotConnection() {
   if (feedback) {
     feedback.style.display = 'inline';
     feedback.style.color = '#94a3b8';
-    feedback.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (window.t ? window.t('moderation.stt_aegisbot_testing') : 'Verbindung wird geprüft...');
+    feedback.innerHTML =
+      '<i class="fas fa-spinner fa-spin"></i> ' +
+      (window.t ? window.t('moderation.stt_aegisbot_testing') : 'Verbindung wird geprüft...');
   }
   if (btn) btn.disabled = true;
 

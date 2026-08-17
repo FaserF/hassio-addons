@@ -443,9 +443,7 @@ export function registerContentCommands(registry) {
 
         const oldestDate = summary.oldest_message_date || 'N/A';
         const timeframeDisplay =
-          timeframe === 'all' && oldestDate !== 'N/A'
-            ? `all (${oldestDate})`
-            : summary.timeframe;
+          timeframe === 'all' && oldestDate !== 'N/A' ? `all (${oldestDate})` : summary.timeframe;
 
         let caption =
           `${gt(config, 'bot_replies.export_caption_header')}\n` +
