@@ -48,6 +48,86 @@ export function registerModerationRoutes(app) {
     }
   });
 
+  // POST /api/moderation/test-aegisbot — Test AegisBot server connectivity, authentication & health
+  app.post('/api/moderation/test-aegisbot', async (req, res) => {
+    try {
+      const { url, token } = req.body || {};
+      if (!url || !String(url).trim()) {
+        return res.json({ success: false, error: 'AegisBot Server URL is required.' });
+      }
+
+      const cleanUrl = String(url).trim().replace(/\/+$/, '');
+      const startTime = Date.now();
+      const headers = { 'User-Agent': 'AegisBot-WhatsApp-Gateway/1.0' };
+      if (token && String(token).trim()) {
+        headers['Authorization'] = `Bearer ${String(token).trim()}`;
+      }
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 7000);
+
+      let response;
+      try {
+        response = await fetch(`${cleanUrl}/api/v1/health`, {
+          method: 'GET',
+          headers,
+          signal: controller.signal,
+        });
+      } catch (_err) {
+        // Fallback check to /api/v1/ai/stt/config
+        try {
+          response = await fetch(`${cleanUrl}/api/v1/ai/stt/config`, {
+            method: 'GET',
+            headers,
+            signal: controller.signal,
+          });
+        } catch (subErr) {
+          clearTimeout(timeoutId);
+          return res.json({
+            success: false,
+            latency: Date.now() - startTime,
+            error: `Connection refused: ${subErr.message}`,
+          });
+        }
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      const latency = Date.now() - startTime;
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          return res.json({
+            success: false,
+            latency,
+            error: `Authentication failed (HTTP ${response.status}): Invalid API Key / Token.`,
+          });
+        }
+        return res.json({
+          success: false,
+          latency,
+          error: `Server responded with HTTP ${response.status} (${response.statusText}).`,
+        });
+      }
+
+      const data = await response.json().catch(() => ({}));
+      return res.json({
+        success: true,
+        latency,
+        server: cleanUrl,
+        version: data.version || data.software_version || 'AegisBot Active',
+        engine: data.active_engine || data.model_size || 'STT/Translation Active',
+        status: data.status || 'OK',
+      });
+    } catch (err) {
+      logger.debug({ error: err.message }, 'AegisBot connection test failed');
+      return res.json({
+        success: false,
+        error: `Could not connect to AegisBot Server: ${err.message}`,
+      });
+    }
+  });
+
   // GET /api/moderation/commands — Dynamically list all registered built-in commands
   app.get('/api/moderation/commands', (req, res) => {
     const list = [];

@@ -29,7 +29,8 @@ function recordError(provider, errorMsg, targetLang = null) {
 export async function translateTextGatewayWithReason(
   text,
   targetLang = 'en',
-  preferredProvider = 'auto'
+  preferredProvider = 'auto',
+  groupConfig = null
 ) {
   if (!text || !text.trim()) {
     return { translation: null, reason: 'Empty or blank text provided for translation.' };
@@ -69,11 +70,27 @@ export async function translateTextGatewayWithReason(
   const hasAiKey = Boolean(
     store?.gemini_api_key || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY
   );
+  const hasAegisBot = Boolean(
+    store?.aegisbot_url || process.env.AEGISBOT_URL || groupConfig?.stt_aegisbot_url
+  );
+
+  const customPriority =
+    groupConfig?.translation?.engine_priority || store?.translation_engine_priority;
 
   const providersToTry = [];
-  if (preferredProvider && preferredProvider !== 'auto') {
+  if (Array.isArray(customPriority) && customPriority.length > 0) {
+    for (const p of customPriority) {
+      if (p && !providersToTry.includes(p)) {
+        providersToTry.push(p);
+      }
+    }
+  } else if (preferredProvider && preferredProvider !== 'auto' && preferredProvider !== 'custom') {
     providersToTry.push(preferredProvider);
   } else {
+    // Default smart failover chain: AegisBot (if configured) -> Google -> Lingva -> MyMemory -> AI
+    if (hasAegisBot) {
+      providersToTry.push('aegisbot');
+    }
     providersToTry.push('google', 'lingva', 'mymemory');
     if (hasAiKey) {
       providersToTry.push('ai');
@@ -83,6 +100,71 @@ export async function translateTextGatewayWithReason(
   const attemptedReasons = [];
 
   for (const provider of providersToTry) {
+    if (provider === 'aegisbot') {
+      const aegisUrl =
+        groupConfig?.stt_aegisbot_url || store?.aegisbot_url || process.env.AEGISBOT_URL;
+      const aegisKey =
+        groupConfig?.stt_aegisbot_key || store?.aegisbot_api_key || process.env.AEGISBOT_API_KEY;
+
+      if (!aegisUrl) {
+        attemptedReasons.push('AegisBot Server: No Server URL configured');
+        continue;
+      }
+
+      try {
+        const cleanUrl = aegisUrl.trim().replace(/\/+$/, '');
+        const headers = {
+          'Content-Type': 'application/json',
+          'User-Agent': 'AegisBot-WhatsApp-Gateway/1.0',
+        };
+        if (aegisKey) {
+          headers['Authorization'] = `Bearer ${aegisKey.trim()}`;
+        }
+
+        const res = await fetch(`${cleanUrl}/api/v1/ai/translate`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            text: cleanText,
+            target_lang: targetLang,
+            source_lang: 'auto',
+            provider: 'auto',
+          }),
+          signal: AbortSignal.timeout(7000),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.translation) {
+            const translated = data.translation.trim();
+            const detected = data.source_lang || '?';
+            saveCache(translated, detected);
+            lastTranslationEvent = {
+              timestamp: Date.now(),
+              provider: 'aegisbot',
+              providerName: 'AegisBot Server (Local)',
+              status: 'success',
+              sourceLang: detected,
+              targetLang,
+              reason: 'Translated via AegisBot Server',
+            };
+            return {
+              translation: translated,
+              sourceLang: detected,
+              detectedSource: detected,
+              reason: null,
+            };
+          } else {
+            attemptedReasons.push(`AegisBot Server: ${data.error || 'Empty translation'}`);
+          }
+        } else {
+          attemptedReasons.push(`AegisBot Server: HTTP ${res.status}`);
+        }
+      } catch (err) {
+        logger.debug({ error: err.message }, 'AegisBot translation request failed');
+        attemptedReasons.push(`AegisBot Server: Error (${err.message})`);
+      }
+    }
     if (provider === 'google') {
       const cd = cooldowns.get('google') || 0;
       if (cd > now) {
@@ -370,8 +452,13 @@ export async function translateTextGatewayWithReason(
   };
 }
 
-export async function translateTextGateway(text, targetLang = 'en') {
-  const { translation } = await translateTextGatewayWithReason(text, targetLang);
+export async function translateTextGateway(text, targetLang = 'en', groupConfig = null) {
+  const { translation } = await translateTextGatewayWithReason(
+    text,
+    targetLang,
+    'auto',
+    groupConfig
+  );
   return translation;
 }
 
@@ -395,7 +482,15 @@ export function getTranslationDiagnostics(groupConfig = {}, store = {}) {
   const googleCooldown = cooldowns.get('google') || 0;
   const mymemoryCooldown = cooldowns.get('mymemory') || 0;
 
+  const hasAegisUrl = Boolean(
+    groupConfig?.stt_aegisbot_url || store?.aegisbot_url || process.env.AEGISBOT_URL
+  );
+
   const health = {
+    aegisbot: {
+      name: 'AegisBot Server (Local)',
+      status: hasAegisUrl ? 'healthy' : 'no_url',
+    },
     google: {
       name: 'Google Translate',
       status: googleCooldown > now ? 'cooldown' : 'healthy',
@@ -435,7 +530,13 @@ export function getTranslationDiagnostics(groupConfig = {}, store = {}) {
     };
   }
 
-  if (configuredProvider === 'ai') {
+  if (configuredProvider === 'aegisbot') {
+    activeProvider = 'aegisbot';
+    activeProviderName = 'AegisBot Server (Local)';
+    selectionReason = hasAegisUrl
+      ? 'Manual Selection: Group is set to AegisBot Server (Local / Self-hosted).'
+      : 'AegisBot Selected: Warning — No AegisBot Server URL configured.';
+  } else if (configuredProvider === 'ai') {
     activeProvider = 'ai';
     activeProviderName = 'Gemini / OpenAI AI Model';
     selectionReason = hasAiKey

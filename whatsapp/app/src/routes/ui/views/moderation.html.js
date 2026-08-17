@@ -511,9 +511,15 @@ export default () => `
                                 <label class="mod-field-label" style="font-size:12px; margin-bottom:4px;" data-i18n="moderation.stt_aegisbot_url_label">AegisBot Server URL (Base URL):</label>
                                 <input type="text" id="mod-stt-aegisbot-url" class="mod-input mod-input-sm" placeholder="http://192.168.1.100:8000 or http://aegisbot:8000" data-i18n-placeholder="moderation.stt_aegisbot_url_ph" style="width:100%;">
                             </div>
-                            <div>
+                            <div style="margin-bottom:8px;">
                                 <label class="mod-field-label" style="font-size:12px; margin-bottom:4px;" data-i18n="moderation.stt_aegisbot_key_label">AegisBot API Key / Token:</label>
                                 <input type="password" id="mod-stt-aegisbot-key" class="mod-input mod-input-sm" placeholder="Enter API Key or Bearer Token..." data-i18n-placeholder="moderation.stt_aegisbot_key_ph" style="width:100%;">
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px; margin-top:6px;">
+                                <button type="button" id="btn-test-aegisbot" class="btn btn-sm btn-secondary" onclick="if(window.testAegisBotConnection) testAegisBotConnection()" style="font-size:11px; padding:4px 10px;">
+                                    <i class="fas fa-network-wired"></i> <span data-i18n="moderation.stt_aegisbot_test_btn">Verbindung & Token testen</span>
+                                </button>
+                                <span id="aegisbot-test-feedback" style="font-size:11px; display:none;"></span>
                             </div>
                         </div>
                         <!-- STT Diagnostics / Active Provider & Error Info -->
@@ -564,13 +570,75 @@ export default () => `
                             </div>
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.trans_provider_label">Translation Engine:</label>
-                                <select id="mod-trans-provider" class="mod-select mod-select-sm" onchange="if(window.refreshModerationDiagnostics) refreshModerationDiagnostics()">
+                                <select id="mod-trans-provider" class="mod-select mod-select-sm" onchange="if(window.onTranslationProviderChange) onTranslationProviderChange(); if(window.refreshModerationDiagnostics) refreshModerationDiagnostics()">
                                     <option value="auto" data-i18n="moderation.trans_prov_auto">⚡ Gateway Auto-Failover (Google → Lingva → MyMemory)</option>
+                                    <option value="custom" data-i18n="moderation.trans_prov_custom">⚡ Eigene Prioritäts-Kette (Reihenfolge frei wählbar)</option>
+                                    <option value="aegisbot" data-i18n="moderation.trans_prov_aegisbot">🛡️ AegisBot Server (Lokal / Self-hosted)</option>
                                     <option value="google" data-i18n="moderation.trans_prov_google">🌐 Google Translate</option>
                                     <option value="lingva" data-i18n="moderation.trans_prov_lingva">🛡️ Lingva Translate</option>
                                     <option value="mymemory" data-i18n="moderation.trans_prov_mymemory">💾 MyMemory</option>
                                     <option value="ai" data-i18n="moderation.trans_prov_ai">🧠 Gemini / OpenAI Model (Requires API Key)</option>
                                 </select>
+                            </div>
+                        </div>
+                        <!-- Translation Engine Priority Chain Customizer -->
+                        <div id="mod-trans-priority-container" class="mod-field-group" style="margin-top:12px; margin-bottom:12px; padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; border:1px solid rgba(255,255,255,0.1); display:none;">
+                            <div style="font-size:12px; font-weight:600; margin-bottom:8px;" data-i18n="moderation.trans_prio_title">Übersetzungs-Engine Prioritätsreihenfolge &amp; Fallback-Kette:</div>
+                            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:8px;">
+                                <div>
+                                    <label class="mod-field-label" style="font-size:11px; margin-bottom:3px;" data-i18n="moderation.trans_prio_1">Priorität 1 (Primär):</label>
+                                    <select id="mod-trans-prio-1" class="mod-select mod-select-sm" style="width:100%;" onchange="if(window.refreshModerationDiagnostics) refreshModerationDiagnostics()">
+                                        <option value="aegisbot" data-i18n="moderation.trans_prov_aegisbot">🛡️ AegisBot Server (Lokal)</option>
+                                        <option value="google" data-i18n="moderation.trans_prov_google">🌐 Google Translate</option>
+                                        <option value="lingva" data-i18n="moderation.trans_prov_lingva">🛡️ Lingva Translate</option>
+                                        <option value="mymemory" data-i18n="moderation.trans_prov_mymemory">💾 MyMemory</option>
+                                        <option value="ai" data-i18n="moderation.trans_prov_ai">🧠 Gemini / OpenAI</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="mod-field-label" style="font-size:11px; margin-bottom:3px;" data-i18n="moderation.trans_prio_2">Priorität 2 (1. Fallback):</label>
+                                    <select id="mod-trans-prio-2" class="mod-select mod-select-sm" style="width:100%;" onchange="if(window.refreshModerationDiagnostics) refreshModerationDiagnostics()">
+                                        <option value="google" data-i18n="moderation.trans_prov_google">🌐 Google Translate</option>
+                                        <option value="aegisbot" data-i18n="moderation.trans_prov_aegisbot">🛡️ AegisBot Server (Lokal)</option>
+                                        <option value="lingva" data-i18n="moderation.trans_prov_lingva">🛡️ Lingva Translate</option>
+                                        <option value="mymemory" data-i18n="moderation.trans_prov_mymemory">💾 MyMemory</option>
+                                        <option value="ai" data-i18n="moderation.trans_prov_ai">🧠 Gemini / OpenAI</option>
+                                        <option value="" data-i18n="moderation.trans_prio_none">-- Deaktiviert --</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="mod-field-label" style="font-size:11px; margin-bottom:3px;" data-i18n="moderation.trans_prio_3">Priorität 3 (2. Fallback):</label>
+                                    <select id="mod-trans-prio-3" class="mod-select mod-select-sm" style="width:100%;" onchange="if(window.refreshModerationDiagnostics) refreshModerationDiagnostics()">
+                                        <option value="lingva" data-i18n="moderation.trans_prov_lingva">🛡️ Lingva Translate</option>
+                                        <option value="aegisbot" data-i18n="moderation.trans_prov_aegisbot">🛡️ AegisBot Server (Lokal)</option>
+                                        <option value="google" data-i18n="moderation.trans_prov_google">🌐 Google Translate</option>
+                                        <option value="mymemory" data-i18n="moderation.trans_prov_mymemory">💾 MyMemory</option>
+                                        <option value="ai" data-i18n="moderation.trans_prov_ai">🧠 Gemini / OpenAI</option>
+                                        <option value="" data-i18n="moderation.trans_prio_none">-- Deaktiviert --</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="mod-field-label" style="font-size:11px; margin-bottom:3px;" data-i18n="moderation.trans_prio_4">Priorität 4 (3. Fallback):</label>
+                                    <select id="mod-trans-prio-4" class="mod-select mod-select-sm" style="width:100%;" onchange="if(window.refreshModerationDiagnostics) refreshModerationDiagnostics()">
+                                        <option value="mymemory" data-i18n="moderation.trans_prov_mymemory">💾 MyMemory</option>
+                                        <option value="aegisbot" data-i18n="moderation.trans_prov_aegisbot">🛡️ AegisBot Server (Lokal)</option>
+                                        <option value="google" data-i18n="moderation.trans_prov_google">🌐 Google Translate</option>
+                                        <option value="lingva" data-i18n="moderation.trans_prov_lingva">🛡️ Lingva Translate</option>
+                                        <option value="ai" data-i18n="moderation.trans_prov_ai">🧠 Gemini / OpenAI</option>
+                                        <option value="" data-i18n="moderation.trans_prio_none">-- Deaktiviert --</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="mod-field-label" style="font-size:11px; margin-bottom:3px;" data-i18n="moderation.trans_prio_5">Priorität 5 (4. Fallback):</label>
+                                    <select id="mod-trans-prio-5" class="mod-select mod-select-sm" style="width:100%;" onchange="if(window.refreshModerationDiagnostics) refreshModerationDiagnostics()">
+                                        <option value="ai" data-i18n="moderation.trans_prov_ai">🧠 Gemini / OpenAI</option>
+                                        <option value="aegisbot" data-i18n="moderation.trans_prov_aegisbot">🛡️ AegisBot Server (Lokal)</option>
+                                        <option value="google" data-i18n="moderation.trans_prov_google">🌐 Google Translate</option>
+                                        <option value="lingva" data-i18n="moderation.trans_prov_lingva">🛡️ Lingva Translate</option>
+                                        <option value="mymemory" data-i18n="moderation.trans_prov_mymemory">💾 MyMemory</option>
+                                        <option value="" data-i18n="moderation.trans_prio_none">-- Deaktiviert --</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <!-- Translation Diagnostics / Active Provider & Failover Info -->

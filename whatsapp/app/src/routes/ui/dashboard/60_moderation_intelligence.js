@@ -72,6 +72,13 @@ async function saveGroupAiConfig() {
       )?.value || 'en',
     mode: document.getElementById('mod-trans-mode')?.value || 'manual',
     provider: document.getElementById('mod-trans-provider')?.value || 'auto',
+    engine_priority: [
+      document.getElementById('mod-trans-prio-1')?.value,
+      document.getElementById('mod-trans-prio-2')?.value,
+      document.getElementById('mod-trans-prio-3')?.value,
+      document.getElementById('mod-trans-prio-4')?.value,
+      document.getElementById('mod-trans-prio-5')?.value,
+    ].filter(Boolean),
   };
   groupConfig.security_scan = {
     enabled: Boolean(document.getElementById('mod-sec-scan-enabled')?.checked),
@@ -316,3 +323,70 @@ function updateSttEngineNotice() {
   }
 }
 window.updateSttEngineNotice = updateSttEngineNotice;
+
+function onTranslationProviderChange() {
+  const prov = document.getElementById('mod-trans-provider')?.value;
+  const prioBox = document.getElementById('mod-trans-priority-container');
+  if (prioBox) {
+    prioBox.style.display = prov === 'custom' || prov === 'auto' ? 'block' : 'none';
+  }
+}
+window.onTranslationProviderChange = onTranslationProviderChange;
+
+async function testAegisBotConnection() {
+  const urlInput = document.getElementById('mod-stt-aegisbot-url');
+  const keyInput = document.getElementById('mod-stt-aegisbot-key');
+  const feedback = document.getElementById('aegisbot-test-feedback');
+  const btn = document.getElementById('btn-test-aegisbot');
+
+  const url = urlInput?.value?.trim();
+  const token = keyInput?.value?.trim();
+
+  if (!url) {
+    if (feedback) {
+      feedback.style.display = 'inline';
+      feedback.style.color = '#ef4444';
+      feedback.textContent = '⚠️ Bitte gib eine AegisBot Server URL ein.';
+    }
+    return;
+  }
+
+  if (feedback) {
+    feedback.style.display = 'inline';
+    feedback.style.color = '#94a3b8';
+    feedback.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (window.t ? window.t('moderation.stt_aegisbot_testing') : 'Verbindung wird geprüft...');
+  }
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await fetch(basePath + 'api/moderation/test-aegisbot', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, token }),
+    });
+    const data = await res.json();
+    if (btn) btn.disabled = false;
+
+    if (data.success) {
+      if (feedback) {
+        feedback.style.color = '#22c55e';
+        feedback.innerHTML = `<i class="fas fa-check-circle"></i> ${data.version || 'AegisBot'} (${data.latency}ms) — ${data.engine || 'OK'}`;
+      }
+      if (window.showToast) window.showToast(`✅ AegisBot Server erreichbar (${data.latency}ms)!`, 'success');
+      if (window.refreshModerationDiagnostics) refreshModerationDiagnostics();
+    } else {
+      if (feedback) {
+        feedback.style.color = '#ef4444';
+        feedback.innerHTML = `<i class="fas fa-times-circle"></i> ${data.error || 'Fehlgeschlagen'}`;
+      }
+      if (window.showToast) window.showToast(`❌ ${data.error || 'Verbindung fehlgeschlagen'}`, 'error');
+    }
+  } catch (err) {
+    if (btn) btn.disabled = false;
+    if (feedback) {
+      feedback.style.color = '#ef4444';
+      feedback.innerHTML = `<i class="fas fa-times-circle"></i> ${err.message}`;
+    }
+  }
+}
+window.testAegisBotConnection = testAegisBotConnection;

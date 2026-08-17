@@ -910,6 +910,18 @@ async function selectModerationGroup(groupId) {
   const transProv = document.getElementById('mod-trans-provider');
   if (transProv) transProv.value = config.translation?.provider || 'auto';
 
+  const defaultPrio = ['aegisbot', 'google', 'lingva', 'mymemory', 'ai'];
+  const configuredPrio = config.translation?.engine_priority || defaultPrio;
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById(`mod-trans-prio-${i}`);
+    if (el) {
+      el.value = configuredPrio[i - 1] !== undefined ? configuredPrio[i - 1] : '';
+    }
+  }
+  if (typeof onTranslationProviderChange === 'function') {
+    onTranslationProviderChange();
+  }
+
   // Speech-to-Text (STT)
   const sttEnabled = document.getElementById('mod-stt-enabled');
   if (sttEnabled) sttEnabled.checked = Boolean(config.stt_enabled);
