@@ -355,9 +355,9 @@ export default () => `
                         <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                             <input type="checkbox" id="tg-modal-translate-tg-to-wa"> <span data-i18n="telegram.opt_translate_tg_to_wa">Translate TG -&gt; WA</span>
                         </label>
-                        <div id="tg-modal-trans-tg-wa-box" style="display:flex; align-items:center; gap:6px; margin-left:22px;">
-                            <label class="text-xs text-muted" style="margin:0; font-size:11px;" data-i18n="moderation.target_lang_label">Target Language:</label>
-                            <select id="tg-modal-trans-tg-wa-lang" class="mod-select mod-select-sm" style="font-size:11px; padding:2px 6px; height:24px;">
+                        <div id="tg-modal-trans-tg-wa-box" style="display:flex; align-items:center; gap:8px; margin-left:22px; margin-top:4px;">
+                            <label class="text-xs text-muted" style="margin:0; font-size:12px; white-space:nowrap;" data-i18n="moderation.target_lang_label">Target Language:</label>
+                            <select id="tg-modal-trans-tg-wa-lang" class="mod-select mod-select-sm" style="min-width:130px; height:32px;">
                                 <option value="de" data-i18n="moderation.lang_de_opt">German</option>
                                 <option value="en" data-i18n="moderation.lang_en_opt">English</option>
                                 <option value="es" data-i18n="moderation.lang_es_opt">Spanish</option>
@@ -370,9 +370,9 @@ export default () => `
                         <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                             <input type="checkbox" id="tg-modal-translate-wa-to-tg"> <span data-i18n="telegram.opt_translate_wa_to_tg">Translate WA -&gt; TG</span>
                         </label>
-                        <div id="tg-modal-trans-wa-tg-box" style="display:flex; align-items:center; gap:6px; margin-left:22px;">
-                            <label class="text-xs text-muted" style="margin:0; font-size:11px;" data-i18n="moderation.target_lang_label">Target Language:</label>
-                            <select id="tg-modal-trans-wa-tg-lang" class="mod-select mod-select-sm" style="font-size:11px; padding:2px 6px; height:24px;">
+                        <div id="tg-modal-trans-wa-tg-box" style="display:flex; align-items:center; gap:8px; margin-left:22px; margin-top:4px;">
+                            <label class="text-xs text-muted" style="margin:0; font-size:12px; white-space:nowrap;" data-i18n="moderation.target_lang_label">Target Language:</label>
+                            <select id="tg-modal-trans-wa-tg-lang" class="mod-select mod-select-sm" style="min-width:130px; height:32px;">
                                 <option value="en" data-i18n="moderation.lang_en_opt">English</option>
                                 <option value="de" data-i18n="moderation.lang_de_opt">German</option>
                                 <option value="es" data-i18n="moderation.lang_es_opt">Spanish</option>
