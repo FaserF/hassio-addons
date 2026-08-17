@@ -16,13 +16,18 @@ import {
 import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 
 const lastUpdateIds = new Map();
+const recentPinnedFallbacks = new Map();
+let isProcessingTelegramUpdates = false;
 
 export async function processTelegramUpdates() {
-  const store = loadTelegramStore();
-  if (!store.enabled) return;
+  if (isProcessingTelegramUpdates) return;
+  isProcessingTelegramUpdates = true;
+  try {
+    const store = loadTelegramStore();
+    if (!store.enabled) return;
 
-  const bots = (store.bots || []).filter((b) => b.enabled && b.token);
-  if (bots.length === 0) return;
+    const bots = (store.bots || []).filter((b) => b.enabled && b.token);
+    if (bots.length === 0) return;
 
   for (const botConfig of bots) {
     const bot = getTelegramBotClient(botConfig.id);
@@ -596,8 +601,8 @@ export async function processTelegramUpdates() {
               (pinnedObj.video ? '[🎥 Video]' : '') ||
               (pinnedObj.document ? `[📄 ${pinnedObj.document.file_name || 'Document'}]` : '') ||
               'Message';
-            const snippet = rawSnippet.length > 80 ? `${rawSnippet.slice(0, 80)}...` : rawSnippet;
-            tgText = `📌 [Pinned Message by ${pinnedSender}]: ${snippet}`;
+            const snippet = rawSnippet.length > 500 ? `${rawSnippet.slice(0, 500)}...` : rawSnippet;
+            tgText = `📌 [Pinned Message by ${pinnedSender}]:\n\n${snippet}`;
           } else if (msg.poll) {
             const p = msg.poll;
             const pollOptions = (p.options || []).map((o) => o.text);
@@ -909,7 +914,15 @@ export async function processTelegramUpdates() {
                   : null;
 
                 // Fallback: If the Telegram message was not yet bridged to WhatsApp, bridge it now and pin it
-                if (!mappedWaMsg && pinnedTgMsg && pinnedTgMsgId) {
+                const fallbackKey = `${tgChatId}:${pinnedTgMsgId}:${mapping.wa_jid}`;
+                const now = Date.now();
+                // Clean up expired cache entries older than 60s
+                for (const [k, ts] of recentPinnedFallbacks.entries()) {
+                  if (now - ts > 60000) recentPinnedFallbacks.delete(k);
+                }
+
+                if (!mappedWaMsg && pinnedTgMsg && pinnedTgMsgId && !recentPinnedFallbacks.has(fallbackKey)) {
+                  recentPinnedFallbacks.set(fallbackKey, now);
                   try {
                     const fallbackSent = await session.sock.sendMessage(mapping.wa_jid, {
                       text: `${cleanHeader}${tgText}`,
@@ -1297,5 +1310,7 @@ export async function processTelegramUpdates() {
     } catch (err) {
       logger.warn({ error: err.message, botId: botConfig.id }, '⚠️ Error polling Telegram updates');
     }
+  } finally {
+    isProcessingTelegramUpdates = false;
   }
 }
