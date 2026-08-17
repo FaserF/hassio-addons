@@ -792,7 +792,7 @@ try {
 
   // Test 14: Auto-translation should ignore synthetic messages (location, contact, poll shares)
   const translationGroupConfig = {
-    ...getDefaultModerationStore().groups['default'] || {},
+    ...(getDefaultModerationStore().groups['default'] || {}),
     enabled: true,
     translation: {
       enabled: true,
@@ -831,7 +831,9 @@ try {
   });
   assert.strictEqual(translationSent, false, 'Contact card share should not be translated');
 
-  console.log('✅ PASSED: Synthetic messages (location/contact/poll) are skipped by auto-translation');
+  console.log(
+    '✅ PASSED: Synthetic messages (location/contact/poll) are skipped by auto-translation'
+  );
 
   // Reset store
   saveModerationStore(getDefaultModerationStore());

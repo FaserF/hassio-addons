@@ -369,9 +369,13 @@ export async function syncWhatsAppToTelegram(
           if (question && options.length > 0) {
             const isAnon = Boolean(mapping.poll_is_anonymous ?? false);
             const isMulti = Boolean((pollObj?.selectableCount || 1) > 1);
-            const plainHeader = !isDirectMirror && header
-              ? header.replace(/<[^>]+>/g, '').trim().replace(/:$/, '')
-              : '';
+            const plainHeader =
+              !isDirectMirror && header
+                ? header
+                    .replace(/<[^>]+>/g, '')
+                    .trim()
+                    .replace(/:$/, '')
+                : '';
             const pollQuestion = plainHeader
               ? `${plainHeader}: ${question}`.slice(0, 300)
               : question.slice(0, 300);
