@@ -64,8 +64,8 @@ export async function processTelegramUpdates() {
             const pollId = String(pa.poll_id);
             const voterName = pa.user
               ? `${pa.user.first_name || ''} ${pa.user.last_name || ''}`.trim() ||
-              pa.user.username ||
-              'Telegram User'
+                pa.user.username ||
+                'Telegram User'
               : 'Telegram User';
             const selectedOptionIds = pa.option_ids || [];
 
@@ -126,7 +126,7 @@ export async function processTelegramUpdates() {
                   if (oldWaVoteMsgKey && mapping.poll_delete_old_update !== false) {
                     try {
                       await session.sock.sendMessage(mapping.wa_jid, { delete: oldWaVoteMsgKey });
-                    } catch (_delErr) { }
+                    } catch (_delErr) {}
                   }
                   const sentWaMsg = await session.sock.sendMessage(mapping.wa_jid, {
                     text: voteText,
@@ -154,8 +154,8 @@ export async function processTelegramUpdates() {
             const user = cq.from;
             const voterName = user
               ? `${user.first_name || ''} ${user.last_name || ''}`.trim() ||
-              user.username ||
-              'Telegram User'
+                user.username ||
+                'Telegram User'
               : 'Telegram User';
             const tgChatId = String(cq.message?.chat?.id || '');
 
@@ -272,8 +272,10 @@ export async function processTelegramUpdates() {
                       const oldWaVoteMsgKey = store.cached_polls?.[pollId]?.last_wa_vote_msg_key;
                       if (oldWaVoteMsgKey && mapping.poll_delete_old_update !== false) {
                         try {
-                          await session.sock.sendMessage(mapping.wa_jid, { delete: oldWaVoteMsgKey });
-                        } catch (_delErr) { }
+                          await session.sock.sendMessage(mapping.wa_jid, {
+                            delete: oldWaVoteMsgKey,
+                          });
+                        } catch (_delErr) {}
                       }
                       const sentWaMsg = await session.sock
                         .sendMessage(mapping.wa_jid, { text: unifiedPollText })
@@ -291,7 +293,8 @@ export async function processTelegramUpdates() {
 
               const optLines = (p.options || []).map((opt) => {
                 const pct = totalVotes > 0 ? Math.round((opt.voter_count / totalVotes) * 100) : 0;
-                const bar = '█'.repeat(Math.round(pct / 10)) + '░'.repeat(10 - Math.round(pct / 10));
+                const bar =
+                  '█'.repeat(Math.round(pct / 10)) + '░'.repeat(10 - Math.round(pct / 10));
                 return `  ${opt.text}\n  ${bar} ${opt.voter_count} (${pct}%)`;
               });
               const closedLabel = p.is_closed ? ' ✅ Closed' : '';
@@ -434,8 +437,8 @@ export async function processTelegramUpdates() {
 
           const senderName = msg.from
             ? `${msg.from.first_name || ''} ${msg.from.last_name || ''}`.trim() ||
-            msg.from.username ||
-            'Telegram User'
+              msg.from.username ||
+              'Telegram User'
             : msg.chat.title || 'Telegram';
           let tgText = msg.text || msg.caption || '';
           let mediaPayload = null; // { url, type, mimetype }
@@ -508,7 +511,7 @@ export async function processTelegramUpdates() {
                   if (res.ok) {
                     audioBuffer = Buffer.from(await res.arrayBuffer());
                   }
-                } catch (_dlErr) { }
+                } catch (_dlErr) {}
                 mediaPayload = {
                   url: fileUrl,
                   buffer: audioBuffer,
@@ -527,7 +530,7 @@ export async function processTelegramUpdates() {
                   if (res.ok) {
                     audioBuffer = Buffer.from(await res.arrayBuffer());
                   }
-                } catch (_dlErr) { }
+                } catch (_dlErr) {}
                 mediaPayload = {
                   url: fileUrl,
                   buffer: audioBuffer,
@@ -591,8 +594,8 @@ export async function processTelegramUpdates() {
               const pinnedObj = msg.pinned_message;
               const pinnedSender = pinnedObj.from
                 ? `${pinnedObj.from.first_name || ''} ${pinnedObj.from.last_name || ''}`.trim() ||
-                pinnedObj.from.username ||
-                'User'
+                  pinnedObj.from.username ||
+                  'User'
                 : 'User';
               const rawSnippet =
                 pinnedObj.text ||
@@ -601,7 +604,8 @@ export async function processTelegramUpdates() {
                 (pinnedObj.video ? '[🎥 Video]' : '') ||
                 (pinnedObj.document ? `[📄 ${pinnedObj.document.file_name || 'Document'}]` : '') ||
                 'Message';
-              const snippet = rawSnippet.length > 500 ? `${rawSnippet.slice(0, 500)}...` : rawSnippet;
+              const snippet =
+                rawSnippet.length > 500 ? `${rawSnippet.slice(0, 500)}...` : rawSnippet;
               tgText = `📌 [Pinned Message by ${pinnedSender}]:\n\n${snippet}`;
             } else if (msg.poll) {
               const p = msg.poll;
@@ -729,7 +733,7 @@ export async function processTelegramUpdates() {
                                 time: 0,
                               },
                             });
-                          } catch (_uErr2) { }
+                          } catch (_uErr2) {}
                         }
                         untrackPinnedMessage(mapping.wa_jid, msgId);
                       }
@@ -847,11 +851,11 @@ export async function processTelegramUpdates() {
             const rawHeader = isDirectMirror
               ? ''
               : formatHeader(
-                isGroupChat ? msg.chat.title : null,
-                senderName,
-                mapping.include_group_name,
-                isGroupChat ? mapping.include_sender_name : false
-              );
+                  isGroupChat ? msg.chat.title : null,
+                  senderName,
+                  mapping.include_group_name,
+                  isGroupChat ? mapping.include_sender_name : false
+                );
             const cleanHeader = rawHeader.replace(/<\/?b>/g, '');
             const entities = msg.entities || msg.caption_entities || null;
             let formattedTgText =
@@ -921,7 +925,12 @@ export async function processTelegramUpdates() {
                     if (now - ts > 60000) recentPinnedFallbacks.delete(k);
                   }
 
-                  if (!mappedWaMsg && pinnedTgMsg && pinnedTgMsgId && !recentPinnedFallbacks.has(fallbackKey)) {
+                  if (
+                    !mappedWaMsg &&
+                    pinnedTgMsg &&
+                    pinnedTgMsgId &&
+                    !recentPinnedFallbacks.has(fallbackKey)
+                  ) {
                     recentPinnedFallbacks.set(fallbackKey, now);
                     try {
                       const fallbackSent = await session.sock.sendMessage(mapping.wa_jid, {
@@ -1128,7 +1137,8 @@ export async function processTelegramUpdates() {
                 }
 
                 if (cleanCmd === 'unpinall' || cleanCmd === 'unpin_all') {
-                  const { syncWhatsAppUnpinAllToTelegram } = await import('../outbound/mutations.js');
+                  const { syncWhatsAppUnpinAllToTelegram } =
+                    await import('../outbound/mutations.js');
                   const { clearTrackedPinnedMessages } =
                     await import('../../moderation/commands/admin/content.js');
                   clearTrackedPinnedMessages(mapping.wa_jid);
@@ -1234,7 +1244,9 @@ export async function processTelegramUpdates() {
                       };
                     } else if (mediaPayload.type === 'audio') {
                       waContent = {
-                        audio: mediaPayload.buffer ? mediaPayload.buffer : { url: mediaPayload.url },
+                        audio: mediaPayload.buffer
+                          ? mediaPayload.buffer
+                          : { url: mediaPayload.url },
                         mimetype: mediaPayload.mimetype || 'audio/ogg; codecs=opus',
                         ptt: Boolean(mediaPayload.ptt || msg.voice),
                       };
@@ -1308,7 +1320,10 @@ export async function processTelegramUpdates() {
           }
         }
       } catch (err) {
-        logger.warn({ error: err.message, botId: botConfig.id }, '⚠️ Error polling Telegram updates');
+        logger.warn(
+          { error: err.message, botId: botConfig.id },
+          '⚠️ Error polling Telegram updates'
+        );
       }
     }
   } finally {
