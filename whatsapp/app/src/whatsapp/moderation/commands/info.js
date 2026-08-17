@@ -26,28 +26,261 @@ export const LOCK_TYPES = [
   'rtl',
 ];
 
+export const HELP_CATEGORIES = [
+  // User categories (High to low importance)
+  {
+    id: 'general',
+    titleKey: 'bot_replies.help_cat_general',
+    adminOnly: false,
+    order: 10,
+    priority: ['help', 'rules', 'info', 'id', 'ping', 'report', 'admins', 'adminlist'],
+  },
+  {
+    id: 'interactive',
+    titleKey: 'bot_replies.help_cat_interactive',
+    adminOnly: false,
+    order: 20,
+    priority: [
+      'tr',
+      'translate',
+      'roll',
+      'dice',
+      'wuerfel',
+      'coin',
+      'coinflip',
+      'muenze',
+      'münze',
+      'flip',
+      'joke',
+      'quote',
+      'calc',
+      'weather',
+      'remind',
+      'poll',
+    ],
+  },
+  {
+    id: 'content_user',
+    titleKey: 'bot_replies.help_cat_content_user',
+    adminOnly: false,
+    order: 30,
+    priority: ['notes', 'get', 'filters'],
+  },
+  {
+    id: 'fed_user',
+    titleKey: 'bot_replies.help_cat_fed_user',
+    adminOnly: false,
+    order: 40,
+    priority: ['reputation', 'fedinfo', 'fedbans', 'fedadmins'],
+  },
+  {
+    id: 'custom_user',
+    titleKey: 'bot_replies.help_cat_custom_user',
+    adminOnly: false,
+    order: 50,
+    priority: [],
+  },
+
+  // Admin categories (High to low importance)
+  {
+    id: 'moderation',
+    titleKey: 'bot_replies.help_cat_moderation',
+    adminOnly: true,
+    order: 110,
+    priority: [
+      'warn',
+      'warns',
+      'rmwarn',
+      'unwarn',
+      'kick',
+      'unkick',
+      'ban',
+      'unban',
+      'mute',
+      'unmute',
+      'tmute',
+      'tban',
+      'del',
+      'delete',
+      'clearwarns',
+      'clearkicks',
+    ],
+  },
+  {
+    id: 'config',
+    titleKey: 'bot_replies.help_cat_config',
+    adminOnly: true,
+    order: 120,
+    priority: [
+      'setrules',
+      'setwelcome',
+      'welcome',
+      'setgoodbye',
+      'goodbye',
+      'lock',
+      'unlock',
+      'locks',
+      'locktypes',
+      'pin',
+      'unpin',
+      'unpinall',
+      'autotranslate',
+      'setlang',
+      'warntrigger',
+      'warnlimit',
+      'warnaction',
+      'removespamlinks',
+    ],
+  },
+  {
+    id: 'filters_admin',
+    titleKey: 'bot_replies.help_cat_filters_admin',
+    adminOnly: true,
+    order: 130,
+    priority: ['filter', 'stop', 'save'],
+  },
+  {
+    id: 'roles',
+    titleKey: 'bot_replies.help_cat_roles',
+    adminOnly: true,
+    order: 140,
+    priority: ['promote', 'demote', 'approve', 'unapprove', 'whitelist', 'unwhitelist'],
+  },
+  {
+    id: 'federation_admin',
+    titleKey: 'bot_replies.help_cat_federation_admin',
+    adminOnly: true,
+    order: 150,
+    priority: [
+      'newfed',
+      'joinfed',
+      'leavefed',
+      'fban',
+      'unfban',
+      'feddemote',
+      'fedpromote',
+      'export',
+      'testcommands',
+    ],
+  },
+  {
+    id: 'custom_admin',
+    titleKey: 'bot_replies.help_cat_custom_admin',
+    adminOnly: true,
+    order: 160,
+    priority: [],
+  },
+];
+
 export function registerInfoCommands(registry) {
   registry.register(
     'help',
     async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
       const prefix = config.commands?.prefix || '!';
-      const headerText = gt(config, 'bot_replies.help_header', { prefix });
-      const userCmds = [];
-      const adminCmds = [];
 
-      const seen = new Set();
-      for (const [cmd, details] of Object.entries(registry.commands)) {
-        if (seen.has(details)) continue;
-        seen.add(details);
-        const localizedHelp = gt(config, `bot_replies.cmd_${cmd}_desc`) || details.help;
-        const line = `• \`${prefix}${cmd}\`: ${localizedHelp}`;
-        if (details.adminOnly) {
-          adminCmds.push(line);
+      // 1. Detailed lookup for a specific command: !help <command>
+      if (args && args.length > 0) {
+        const targetCmd = args[0].replace(/^[!/#]+/, '').toLowerCase().trim();
+        const cmdDetails = registry.getCommand(targetCmd);
+
+        if (cmdDetails) {
+          const localizedDesc =
+            gt(config, `bot_replies.cmd_${targetCmd}_desc`) ||
+            cmdDetails.help ||
+            'No description available.';
+          const roleText = cmdDetails.adminOnly
+            ? gt(config, 'bot_replies.help_detail_role_admin')
+            : gt(config, 'bot_replies.help_detail_role_user');
+
+          const allAliases = [];
+          for (const [name, obj] of Object.entries(registry.commands)) {
+            if (obj === cmdDetails && name !== targetCmd && !allAliases.includes(name)) {
+              allAliases.push(`${prefix}${name}`);
+            }
+          }
+
+          let detailText = `${gt(config, 'bot_replies.help_detail_title', { prefix, cmd: targetCmd })}\n`;
+          detailText += `${gt(config, 'bot_replies.help_detail_desc', { desc: localizedDesc })}\n`;
+          detailText += `${gt(config, 'bot_replies.help_detail_role', { role: roleText })}`;
+
+          if (allAliases.length > 0) {
+            detailText += `\n${gt(config, 'bot_replies.help_detail_aliases', { aliases: allAliases.map((a) => `\`${a}\``).join(', ') })}`;
+          }
+
+          await reply(session, groupId, { text: detailText }, rawMsg);
+          return;
+        }
+
+        // Check custom commands
+        const customCmds = config.commands?.custom_commands || [];
+        const matchedCustom = customCmds.find(
+          (c) => (c.command || '').replace(/^[!/#]+/, '').toLowerCase() === targetCmd
+        );
+        if (matchedCustom) {
+          const roleText = matchedCustom.admin_only
+            ? gt(config, 'bot_replies.help_detail_role_admin')
+            : gt(config, 'bot_replies.help_detail_role_user');
+          const desc = matchedCustom.description || matchedCustom.response || 'Custom command';
+          let detailText = `${gt(config, 'bot_replies.help_detail_title', { prefix, cmd: targetCmd })}\n`;
+          detailText += `${gt(config, 'bot_replies.help_detail_desc', { desc })}\n`;
+          detailText += `${gt(config, 'bot_replies.help_detail_role', { role: roleText })}`;
+          await reply(session, groupId, { text: detailText }, rawMsg);
+          return;
+        }
+
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.help_detail_not_found', { prefix, cmd: targetCmd }) },
+          rawMsg
+        );
+        return;
+      }
+
+      // 2. Full categorized and prioritized overview
+      const headerText = gt(config, 'bot_replies.help_header', { prefix });
+
+      // Group unique commands
+      const seenHandlers = new Set();
+      const userCategoryMap = new Map();
+      const adminCategoryMap = new Map();
+
+      for (const cat of HELP_CATEGORIES) {
+        if (cat.adminOnly) {
+          adminCategoryMap.set(cat.id, { ...cat, items: [] });
         } else {
-          userCmds.push(line);
+          userCategoryMap.set(cat.id, { ...cat, items: [] });
         }
       }
 
+      // Assign registered commands to categories
+      for (const [cmd, details] of Object.entries(registry.commands)) {
+        if (seenHandlers.has(details)) continue;
+        seenHandlers.add(details);
+
+        const localizedHelp = gt(config, `bot_replies.cmd_${cmd}_desc`) || details.help;
+        const line = `• \`${prefix}${cmd}\`: ${localizedHelp}`;
+
+        let matchedCat = null;
+        for (const cat of HELP_CATEGORIES) {
+          if (cat.adminOnly === Boolean(details.adminOnly) && cat.priority.includes(cmd)) {
+            matchedCat = cat.id;
+            break;
+          }
+        }
+
+        if (!matchedCat) {
+          matchedCat = details.adminOnly ? 'federation_admin' : 'interactive';
+        }
+
+        const targetMap = details.adminOnly ? adminCategoryMap : userCategoryMap;
+        const catObj = targetMap.get(matchedCat);
+        if (catObj) {
+          catObj.items.push({ cmd, line });
+        }
+      }
+
+      // Assign custom commands
       const customCmds = config.commands?.custom_commands || [];
       for (const c of customCmds) {
         const cleanCmdName = (c.command || '').replace(/^[!/#]+/, '');
@@ -66,25 +299,56 @@ export function registerInfoCommands(registry) {
           secondary = 'Custom command';
         }
         const line = `• \`${prefix}${cleanCmdName}\`: ${secondary}`;
-        if (c.admin_only) {
-          adminCmds.push(line);
-        } else {
-          userCmds.push(line);
-        }
+        const catKey = c.admin_only ? 'custom_admin' : 'custom_user';
+        const targetMap = c.admin_only ? adminCategoryMap : userCategoryMap;
+        targetMap.get(catKey)?.items.push({ cmd: cleanCmdName, line });
       }
 
-      let helpText = `${headerText}\n${userCmds.join('\n')}\n\n`;
+      // Format user categories
+      const userSections = [];
+      for (const cat of Array.from(userCategoryMap.values()).sort((a, b) => a.order - b.order)) {
+        if (cat.items.length === 0) continue;
+        // Sort items by category priority order
+        cat.items.sort((a, b) => {
+          const idxA = cat.priority.indexOf(a.cmd);
+          const idxB = cat.priority.indexOf(b.cmd);
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+          if (idxA !== -1) return -1;
+          if (idxB !== -1) return 1;
+          return a.cmd.localeCompare(b.cmd);
+        });
+        const catTitle = gt(config, cat.titleKey);
+        userSections.push(`${catTitle}\n${cat.items.map((i) => i.line).join('\n')}`);
+      }
 
-      if (isAdminUser && adminCmds.length > 0) {
-        const adminHeader = gt(config, 'bot_replies.help_admin_header');
-        helpText += `${adminHeader}\n${adminCmds.join('\n')}`;
+      // Format admin categories
+      const adminSections = [];
+      for (const cat of Array.from(adminCategoryMap.values()).sort((a, b) => a.order - b.order)) {
+        if (cat.items.length === 0) continue;
+        cat.items.sort((a, b) => {
+          const idxA = cat.priority.indexOf(a.cmd);
+          const idxB = cat.priority.indexOf(b.cmd);
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+          if (idxA !== -1) return -1;
+          if (idxB !== -1) return 1;
+          return a.cmd.localeCompare(b.cmd);
+        });
+        const catTitle = gt(config, cat.titleKey);
+        adminSections.push(`${catTitle}\n${cat.items.map((i) => i.line).join('\n')}`);
+      }
+
+      let helpText = `${headerText}\n\n${userSections.join('\n\n')}`;
+
+      if (isAdminUser && adminSections.length > 0) {
+        const adminSectionHeader = gt(config, 'bot_replies.help_admin_section_header');
+        helpText += `\n\n${adminSectionHeader}\n\n${adminSections.join('\n\n')}`;
       } else {
-        helpText += gt(config, 'bot_replies.help_admin_hidden');
+        helpText += `\n\n${gt(config, 'bot_replies.help_admin_hidden')}`;
       }
 
       await reply(session, groupId, { text: helpText }, rawMsg);
     },
-    { help: 'Shows this help message' }
+    { help: 'Shows categorized command overview or details via !help <command>' }
   );
 
   registry.register(
