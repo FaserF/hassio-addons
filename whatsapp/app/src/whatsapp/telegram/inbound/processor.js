@@ -776,7 +776,7 @@ export async function processTelegramUpdates() {
                           time: 0,
                         });
                         unpinSent = true;
-                      } catch (e1) {
+                      } catch (_e1) {
                         try {
                           await session.sock.sendMessage(mapping.wa_jid, {
                             pin: {
@@ -938,16 +938,17 @@ export async function processTelegramUpdates() {
                 }
 
                 if (mappedWaMsg && mappedWaMsg.waMsgId) {
+                  const isFromMe = mappedWaMsg.fromMe !== undefined ? mappedWaMsg.fromMe : false;
+                  const snippet = String(tgText || '').slice(0, 100);
+                  const pinKey = {
+                    remoteJid: mapping.wa_jid,
+                    fromMe: isFromMe,
+                    id: mappedWaMsg.waMsgId,
+                  };
+                  if (!isFromMe && mappedWaMsg.senderJid && mappedWaMsg.senderJid.includes('@')) {
+                    pinKey.participant = mappedWaMsg.senderJid;
+                  }
                   try {
-                    const isFromMe = mappedWaMsg.fromMe !== undefined ? mappedWaMsg.fromMe : false;
-                    const pinKey = {
-                      remoteJid: mapping.wa_jid,
-                      fromMe: isFromMe,
-                      id: mappedWaMsg.waMsgId,
-                    };
-                    if (!isFromMe && mappedWaMsg.senderJid && mappedWaMsg.senderJid.includes('@')) {
-                      pinKey.participant = mappedWaMsg.senderJid;
-                    }
                     await session.sock.sendMessage(mapping.wa_jid, {
                       pin: pinKey,
                       type: 1,
@@ -971,11 +972,9 @@ export async function processTelegramUpdates() {
                         pin: {
                           key: {
                             remoteJid: mapping.wa_jid,
-                            fromMe: mappedWaMsg.fromMe !== undefined ? mappedWaMsg.fromMe : false,
+                            fromMe: isFromMe,
                             id: mappedWaMsg.waMsgId,
-                            ...(mappedWaMsg.senderJid && mappedWaMsg.senderJid.includes('@')
-                              ? { participant: mappedWaMsg.senderJid }
-                              : {}),
+                            ...(pinKey.participant ? { participant: pinKey.participant } : {}),
                           },
                           type: 1,
                           time: 604800,

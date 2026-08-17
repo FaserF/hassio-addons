@@ -6,7 +6,6 @@ import { reply } from '../../actions.js';
 import { logger } from '../../../logger.js';
 import { isSameUser, resolveUserDisplayName } from '../../../utils/security.js';
 import { isSelfParticipant } from '../engine/penalties.js';
-import { processAiModeration } from '../ai.js';
 import { gt } from '../engine/translations.js';
 import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 
