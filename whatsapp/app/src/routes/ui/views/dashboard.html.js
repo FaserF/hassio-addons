@@ -1,7 +1,7 @@
 import os from 'os';
 export default ({ PORT, API_TOKEN, getLocalIP }) => `
 <section id="tab-dashboard" class="tab-panel active">
-                <div class="grid">
+                <div class="dashboard-grid">
                     <div class="card">
                         <div class="card-title"><i class="fas fa-plug"></i> <span data-i18n="dashboard.connection_status">Connection Status</span></div>
                         <div class="status-container">
@@ -47,20 +47,6 @@ export default ({ PORT, API_TOKEN, getLocalIP }) => `
                         </p>
                     </div>
 
-                    <div class="card">
-                        <div class="card-title"><i class="fas fa-link"></i> <span data-i18n="dashboard.webhook">Webhook Preferences</span></div>
-                        <div class="details-box">
-                            <div class="details-item">
-                                <span class="details-label" data-i18n="dashboard.webhook_active">Active Status</span>
-                                <span id="webhook-status" class="sys-info-val">...</span>
-                            </div>
-                            <div class="details-item">
-                                <span class="details-label" data-i18n="dashboard.webhook_url">Destination URL</span>
-                                <span id="webhook-url" class="sys-info-val" style="word-break:break-all;">...</span>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="card" id="device-card">
                         <div class="card-title"><i class="fas fa-mobile-alt"></i> <span data-i18n="dashboard.connected_account">Connected Account</span></div>
                         <div id="device-info-grid" class="info-grid" style="display:none;">
@@ -83,6 +69,20 @@ export default ({ PORT, API_TOKEN, getLocalIP }) => `
                         </div>
                         <div id="no-device-msg" class="empty-state">
                             <span data-i18n="dashboard.connect_device_hint">Connect a device to see details.</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title"><i class="fas fa-link"></i> <span data-i18n="dashboard.webhook">Webhook Preferences</span></div>
+                        <div class="details-box">
+                            <div class="details-item">
+                                <span class="details-label" data-i18n="dashboard.webhook_active">Active Status</span>
+                                <span id="webhook-status" class="sys-info-val">...</span>
+                            </div>
+                            <div class="details-item">
+                                <span class="details-label" data-i18n="dashboard.webhook_url">Destination URL</span>
+                                <span id="webhook-url" class="sys-info-val" style="word-break:break-all;">...</span>
+                            </div>
                         </div>
                     </div>
 
@@ -121,7 +121,7 @@ export default ({ PORT, API_TOKEN, getLocalIP }) => `
                     </div>
                 </div>
 
-                <div class="grid">
+                <div class="dashboard-queues-grid">
                     <div class="card">
                         <div class="card-title"><i class="fas fa-paper-plane"></i> <span data-i18n="dashboard.outbound_queue">Outbound Queue</span></div>
                         <div id="list-sent" class="history-list"><div class="empty-state" data-i18n="dashboard.no_sent">No messages sent...</div></div>

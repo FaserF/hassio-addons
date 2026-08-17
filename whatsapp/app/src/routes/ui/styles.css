@@ -1319,6 +1319,31 @@ html[data-theme='dark'] .banner-warning-icon {
   gap: 24px;
 }
 
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+@media (min-width: 1100px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.dashboard-queues-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+@media (min-width: 860px) {
+  .dashboard-queues-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
