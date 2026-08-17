@@ -500,10 +500,21 @@ export default () => `
                         </div>
                         <div class="mod-inline-controls" style="margin-bottom:12px;">
                             <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.stt_engine_label">STT Engine:</label>
-                            <select id="mod-stt-engine" class="mod-select mod-select-sm" onchange="if(window.refreshModerationDiagnostics) refreshModerationDiagnostics()">
+                            <select id="mod-stt-engine" class="mod-select mod-select-sm" onchange="if(window.updateSttEngineNotice) updateSttEngineNotice(); if(window.refreshModerationDiagnostics) refreshModerationDiagnostics()">
+                                <option value="aegisbot" data-i18n="moderation.stt_engine_aegisbot">🛡️ AegisBot Server (Local / Self-hosted Whisper, Zero Cloud Cost)</option>
                                 <option value="gemini" data-i18n="moderation.stt_engine_gemini">✨ Gemini 1.5 Multimodal Audio (Requires API Key, Default)</option>
                                 <option value="openai" data-i18n="moderation.stt_engine_openai">🤖 OpenAI Whisper API (Requires API Key)</option>
                             </select>
+                        </div>
+                        <div id="mod-stt-aegisbot-config" class="mod-field-group" style="margin-bottom:12px; padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
+                            <div style="margin-bottom:8px;">
+                                <label class="mod-field-label" style="font-size:12px; margin-bottom:4px;" data-i18n="moderation.stt_aegisbot_url_label">AegisBot Server URL (Base URL):</label>
+                                <input type="text" id="mod-stt-aegisbot-url" class="mod-input mod-input-sm" placeholder="http://192.168.1.100:8000 or http://aegisbot:8000" data-i18n-placeholder="moderation.stt_aegisbot_url_ph" style="width:100%;">
+                            </div>
+                            <div>
+                                <label class="mod-field-label" style="font-size:12px; margin-bottom:4px;" data-i18n="moderation.stt_aegisbot_key_label">AegisBot API Key / Token:</label>
+                                <input type="password" id="mod-stt-aegisbot-key" class="mod-input mod-input-sm" placeholder="Enter API Key or Bearer Token..." data-i18n-placeholder="moderation.stt_aegisbot_key_ph" style="width:100%;">
+                            </div>
                         </div>
                         <!-- STT Diagnostics / Active Provider & Error Info -->
                         <div id="mod-stt-diag-card" class="mod-diag-card" style="margin-bottom:16px;">

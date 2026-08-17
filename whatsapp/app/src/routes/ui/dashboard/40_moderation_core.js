@@ -914,7 +914,14 @@ async function selectModerationGroup(groupId) {
   const sttEnabled = document.getElementById('mod-stt-enabled');
   if (sttEnabled) sttEnabled.checked = Boolean(config.stt_enabled);
   const sttEngine = document.getElementById('mod-stt-engine');
-  if (sttEngine) sttEngine.value = config.stt_engine || 'auto';
+  if (sttEngine) sttEngine.value = config.stt_engine || 'aegisbot';
+  const sttAegisUrl = document.getElementById('mod-stt-aegisbot-url');
+  if (sttAegisUrl) sttAegisUrl.value = config.stt_aegisbot_url || '';
+  const sttAegisKey = document.getElementById('mod-stt-aegisbot-key');
+  if (sttAegisKey) sttAegisKey.value = config.stt_aegisbot_key || '';
+  if (typeof updateSttEngineNotice === 'function') {
+    updateSttEngineNotice();
+  }
 
   // Security Scanner
   const secEnabled = document.getElementById('mod-sec-scan-enabled');

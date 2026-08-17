@@ -30,7 +30,13 @@ export function getSTTDiagnostics(groupConfig = {}, store = {}) {
     store?.gemini_api_key || groupConfig?.ai?.api_key || process.env.GEMINI_API_KEY
   );
   const hasOpenAIKey = Boolean(groupConfig?.ai?.openai_api_key || process.env.OPENAI_API_KEY);
-  const hasAnyKey = hasGeminiKey || hasOpenAIKey;
+  const hasAegisBotUrl = Boolean(
+    groupConfig?.stt_aegisbot_url || store?.aegisbot_url || process.env.AEGISBOT_URL
+  );
+  const hasAegisBotKey = Boolean(
+    groupConfig?.stt_aegisbot_key || store?.aegisbot_api_key || process.env.AEGISBOT_API_KEY
+  );
+  const hasAnyKey = hasGeminiKey || hasOpenAIKey || hasAegisBotUrl;
 
   let activeEngine;
   let activeEngineName;
@@ -45,12 +51,19 @@ export function getSTTDiagnostics(groupConfig = {}, store = {}) {
     status = 'disabled';
   } else if (!hasAnyKey) {
     activeEngine = 'none';
-    activeEngineName = 'No API Key Configured';
+    activeEngineName = 'No Engine Configured';
     selectionReason =
-      'STT is enabled, but no Gemini or OpenAI API Key was found in settings or environment. Transcription will fail until a key is added.';
+      'STT is enabled, but no Gemini/OpenAI API key or AegisBot Server URL was found. Transcription will fail until configured.';
     status = 'no_key';
   } else {
-    if (sttEngine === 'gemini') {
+    if (sttEngine === 'aegisbot') {
+      activeEngine = 'aegisbot';
+      activeEngineName = '🛡️ AegisBot Server (Local Whisper)';
+      selectionReason = hasAegisBotUrl
+        ? 'Manual Selection: Using self-hosted AegisBot Server for local Speech-to-Text.'
+        : 'AegisBot Engine Selected: Warning — AegisBot Base URL is missing in settings.';
+      if (!hasAegisBotUrl) status = 'no_key';
+    } else if (sttEngine === 'gemini') {
       activeEngine = 'gemini';
       activeEngineName = 'Gemini 1.5 Multimodal Audio';
       selectionReason = hasGeminiKey
@@ -66,7 +79,11 @@ export function getSTTDiagnostics(groupConfig = {}, store = {}) {
       if (!hasOpenAIKey) status = 'no_key';
     } else {
       // auto
-      if (hasGeminiKey) {
+      if (hasAegisBotUrl) {
+        activeEngine = 'aegisbot';
+        activeEngineName = '⚡ Auto: AegisBot Server';
+        selectionReason = 'Auto STT: AegisBot Server selected (Local Whisper active, zero cloud cost).';
+      } else if (hasGeminiKey) {
         activeEngine = 'gemini';
         activeEngineName = '⚡ Auto: Gemini 1.5 Flash';
         selectionReason =
@@ -77,9 +94,9 @@ export function getSTTDiagnostics(groupConfig = {}, store = {}) {
         selectionReason = 'Auto STT: OpenAI Whisper selected (OpenAI API key is active).';
       } else {
         activeEngine = 'none';
-        activeEngineName = 'Auto STT (No Key)';
+        activeEngineName = 'Auto STT (No Provider)';
         selectionReason =
-          'Auto STT requires either a Gemini or OpenAI API key to process voice messages.';
+          'Auto STT requires either AegisBot Server URL, Gemini, or OpenAI API key to process voice messages.';
         status = 'no_key';
       }
     }
@@ -94,6 +111,10 @@ export function getSTTDiagnostics(groupConfig = {}, store = {}) {
     status,
     has_api_key: hasAnyKey,
     health: {
+      aegisbot: {
+        name: 'AegisBot Server',
+        status: hasAegisBotUrl ? (hasAegisBotKey ? 'ready' : 'ready_no_key') : 'not_configured',
+      },
       gemini: {
         name: 'Gemini 1.5 Multimodal Audio',
         status: hasGeminiKey ? 'ready' : 'no_key',
@@ -165,12 +186,21 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       return true;
     }
 
-    // 2. Perform STT transcription using Gemini Multimodal Audio API or OpenAI Whisper API
-    const apiKey =
+    // 2. Perform STT transcription using AegisBot Server, Gemini Multimodal Audio API, or OpenAI Whisper API
+    const geminiKey =
       store.gemini_api_key ||
       config.ai?.api_key ||
-      process.env.GEMINI_API_KEY ||
-      process.env.OPENAI_API_KEY;
+      process.env.GEMINI_API_KEY;
+    const openAiKey = config.ai?.openai_api_key || process.env.OPENAI_API_KEY;
+    const aegisbotUrl =
+      config.stt_aegisbot_url ||
+      store.aegisbot_url ||
+      process.env.AEGISBOT_URL;
+    const aegisbotKey =
+      config.stt_aegisbot_key ||
+      store.aegisbot_api_key ||
+      process.env.AEGISBOT_API_KEY ||
+      '';
 
     let transcribedText = null;
     let failureReason = null;
@@ -178,25 +208,89 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     const errorsCaptured = [];
     let usedEngine = 'unknown';
 
-    if (!apiKey) {
+    const hasAnyConfig = geminiKey || openAiKey || aegisbotUrl;
+
+    if (!hasAnyConfig) {
       if (sttEngine === 'auto') {
         failureReason =
-          'No API key configured. Please configure a Gemini API key in settings to enable Speech-to-Text.';
+          'No STT engine configured. Please configure an AegisBot Server URL or a Gemini/OpenAI API key in settings.';
       } else {
-        failureReason = `No API key configured for STT engine "${sttEngine}". Please configure an API key in settings.`;
+        failureReason = `Configuration missing for STT engine "${sttEngine}". Please configure settings.`;
       }
       recordSttError(sttEngine, failureReason, groupId);
     } else {
-      // 1. Try Gemini 1.5 Multimodal Audio API
+      // 1. Try AegisBot Server (Local Self-Hosted Faster-Whisper)
       if (
-        sttEngine === 'gemini' ||
-        (sttEngine === 'auto' &&
-          (store.gemini_api_key || config.ai?.api_key || process.env.GEMINI_API_KEY))
+        sttEngine === 'aegisbot' ||
+        (sttEngine === 'auto' && aegisbotUrl)
+      ) {
+        usedEngine = 'aegisbot';
+        try {
+          const targetBaseUrl = aegisbotUrl || 'http://localhost:8000';
+          const endpoint = `${targetBaseUrl.replace(/\/+$/, '')}/api/v1/ai/transcribe`;
+
+          const formData = new Blob([stream], { type: 'audio/ogg' });
+          const body = new FormData();
+          body.append('file', formData, 'voice.ogg');
+          if (groupLang && groupLang !== 'auto') {
+            body.append('language', groupLang);
+          }
+
+          const headers = {};
+          if (aegisbotKey) {
+            headers['Authorization'] = `Bearer ${aegisbotKey}`;
+            headers['X-API-Key'] = aegisbotKey;
+          }
+
+          // Allow up to 10 minutes (600s) timeout for long audio messages (>10 min)
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 600000);
+
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers,
+            body,
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.text) {
+              transcribedText = data.text.trim();
+            } else if (data.text) {
+              transcribedText = data.text.trim();
+            } else {
+              const errMsg = data.error || gt('bot_replies.stt_err_aegisbot_empty');
+              errorsCaptured.push(errMsg);
+              recordSttError('aegisbot', errMsg, groupId);
+            }
+          } else if (res.status === 401 || res.status === 403) {
+            const errMsg = gt('bot_replies.stt_err_aegisbot_auth');
+            errorsCaptured.push(errMsg);
+            recordSttError('aegisbot', `Authentication error (HTTP ${res.status})`, groupId);
+          } else {
+            const errMsg = gt('bot_replies.stt_err_aegisbot_http_error', { status: res.status });
+            errorsCaptured.push(errMsg);
+            recordSttError('aegisbot', `HTTP error ${res.status}`, groupId);
+          }
+        } catch (e) {
+          logger.debug({ error: e.message }, 'AegisBot STT failed');
+          const errMsg = gt('bot_replies.stt_err_aegisbot_network', { error: e.message });
+          errorsCaptured.push(errMsg);
+          recordSttError('aegisbot', `Network error: ${e.message}`, groupId);
+        }
+      }
+
+      // 2. Try Gemini 1.5 Multimodal Audio API
+      if (
+        !transcribedText &&
+        (sttEngine === 'gemini' ||
+          (sttEngine === 'auto' && geminiKey))
       ) {
         usedEngine = 'gemini';
         try {
-          const gKey =
-            store.gemini_api_key || config.ai?.api_key || process.env.GEMINI_API_KEY || apiKey;
+          const gKey = geminiKey;
           const base64Audio = stream.toString('base64');
           const promptText = gt('bot_replies.stt_prompt_text');
           const geminiModel = config.ai?.model || 'gemini-1.5-flash';
@@ -246,16 +340,15 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
         }
       }
 
-      // 2. Try OpenAI Whisper API
+      // 3. Try OpenAI Whisper API
       if (
         !transcribedText &&
         (sttEngine === 'openai' ||
-          (sttEngine === 'auto' && (config.ai?.openai_api_key || process.env.OPENAI_API_KEY)) ||
-          process.env.OPENAI_API_KEY)
+          (sttEngine === 'auto' && openAiKey))
       ) {
         usedEngine = 'openai';
         try {
-          const oaKey = config.ai?.openai_api_key || process.env.OPENAI_API_KEY || apiKey;
+          const oaKey = openAiKey;
           const formData = new Blob([stream], { type: 'audio/ogg' });
           const body = new FormData();
           body.append('file', formData, 'audio.ogg');
@@ -304,11 +397,18 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           : gt('bot_replies.stt_transcription_failed');
     }
 
+    function getEngineDisplayName(eng) {
+      if (eng === 'aegisbot') return 'AegisBot Server (Whisper)';
+      if (eng === 'gemini') return 'Gemini 1.5 Flash';
+      if (eng === 'openai') return 'OpenAI Whisper';
+      return eng || 'STT Engine';
+    }
+
     if (transcribedText) {
       lastSttEvent = {
         timestamp: Date.now(),
         engine: usedEngine,
-        engineName: usedEngine === 'gemini' ? 'Gemini 1.5 Flash' : 'OpenAI Whisper',
+        engineName: getEngineDisplayName(usedEngine),
         status: 'success',
         transcribed_snippet: transcribedText.slice(0, 60),
         group_id: groupId,
@@ -324,7 +424,7 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       lastSttEvent = {
         timestamp: Date.now(),
         engine: usedEngine,
-        engineName: usedEngine === 'gemini' ? 'Gemini 1.5 Flash' : 'OpenAI Whisper',
+        engineName: getEngineDisplayName(usedEngine),
         status: 'failed',
         error: failureReason,
         group_id: groupId,

@@ -327,4 +327,273 @@ export function registerInfoCommands(registry) {
     },
     { help: 'Displays project description, version, docs, repo, and support links' }
   );
+
+  registry.register(
+    'roll',
+    async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
+      const argsStr = (args || []).join(' ').trim();
+      const lowerArgs = argsStr.toLowerCase();
+
+      // 0. Subcommand: Help
+      if (lowerArgs === 'help' || lowerArgs === 'hilfe' || lowerArgs === '?') {
+        const p = config.commands?.prefix || '!';
+        const helpText =
+          `🎲 *Roll / Dice Commands:*\n\n` +
+          `• \`${p}roll\` - Standard 6-sided dice (1-6)\n` +
+          `• \`${p}roll 20\` or \`${p}roll d20\` - 20-sided dice (1-20)\n` +
+          `• \`${p}roll 2d6\` - Two 6-sided dice with sum\n` +
+          `• \`${p}roll 100\` or \`${p}roll d100\` - Percentile roll (1-100)\n` +
+          `• \`${p}roll coin\` or \`${p}roll flip\` - Coin flip (Heads / Tails 🪙)\n` +
+          `• \`${p}roll pick <opt1>, <opt2>, ...\` - Random pick from options\n` +
+          `• \`${p}roll all\` - Rolls for all group members with rankings\n` +
+          `• \`${p}roll all unique\` - Rolls unique numbers without duplicates\n` +
+          `• \`${p}roll all 20 unique\` - 20-sided unique dice for all`;
+        await reply(session, groupId, { text: helpText }, rawMsg);
+        return;
+      }
+
+      // 1. Subcommand: Coin Flip
+      if (['coin', 'flip', 'coinflip', 'münze', 'muenze', 'kopfoderzahl'].includes(lowerArgs)) {
+        const outcomes = ['Kopf (Heads) 🪙', 'Zahl (Tails) 🪙'];
+        const chosen = outcomes[Math.floor(Math.random() * outcomes.length)];
+        await reply(session, groupId, { text: `🪙 *Coin Flip:* *${chosen}*` }, rawMsg);
+        return;
+      }
+
+      // 2. Subcommand: Pick / Choice
+      const tokens = lowerArgs.split(/\s+/).filter(Boolean);
+      if (tokens.length > 0 && ['pick', 'choose', 'choice', 'auswahl', 'select'].includes(tokens[0])) {
+        const optRaw = argsStr.slice(tokens[0].length).trim();
+        const options = optRaw.includes(',')
+          ? optRaw.split(',').map((s) => s.trim()).filter(Boolean)
+          : optRaw.split(/\s+/).map((s) => s.trim()).filter(Boolean);
+
+        if (options.length < 2) {
+          await reply(
+            session,
+            groupId,
+            { text: `⚠️ Please provide at least 2 options (e.g. \`!roll pick Pizza, Burger, Pasta\`).` },
+            rawMsg
+          );
+          return;
+        }
+        const picked = options[Math.floor(Math.random() * options.length)];
+        await reply(session, groupId, { text: `🎯 *Random Choice:* *${picked}*` }, rawMsg);
+        return;
+      }
+
+      // 3. Parse formula tokens and flags for group roll
+      const allKeywords = new Set(['all', 'alle', '@all', 'group', 'gruppe']);
+      const uniqueKeywords = new Set([
+        'unique',
+        'distinct',
+        'nodup',
+        'nodups',
+        'nodupes',
+        'reihenfolge',
+        'order',
+        'ohne-duplikate',
+        'ohneduplikate',
+        '-u',
+        '--unique',
+        'no-dup',
+        'no-dups',
+        'eindeutig',
+      ]);
+
+      let isAll = false;
+      let isUnique = false;
+      let formulaToken = null;
+
+      for (const tok of tokens) {
+        if (allKeywords.has(tok)) {
+          isAll = true;
+        } else if (uniqueKeywords.has(tok)) {
+          isUnique = true;
+        } else if (!formulaToken) {
+          formulaToken = tok;
+        }
+      }
+
+      const diceSymbols = { 1: '⚀', 2: '⚁', 3: '⚂', 4: '⚃', 5: '⚄', 6: '⚅' };
+
+      // 4. Single User Roll
+      if (!isAll) {
+        if (!formulaToken) {
+          formulaToken = lowerArgs || '1d6';
+        }
+
+        let count;
+        let sides;
+
+        if (/^\d+$/.test(formulaToken)) {
+          count = 1;
+          sides = parseInt(formulaToken, 10);
+        } else {
+          const match = formulaToken.match(/^(\d+)?(?:d|w)(\d+)$/);
+          if (!match) {
+            const val = Math.floor(Math.random() * 6) + 1;
+            const sym = diceSymbols[val] || '';
+            await reply(
+              session,
+              groupId,
+              { text: `🎲 *Dice Result:* ${sym} *${val}* (1-6)` },
+              rawMsg
+            );
+            return;
+          }
+          count = match[1] ? parseInt(match[1], 10) : 1;
+          sides = parseInt(match[2], 10);
+        }
+
+        if (count < 1 || count > 20) {
+          await reply(session, groupId, { text: `⚠️ Number of dice must be between 1 and 20.` }, rawMsg);
+          return;
+        }
+        if (sides < 2 || sides > 1000) {
+          await reply(session, groupId, { text: `⚠️ Number of sides must be between 2 and 1000.` }, rawMsg);
+          return;
+        }
+
+        const rolls = Array.from({ length: count }, () => Math.floor(Math.random() * sides) + 1);
+        const total = rolls.reduce((a, b) => a + b, 0);
+
+        if (count === 1) {
+          const sym = sides === 6 ? `${diceSymbols[rolls[0]] || ''} ` : '';
+          await reply(
+            session,
+            groupId,
+            { text: `🎲 *Dice Result (1d${sides}):* ${sym}*${rolls[0]}*` },
+            rawMsg
+          );
+        } else {
+          const rollsStr = rolls.map((r) => (sides === 6 ? `${diceSymbols[r] || ''} ${r}`.trim() : r)).join(' + ');
+          await reply(
+            session,
+            groupId,
+            { text: `🎲 *Dice Result (${count}d${sides}):*\n${rollsStr} = *${total}*` },
+            rawMsg
+          );
+        }
+        return;
+      }
+
+      // 5. Group Roll for All Members
+      const isGroup = groupId && groupId.endsWith('@g.us');
+      if (!isGroup) {
+        await reply(
+          session,
+          groupId,
+          { text: `ℹ️ The \`all\` parameter can only be used in groups to roll for all group members.` },
+          rawMsg
+        );
+        return;
+      }
+
+      let count = 1;
+      let sides = 6;
+      if (formulaToken) {
+        if (/^\d+$/.test(formulaToken)) {
+          count = 1;
+          sides = parseInt(formulaToken, 10);
+        } else {
+          const match = formulaToken.match(/^(\d+)?(?:d|w)(\d+)$/);
+          if (match) {
+            count = match[1] ? parseInt(match[1], 10) : 1;
+            sides = parseInt(match[2], 10);
+          }
+        }
+      }
+
+      if (count < 1 || count > 20) {
+        await reply(session, groupId, { text: `⚠️ Number of dice must be between 1 and 20.` }, rawMsg);
+        return;
+      }
+      if (sides < 2 || sides > 1000) {
+        await reply(session, groupId, { text: `⚠️ Number of sides must be between 2 and 1000.` }, rawMsg);
+        return;
+      }
+
+      try {
+        const groupMeta = await session.sock.groupMetadata(groupId);
+        const botUserJid = session.sock?.user?.id ? normalizeJid(session.sock.user.id) : null;
+        const botPn = session.stats?.my_number || (botUserJid ? botUserJid.split('@')[0] : null);
+
+        const eligible = (groupMeta?.participants || []).filter((p) => {
+          const pJid = p.id;
+          const pNum = pJid.split('@')[0];
+          return !(botUserJid && pJid === botUserJid) && !(botPn && pNum === botPn);
+        });
+
+        if (eligible.length === 0) {
+          await reply(session, groupId, { text: `⚠️ No eligible group members found.` }, rawMsg);
+          return;
+        }
+
+        const numMembers = eligible.length;
+        const results = [];
+
+        if (isUnique) {
+          const actualSides = Math.max(sides, numMembers);
+          // Shuffle array of numbers 1..actualSides
+          const pool = Array.from({ length: actualSides }, (_, i) => i + 1);
+          for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+          }
+          for (let i = 0; i < numMembers; i++) {
+            const val = pool[i];
+            results.push({ participant: eligible[i], total: val, rolls: [val], sides: actualSides });
+          }
+        } else {
+          for (const member of eligible) {
+            const rolls = Array.from({ length: count }, () => Math.floor(Math.random() * sides) + 1);
+            const total = rolls.reduce((a, b) => a + b, 0);
+            results.push({ participant: member, total, rolls, sides });
+          }
+        }
+
+        results.sort((a, b) => b.total - a.total);
+
+        const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
+        const lines = [];
+
+        if (isUnique) {
+          lines.push(`🎲 *Group Roll (Turn Order / No Duplicates)*`);
+          lines.push(`🎯 Range: 1–${results[0]?.sides || sides} • 👥 ${numMembers} Members\n`);
+        } else {
+          const formulaDesc = count > 1 ? `${count}d${sides}` : `1d${sides}`;
+          lines.push(`🎲 *Group Roll (${formulaDesc})*`);
+          lines.push(`👥 ${numMembers} Members\n`);
+        }
+
+        const mentions = [];
+        results.forEach((item, idx) => {
+          const rank = idx + 1;
+          const medal = medals[rank] || `*${rank}.*`;
+          const pJid = item.participant.id;
+          mentions.push(pJid);
+          const pNum = pJid.split('@')[0];
+          const cachedName =
+            session.contactCache?.get(pJid)?.name ||
+            session.contactCache?.get(`${pNum}@s.whatsapp.net`)?.name;
+          const displayName = cachedName ? `${cachedName} (@${pNum})` : `@${pNum}`;
+
+          if (count === 1) {
+            const sym = item.sides === 6 ? `${diceSymbols[item.total] || '🎲'} ` : '🎲 ';
+            lines.push(`${medal} *${displayName}*: ${sym}*${item.total}*`);
+          } else {
+            const rollsStr = item.rolls.join(' + ');
+            lines.push(`${medal} *${displayName}*: 🎲 *${item.total}* _(${rollsStr})_`);
+          }
+        });
+
+        await reply(session, groupId, { text: lines.join('\n'), mentions }, rawMsg);
+      } catch (err) {
+        await reply(session, groupId, { text: `❌ Failed to execute group roll: ${err.message}` }, rawMsg);
+      }
+    },
+    { adminOnly: false, aliases: ['dice', 'wuerfel'], help: 'Roll dice, flip a coin, or pick random options' }
+  );
 }
+
