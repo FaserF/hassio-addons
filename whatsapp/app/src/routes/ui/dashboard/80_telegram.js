@@ -439,10 +439,15 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
 
   // 1. Populate WhatsApp Chats Dropdown
   if (waSelect) {
+    const rawWaT = window.t ? window.t('telegram.modal.select_wa_chat') : null;
     const selectPlaceholder =
-      window.t('telegram.modal.select_wa_chat') ||
-      window.t('telegram.select_wa_chat') ||
-      'WhatsApp Chat / Gruppe auswählen';
+      rawWaT &&
+      rawWaT !== 'telegram.modal.select_wa_chat' &&
+      rawWaT !== 'telegram.select_wa_chat'
+        ? rawWaT
+        : window.t
+          ? window.t('telegram.select_wa_chat')
+          : 'Select WhatsApp Chat / Group';
     let waOpts = `<option value="">-- ${selectPlaceholder} --</option>`;
     try {
       const res = await fetch(basePath + 'api/chats?session_id=' + (window.currentSession || ''));
@@ -490,7 +495,16 @@ async function populateTelegramModalDropdowns(selectedBotId = '') {
 
   // 2. Populate Telegram Cached Chats Dropdown (filtered by activeBotId if set)
   if (tgSelect) {
-    let tgOpts = `<option value="">-- ${window.t('telegram.select_tg_chat')} --</option>`;
+    const rawTgT = window.t ? window.t('telegram.modal.select_tg_chat') : null;
+    const selectTgPlaceholder =
+      rawTgT &&
+      rawTgT !== 'telegram.modal.select_tg_chat' &&
+      rawTgT !== 'telegram.select_tg_chat'
+        ? rawTgT
+        : window.t
+          ? window.t('telegram.select_tg_chat')
+          : 'Select Telegram Chat / Group';
+    let tgOpts = `<option value="">-- ${selectTgPlaceholder} --</option>`;
     try {
       const url = activeBotId
         ? `api/telegram/chats?bot_id=${encodeURIComponent(activeBotId)}`

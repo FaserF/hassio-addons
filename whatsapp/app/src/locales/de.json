@@ -813,6 +813,8 @@
     "delete_mapping_confirm_msg": "Möchtest du diese Zuordnung wirklich löschen?",
     "unsaved_changes_title": "Ungespeicherte Änderungen",
     "unsaved_changes_msg": "Du hast ungespeicherte Änderungen. Möchtest du sie verwerfen?",
+    "select_wa_chat": "WhatsApp Chat / Gruppe auswählen",
+    "select_tg_chat": "Telegram Chat / Gruppe auswählen",
     "modal": {
       "assigned_bot": "Zugewiesener Telegram-Bot",
       "loading_bots": "Bots werden geladen...",

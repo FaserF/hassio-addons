@@ -799,6 +799,8 @@
     "delete_mapping_confirm_msg": "Are you sure you want to delete this mapping?",
     "unsaved_changes_title": "Unsaved Changes",
     "unsaved_changes_msg": "You have unsaved changes. Discard them?",
+    "select_wa_chat": "Select WhatsApp Chat / Group",
+    "select_tg_chat": "Select Telegram Chat / Group",
     "modal": {
       "assigned_bot": "Assigned Telegram Bot",
       "loading_bots": "Loading bots...",
