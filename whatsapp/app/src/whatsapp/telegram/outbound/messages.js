@@ -365,14 +365,21 @@ export async function syncWhatsAppToTelegram(
         const options = (pollObj?.options || []).map((o) => o.optionName).filter(Boolean);
 
         if (pollMode === 'native_sync' || pollMode === 'native_no_vote') {
-          // Native mode: send as real Telegram poll, skip all text messages
+          // Native mode: send as real Telegram poll, integrate sender header directly into question
           if (question && options.length > 0) {
             const isAnon = Boolean(mapping.poll_is_anonymous ?? false);
             const isMulti = Boolean((pollObj?.selectableCount || 1) > 1);
+            const plainHeader = !isDirectMirror && header
+              ? header.replace(/<[^>]+>/g, '').trim().replace(/:$/, '')
+              : '';
+            const pollQuestion = plainHeader
+              ? `${plainHeader}: ${question}`.slice(0, 300)
+              : question.slice(0, 300);
+
             tgResult = await bot
               .sendPoll(
                 mapping.tg_chat_id,
-                question,
+                pollQuestion,
                 options,
                 replyToTgMsgId,
                 threadId,
@@ -407,12 +414,6 @@ export async function syncWhatsAppToTelegram(
               };
             }
             saveTelegramStore(store);
-          }
-          // Also send header so sender is known (polls have no caption in Telegram)
-          if (tgResult && header.trim()) {
-            await bot
-              .sendMessage(mapping.tg_chat_id, header.trim(), tgResult.message_id, threadId, silent)
-              .catch(() => null);
           }
           if (!tgResult) {
             // Fallback to text if sendPoll failed

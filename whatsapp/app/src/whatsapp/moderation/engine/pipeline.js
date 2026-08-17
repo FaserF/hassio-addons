@@ -267,7 +267,25 @@ export async function handleModerationMessage(session, event) {
   }
 
   // 0. Non-destructive Auto-Translation Engine
-  if (isTranslationActive && text && text.trim().length > 2) {
+  const isSyntheticMessage =
+    event.media_type === 'location' ||
+    event.media_type === 'contact' ||
+    event.media_type === 'poll' ||
+    event.media_type === 'sticker' ||
+    event.media_type === 'buttons' ||
+    event.media_type === 'list' ||
+    event.media_type === 'interactive' ||
+    event.media_type === 'protocol' ||
+    event.type === 'poll' ||
+    event.type === 'location' ||
+    event.type === 'contact' ||
+    event.type === 'reaction' ||
+    /^(📍\s*\[(Location|Live Location) Share|👤\s*\[Contact:|📊\s*\[Poll:|🔘\s*\[|📋\s*\[List:|🗳️\s*Vote:|📅\s*\*?\[Event)/i.test(
+      text
+    ) ||
+    /^[!/#.?]\w+/i.test(text);
+
+  if (isTranslationActive && !isSyntheticMessage && text && text.trim().length > 2) {
     const targetLang = config.translation?.target_lang || 'en';
     const provider = config.translation?.provider || 'auto';
 

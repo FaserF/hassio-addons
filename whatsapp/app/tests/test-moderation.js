@@ -790,6 +790,49 @@ try {
     '✅ PASSED: Captcha formatting flexibility (*Code*, \'Code\', "Code", etc.) and feedback verified'
   );
 
+  // Test 14: Auto-translation should ignore synthetic messages (location, contact, poll shares)
+  const translationGroupConfig = {
+    ...getDefaultModerationStore().groups['default'] || {},
+    enabled: true,
+    translation: {
+      enabled: true,
+      target_lang: 'en',
+      provider: 'auto',
+    },
+  };
+  setGroupModerationConfig('1203630777777777@g.us', translationGroupConfig);
+  let translationSent = false;
+  const mockSessionTransTest = {
+    ...mockSession,
+    sock: {
+      ...mockSession.sock,
+      sendMessage: async () => {
+        translationSent = true;
+        return { key: { id: 'trans1' } };
+      },
+    },
+  };
+
+  await handleModerationMessage(mockSessionTransTest, {
+    sender: '1203630777777777@g.us',
+    sender_number: '4917622222222',
+    content: '📍 [Location Share: Müller Bakery]',
+    media_type: 'location',
+    raw: { key: { id: 'locMsg1' } },
+  });
+  assert.strictEqual(translationSent, false, 'Location share should not be translated');
+
+  await handleModerationMessage(mockSessionTransTest, {
+    sender: '1203630777777777@g.us',
+    sender_number: '4917622222222',
+    content: '👤 [Contact: John Doe (+123456789)]',
+    media_type: 'contact',
+    raw: { key: { id: 'contactMsg1' } },
+  });
+  assert.strictEqual(translationSent, false, 'Contact card share should not be translated');
+
+  console.log('✅ PASSED: Synthetic messages (location/contact/poll) are skipped by auto-translation');
+
   // Reset store
   saveModerationStore(getDefaultModerationStore());
   console.log('='.repeat(50) + '\n✅ ALL MODERATION TESTS PASSED\n');

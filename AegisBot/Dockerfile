@@ -43,6 +43,8 @@ RUN \
     nodejs \
     npm \
     unzip \
+    flac \
+    sox \
     ffmpeg \
     ffmpeg-dev \
     openblas-dev \

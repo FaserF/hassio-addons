@@ -8,6 +8,11 @@ import { logger } from '../../../logger.js';
 import { t } from '../../../locales/loader.js';
 import { ignoreWaEditEchoes, ignoreTgEditEchoes } from '../outbound/mutations.js';
 import { getGroupModerationConfig } from '../../moderation/store.js';
+import {
+  trackPinnedMessage,
+  untrackPinnedMessage,
+  getTrackedPinnedMessages,
+} from '../../moderation/commands/admin/content.js';
 import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 
 const lastUpdateIds = new Map();
@@ -67,10 +72,16 @@ export async function processTelegramUpdates() {
             .map((idx) => pollOptions[idx] || `Option ${idx + 1}`)
             .join(', ');
 
-          const voteText =
-            selectedOptionIds.length > 0
-              ? `📊 [Poll Vote Update: ${pollQuestion}]\n👤 Voter: ${voterName}\n🗳️ Vote: ${selectedText}`
-              : `📊 [Poll Vote Update: ${pollQuestion}]\n👤 Voter: ${voterName}\n🗳️ Vote: Retracted (No options selected)`;
+          // Cache last vote info for consolidated update with update.poll
+          if (!store.cached_polls) store.cached_polls = {};
+          if (!store.cached_polls[pollId]) store.cached_polls[pollId] = {};
+          store.cached_polls[pollId].last_vote_info = {
+            voterName,
+            selectedText,
+            selectedOptionIds,
+            timestamp: Date.now(),
+          };
+          saveTelegramStore(store);
 
           const tgChatId = String(pa.voter_chat?.id || cachedPoll?.chat_id || '');
           const mappings = (store.mappings || []).filter(
@@ -81,10 +92,18 @@ export async function processTelegramUpdates() {
               (m.sync_mode === 'bidirectional' || m.sync_mode === 'inbound')
           );
 
+          // For mappings not in native_sync (or where update.poll might not trigger), dispatch voteText
           for (const mapping of mappings) {
             const pollMode = mapping.poll_sync_mode || 'native_sync';
             if (pollMode === 'once_no_update') continue;
+            // If in native_sync, update.poll will deliver the consolidated vote + leader message in one single message
+            if (pollMode === 'native_sync') continue;
             if (mapping.poll_send_update_message === false) continue;
+
+            const voteText =
+              selectedOptionIds.length > 0
+                ? `📊 [Poll Vote Update: ${pollQuestion}]\n👤 Voter: ${voterName}\n🗳️ Vote: ${selectedText}`
+                : `📊 [Poll Vote Update: ${pollQuestion}]\n👤 Voter: ${voterName}\n🗳️ Vote: Retracted (No options selected)`;
 
             let session = getSession('default');
             if (!session || !session.sock || !session.isConnected) {
@@ -108,8 +127,6 @@ export async function processTelegramUpdates() {
                   text: voteText,
                 });
                 if (sentWaMsg?.key && pollId) {
-                  if (!store.cached_polls) store.cached_polls = {};
-                  if (!store.cached_polls[pollId]) store.cached_polls[pollId] = {};
                   store.cached_polls[pollId].last_wa_vote_msg_key = sentWaMsg.key;
                   saveTelegramStore(store);
                 }
@@ -191,6 +208,7 @@ export async function processTelegramUpdates() {
           const pollId = String(p.id);
           if (!store.cached_polls) store.cached_polls = {};
           const previousPoll = store.cached_polls[pollId];
+          const lastVote = previousPoll?.last_vote_info;
           store.cached_polls[pollId] = {
             id: pollId,
             question: p.question,
@@ -198,6 +216,8 @@ export async function processTelegramUpdates() {
             total_voter_count: p.total_voter_count,
             is_closed: p.is_closed,
             chat_id: previousPoll?.chat_id || '',
+            last_wa_vote_msg_key: previousPoll?.last_wa_vote_msg_key,
+            last_vote_info: lastVote,
           };
           saveTelegramStore(store);
 
@@ -217,14 +237,23 @@ export async function processTelegramUpdates() {
 
             const totalVotes = p.total_voter_count || 0;
             if (pollMode === 'native_sync') {
-              // Auto-vote mode: find leading option with highest votes and relay winner update
+              // Auto-vote mode: send ONE unified message with voter info and current leader standings
               if (totalVotes > 0) {
                 const sortedOpts = [...(p.options || [])].sort(
                   (a, b) => (b.voter_count || 0) - (a.voter_count || 0)
                 );
                 const winner = sortedOpts[0];
                 if (winner && winner.voter_count > 0) {
-                  const winnerText = `🗳️ [Poll Leader / Auto-Vote: ${p.question}]\n🏆 Leading Option: ${winner.text} (${winner.voter_count}/${totalVotes} votes)`;
+                  const isRecentVote = lastVote && Date.now() - lastVote.timestamp < 15000;
+                  const winnerLine = `🏆 Leading Option: ${winner.text} (${winner.voter_count}/${totalVotes} votes)`;
+
+                  let unifiedPollText;
+                  if (isRecentVote) {
+                    unifiedPollText = `📊 [Poll Vote Update: ${p.question}]\n👤 Voter: ${lastVote.voterName}\n🗳️ Vote: ${lastVote.selectedText}\n${winnerLine}`;
+                  } else {
+                    unifiedPollText = `🗳️ [Poll Leader / Auto-Vote: ${p.question}]\n${winnerLine}`;
+                  }
+
                   let session = getSession('default');
                   if (!session || !session.sock || !session.isConnected) {
                     for (const s of sessions.values()) {
@@ -235,9 +264,19 @@ export async function processTelegramUpdates() {
                     }
                   }
                   if (session && session.sock && session.isConnected) {
-                    await session.sock
-                      .sendMessage(mapping.wa_jid, { text: winnerText })
+                    const oldWaVoteMsgKey = store.cached_polls?.[pollId]?.last_wa_vote_msg_key;
+                    if (oldWaVoteMsgKey && mapping.poll_delete_old_update !== false) {
+                      try {
+                        await session.sock.sendMessage(mapping.wa_jid, { delete: oldWaVoteMsgKey });
+                      } catch (_delErr) {}
+                    }
+                    const sentWaMsg = await session.sock
+                      .sendMessage(mapping.wa_jid, { text: unifiedPollText })
                       .catch(() => null);
+                    if (sentWaMsg?.key && pollId) {
+                      store.cached_polls[pollId].last_wa_vote_msg_key = sentWaMsg.key;
+                      saveTelegramStore(store);
+                    }
                   }
                 }
               }
@@ -658,6 +697,37 @@ export async function processTelegramUpdates() {
                         .request('unpinAllChatMessages', { chat_id: tgChatId })
                         .catch(() => null);
                     }
+                    const tracked = getTrackedPinnedMessages(mapping.wa_jid);
+                    for (const [msgId, item] of Object.entries(tracked)) {
+                      try {
+                        await session.sock.sendMessage(mapping.wa_jid, {
+                          pin: {
+                            remoteJid: mapping.wa_jid,
+                            id: item.id || msgId,
+                            fromMe: Boolean(item.fromMe),
+                            ...(item.participant ? { participant: item.participant } : {}),
+                          },
+                          type: 2,
+                          time: 0,
+                        });
+                      } catch (_uErr) {
+                        try {
+                          await session.sock.sendMessage(mapping.wa_jid, {
+                            pin: {
+                              key: {
+                                remoteJid: mapping.wa_jid,
+                                id: item.id || msgId,
+                                fromMe: Boolean(item.fromMe),
+                                ...(item.participant ? { participant: item.participant } : {}),
+                              },
+                              type: 2,
+                              time: 0,
+                            },
+                          });
+                        } catch (_uErr2) {}
+                      }
+                      untrackPinnedMessage(mapping.wa_jid, msgId);
+                    }
                     logger.info(
                       { tgChatId, waJid: mapping.wa_jid },
                       '📌 Mirrored /unpinall from Telegram to WhatsApp'
@@ -667,6 +737,21 @@ export async function processTelegramUpdates() {
                     let mappedWaMsg = targetTgMsgId
                       ? resolveWaMsgFromTg(tgChatId, String(targetTgMsgId))
                       : null;
+
+                    if (!mappedWaMsg) {
+                      const tracked = getTrackedPinnedMessages(mapping.wa_jid);
+                      const keys = Object.keys(tracked);
+                      if (keys.length > 0) {
+                        const lastKey = keys[keys.length - 1];
+                        const lastItem = tracked[lastKey];
+                        mappedWaMsg = {
+                          waMsgId: lastKey,
+                          fromMe: Boolean(lastItem?.fromMe),
+                          senderJid: lastItem?.participant,
+                        };
+                      }
+                    }
+
                     if (mappedWaMsg && mappedWaMsg.waMsgId) {
                       const isFromMe =
                         mappedWaMsg.fromMe !== undefined ? mappedWaMsg.fromMe : false;
@@ -682,11 +767,37 @@ export async function processTelegramUpdates() {
                       ) {
                         unpinKey.participant = mappedWaMsg.senderJid;
                       }
-                      await session.sock.sendMessage(mapping.wa_jid, {
-                        pin: unpinKey,
-                        type: 0,
-                        time: 0,
-                      });
+
+                      let unpinSent = false;
+                      try {
+                        await session.sock.sendMessage(mapping.wa_jid, {
+                          pin: unpinKey,
+                          type: 2,
+                          time: 0,
+                        });
+                        unpinSent = true;
+                      } catch (e1) {
+                        try {
+                          await session.sock.sendMessage(mapping.wa_jid, {
+                            pin: {
+                              key: unpinKey,
+                              type: 2,
+                              time: 0,
+                            },
+                          });
+                          unpinSent = true;
+                        } catch (e2) {
+                          logger.warn(
+                            { error: e2.message, waMsgId: mappedWaMsg.waMsgId },
+                            'Failed to unpin message in WhatsApp'
+                          );
+                        }
+                      }
+
+                      if (unpinSent) {
+                        untrackPinnedMessage(mapping.wa_jid, mappedWaMsg.waMsgId);
+                      }
+
                       if (bot && targetTgMsgId) {
                         await bot
                           .request('unpinChatMessage', {
@@ -842,6 +953,13 @@ export async function processTelegramUpdates() {
                       type: 1,
                       time: 604800,
                     });
+                    trackPinnedMessage(
+                      mapping.wa_jid,
+                      mappedWaMsg.waMsgId,
+                      pinKey.participant,
+                      isFromMe,
+                      snippet
+                    );
                     logger.info(
                       { tgChatId, tgPinnedId: pinnedTgMsgId, waMsgId: mappedWaMsg.waMsgId },
                       '📌 Mirrored Telegram message pin natively to WhatsApp'
@@ -863,6 +981,13 @@ export async function processTelegramUpdates() {
                           time: 604800,
                         },
                       });
+                      trackPinnedMessage(
+                        mapping.wa_jid,
+                        mappedWaMsg.waMsgId,
+                        pinKey.participant,
+                        isFromMe,
+                        snippet
+                      );
                       logger.info(
                         { tgChatId, tgPinnedId: pinnedTgMsgId, waMsgId: mappedWaMsg.waMsgId },
                         '📌 Mirrored Telegram message pin natively to WhatsApp (nested format)'
