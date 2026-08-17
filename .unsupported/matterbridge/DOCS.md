@@ -6,6 +6,8 @@ A simple chat bridge between different messanger apps.
 > **UNSUPPORTED App**
 >
 > This app is **no longer supported**. The upstream Matterbridge project has not been developed since **January 2023** and is considered abandoned. No support will be provided.
+>
+> 👉 **Recommended Alternative**: Please use the [**WhatsApp Gateway**](../../whatsapp) add-on instead.
 
 ## ⚙️ Configuration
 
