@@ -11,15 +11,15 @@ arch:
 init: false
 host_network: true
 ingress: true
-ingress_port: 8077
+ingress_port: 8094
 ingress_stream: true
 panel_icon: mdi:cloud-sync
 startup: services
 
 ports:
-  8077/tcp: 8077
+  8094/tcp: 8094
 ports_description:
-  8077/tcp: Web Interface (HTTP)
+  8094/tcp: Web Interface (HTTP)
 map:
   - homeassistant_config:rw
   - share:rw
