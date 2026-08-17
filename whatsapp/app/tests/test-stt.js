@@ -85,7 +85,11 @@ const fromMeVoiceMsg = {
   key: { remoteJid: '4915902242000@s.whatsapp.net', fromMe: true },
   message: { audioMessage: { seconds: 5 } },
 };
-const fromMeResult = await handleWhatsAppVoiceSTT({}, '4915902242000@s.whatsapp.net', fromMeVoiceMsg);
+const fromMeResult = await handleWhatsAppVoiceSTT(
+  {},
+  '4915902242000@s.whatsapp.net',
+  fromMeVoiceMsg
+);
 assert.strictEqual(fromMeResult, false, 'Outgoing audio fromMe must be ignored');
 console.log('✅ PASSED: handleWhatsAppVoiceSTT ignores outgoing bot voice messages');
 
