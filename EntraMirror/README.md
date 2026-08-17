@@ -2,6 +2,7 @@
 
 <img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/EntraMirror/logo.png" width="100" alt="Logo" />
 
+[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=605cee21_EntraMirror)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
 [![Docker Image](https://img.shields.io/badge/docker-0.1.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-entramirror)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
@@ -13,7 +14,8 @@
 > [!CAUTION]
 > **Experimental / Beta Status**
 >
-> This App is currently in active development.
+> This App is still in development and/or primarily developed for personal use.
+> It is not extensively testet yet, but is expected to work fundamentally.
 
 ---
 
@@ -25,27 +27,27 @@ EntraMirror provides tenant backup, restore, sync and disaster recovery capabili
 
 ## ⚙️ Configuration
 
-Configure the app via the **Configuration** tab in Home Assistant.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
 ```yaml
-version: "latest"
-github_token: ""
-github_repo: "FaserF/EntraMirror"
-developer_mode: false
-reset_database: false
-log_level: "info"
-secret_key: ""
 debug: false
+developer_mode: false
+github_repo: FaserF/EntraMirror
+github_token: ''
+log_level: info
+reset_database: false
+secret_key: ''
+sso_client_id: ''
 sso_enabled: false
-sso_client_id: ""
-sso_tenant_id: "common"
+sso_tenant_id: common
+version: latest
 ```
 
 ---
 
 ## 👨‍💻 Credits & License
 
-This project is licensed under the MIT License.
+This project is open-source and available under the MIT License.
 Maintained by **FaserF**.
