@@ -878,7 +878,28 @@ async function saveTelegramMappingModal() {
     document.getElementById('tg-modal-trans-wa-tg-lang')?.value || 'en';
 
   if (!wa_jid || !tg_chat_id) {
-    showToast(t('telegram.mapping_add_failed'), 'warning');
+    if (!wa_jid && !tg_chat_id) {
+      showToast(
+        window.t
+          ? window.t('telegram.select_both_chats_required')
+          : 'Please select both a WhatsApp chat and a Telegram chat.',
+        'warning'
+      );
+    } else if (!wa_jid) {
+      showToast(
+        window.t
+          ? window.t('telegram.select_wa_chat_required')
+          : 'Please select a WhatsApp chat / group.',
+        'warning'
+      );
+    } else {
+      showToast(
+        window.t
+          ? window.t('telegram.select_tg_chat_required')
+          : 'Please select a Telegram chat / group.',
+        'warning'
+      );
+    }
     return;
   }
 
