@@ -460,31 +460,6 @@ export class TelegramBotClient {
     });
   }
 
-  async sendPoll(
-    chatId,
-    question,
-    options,
-    replyToMessageId = null,
-    threadId = null,
-    disableNotification = false,
-    isAnonymous = false,
-    allowsMultipleAnswers = false
-  ) {
-    const payload = {
-      chat_id: chatId,
-      question: String(question || 'Poll').slice(0, 300),
-      options: (options || []).map((opt) =>
-        typeof opt === 'string' ? opt : String(opt?.text || opt)
-      ),
-      is_anonymous: Boolean(isAnonymous),
-      allows_multiple_answers: Boolean(allowsMultipleAnswers),
-      disable_notification: Boolean(disableNotification),
-    };
-    if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
-    if (threadId) payload.message_thread_id = threadId;
-    return await this.request('sendPoll', payload);
-  }
-
   async unpinallChatMessage(chatId) {
     return await this.unpinAllChatMessages(chatId);
   }

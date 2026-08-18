@@ -1,17 +1,91 @@
-// Moderation Intelligence (AI Auto-Reply, Sentiment, System Prompt, Filters)
+function onFilterMediaTypeChange() {
+  const mediaType = document.getElementById('mod-filter-media-type')?.value;
+  const mediaWrap = document.getElementById('mod-filter-media-wrap');
+  if (mediaWrap) {
+    mediaWrap.style.display = mediaType === 'sticker' || mediaType === 'gif' ? 'flex' : 'none';
+  }
+}
+
+function onFilterTypeChange() {
+  // Can be extended if FAQ needs custom visibility toggles
+}
+
+function addFilterPollOptionInput() {
+  const container = document.getElementById('mod-filter-poll-options-list');
+  if (!container) return;
+  const count = container.querySelectorAll('.mod-filter-poll-opt').length + 1;
+  if (count > 12) return;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'mod-input mod-input-sm mod-filter-poll-opt';
+  input.placeholder = `Option ${count}`;
+  container.appendChild(input);
+}
 
 async function addFilterRule() {
   const trig = document.getElementById('mod-filter-trigger')?.value.trim();
   const resp = document.getElementById('mod-filter-response')?.value.trim();
   const type = document.getElementById('mod-filter-type')?.value || 'reply';
-  if (!trig || !resp || !currentModGroup) return;
+  const mediaType = document.getElementById('mod-filter-media-type')?.value || 'text';
+  const mediaUrl = document.getElementById('mod-filter-media-url')?.value.trim() || '';
+  const reactionEmoji = document.getElementById('mod-filter-reaction')?.value.trim() || '';
+  const fileUrl = document.getElementById('mod-filter-file-url')?.value.trim() || '';
+  const fileName = document.getElementById('mod-filter-file-name')?.value.trim() || '';
+  const pollQ = document.getElementById('mod-filter-poll-q')?.value.trim() || '';
+
+  const pollOpts = [];
+  document.querySelectorAll('.mod-filter-poll-opt').forEach((inp) => {
+    const val = inp.value.trim();
+    if (val) pollOpts.push(val);
+  });
+
+  if (!trig || (!resp && !reactionEmoji && !mediaUrl && !fileUrl && pollOpts.length < 2) || !currentModGroup) return;
 
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.filters = groupConfig.filters || [];
-  groupConfig.filters.push({ trigger: trig, response: resp, type: type, is_regex: false });
 
-  document.getElementById('mod-filter-trigger').value = '';
-  document.getElementById('mod-filter-response').value = '';
+  const filterEntry = {
+    trigger: trig,
+    response: resp,
+    type: type,
+    is_regex: false,
+  };
+
+  if (reactionEmoji) filterEntry.reaction_emoji = reactionEmoji;
+  if (mediaType !== 'text') filterEntry.media_type = mediaType;
+  if (mediaUrl) filterEntry.media_url = mediaUrl;
+  if (fileUrl) filterEntry.file_url = fileUrl;
+  if (fileName) filterEntry.file_name = fileName;
+  if (pollQ && pollOpts.length >= 2) {
+    filterEntry.poll_question = pollQ;
+    filterEntry.poll_options = pollOpts;
+  }
+
+  groupConfig.filters.push(filterEntry);
+
+  const trigInp = document.getElementById('mod-filter-trigger');
+  const respInp = document.getElementById('mod-filter-response');
+  const reactInp = document.getElementById('mod-filter-reaction');
+  const mediaUrlInp = document.getElementById('mod-filter-media-url');
+  const fileUrlInp = document.getElementById('mod-filter-file-url');
+  const fileNameInp = document.getElementById('mod-filter-file-name');
+  const pollQInp = document.getElementById('mod-filter-poll-q');
+
+  if (trigInp) trigInp.value = '';
+  if (respInp) respInp.value = '';
+  if (reactInp) reactInp.value = '';
+  if (mediaUrlInp) mediaUrlInp.value = '';
+  if (fileUrlInp) fileUrlInp.value = '';
+  if (fileNameInp) fileNameInp.value = '';
+  if (pollQInp) pollQInp.value = '';
+
+  const pollList = document.getElementById('mod-filter-poll-options-list');
+  if (pollList) {
+    pollList.innerHTML = `
+      <input type="text" class="mod-input mod-input-sm mod-filter-poll-opt" placeholder="Option 1">
+      <input type="text" class="mod-input mod-input-sm mod-filter-poll-opt" placeholder="Option 2">
+    `;
+  }
 
   await saveGroupConfig(groupConfig);
   showToast(

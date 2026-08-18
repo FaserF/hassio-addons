@@ -175,12 +175,74 @@ export async function handleModerationMessage(session, event) {
       }
 
       if (isMatch) {
-        const isFaq = filter.type === 'faq';
-        const replyText = isFaq
-          ? gt(config, 'bot_replies.faq_hint', { response: filter.response })
-          : filter.response;
+        // 1. Dispatch Emoji Reaction directly to the triggering message
+        if (filter.reaction_emoji && rawMsg?.key?.id) {
+          try {
+            await session.sock.sendMessage(groupId, {
+              react: { text: filter.reaction_emoji, key: rawMsg.key },
+            });
+          } catch (e) {
+            logger.debug({ error: e.message }, 'Failed to send filter emoji reaction');
+          }
+        }
 
-        await reply(session, groupId, { text: replyText }, rawMsg);
+        // 2. Dispatch Media Response (Sticker / GIF)
+        if (filter.media_type === 'sticker' && filter.media_url) {
+          try {
+            await session.sock.sendMessage(groupId, {
+              sticker: { url: filter.media_url },
+            });
+          } catch (e) {
+            logger.warn({ error: e.message }, 'Failed to send filter sticker');
+          }
+        } else if (filter.media_type === 'gif' && filter.media_url) {
+          try {
+            await session.sock.sendMessage(groupId, {
+              video: { url: filter.media_url },
+              caption: filter.response || '',
+              gifPlayback: true,
+            });
+          } catch (e) {
+            logger.warn({ error: e.message }, 'Failed to send filter GIF');
+          }
+        } else if (filter.response) {
+          // 3. Dispatch Text Reply / FAQ Hint
+          const isFaq = filter.type === 'faq';
+          const replyText = isFaq
+            ? gt(config, 'bot_replies.faq_hint', { response: filter.response })
+            : filter.response;
+
+          await reply(session, groupId, { text: replyText }, rawMsg);
+        }
+
+        // 4. Dispatch Document / File Attachment
+        if (filter.file_url && filter.media_type !== 'sticker' && filter.media_type !== 'gif') {
+          try {
+            await session.sock.sendMessage(groupId, {
+              document: { url: filter.file_url },
+              fileName: filter.file_name || 'Document.pdf',
+              mimetype: 'application/octet-stream',
+            });
+          } catch (e) {
+            logger.warn({ error: e.message }, 'Failed to send filter document attachment');
+          }
+        }
+
+        // 5. Dispatch Interactive Poll
+        if (filter.poll_options && Array.isArray(filter.poll_options) && filter.poll_options.length >= 2) {
+          try {
+            await session.sock.sendMessage(groupId, {
+              poll: {
+                name: filter.poll_question || 'FAQ Poll',
+                values: filter.poll_options,
+                selectableCount: 1,
+              },
+            });
+          } catch (e) {
+            logger.warn({ error: e.message }, 'Failed to send filter poll');
+          }
+        }
+
         if (filter.action && filter.action !== 'reply' && !isGroupAdminUser) {
           if (rawMsg?.key?.id) {
             try {
