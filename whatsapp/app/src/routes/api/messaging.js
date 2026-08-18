@@ -366,7 +366,8 @@ export function registerMessagingRoutes(app) {
         const session = getReqSession(req);
         const number = req.body.number;
         const messageId = req.body.messageId || req.body.message_id || req.body.id;
-        const newText = req.body.newText || req.body.new_content || req.body.text || req.body.message;
+        const newText =
+          req.body.newText || req.body.new_content || req.body.text || req.body.message;
         if (!number || !messageId || !newText) {
           return res.status(400).json({ detail: 'Missing number, messageId, or newText' });
         }
