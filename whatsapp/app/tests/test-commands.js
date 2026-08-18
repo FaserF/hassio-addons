@@ -534,7 +534,10 @@ async function runTests() {
     false,
     testGroupJid
   );
-  assert(regularTagHandled === false, 'Non-note hashtag is safely ignored without unknown command error');
+  assert(
+    regularTagHandled === false,
+    'Non-note hashtag is safely ignored without unknown command error'
+  );
 
   // Count total commands (deduplicated)
   const seen = new Set();
