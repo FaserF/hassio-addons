@@ -389,6 +389,11 @@ async function updateDashboard() {
             .join('')
         : `<div class="empty-state">${window.t('dashboard.no_failures')}</div>`
     );
+
+    // Update Auto Responder Card Status
+    if (typeof loadAutoResponderConfig === 'function') {
+      loadAutoResponderConfig();
+    }
   } catch (e) {
     console.error('❌ updateDashboard error:', e);
     const badge = document.getElementById('status-badge');
@@ -400,3 +405,160 @@ async function updateDashboard() {
     _isUpdatingDashboard = false;
   }
 }
+
+let _isLoadingAutoResponder = false;
+async function loadAutoResponderConfig() {
+  if (_isLoadingAutoResponder) return;
+  const card = document.getElementById('card-autoresponder');
+  if (!card) return;
+
+  _isLoadingAutoResponder = true;
+  try {
+    const res = await fetch(basePath + 'api/autoresponder/config');
+    if (!res.ok) return;
+    const json = await res.json();
+    if (!json.success || !json.data) return;
+
+    const data = json.data;
+    const enabledInput = document.getElementById('ar-enabled');
+    if (enabledInput && document.activeElement !== enabledInput) {
+      enabledInput.checked = Boolean(data.enabled);
+    }
+
+    const startTimeInput = document.getElementById('ar-start-time');
+    if (startTimeInput && document.activeElement !== startTimeInput) {
+      startTimeInput.value = data.start_time || '';
+    }
+
+    const endTimeInput = document.getElementById('ar-end-time');
+    if (endTimeInput && document.activeElement !== endTimeInput) {
+      endTimeInput.value = data.end_time || '';
+    }
+
+    const directOnlyInput = document.getElementById('ar-direct-only');
+    if (directOnlyInput && document.activeElement !== directOnlyInput) {
+      directOnlyInput.value = String(data.direct_only !== false);
+    }
+
+    const onceInput = document.getElementById('ar-once-per-contact');
+    if (onceInput && document.activeElement !== onceInput) {
+      onceInput.value = String(data.once_per_contact !== false);
+    }
+
+    const templateInput = document.getElementById('ar-message-template');
+    if (templateInput && document.activeElement !== templateInput) {
+      templateInput.value = data.message_template || '';
+    }
+
+    const badge = document.getElementById('ar-status-badge');
+    if (badge) {
+      if (!data.enabled) {
+        badge.className = 'badge';
+        badge.style.background = 'var(--bg-app)';
+        badge.style.color = 'var(--text-muted)';
+        badge.textContent = window.t ? window.t('autoresponder.inactive_status') : 'Disabled';
+      } else if (data.is_active) {
+        badge.className = 'badge';
+        badge.style.background = 'rgba(16, 185, 129, 0.15)';
+        badge.style.color = 'var(--primary)';
+        badge.textContent = window.t ? window.t('autoresponder.active_status') : 'Active Now 🌴';
+      } else {
+        badge.className = 'badge';
+        badge.style.background = 'rgba(245, 158, 11, 0.15)';
+        badge.style.color = 'var(--warning)';
+        badge.textContent = window.t ? window.t('autoresponder.scheduled_status') : 'Scheduled ⏳';
+      }
+    }
+
+    const seenCountEl = document.getElementById('ar-seen-count');
+    if (seenCountEl) {
+      const count = data.seen_count || 0;
+      seenCountEl.textContent = window.t
+        ? window.t('autoresponder.seen_count_label', { count })
+        : `${count} contact(s) received an auto-reply`;
+    }
+  } catch (err) {
+    console.debug('Failed to load auto responder config', err);
+  } finally {
+    _isLoadingAutoResponder = false;
+  }
+}
+
+async function saveAutoResponderConfig() {
+  const enabled = document.getElementById('ar-enabled')?.checked ?? false;
+  const start_time = document.getElementById('ar-start-time')?.value || null;
+  const end_time = document.getElementById('ar-end-time')?.value || null;
+  const direct_only = document.getElementById('ar-direct-only')?.value === 'true';
+  const once_per_contact = document.getElementById('ar-once-per-contact')?.value === 'true';
+  const message_template = document.getElementById('ar-message-template')?.value || '';
+
+  try {
+    const res = await fetch(basePath + 'api/autoresponder/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        enabled,
+        start_time,
+        end_time,
+        direct_only,
+        once_per_contact,
+        message_template,
+      }),
+    });
+    if (res.ok) {
+      if (typeof showToast === 'function') {
+        showToast(
+          window.t
+            ? window.t('autoresponder.save_success')
+            : 'Auto Responder settings saved successfully! ✅',
+          'success'
+        );
+      }
+      loadAutoResponderConfig();
+    }
+  } catch (err) {
+    console.error('Failed to save auto responder config', err);
+  }
+}
+
+async function resetAutoResponderTemplate() {
+  const defaultTpl =
+    'Hello {sender_name},\n\n' +
+    'Thank you for your message! 🌴\n' +
+    'This is an automated reply: I am currently away / on vacation{end_time_text} and have limited or no access to WhatsApp.\n\n' +
+    '{once_notice}';
+
+  const tplInput = document.getElementById('ar-message-template');
+  if (tplInput) {
+    tplInput.value = defaultTpl;
+    saveAutoResponderConfig();
+  }
+}
+
+async function resetAutoResponderSeen() {
+  try {
+    const res = await fetch(basePath + 'api/autoresponder/reset-seen', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (res.ok) {
+      if (typeof showToast === 'function') {
+        showToast(
+          window.t
+            ? window.t('autoresponder.reset_seen_success')
+            : 'Replied contacts list reset successfully! ✅',
+          'success'
+        );
+      }
+      loadAutoResponderConfig();
+    }
+  } catch (err) {
+    console.error('Failed to reset auto responder seen contacts', err);
+  }
+}
+
+window.loadAutoResponderConfig = loadAutoResponderConfig;
+window.saveAutoResponderConfig = saveAutoResponderConfig;
+window.resetAutoResponderTemplate = resetAutoResponderTemplate;
+window.resetAutoResponderSeen = resetAutoResponderSeen;
+

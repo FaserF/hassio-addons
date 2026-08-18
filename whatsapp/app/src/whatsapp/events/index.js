@@ -19,6 +19,7 @@ import {
   reply,
   runDiagnostic,
 } from '../actions.js';
+import { handleAutoResponder } from '../autoresponder/engine.js';
 import { addLog, sessions, getAuthDir } from '../../session.js';
 
 import { resolvePollVotes } from './poll.js';
@@ -1088,6 +1089,7 @@ export function handleIncomingMessages(session) {
 
         triggerWebhook(event);
         handleFirstContact(session, event);
+        handleAutoResponder(session, event);
         const resolvedGroupName = isGroup
           ? session.groupCache?.get(senderJid) ||
             session.chatCache?.get(senderJid)?.name ||

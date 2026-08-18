@@ -30,7 +30,10 @@ async function run() {
     console.log('\n--- 6/7 Testing Telegram Bridge ---');
     await import('./test-telegram-bridge.js');
 
-    console.log('\n--- 7/7 Testing Dynamic i18n & Translation Parity ---');
+    console.log('\n--- 7/8 Testing Auto Responder Engine ---');
+    await import('./test-autoresponder.js');
+
+    console.log('\n--- 8/8 Testing Dynamic i18n & Translation Parity ---');
     const { runI18nTests } = await import('./test-i18n.js');
     await runI18nTests();
 

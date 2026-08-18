@@ -47,6 +47,68 @@ export default ({ PORT, API_TOKEN, getLocalIP }) => `
                         </p>
                     </div>
 
+                    <!-- Auto Responder Card -->
+                    <div class="card" id="card-autoresponder">
+                        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+                            <span><i class="fas fa-umbrella-beach"></i> <span data-i18n="autoresponder.title">Auto Responder (Away / Vacation)</span></span>
+                            <span id="ar-status-badge" class="badge" data-i18n="autoresponder.inactive_status" style="font-size:11px;padding:3px 8px;border-radius:12px;background:var(--bg-app);color:var(--text-muted);">Disabled</span>
+                        </div>
+                        <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px 0;" data-i18n="autoresponder.subtitle">Automatically reply to incoming WhatsApp messages during vacations or off-hours.</p>
+                        
+                        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-app);padding:10px 14px;border-radius:8px;margin-bottom:12px;">
+                            <div>
+                                <strong style="font-size:13px;" data-i18n="autoresponder.master_switch">Enable Auto Responder</strong>
+                                <div style="font-size:11px;color:var(--text-muted);" data-i18n="autoresponder.master_switch_hint">When enabled, incoming messages receive an automatic reply.</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="ar-enabled" onchange="saveAutoResponderConfig()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                            <div>
+                                <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px;" data-i18n="autoresponder.start_time_label">Start Time (Optional)</label>
+                                <input type="datetime-local" id="ar-start-time" class="input-control" style="width:100%;font-size:12px;" onchange="saveAutoResponderConfig()">
+                            </div>
+                            <div>
+                                <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px;" data-i18n="autoresponder.end_time_label">End Time (Optional)</label>
+                                <input type="datetime-local" id="ar-end-time" class="input-control" style="width:100%;font-size:12px;" onchange="saveAutoResponderConfig()">
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                            <div>
+                                <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px;" data-i18n="autoresponder.scope_title">Scope</label>
+                                <select id="ar-direct-only" class="input-control" style="width:100%;font-size:12px;" onchange="saveAutoResponderConfig()">
+                                    <option value="true" data-i18n="autoresponder.direct_only">Direct Messages Only (1:1)</option>
+                                    <option value="false" data-i18n="autoresponder.all_chats">Direct Messages & Groups</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px;" data-i18n="autoresponder.frequency_title">Frequency</label>
+                                <select id="ar-once-per-contact" class="input-control" style="width:100%;font-size:12px;" onchange="saveAutoResponderConfig()">
+                                    <option value="true" data-i18n="autoresponder.once_per_contact">Once per contact (Recommended)</option>
+                                    <option value="false" data-i18n="autoresponder.every_message">Every message</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                                <label style="font-size:11px;font-weight:600;" data-i18n="autoresponder.template_title">Message Template</label>
+                                <button type="button" class="btn btn-secondary btn-xs" onclick="resetAutoResponderTemplate()" data-i18n="autoresponder.reset_template_btn" style="font-size:10px;padding:2px 6px;">Reset Template</button>
+                            </div>
+                            <textarea id="ar-message-template" class="input-control" rows="4" style="width:100%;font-size:12px;resize:vertical;" onchange="saveAutoResponderConfig()"></textarea>
+                            <div style="font-size:10px;color:var(--text-muted);margin-top:2px;" data-i18n="autoresponder.template_hint">Placeholders: {sender_name}, {start_time}, {end_time}, {end_time_text}, {once_notice}</div>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg-app);padding:8px 12px;border-radius:6px;">
+                            <span id="ar-seen-count" style="font-size:11px;color:var(--text-muted);"><span data-i18n="autoresponder.seen_count_label">0 contacts replied</span></span>
+                            <button type="button" class="btn btn-secondary btn-xs" onclick="resetAutoResponderSeen()" data-i18n="autoresponder.reset_seen_btn" style="font-size:11px;padding:4px 8px;"><i class="fas fa-redo"></i> <span data-i18n="autoresponder.reset_seen_btn">Reset Contacts</span></button>
+                        </div>
+                    </div>
+
                     <div class="card" id="device-card">
                         <div class="card-title"><i class="fas fa-mobile-alt"></i> <span data-i18n="dashboard.connected_account">Connected Account</span></div>
                         <div id="device-info-grid" class="info-grid" style="display:none;">
