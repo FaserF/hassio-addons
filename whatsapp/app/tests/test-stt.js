@@ -93,4 +93,20 @@ const fromMeResult = await handleWhatsAppVoiceSTT(
 assert.strictEqual(fromMeResult, false, 'Outgoing audio fromMe must be ignored');
 console.log('✅ PASSED: handleWhatsAppVoiceSTT ignores outgoing bot voice messages');
 
+// Test 10: Home Assistant key auto-resolution precedence
+const { resolveEffectiveGeminiKey } = await import('../src/ha.js');
+const explicitKey = resolveEffectiveGeminiKey('AIzaExplicitKey999');
+assert.strictEqual(explicitKey.key, 'AIzaExplicitKey999');
+assert.strictEqual(explicitKey.source, 'custom_settings');
+console.log('✅ PASSED: resolveEffectiveGeminiKey prioritizes explicit custom keys');
+
+// Test 11: getSTTDiagnostics auto-resolves when explicit key is blank
+const diagAuto = getSTTDiagnostics(
+  { stt_enabled: true, stt_engine: 'gemini' },
+  { gemini_api_key: 'AIzaCustom99' }
+);
+assert.strictEqual(diagAuto.status, 'healthy');
+assert.ok(diagAuto.selection_reason.includes('Gemini'));
+console.log('✅ PASSED: getSTTDiagnostics seamlessly uses effective Gemini key');
+
 console.log('✅ ALL STT & DIAGNOSTICS TESTS PASSED');

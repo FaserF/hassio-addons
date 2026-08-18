@@ -1,7 +1,11 @@
 import { loadTelegramStore, saveTelegramStore, updateCachedChat } from '../store.js';
 import { getTelegramBotClient } from '../bot.js';
 import { recordMessageMap, resolveWaMsgFromTg } from '../message_map.js';
-import { telegramToWaFormatting } from '../format.js';
+import {
+  telegramToWaFormatting,
+  splitMessageText,
+  WHATSAPP_MAX_TEXT_LENGTH,
+} from '../format.js';
 import { formatHeader } from '../headers.js';
 import { getSession, sessions } from '../../../session.js';
 import { logger } from '../../../logger.js';
@@ -1265,11 +1269,43 @@ export async function processTelegramUpdates() {
                   }
                 }
 
-                const sentWaMsg = await session.sock.sendMessage(
-                  mapping.wa_jid,
-                  waContent,
-                  sendOptions
-                );
+                let sentWaMsg = null;
+                if (waContent.text && waContent.text.length > WHATSAPP_MAX_TEXT_LENGTH) {
+                  const chunks = splitMessageText(waContent.text, WHATSAPP_MAX_TEXT_LENGTH);
+                  for (let i = 0; i < chunks.length; i++) {
+                    const sent = await session.sock.sendMessage(
+                      mapping.wa_jid,
+                      { text: chunks[i] },
+                      i === 0 ? sendOptions : {}
+                    );
+                    if (i === 0) sentWaMsg = sent;
+                  }
+                } else if (waContent.caption && waContent.caption.length > WHATSAPP_MAX_TEXT_LENGTH) {
+                  const chunks = splitMessageText(waContent.caption, WHATSAPP_MAX_TEXT_LENGTH);
+                  waContent.caption = chunks[0];
+                  sentWaMsg = await session.sock.sendMessage(
+                    mapping.wa_jid,
+                    waContent,
+                    sendOptions
+                  );
+                  for (let i = 1; i < chunks.length; i++) {
+                    await session.sock
+                      .sendMessage(
+                        mapping.wa_jid,
+                        { text: chunks[i] },
+                        sentWaMsg?.key?.id
+                          ? { quoted: { key: { remoteJid: mapping.wa_jid, id: sentWaMsg.key.id } } }
+                          : {}
+                      )
+                      .catch(() => null);
+                  }
+                } else {
+                  sentWaMsg = await session.sock.sendMessage(
+                    mapping.wa_jid,
+                    waContent,
+                    sendOptions
+                  );
+                }
                 // For location/live_location: follow up with sender info as text (WA native pins carry no caption)
                 if (
                   sentWaMsg &&

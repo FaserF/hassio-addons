@@ -1,7 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import { loadTelegramStore, updateCachedChat } from './store.js';
-import { stripHtmlTags } from './format.js';
+import {
+  stripHtmlTags,
+  splitTelegramHtml,
+  TELEGRAM_MAX_TEXT_LENGTH,
+  TELEGRAM_MAX_CAPTION_LENGTH,
+} from './format.js';
 
 const TELEGRAM_TOKEN_REGEX = /^[0-9]{6,}:[A-Za-z0-9_-]{20,}$/;
 
@@ -115,9 +120,48 @@ export class TelegramBotClient {
     disableNotification = false,
     replyMarkup = null
   ) {
+    const strText = String(text || '');
+
+    // Split messages exceeding Telegram's 4096 character limit into balanced chunks
+    if (strText.length > TELEGRAM_MAX_TEXT_LENGTH) {
+      const chunks = splitTelegramHtml(strText, TELEGRAM_MAX_TEXT_LENGTH);
+      let firstResult = null;
+      let lastMsgId = replyToMessageId;
+
+      for (let i = 0; i < chunks.length; i++) {
+        const isFirst = i === 0;
+        const isLast = i === chunks.length - 1;
+        const payload = {
+          chat_id: chatId,
+          text: chunks[i],
+          parse_mode: 'HTML',
+          disable_web_page_preview: false,
+          disable_notification: Boolean(disableNotification),
+        };
+        if (isFirst && replyToMessageId) payload.reply_to_message_id = replyToMessageId;
+        if (!isFirst && lastMsgId) payload.reply_to_message_id = lastMsgId;
+        if (threadId) payload.message_thread_id = threadId;
+        if (isLast && replyMarkup) payload.reply_markup = replyMarkup;
+
+        try {
+          const res = await this.request('sendMessage', payload);
+          if (isFirst) firstResult = res;
+          if (res?.message_id) lastMsgId = res.message_id;
+        } catch (_htmlErr) {
+          // If HTML entity parsing fails on chunk, fallback to plain text
+          payload.parse_mode = undefined;
+          payload.text = stripHtmlTags(chunks[i]);
+          const res = await this.request('sendMessage', payload);
+          if (isFirst) firstResult = res;
+          if (res?.message_id) lastMsgId = res.message_id;
+        }
+      }
+      return firstResult;
+    }
+
     const payload = {
       chat_id: chatId,
-      text: text,
+      text: strText,
       parse_mode: 'HTML',
       disable_web_page_preview: false,
       disable_notification: Boolean(disableNotification),
@@ -125,7 +169,17 @@ export class TelegramBotClient {
     if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
     if (threadId) payload.message_thread_id = threadId;
     if (replyMarkup) payload.reply_markup = replyMarkup;
-    return await this.request('sendMessage', payload);
+
+    try {
+      return await this.request('sendMessage', payload);
+    } catch (err) {
+      if (err.message && (err.message.includes("can't parse entities") || err.message.includes('entity'))) {
+        payload.parse_mode = undefined;
+        payload.text = stripHtmlTags(strText);
+        return await this.request('sendMessage', payload);
+      }
+      throw err;
+    }
   }
 
   async answerCallbackQuery(callbackQueryId, text = '', showAlert = false) {
@@ -195,14 +249,23 @@ export class TelegramBotClient {
     threadId = null,
     disableNotification = false
   ) {
+    let mainCaption = caption || '';
+    let followupText = null;
+
+    if (mainCaption && mainCaption.length > TELEGRAM_MAX_CAPTION_LENGTH) {
+      const chunks = splitTelegramHtml(mainCaption, TELEGRAM_MAX_CAPTION_LENGTH);
+      mainCaption = chunks[0] || '';
+      followupText = chunks.slice(1).join('\n\n');
+    }
+
     if (
       Buffer.isBuffer(filePathOrUrl) ||
       (typeof filePathOrUrl === 'string' && fs.existsSync(filePathOrUrl))
     ) {
       const formData = new FormData();
       formData.append('chat_id', chatId);
-      if (caption) {
-        formData.append('caption', caption);
+      if (mainCaption) {
+        formData.append('caption', mainCaption);
         formData.append('parse_mode', 'HTML');
       }
       if (replyToMessageId) formData.append('reply_to_message_id', String(replyToMessageId));
@@ -238,18 +301,38 @@ export class TelegramBotClient {
       if (!data.ok) {
         throw new Error(data.description || `Telegram API error on ${sanitizedMethod}`);
       }
-      return data.result;
+      const result = data.result;
+      if (result?.message_id && followupText && followupText.trim()) {
+        await this.sendMessage(
+          chatId,
+          followupText.trim(),
+          result.message_id,
+          threadId,
+          disableNotification
+        ).catch(() => null);
+      }
+      return result;
     } else {
       const payload = {
         chat_id: chatId,
         [mediaField]: filePathOrUrl,
-        caption: caption,
+        caption: mainCaption,
         parse_mode: 'HTML',
         disable_notification: Boolean(disableNotification),
       };
       if (replyToMessageId) payload.reply_to_message_id = replyToMessageId;
       if (threadId) payload.message_thread_id = threadId;
-      return await this.request(method, payload);
+      const res = await this.request(method, payload);
+      if (res?.message_id && followupText && followupText.trim()) {
+        await this.sendMessage(
+          chatId,
+          followupText.trim(),
+          res.message_id,
+          threadId,
+          disableNotification
+        ).catch(() => null);
+      }
+      return res;
     }
   }
 

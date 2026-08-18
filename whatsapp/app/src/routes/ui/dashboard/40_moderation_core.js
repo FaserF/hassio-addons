@@ -315,9 +315,20 @@ async function loadModerationConfig() {
         modStoreCache = json.data;
         const globalToggle = document.getElementById('mod-global-toggle');
         if (globalToggle) globalToggle.checked = Boolean(modStoreCache.global_enabled);
-        const aiKeyEl = document.getElementById('mod-ai-key');
-        if (aiKeyEl && modStoreCache.gemini_api_key !== undefined) {
-          aiKeyEl.value = modStoreCache.gemini_api_key;
+        const aiKeyEl = document.getElementById('mod-ai-api-key') || document.getElementById('mod-ai-key');
+        const aiKeyHint = document.getElementById('mod-ai-key-hint');
+        if (aiKeyEl) {
+          if (modStoreCache.gemini_api_key) {
+            aiKeyEl.value = modStoreCache.gemini_api_key;
+          } else {
+            aiKeyEl.value = '';
+            if (modStoreCache.ha_gemini_detected) {
+              aiKeyEl.placeholder = '✨ (Optional) Auto-detected from Home Assistant';
+              if (aiKeyHint) {
+                aiKeyHint.textContent = `✨ Key is automatically used from ${modStoreCache.ha_gemini_source || 'Home Assistant'}. Enter a custom key only if you want to override it.`;
+              }
+            }
+          }
         }
         const globalRulesInp = document.getElementById('mod-global-rules-input');
         if (globalRulesInp && modStoreCache.global_rules !== undefined) {

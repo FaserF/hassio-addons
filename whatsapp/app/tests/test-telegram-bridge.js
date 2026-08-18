@@ -3,7 +3,14 @@ import assert from 'node:assert';
 import { formatHeader } from '../src/whatsapp/telegram/listener.js';
 import { TelegramBotClient } from '../src/whatsapp/telegram/bot.js';
 import { getDefaultTelegramStore } from '../src/whatsapp/telegram/store.js';
-import { waToTelegramHtml, anonymizePhoneNumber } from '../src/whatsapp/telegram/format.js';
+import {
+  waToTelegramHtml,
+  anonymizePhoneNumber,
+  splitMessageText,
+  splitTelegramHtml,
+  TELEGRAM_MAX_TEXT_LENGTH,
+  TELEGRAM_MAX_CAPTION_LENGTH,
+} from '../src/whatsapp/telegram/format.js';
 import { applyRegexReplacements } from '../src/whatsapp/telegram/regex.js';
 
 describe('Telegram Bridge Unit Tests', () => {
@@ -219,5 +226,33 @@ describe('Telegram Bridge Unit Tests', () => {
     assert.strictEqual(filterCommand('!help', mapping), true);
     assert.strictEqual(filterCommand('#rules', mapping), true);
     assert.strictEqual(filterCommand('Hello world', mapping), false);
+  });
+
+  it('splitMessageText splits text within maxLength on whitespace/newlines', () => {
+    const longText = 'Paragraph one.\n\nParagraph two.\n\nParagraph three is a bit longer with more words.';
+    const chunks = splitMessageText(longText, 30);
+    assert.ok(chunks.length > 1);
+    for (const chunk of chunks) {
+      assert.ok(chunk.length <= 30);
+    }
+    // Content preservation
+    assert.strictEqual(chunks.join(' ').replace(/\s+/g, ' '), longText.replace(/\s+/g, ' '));
+  });
+
+  it('splitTelegramHtml preserves and balances HTML formatting across chunks', () => {
+    const longHtml = '<b>' + 'A'.repeat(5000) + '</b>';
+    const chunks = splitTelegramHtml(longHtml, 4096);
+    assert.strictEqual(chunks.length, 2);
+    // First chunk starts with <b> and ends with </b>
+    assert.ok(chunks[0].startsWith('<b>'));
+    assert.ok(chunks[0].endsWith('</b>'));
+    // Second chunk re-opens <b> and closes with </b>
+    assert.ok(chunks[1].startsWith('<b>'));
+    assert.ok(chunks[1].endsWith('</b>'));
+  });
+
+  it('TELEGRAM_MAX_TEXT_LENGTH and TELEGRAM_MAX_CAPTION_LENGTH constants are correct', () => {
+    assert.strictEqual(TELEGRAM_MAX_TEXT_LENGTH, 4096);
+    assert.strictEqual(TELEGRAM_MAX_CAPTION_LENGTH, 1024);
   });
 });

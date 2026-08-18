@@ -1,5 +1,7 @@
 import http from 'http';
 import os from 'os';
+import fs from 'fs';
+import path from 'path';
 import { logger } from './logger.js';
 
 const SUPERVISOR_TOKEN = process.env.SUPERVISOR_TOKEN;
@@ -389,4 +391,190 @@ export async function queryWebAPI(url, jsonPath = null, headers = {}) {
   } catch (err) {
     return { success: false, result: `Error: ${err.message}` };
   }
+}
+
+let cachedHAGeminiKey = null;
+let cachedHAOpenAIKey = null;
+let lastKeyScanTime = 0;
+
+/**
+ * Searches Home Assistant config directories and secrets for Google Gemini / OpenAI API keys.
+ */
+export function getHAApiKeys(forceRefresh = false) {
+  const now = Date.now();
+  if (!forceRefresh && cachedHAGeminiKey !== null && now - lastKeyScanTime < 60000) {
+    return {
+      gemini: cachedHAGeminiKey,
+      openai: cachedHAOpenAIKey,
+    };
+  }
+
+  let geminiResult = null;
+  let openaiResult = null;
+
+  // 1. Check environment variables
+  const envGemini =
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_API_KEY ||
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  if (envGemini && typeof envGemini === 'string' && envGemini.trim()) {
+    geminiResult = {
+      key: envGemini.trim(),
+      source: 'environment',
+      sourceLabel: 'Environment Variable (GEMINI_API_KEY)',
+    };
+  }
+  const envOpenAI = process.env.OPENAI_API_KEY;
+  if (envOpenAI && typeof envOpenAI === 'string' && envOpenAI.trim()) {
+    openaiResult = {
+      key: envOpenAI.trim(),
+      source: 'environment',
+      sourceLabel: 'Environment Variable (OPENAI_API_KEY)',
+    };
+  }
+
+  // 2. Search Home Assistant storage and secrets
+  const possibleConfigDirs = [
+    '/config',
+    '/homeassistant',
+    '/data/homeassistant',
+    process.env.HA_CONFIG_DIR,
+  ].filter(Boolean);
+
+  for (const configDir of possibleConfigDirs) {
+    if (!fs.existsSync(configDir)) continue;
+
+    // A. Check .storage/core.config_entries
+    const entriesPath = path.join(configDir, '.storage', 'core.config_entries');
+    if (fs.existsSync(entriesPath)) {
+      try {
+        const raw = fs.readFileSync(entriesPath, 'utf8');
+        const parsed = JSON.parse(raw);
+        const entries = parsed?.data?.entries || [];
+
+        if (!geminiResult) {
+          const geminiEntry = entries.find(
+            (e) =>
+              (e.domain === 'google_generative_ai_conversation' ||
+                e.domain === 'google_generative_ai' ||
+                e.domain === 'google_ai' ||
+                e.domain === 'gemini') &&
+              (e.data?.api_key || e.options?.api_key)
+          );
+          if (geminiEntry) {
+            const key = geminiEntry.data?.api_key || geminiEntry.options?.api_key;
+            if (key && typeof key === 'string' && key.trim()) {
+              geminiResult = {
+                key: key.trim(),
+                source: 'ha_integration',
+                sourceLabel: 'Home Assistant (Google Generative AI Integration)',
+              };
+            }
+          }
+        }
+
+        if (!openaiResult) {
+          const openaiEntry = entries.find(
+            (e) =>
+              (e.domain === 'openai' || e.domain === 'openai_conversation') &&
+              (e.data?.api_key || e.options?.api_key)
+          );
+          if (openaiEntry) {
+            const key = openaiEntry.data?.api_key || openaiEntry.options?.api_key;
+            if (key && typeof key === 'string' && key.trim()) {
+              openaiResult = {
+                key: key.trim(),
+                source: 'ha_integration',
+                sourceLabel: 'Home Assistant (OpenAI Integration)',
+              };
+            }
+          }
+        }
+      } catch (_err) {}
+    }
+
+    // B. Check secrets.yaml
+    const secretsPath = path.join(configDir, 'secrets.yaml');
+    if (fs.existsSync(secretsPath)) {
+      try {
+        const secretsRaw = fs.readFileSync(secretsPath, 'utf8');
+        const lines = secretsRaw.split('\n');
+        for (const line of lines) {
+          const clean = line.trim();
+          if (!clean || clean.startsWith('#')) continue;
+          const match = clean.match(/^([a-zA-Z0-9_-]+)\s*:\s*["']?([^"'#\r\n]+)["']?/);
+          if (match) {
+            const keyName = match[1].toLowerCase();
+            const val = match[2].trim();
+
+            if (
+              !geminiResult &&
+              [
+                'gemini_api_key',
+                'google_api_key',
+                'google_generative_ai_api_key',
+                'gemini_key',
+                'google_ai_key',
+              ].includes(keyName)
+            ) {
+              geminiResult = {
+                key: val,
+                source: 'ha_secrets',
+                sourceLabel: `Home Assistant secrets.yaml (${match[1]})`,
+              };
+            }
+
+            if (!openaiResult && ['openai_api_key', 'openai_key'].includes(keyName)) {
+              openaiResult = {
+                key: val,
+                source: 'ha_secrets',
+                sourceLabel: `Home Assistant secrets.yaml (${match[1]})`,
+              };
+            }
+          }
+        }
+      } catch (_err) {}
+    }
+  }
+
+  cachedHAGeminiKey = geminiResult;
+  cachedHAOpenAIKey = openaiResult;
+  lastKeyScanTime = now;
+
+  return {
+    gemini: geminiResult,
+    openai: openaiResult,
+  };
+}
+
+/**
+ * Resolves the effective Google Gemini API key.
+ * Prioritizes explicit custom key if provided; otherwise falls back to Home Assistant integration/secrets/env.
+ */
+export function resolveEffectiveGeminiKey(explicitKey = '') {
+  if (explicitKey && typeof explicitKey === 'string' && explicitKey.trim()) {
+    return {
+      key: explicitKey.trim(),
+      source: 'custom_settings',
+      sourceLabel: 'Addon UI Settings',
+    };
+  }
+  const haKeys = getHAApiKeys();
+  return haKeys.gemini || null;
+}
+
+/**
+ * Resolves the effective OpenAI API key.
+ * Prioritizes explicit custom key if provided; otherwise falls back to Home Assistant integration/secrets/env.
+ */
+export function resolveEffectiveOpenAIKey(explicitKey = '') {
+  if (explicitKey && typeof explicitKey === 'string' && explicitKey.trim()) {
+    return {
+      key: explicitKey.trim(),
+      source: 'custom_settings',
+      sourceLabel: 'Addon UI Settings',
+    };
+  }
+  const haKeys = getHAApiKeys();
+  return haKeys.openai || null;
 }

@@ -1,5 +1,6 @@
 import { logger } from '../../logger.js';
 import { translateTextGatewayWithReason } from '../../utils/gatewayTranslator.js';
+import { resolveEffectiveGeminiKey, resolveEffectiveOpenAIKey } from '../../ha.js';
 
 export async function processAiModeration(
   text,
@@ -9,11 +10,12 @@ export async function processAiModeration(
   extraContext = {}
 ) {
   const provider = groupAiConfig.provider || process.env.AI_PROVIDER || 'gemini';
+  const effectiveGemini = resolveEffectiveGeminiKey(storeGeminiKey || groupAiConfig.api_key);
+  const effectiveOpenAI = resolveEffectiveOpenAIKey(groupAiConfig.openai_api_key);
   const apiKey =
-    storeGeminiKey ||
-    groupAiConfig.api_key ||
-    process.env.OPENAI_API_KEY ||
-    process.env.GEMINI_API_KEY;
+    provider === 'openai'
+      ? effectiveOpenAI?.key || effectiveGemini?.key
+      : effectiveGemini?.key || effectiveOpenAI?.key;
 
   if (mode === 'translate') {
     const targetLang = extraContext.targetLang || 'en';

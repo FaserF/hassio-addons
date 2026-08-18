@@ -2,6 +2,7 @@ import { downloadMediaMessage } from '@whiskeysockets/baileys';
 import { logger } from '../logger.js';
 import { getGroupModerationConfig } from '../whatsapp/moderation/store.js';
 import { reply } from '../whatsapp/actions.js';
+import { resolveEffectiveGeminiKey, resolveEffectiveOpenAIKey } from '../ha.js';
 
 // STT Diagnostics & Error Tracking
 const recentSttErrors = [];
@@ -26,10 +27,14 @@ function recordSttError(engine, errorMsg, groupId = null) {
 export function getSTTDiagnostics(groupConfig = {}, store = {}) {
   const isEnabled = Boolean(groupConfig?.stt_enabled);
   const sttEngine = groupConfig?.stt_engine || 'auto';
-  const hasGeminiKey = Boolean(
-    store?.gemini_api_key || groupConfig?.ai?.api_key || process.env.GEMINI_API_KEY
+  const effectiveGemini = resolveEffectiveGeminiKey(
+    store?.gemini_api_key || groupConfig?.ai?.api_key
   );
-  const hasOpenAIKey = Boolean(groupConfig?.ai?.openai_api_key || process.env.OPENAI_API_KEY);
+  const effectiveOpenAI = resolveEffectiveOpenAIKey(
+    groupConfig?.ai?.openai_api_key
+  );
+  const hasGeminiKey = Boolean(effectiveGemini?.key);
+  const hasOpenAIKey = Boolean(effectiveOpenAI?.key);
   const hasAegisBotUrl = Boolean(
     groupConfig?.stt_aegisbot_url || store?.aegisbot_url || process.env.AEGISBOT_URL
   );
@@ -53,7 +58,7 @@ export function getSTTDiagnostics(groupConfig = {}, store = {}) {
     activeEngine = 'none';
     activeEngineName = 'No Engine Configured';
     selectionReason =
-      'STT is enabled, but no Gemini/OpenAI API key or AegisBot Server URL was found. Transcription will fail until configured.';
+      'STT is enabled, but no Gemini/OpenAI API key or AegisBot Server URL was found (and no Google Generative AI integration in Home Assistant). Transcription will fail until configured.';
     status = 'no_key';
   } else {
     if (sttEngine === 'aegisbot') {
@@ -67,15 +72,15 @@ export function getSTTDiagnostics(groupConfig = {}, store = {}) {
       activeEngine = 'gemini';
       activeEngineName = 'Gemini 1.5 Multimodal Audio';
       selectionReason = hasGeminiKey
-        ? 'Manual Selection: Using Google Gemini 1.5 Multimodal Audio with configured API key.'
-        : 'Gemini Engine Selected: Warning — Gemini API key is missing in settings.';
+        ? `Manual Selection: Using Google Gemini 1.5 Multimodal Audio (${effectiveGemini?.sourceLabel || 'Configured API key'}).`
+        : 'Gemini Engine Selected: Warning — Gemini API key is missing in settings and Home Assistant.';
       if (!hasGeminiKey) status = 'no_key';
     } else if (sttEngine === 'openai') {
       activeEngine = 'openai';
       activeEngineName = 'OpenAI Whisper API';
       selectionReason = hasOpenAIKey
-        ? 'Manual Selection: Using OpenAI Whisper API with configured API key.'
-        : 'OpenAI Whisper Selected: Warning — OpenAI API key is missing in settings.';
+        ? `Manual Selection: Using OpenAI Whisper API (${effectiveOpenAI?.sourceLabel || 'Configured API key'}).`
+        : 'OpenAI Whisper Selected: Warning — OpenAI API key is missing in settings and Home Assistant.';
       if (!hasOpenAIKey) status = 'no_key';
     } else {
       // auto
@@ -87,12 +92,11 @@ export function getSTTDiagnostics(groupConfig = {}, store = {}) {
       } else if (hasGeminiKey) {
         activeEngine = 'gemini';
         activeEngineName = '⚡ Auto: Gemini 1.5 Flash';
-        selectionReason =
-          'Auto STT: Gemini 1.5 Multimodal Audio selected (Gemini API key is active).';
+        selectionReason = `Auto STT: Gemini 1.5 Multimodal Audio selected (${effectiveGemini?.sourceLabel || 'Gemini API key active'}).`;
       } else if (hasOpenAIKey) {
         activeEngine = 'openai';
         activeEngineName = '⚡ Auto: OpenAI Whisper';
-        selectionReason = 'Auto STT: OpenAI Whisper selected (OpenAI API key is active).';
+        selectionReason = `Auto STT: OpenAI Whisper selected (${effectiveOpenAI?.sourceLabel || 'OpenAI API key active'}).`;
       } else {
         activeEngine = 'none';
         activeEngineName = 'Auto STT (No Provider)';
@@ -188,8 +192,14 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     }
 
     // 2. Perform STT transcription using AegisBot Server, Gemini Multimodal Audio API, or OpenAI Whisper API
-    const geminiKey = store.gemini_api_key || config.ai?.api_key || process.env.GEMINI_API_KEY;
-    const openAiKey = config.ai?.openai_api_key || process.env.OPENAI_API_KEY;
+    const effectiveGemini = resolveEffectiveGeminiKey(
+      store.gemini_api_key || config.ai?.api_key
+    );
+    const effectiveOpenAI = resolveEffectiveOpenAIKey(
+      config.ai?.openai_api_key
+    );
+    const geminiKey = effectiveGemini?.key || null;
+    const openAiKey = effectiveOpenAI?.key || null;
     const aegisbotUrl = config.stt_aegisbot_url || store.aegisbot_url || process.env.AEGISBOT_URL;
     const aegisbotKey =
       config.stt_aegisbot_key || store.aegisbot_api_key || process.env.AEGISBOT_API_KEY || '';
@@ -205,9 +215,9 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     if (!hasAnyConfig) {
       if (sttEngine === 'auto') {
         failureReason =
-          'No STT engine configured. Please configure an AegisBot Server URL or a Gemini/OpenAI API key in settings.';
+          'No STT engine configured. Please configure an AegisBot Server URL, or configure a Gemini/OpenAI API key (or enable the Google Generative AI integration in Home Assistant).';
       } else {
-        failureReason = `Configuration missing for STT engine "${sttEngine}". Please configure settings.`;
+        failureReason = `Configuration missing for STT engine "${sttEngine}". Please configure in settings or Home Assistant.`;
       }
       recordSttError(sttEngine, failureReason, groupId);
     } else {

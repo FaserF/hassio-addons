@@ -114,3 +114,111 @@ export function anonymizePhoneNumber(phoneStr) {
   const end = digits.slice(-3);
   return `+${start}***${end}`;
 }
+
+export const TELEGRAM_MAX_TEXT_LENGTH = 4096;
+export const TELEGRAM_MAX_CAPTION_LENGTH = 1024;
+export const WHATSAPP_MAX_TEXT_LENGTH = 4096;
+
+/**
+ * Intelligently split text into chunks within maxLength.
+ * Splits on paragraphs (\n\n), newlines (\n), or spaces where possible.
+ */
+export function splitMessageText(text, maxLength = 4096) {
+  if (!text || typeof text !== 'string') return [];
+  if (text.length <= maxLength) return [text];
+
+  const chunks = [];
+  let remaining = text;
+
+  while (remaining.length > 0) {
+    if (remaining.length <= maxLength) {
+      chunks.push(remaining);
+      break;
+    }
+
+    let splitIndex;
+    const window = remaining.slice(0, maxLength);
+
+    // 1. Try paragraph break
+    const lastParagraph = window.lastIndexOf('\n\n');
+    if (lastParagraph >= Math.floor(maxLength * 0.4)) {
+      splitIndex = lastParagraph + 2;
+    } else {
+      // 2. Try single newline break
+      const lastNewline = window.lastIndexOf('\n');
+      if (lastNewline >= Math.floor(maxLength * 0.4)) {
+        splitIndex = lastNewline + 1;
+      } else {
+        // 3. Try space break
+        const lastSpace = window.lastIndexOf(' ');
+        if (lastSpace >= Math.floor(maxLength * 0.5)) {
+          splitIndex = lastSpace + 1;
+        } else {
+          // 4. Hard boundary
+          splitIndex = maxLength;
+        }
+      }
+    }
+
+    const chunk = remaining.slice(0, splitIndex).trimEnd();
+    if (chunk.length > 0) {
+      chunks.push(chunk);
+    }
+    remaining = remaining.slice(splitIndex).trimStart();
+  }
+
+  return chunks;
+}
+
+/**
+ * Split Telegram HTML text into balanced chunks, preserving opened formatting tags across splits.
+ */
+export function splitTelegramHtml(htmlText, maxLength = 4096) {
+  if (!htmlText || htmlText.length <= maxLength) return [htmlText];
+
+  const rawChunks = splitMessageText(htmlText, maxLength - 60);
+  const balancedChunks = [];
+  let openTags = [];
+
+  for (let i = 0; i < rawChunks.length; i++) {
+    let chunk = rawChunks[i];
+
+    // Prepend open tags from previous chunk
+    if (openTags.length > 0) {
+      const prefix = openTags.map((t) => `<${t}>`).join('');
+      chunk = prefix + chunk;
+    }
+
+    // Find all HTML tags in this chunk
+    const tagRegex = /<\/?([a-zA-Z0-9]+)(?:\s+[^>]*)?>/g;
+    let match;
+    const currentOpenTags = [...openTags];
+
+    while ((match = tagRegex.exec(chunk)) !== null) {
+      const isClosing = match[0].startsWith('</');
+      const tagName = match[1].toLowerCase();
+
+      if (['b', 'strong', 'i', 'em', 'code', 'pre', 's', 'strike', 'del', 'blockquote', 'a'].includes(tagName)) {
+        if (isClosing) {
+          const lastIdx = currentOpenTags.lastIndexOf(tagName);
+          if (lastIdx !== -1) {
+            currentOpenTags.splice(lastIdx, 1);
+          }
+        } else {
+          currentOpenTags.push(tagName);
+        }
+      }
+    }
+
+    // Close any tags still open at end of this chunk (in reverse order)
+    if (currentOpenTags.length > 0 && i < rawChunks.length - 1) {
+      const suffix = [...currentOpenTags].reverse().map((t) => `</${t}>`).join('');
+      chunk = chunk + suffix;
+    }
+
+    openTags = currentOpenTags;
+    balancedChunks.push(chunk);
+  }
+
+  return balancedChunks;
+}

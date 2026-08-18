@@ -23,6 +23,7 @@ import { sessions } from '../../session.js';
 
 import { logger } from '../../logger.js';
 import { reply } from '../../whatsapp/actions.js';
+import { getHAApiKeys } from '../../ha.js';
 import { getTranslationDiagnostics } from '../../utils/gatewayTranslator.js';
 import { getSTTDiagnostics } from '../../whatsapp/sttHandler.js';
 
@@ -208,7 +209,17 @@ export function registerModerationRoutes(app) {
   // GET /api/moderation/config
   app.get('/api/moderation/config', (req, res) => {
     const store = loadModerationStore();
-    res.json({ success: true, data: store });
+    const haKeys = getHAApiKeys();
+    res.json({
+      success: true,
+      data: {
+        ...store,
+        ha_gemini_detected: Boolean(haKeys.gemini?.key),
+        ha_gemini_source: haKeys.gemini?.sourceLabel || null,
+        ha_openai_detected: Boolean(haKeys.openai?.key),
+        ha_openai_source: haKeys.openai?.sourceLabel || null,
+      },
+    });
   });
 
   // POST /api/moderation/config
