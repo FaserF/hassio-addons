@@ -43,7 +43,12 @@ export async function translateTextGatewayWithReason(
     const cached = cache.get(cacheKey);
     const cachedTrans = typeof cached === 'object' ? cached.translation : cached;
     const cachedSrc = typeof cached === 'object' ? cached.sourceLang : null;
-    const cachedProv = typeof cached === 'object' ? cached.provider : (preferredProvider === 'auto' ? 'cache' : preferredProvider);
+    const cachedProv =
+      typeof cached === 'object'
+        ? cached.provider
+        : preferredProvider === 'auto'
+          ? 'cache'
+          : preferredProvider;
     const cachedProvName = typeof cached === 'object' ? cached.providerName : 'Cache';
     lastTranslationEvent = {
       timestamp: Date.now(),
