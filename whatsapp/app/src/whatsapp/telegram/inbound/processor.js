@@ -72,9 +72,7 @@ export function getMediaPlaceholderText(msg, lang = 'de') {
     msg.new_chat_members.length > 0
   ) {
     const names = msg.new_chat_members
-      .map(
-        (m) => `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User'
-      )
+      .map((m) => `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User')
       .join(', ');
     return t(lang, 'bot_replies.bridge_sys_joined', { name: names });
   }
@@ -101,8 +99,7 @@ export function getMediaPlaceholderText(msg, lang = 'de') {
           })
         : '') ||
       'Message';
-    const snippet =
-      rawSnippet.length > 500 ? `${rawSnippet.slice(0, 500)}...` : rawSnippet;
+    const snippet = rawSnippet.length > 500 ? `${rawSnippet.slice(0, 500)}...` : rawSnippet;
     return t(lang, 'bot_replies.bridge_sys_pinned', { sender: pinnedSender, snippet });
   }
   if (msg.poll) {
@@ -176,7 +173,9 @@ export async function processTelegramUpdates() {
             const pollQuestion = cachedPoll?.question || 'Telegram Poll';
             const pollOptions = cachedPoll?.options || [];
 
-            const selectedOptionTexts = selectedOptionIds.map((idx) => pollOptions[idx] || `Option ${idx + 1}`);
+            const selectedOptionTexts = selectedOptionIds.map(
+              (idx) => pollOptions[idx] || `Option ${idx + 1}`
+            );
             const selectedText = selectedOptionTexts.join(', ');
 
             // Track last vote info for consolidated update
@@ -908,8 +907,7 @@ export async function processTelegramUpdates() {
               }
             }
 
-            const isGroupChat =
-              msg.chat.type === 'group' || msg.chat.type === 'supergroup';
+            const isGroupChat = msg.chat.type === 'group' || msg.chat.type === 'supergroup';
             const isDirectMirror = mapping.header_mode === 'direct_mirror';
             const rawHeader = isDirectMirror
               ? ''
@@ -955,8 +953,7 @@ export async function processTelegramUpdates() {
                 if (
                   transRes?.translation &&
                   transRes.translation.trim() &&
-                  transRes.translation.trim().toLowerCase() !==
-                    effectiveTgText.trim().toLowerCase()
+                  transRes.translation.trim().toLowerCase() !== effectiveTgText.trim().toLowerCase()
                 ) {
                   const srcBadge =
                     transRes.sourceLang &&
