@@ -1,7 +1,7 @@
 fastapi==0.141.1
 uvicorn[standard]==0.52.3
 sqlmodel==0.0.22
-sqlalchemy[asyncio]==2.0.36
+sqlalchemy[asyncio]==2.0.52
 greenlet==3.5.5
 aiosqlite==0.22.1
 pydantic==2.13.4
