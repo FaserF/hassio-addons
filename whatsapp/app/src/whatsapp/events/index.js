@@ -1342,7 +1342,8 @@ export function handleIncomingMessages(session) {
               syncWhatsAppDeleteToTelegram(deletedId, targetJid);
             }
           } else if (
-            (prot && (prot.type === 14 || prot.type === 'MESSAGE_EDIT' || String(prot.type) === '14')) ||
+            (prot &&
+              (prot.type === 14 || prot.type === 'MESSAGE_EDIT' || String(prot.type) === '14')) ||
             update.message
           ) {
             const editedWaMsgId = prot?.key?.id || key?.id;
