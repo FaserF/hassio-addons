@@ -253,9 +253,22 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
             } else if (data.text) {
               transcribedText = data.text.trim();
             } else {
-              const errMsg = data.error || gt('bot_replies.stt_err_aegisbot_empty');
+              // Build rich diagnostic message from structured AegisBot error response
+              let errMsg = data.error || gt('bot_replies.stt_err_aegisbot_empty');
+              if (data.details && typeof data.details === 'object') {
+                const engineLines = Object.entries(data.details)
+                  .map(([eng, reason]) => `  • ${eng}: ${reason}`)
+                  .join('\n');
+                errMsg = `${errMsg}\n\n*Engine diagnostics:*\n${engineLines}`;
+              }
+              if (data.recommendation) {
+                errMsg += `\n\n*Recommendation:* ${data.recommendation}`;
+              }
+              if (data.status) {
+                errMsg = `[${data.status}] ${errMsg}`;
+              }
               errorsCaptured.push(errMsg);
-              recordSttError('aegisbot', errMsg, groupId);
+              recordSttError('aegisbot', data.error || 'transcription_failed', groupId);
             }
           } else if (res.status === 401 || res.status === 403) {
             const errMsg = gt('bot_replies.stt_err_aegisbot_auth');
