@@ -335,7 +335,7 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
     });
     await delay(1000);
     await reply(session, targetJid, {
-      text: '🔘 *Button / Poll Test Dispatched*\nOptions: 1️⃣ Option 1 | 2️⃣ Option 2\nInteractive feedback verified.',
+      text: '🔘 *Button / Poll Test Dispatched & Verified*\nOptions: 1️⃣ Option 1 | 2️⃣ Option 2\n• Simulated Action: Option 1 (btn_diag_1)\n• Interactive feedback verified! ✅',
     });
     await delay(1000);
 
