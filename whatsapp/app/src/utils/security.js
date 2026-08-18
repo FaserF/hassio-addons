@@ -361,13 +361,20 @@ export function validateSafeHttpUrl(rawUrl) {
     return null;
   }
 
-  const hostname = parsed.hostname.toLowerCase();
+  const hostname = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '');
   if (!hostname || BLOCKED_SSRF_HOSTS.has(hostname)) {
     return null;
   }
 
-  // 3. Reject cloud link-local metadata IP ranges
-  if (hostname.startsWith('169.254.') || hostname.startsWith('fe80:')) {
+  // 3. Reject cloud link-local, metadata IP ranges, and local loopback/private bypasses
+  if (
+    hostname.startsWith('169.254.') ||
+    hostname.startsWith('fe80:') ||
+    hostname.startsWith('::ffff:169.254.') ||
+    hostname === '::1' ||
+    hostname === 'localhost' ||
+    hostname === '0.0.0.0'
+  ) {
     return null;
   }
 

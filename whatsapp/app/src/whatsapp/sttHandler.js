@@ -434,14 +434,16 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
         group_id: groupId,
       };
 
-      const header = gt('bot_replies.stt_header');
-      const disclaimer = gt('bot_replies.stt_disclaimer');
-      const langBadge =
+      const langStr =
         detectedLang && detectedLang !== 'auto' && detectedLang !== '?'
-          ? ` • ${detectedLang.toUpperCase()}`
+          ? detectedLang.toUpperCase()
           : '';
-      const metaBadge = `\n\n_🗣️ [${resolvedEngineName}${langBadge}]_`;
-      const replyText = `${header}:\n\n"${transcribedText}"${metaBadge}${disclaimer}`;
+      const header = gt('bot_replies.stt_header', {
+        lang: langStr,
+        engine: resolvedEngineName,
+      }).replace(/\s+/g, ' ');
+      const disclaimer = gt('bot_replies.stt_disclaimer');
+      const replyText = `${header}\n${disclaimer}\n\n"${transcribedText}"`;
 
       await reply(session, groupId, { text: replyText }, rawMsg);
       return true;

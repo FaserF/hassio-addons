@@ -192,8 +192,8 @@ export function splitTelegramHtml(htmlText, maxLength = 4096, maxChunks = MAX_ME
       chunk = prefix + chunk;
     }
 
-    // Find all HTML tags in this chunk
-    const tagRegex = /<\/?([a-zA-Z0-9]+)(?:\s+[^>]*)?>/g;
+    // Find HTML tags in this chunk using simple linear regex without nested quantifiers
+    const tagRegex = /<\/?([a-zA-Z0-9]+)[^>]*>/g;
     let match;
     const currentOpenTags = [...openTags];
 
