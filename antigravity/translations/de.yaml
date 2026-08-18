@@ -1,0 +1,21 @@
+configuration:
+  log_level:
+    name: Protokollierungsgrad
+    description: "Steuert die Detailtiefe der Addon-Protokolle (trace, debug, info, notice, warning, error, fatal)."
+  scan_interval:
+    name: Basis-Abfrageintervall (Sekunden)
+    description: "Standardintervall in Sekunden zwischen Quota-Abfragen (Standard: 1800s / 30 Minuten)."
+  adaptive_polling:
+    name: Adaptives Abfrageintervall
+    description: "Erhöht automatisch die Abfragehäufigkeit bei aktiver Nutzung und reduziert sie bei längerer Inaktivität."
+  fast_poll_interval:
+    name: Schnelles Abfrageintervall (Sekunden)
+    description: "Abfrageintervall in Sekunden, wenn in den letzten 15 Minuten Quota-Verbrauch erkannt wurde (Standard: 180s / 3 Minuten)."
+  idle_backoff_interval:
+    name: Inaktivitäts-Intervall (Sekunden)
+    description: "Abfrageintervall in Sekunden, wenn seit mehr als 2 Stunden keine Nutzung stattfand (Standard: 3600s / 60 Minuten)."
+  accounts:
+    name: Google-Konten
+    description: "Liste der Google Antigravity-Konten mit OAuth Refresh-Tokens."
+network:
+  8199/tcp: Antigravity Web-Oberfläche & REST-API

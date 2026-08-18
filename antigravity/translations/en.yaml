@@ -1,0 +1,21 @@
+configuration:
+  log_level:
+    name: Log Level
+    description: "Controls the verbosity of the addon logs (trace, debug, info, notice, warning, error, fatal)."
+  scan_interval:
+    name: Base Scan Interval (Seconds)
+    description: "Standard interval in seconds between quota checks (default: 1800s / 30 minutes)."
+  adaptive_polling:
+    name: Adaptive Polling
+    description: "Automatically increase polling frequency when active usage is detected, and back off during idle periods."
+  fast_poll_interval:
+    name: Fast Poll Interval (Seconds)
+    description: "Interval in seconds when active quota consumption was detected within the last 15 minutes (default: 180s / 3 minutes)."
+  idle_backoff_interval:
+    name: Idle Backoff Interval (Seconds)
+    description: "Interval in seconds when no quota usage has occurred for > 2 hours (default: 3600s / 60 minutes)."
+  accounts:
+    name: Google Accounts
+    description: "List of Google Antigravity accounts with OAuth refresh tokens."
+network:
+  8199/tcp: Antigravity Web UI & REST API

@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-08-17T14:25:00.264512",
+  "timestamp": "2026-08-18T20:18:13.659570",
   "connections": {
     "AegisBot": {
       "name": "AegisBot",
@@ -88,6 +88,35 @@
         ],
         "rootfs": ["ShieldFile/rootfs/usr/lib/bashio/banner.sh"],
         "translations": ["ShieldFile/translations/de.yaml", "ShieldFile/translations/en.yaml"]
+      }
+    },
+    "antigravity": {
+      "name": "Antigravity",
+      "version": "1.0.0",
+      "description": "Google Antigravity Quota Monitor, Multi-Account Dashboard, and Dynamic Polling Gateway for Home Assistant.",
+      "arch": ["aarch64", "amd64"],
+      "image": "ghcr.io/faserf/hassio-addons-antigravity-{arch}",
+      "files": {
+        "core": [
+          "antigravity/config.yaml",
+          "antigravity/Dockerfile",
+          "antigravity/build.yaml",
+          "antigravity/CHANGELOG.md",
+          "antigravity/README.md",
+          "antigravity/DOCS.md"
+        ],
+        "rootfs": [
+          "antigravity/rootfs/usr/share/antigravity/app/__init__.py",
+          "antigravity/rootfs/usr/share/antigravity/app/fetcher.py",
+          "antigravity/rootfs/usr/share/antigravity/app/main.py",
+          "antigravity/rootfs/usr/share/antigravity/app/models.py",
+          "antigravity/rootfs/usr/share/antigravity/app/router.py",
+          "antigravity/rootfs/usr/share/antigravity/app/scheduler.py",
+          "antigravity/rootfs/usr/share/antigravity/ui/app.js",
+          "antigravity/rootfs/usr/share/antigravity/ui/index.html",
+          "antigravity/rootfs/usr/share/antigravity/ui/style.css"
+        ],
+        "translations": ["antigravity/translations/de.yaml", "antigravity/translations/en.yaml"]
       }
     },
     "apache2": {

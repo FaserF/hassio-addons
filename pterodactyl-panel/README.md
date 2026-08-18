@@ -11,37 +11,6 @@
 
 ---
 
-## 📖 About
-
-## Installation
-
-1. Search for the "pterodactyl Panel Gameserver - BETA" app in the Home Assistant App store and install it.
-2. (Optional) Set a **password** in the configuration tab. If left empty, a random password will be generated and shown in the logs.
-3. Start the app.
-4. For initial login credentials, please refer to the [Documentation](DOCS.md#%F0%9F%9A%80-first-login).
-
-> [!TIP]
-> **Login Information:**
->
-> - **Email:** `admin@example.com`
-> - **Password:** The value you set in the `password` field (or check the logs if you left it empty)
->
-> > Open-Source Gameserver - Currently not fully working
->
-> [!CAUTION]
-> **Experimental / Beta Status**
-> This app is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-If you encounter any issues with this app, please report them using the link below.
-The issue form will be pre-filled with the app information to help us resolve the
-problem faster.
-
-If you have an idea for a new feature or improvement, please use the link below to
-submit a feature request. The form will be pre-filled with the app information.
-
----
-
 ## ⚙️ Configuration
 
 Configure the app via the **Configuration** tab in the Home Assistant App page.
@@ -56,6 +25,26 @@ log_level: info
 password: ''
 ssl: false
 ```
+
+---
+
+## 🐛 Report a Bug
+
+If you encounter any issues with this add-on, please report them using the link below. The issue form will be pre-filled with the add-on information to help us resolve the problem faster.
+
+**[Report a Bug](https://github.com/FaserF/hassio-addons/issues/new?template=bug_report.yml&version_integration=1.3.1&log_information=Please+paste+the+addon+log+output+here%3A%0A%0A)**
+
+> [!NOTE]
+> Please use the link above to report problems. This ensures that all necessary information (add-on name, version, etc.) is automatically included in your bug report.
+
+## 💡 Feature Request
+
+If you have an idea for a new feature or improvement, please use the link below to submit a feature request. The form will be pre-filled with the add-on information.
+
+**[Request a Feature](https://github.com/FaserF/hassio-addons/issues/new?template=feature_request.yml&addon_name=pterodactyl-panel)**
+
+> [!NOTE]
+> Please use the link above to request features. This ensures that the add-on name is automatically included in your feature request.
 
 ---
 
