@@ -134,7 +134,12 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
         src: srcCode.toUpperCase(),
         dst: dstCode.toUpperCase(),
       });
-      const updatedText = `${header} *(edited)*\n\n"${transResult.translation}"`;
+      const provBadge = transResult.providerName
+        ? `\n\n_🌐 [${transResult.providerName}]_`
+        : transResult.provider
+          ? `\n\n_🌐 [${transResult.provider}]_`
+          : '';
+      const updatedText = `${header} *(edited)*\n\n"${transResult.translation}"${provBadge}`;
 
       if (session?.sock?.sendMessage) {
         const editKey = {

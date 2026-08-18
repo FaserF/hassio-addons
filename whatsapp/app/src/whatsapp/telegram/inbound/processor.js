@@ -889,7 +889,18 @@ export async function processTelegramUpdates() {
                   transRes.translation.trim() &&
                   transRes.translation.trim().toLowerCase() !== tgText.trim().toLowerCase()
                 ) {
-                  const note = `🌐 _[Auto-translated -> ${targetLang.toUpperCase()}]_\n`;
+                  const srcBadge =
+                    transRes.sourceLang &&
+                    transRes.sourceLang !== '?' &&
+                    transRes.sourceLang !== 'auto'
+                      ? `${transRes.sourceLang.toUpperCase()} → `
+                      : '';
+                  const provBadge = transRes.providerName
+                    ? ` • ${transRes.providerName}`
+                    : transRes.provider
+                      ? ` • ${transRes.provider}`
+                      : '';
+                  const note = `🌐 _[${srcBadge}${targetLang.toUpperCase()}${provBadge}]_\n`;
                   formattedTgText = `${note}${transRes.translation}`;
                 }
               } catch (transErr) {

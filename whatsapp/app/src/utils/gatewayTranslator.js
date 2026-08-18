@@ -43,10 +43,12 @@ export async function translateTextGatewayWithReason(
     const cached = cache.get(cacheKey);
     const cachedTrans = typeof cached === 'object' ? cached.translation : cached;
     const cachedSrc = typeof cached === 'object' ? cached.sourceLang : null;
+    const cachedProv = typeof cached === 'object' ? cached.provider : (preferredProvider === 'auto' ? 'cache' : preferredProvider);
+    const cachedProvName = typeof cached === 'object' ? cached.providerName : 'Cache';
     lastTranslationEvent = {
       timestamp: Date.now(),
-      provider: preferredProvider === 'auto' ? 'cache' : preferredProvider,
-      providerName: 'Cache (In-Memory)',
+      provider: cachedProv,
+      providerName: cachedProvName,
       status: 'success',
       sourceLang: cachedSrc,
       targetLang,
@@ -56,14 +58,16 @@ export async function translateTextGatewayWithReason(
       translation: cachedTrans,
       sourceLang: cachedSrc,
       detectedSource: cachedSrc,
+      provider: cachedProv,
+      providerName: cachedProvName,
       reason: null,
     };
   }
 
   const now = Date.now();
-  const saveCache = (res, detected) => {
+  const saveCache = (res, detected, provider = 'unknown', providerName = 'Unknown') => {
     if (cache.size > 500) cache.clear();
-    cache.set(cacheKey, { translation: res, sourceLang: detected });
+    cache.set(cacheKey, { translation: res, sourceLang: detected, provider, providerName });
   };
 
   const store = loadModerationStore ? loadModerationStore() : {};
@@ -141,7 +145,7 @@ export async function translateTextGatewayWithReason(
           if (data.success && data.translation) {
             const translated = data.translation.trim();
             const detected = data.source_lang || '?';
-            saveCache(translated, detected);
+            saveCache(translated, detected, 'aegisbot', 'AegisBot Server');
             lastTranslationEvent = {
               timestamp: Date.now(),
               provider: 'aegisbot',
@@ -155,6 +159,8 @@ export async function translateTextGatewayWithReason(
               translation: translated,
               sourceLang: detected,
               detectedSource: detected,
+              provider: 'aegisbot',
+              providerName: 'AegisBot Server',
               reason: null,
             };
           } else {
@@ -195,7 +201,7 @@ export async function translateTextGatewayWithReason(
             const translated = data[0].map((item) => item[0]).join('');
             if (translated && translated.trim()) {
               const detected = data[2] || '?';
-              saveCache(translated.trim(), detected);
+              saveCache(translated.trim(), detected, 'google', 'Google Translate');
               lastTranslationEvent = {
                 timestamp: Date.now(),
                 provider: 'google',
@@ -209,6 +215,8 @@ export async function translateTextGatewayWithReason(
                 translation: translated.trim(),
                 sourceLang: detected,
                 detectedSource: detected,
+                provider: 'google',
+                providerName: 'Google Translate',
                 reason: null,
               };
             }
@@ -242,7 +250,7 @@ export async function translateTextGatewayWithReason(
             if (data?.translation && data.translation.trim()) {
               const translated = data.translation.trim();
               const detected = data.info?.detectedSource || '?';
-              saveCache(translated, detected);
+              saveCache(translated, detected, 'lingva', 'Lingva');
               lastTranslationEvent = {
                 timestamp: Date.now(),
                 provider: 'lingva',
@@ -257,6 +265,8 @@ export async function translateTextGatewayWithReason(
                 translation: translated,
                 sourceLang: detected,
                 detectedSource: detected,
+                provider: 'lingva',
+                providerName: 'Lingva',
                 reason: null,
               };
             }
@@ -301,7 +311,7 @@ export async function translateTextGatewayWithReason(
             ) {
               const detected =
                 data.matches?.[0]?.['created-by'] || data.responseData?.detectedLanguage || '?';
-              saveCache(translated, detected);
+              saveCache(translated, detected, 'mymemory', 'MyMemory');
               lastTranslationEvent = {
                 timestamp: Date.now(),
                 provider: 'mymemory',
@@ -315,6 +325,8 @@ export async function translateTextGatewayWithReason(
                 translation: translated,
                 sourceLang: detected,
                 detectedSource: detected,
+                provider: 'mymemory',
+                providerName: 'MyMemory',
                 reason: null,
               };
             }
@@ -363,7 +375,7 @@ export async function translateTextGatewayWithReason(
                 if (parsed.translation) {
                   const translated = parsed.translation.trim();
                   const detected = parsed.sourceLang || '?';
-                  saveCache(translated, detected);
+                  saveCache(translated, detected, 'openai', 'OpenAI (GPT-4o-mini)');
                   lastTranslationEvent = {
                     timestamp: Date.now(),
                     provider: 'openai',
@@ -377,6 +389,8 @@ export async function translateTextGatewayWithReason(
                     translation: translated,
                     sourceLang: detected,
                     detectedSource: detected,
+                    provider: 'openai',
+                    providerName: 'OpenAI (GPT-4o-mini)',
                     reason: null,
                   };
                 }
@@ -406,7 +420,7 @@ export async function translateTextGatewayWithReason(
                 if (parsed.translation) {
                   const translated = parsed.translation.trim();
                   const detected = parsed.sourceLang || '?';
-                  saveCache(translated, detected);
+                  saveCache(translated, detected, 'gemini', 'Gemini 1.5 Flash');
                   lastTranslationEvent = {
                     timestamp: Date.now(),
                     provider: 'gemini',
@@ -420,6 +434,8 @@ export async function translateTextGatewayWithReason(
                     translation: translated,
                     sourceLang: detected,
                     detectedSource: detected,
+                    provider: 'gemini',
+                    providerName: 'Gemini 1.5 Flash',
                     reason: null,
                   };
                 }

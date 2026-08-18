@@ -328,10 +328,15 @@ export async function handleModerationMessage(session, event) {
             src: srcCode.toUpperCase(),
             dst: dstCode.toUpperCase(),
           });
+          const provBadge = transResult.providerName
+            ? `\n\n_🌐 [${transResult.providerName}]_`
+            : transResult.provider
+              ? `\n\n_🌐 [${transResult.provider}]_`
+              : '';
           const sentTransMsg = await reply(
             session,
             groupId,
-            { text: `${header}\n\n"${transResult.translation}"` },
+            { text: `${header}\n\n"${transResult.translation}"${provBadge}` },
             rawMsg
           );
           if (sentTransMsg?.key?.id && rawMsg?.key?.id) {

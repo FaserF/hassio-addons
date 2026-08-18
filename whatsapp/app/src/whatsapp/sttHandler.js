@@ -199,6 +199,8 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       config.stt_aegisbot_key || store.aegisbot_api_key || process.env.AEGISBOT_API_KEY || '';
 
     let transcribedText = null;
+    let detectedLang = null;
+    let usedSubEngine = null;
     let failureReason = null;
     const sttEngine = config.stt_engine || 'auto';
     const errorsCaptured = [];
@@ -254,8 +256,12 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
             const data = await res.json();
             if (data.success && data.text) {
               transcribedText = data.text.trim();
+              if (data.language) detectedLang = data.language;
+              if (data.engine) usedSubEngine = data.engine;
             } else if (data.text) {
               transcribedText = data.text.trim();
+              if (data.language) detectedLang = data.language;
+              if (data.engine) usedSubEngine = data.engine;
             } else {
               // Build rich diagnostic message from structured AegisBot error response
               let errMsg = data.error || gt('bot_replies.stt_err_aegisbot_empty');
@@ -319,7 +325,10 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           if (res.ok) {
             const data = await res.json();
             transcribedText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-            if (!transcribedText) {
+            if (transcribedText) {
+              usedSubEngine = geminiModel;
+              if (groupLang && groupLang !== 'auto') detectedLang = groupLang;
+            } else {
               const errMsg = gt('bot_replies.stt_err_gemini_empty');
               errorsCaptured.push(errMsg);
               recordSttError('gemini', errMsg, groupId);
@@ -364,7 +373,10 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           if (res.ok) {
             const data = await res.json();
             transcribedText = data.text?.trim();
-            if (!transcribedText) {
+            if (transcribedText) {
+              usedSubEngine = 'whisper-1';
+              if (data.language) detectedLang = data.language;
+            } else {
               const errMsg = gt('bot_replies.stt_err_whisper_empty');
               errorsCaptured.push(errMsg);
               recordSttError('openai', errMsg, groupId);
@@ -398,18 +410,25 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           : gt('bot_replies.stt_transcription_failed');
     }
 
-    function getEngineDisplayName(eng) {
-      if (eng === 'aegisbot') return 'AegisBot Server (Whisper)';
+    function getEngineDisplayName(eng, subEng) {
+      if (eng === 'aegisbot') {
+        if (subEng === 'faster-whisper') return 'AegisBot Whisper';
+        if (subEng === 'speech-recognition-google') return 'AegisBot Google STT';
+        if (subEng === 'openai-whisper') return 'AegisBot Whisper';
+        if (subEng === 'gemini-audio') return 'AegisBot Gemini';
+        return 'AegisBot Server';
+      }
       if (eng === 'gemini') return 'Gemini 1.5 Flash';
       if (eng === 'openai') return 'OpenAI Whisper';
       return eng || 'STT Engine';
     }
 
     if (transcribedText) {
+      const resolvedEngineName = getEngineDisplayName(usedEngine, usedSubEngine);
       lastSttEvent = {
         timestamp: Date.now(),
         engine: usedEngine,
-        engineName: getEngineDisplayName(usedEngine),
+        engineName: resolvedEngineName,
         status: 'success',
         transcribed_snippet: transcribedText.slice(0, 60),
         group_id: groupId,
@@ -417,7 +436,12 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
 
       const header = gt('bot_replies.stt_header');
       const disclaimer = gt('bot_replies.stt_disclaimer');
-      const replyText = `${header}:\n\n"${transcribedText}"${disclaimer}`;
+      const langBadge =
+        detectedLang && detectedLang !== 'auto' && detectedLang !== '?'
+          ? ` • ${detectedLang.toUpperCase()}`
+          : '';
+      const metaBadge = `\n\n_🗣️ [${resolvedEngineName}${langBadge}]_`;
+      const replyText = `${header}:\n\n"${transcribedText}"${metaBadge}${disclaimer}`;
 
       await reply(session, groupId, { text: replyText }, rawMsg);
       return true;
@@ -425,7 +449,7 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       lastSttEvent = {
         timestamp: Date.now(),
         engine: usedEngine,
-        engineName: getEngineDisplayName(usedEngine),
+        engineName: getEngineDisplayName(usedEngine, usedSubEngine),
         status: 'failed',
         error: failureReason,
         group_id: groupId,
