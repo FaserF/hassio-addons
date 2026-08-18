@@ -39,7 +39,12 @@ async function addFilterRule() {
     if (val) pollOpts.push(val);
   });
 
-  if (!trig || (!resp && !reactionEmoji && !mediaUrl && !fileUrl && pollOpts.length < 2) || !currentModGroup) return;
+  if (
+    !trig ||
+    (!resp && !reactionEmoji && !mediaUrl && !fileUrl && pollOpts.length < 2) ||
+    !currentModGroup
+  )
+    return;
 
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
   groupConfig.filters = groupConfig.filters || [];

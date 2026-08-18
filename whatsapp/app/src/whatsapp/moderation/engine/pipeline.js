@@ -229,7 +229,11 @@ export async function handleModerationMessage(session, event) {
         }
 
         // 5. Dispatch Interactive Poll
-        if (filter.poll_options && Array.isArray(filter.poll_options) && filter.poll_options.length >= 2) {
+        if (
+          filter.poll_options &&
+          Array.isArray(filter.poll_options) &&
+          filter.poll_options.length >= 2
+        ) {
           try {
             await session.sock.sendMessage(groupId, {
               poll: {

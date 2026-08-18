@@ -1073,28 +1073,29 @@ async function selectModerationGroup(groupId) {
       filtersList.innerHTML = `<div class="empty-state" style="color:var(--text-muted);font-size:12px;padding:8px 0;">${t('moderation.no_filters')}</div>`;
     } else {
       filtersList.innerHTML = filters
-        .map(
-          (f, idx) => {
-            const reactionBadge = f.reaction_emoji
-              ? `<span style="font-size:11px;background:rgba(255,193,7,0.15);color:#ffc107;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:600;">⚡ ${escapeHtml(f.reaction_emoji)}</span>`
-              : '';
-            const mediaBadge = f.media_type === 'sticker'
+        .map((f, idx) => {
+          const reactionBadge = f.reaction_emoji
+            ? `<span style="font-size:11px;background:rgba(255,193,7,0.15);color:#ffc107;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:600;">⚡ ${escapeHtml(f.reaction_emoji)}</span>`
+            : '';
+          const mediaBadge =
+            f.media_type === 'sticker'
               ? `<span style="font-size:10px;background:rgba(156,39,176,0.15);color:#ce93d8;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:600;">🎨 Sticker</span>`
               : f.media_type === 'gif'
                 ? `<span style="font-size:10px;background:rgba(233,30,99,0.15);color:#f48fb1;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:600;">🎬 GIF</span>`
                 : '';
-            const fileBadge = f.file_url
-              ? `<span style="font-size:10px;background:rgba(33,150,243,0.15);color:#64b5f6;padding:2px 6px;border-radius:4px;margin-left:6px;"><i class="fas fa-paperclip"></i> ${escapeHtml(f.file_name || 'File')}</span>`
-              : '';
-            const pollBadge = (f.poll_options && f.poll_options.length >= 2)
+          const fileBadge = f.file_url
+            ? `<span style="font-size:10px;background:rgba(33,150,243,0.15);color:#64b5f6;padding:2px 6px;border-radius:4px;margin-left:6px;"><i class="fas fa-paperclip"></i> ${escapeHtml(f.file_name || 'File')}</span>`
+            : '';
+          const pollBadge =
+            f.poll_options && f.poll_options.length >= 2
               ? `<span style="font-size:10px;background:rgba(76,175,80,0.15);color:#81c784;padding:2px 6px;border-radius:4px;margin-left:6px;"><i class="fas fa-poll"></i> Poll (${f.poll_options.length})</span>`
               : '';
 
-            const responseText = f.response
-              ? ` &rarr; <span style="color:var(--text-main);">${escapeHtml(f.response)}</span>`
-              : '';
+          const responseText = f.response
+            ? ` &rarr; <span style="color:var(--text-main);">${escapeHtml(f.response)}</span>`
+            : '';
 
-            return `
+          return `
         <div class="history-item" style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin-bottom:6px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;">
           <div>
             <strong style="color:var(--primary);">${escapeHtml(f.trigger)}</strong>
@@ -1107,8 +1108,7 @@ async function selectModerationGroup(groupId) {
           </div>
           <button class="btn btn-secondary btn-sm" style="color:#e74c3c;padding:2px 8px;" onclick="removeFilterRule(${idx})"><i class="fas fa-trash"></i></button>
         </div>`;
-          }
-        )
+        })
         .join('');
     }
   }
