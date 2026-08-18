@@ -107,7 +107,7 @@ export function registerConfigCommands(registry) {
       saveModerationStore(store);
       await reply(session, groupId, { text: `✅ Saved note *#${name}*.` }, rawMsg);
     },
-    { adminOnly: true, help: 'Save a note (#name content)' }
+    { adminOnly: true, aliases: ['safe'], help: 'Save a note (#name content)' }
   );
 
   registry.register(

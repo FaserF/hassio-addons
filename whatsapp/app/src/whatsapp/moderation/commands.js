@@ -102,19 +102,25 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
 
   // If text is a regular conversation or paragraph (not starting with a command or containing mostly non-command lines), do not treat as command block
   const validCommandLines = [];
+  const storeNotes = config.notes || store.groups?.[groupId]?.notes || {};
   for (const line of rawLines) {
     const match = line.match(prefixRegex);
     if (match) {
+      const usedPrefix = match[1];
       const cmdName = match[2].toLowerCase();
       const restArgs = match[4] ? match[4].trim() : '';
-      const normalizedCmd = `${prefix}${cmdName}${restArgs ? ' ' + restArgs : ''}`.trim();
-      // Check if command is known or line is strictly a single short command line
-      if (registry.getCommand(cmdName) !== undefined || rawLines.length === 1) {
+      const normalizedCmd = `${usedPrefix}${cmdName}${restArgs ? ' ' + restArgs : ''}`.trim();
+      // Check if command is known, is a saved note, or line is strictly a single short command line
+      if (
+        registry.getCommand(cmdName) !== undefined ||
+        Boolean(storeNotes[cmdName]) ||
+        rawLines.length === 1
+      ) {
         validCommandLines.push(normalizedCmd);
       }
     } else if (isPrivateChat) {
       const firstWord = line.split(/\s+/)[0].replace(/@.*$/, '').toLowerCase();
-      if (registry.getCommand(firstWord) !== undefined) {
+      if (registry.getCommand(firstWord) !== undefined || Boolean(storeNotes[firstWord])) {
         validCommandLines.push(line);
       }
     }
@@ -181,20 +187,20 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
     );
   }
 
-  // Execute non-conflicting safe commands sequentially
+  // Execute safe command lines sequentially
   let executedAny = false;
-  for (const line of commandLinesToExecute) {
-    const ok = await executeSingleCommandLine(
+  for (const cmdLine of commandLinesToExecute) {
+    const res = await executeSingleCommandLine(
       session,
       msg,
-      line,
+      cmdLine,
       prefix,
       senderJid,
       isAdminUser,
       groupId,
       config
     );
-    if (ok) executedAny = true;
+    if (res) executedAny = true;
   }
 
   return executedAny || detectedConflicts.length > 0;
@@ -219,6 +225,19 @@ async function executeSingleCommandLine(
 
   const command = registry.getCommand(cmdStr);
   if (!command) {
+    // Check saved group notes (e.g. #testnote, !testnote, !get testnote)
+    const store = loadModerationStore();
+    const groupNotes = config.notes || store.groups?.[groupId]?.notes || {};
+    if (groupNotes && groupNotes[cmdStr]) {
+      await reply(session, groupId, { text: groupNotes[cmdStr] }, msg);
+      return true;
+    }
+
+    // If input was a hashtag (#something) that does not match a note or command, ignore it unless '#' is the configured prefix
+    if (lineText.startsWith('#') && prefix !== '#') {
+      return false;
+    }
+
     // Check custom mapped commands
     const customCmds = config.commands?.custom_commands || [];
     const customMatch = customCmds.find(

@@ -1267,6 +1267,7 @@
     "cmd_start_desc": "Startet den Bot und zeigt Begrüßungsinformationen an",
     "cmd_about_desc": "Zeigt Informationen über das WhatsApp Gateway an",
     "cmd_save_desc": "Speichert eine Notiz für die Gruppe",
+    "cmd_safe_desc": "Speichert eine Notiz für die Gruppe",
     "cmd_get_desc": "Ruft eine gespeicherte Notiz ab",
     "cmd_notes_desc": "Listet alle gespeicherten Notizen auf",
     "cmd_filter_desc": "Fügt einen automatischen Textfilter hinzu",

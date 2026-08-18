@@ -1253,6 +1253,7 @@
     "cmd_start_desc": "Start the bot and show welcome information",
     "cmd_about_desc": "Show information about WhatsApp Gateway",
     "cmd_save_desc": "Save a note for the group",
+    "cmd_safe_desc": "Save a note for the group",
     "cmd_get_desc": "Retrieve a saved note",
     "cmd_notes_desc": "List all saved notes",
     "cmd_filter_desc": "Add an automated text filter",

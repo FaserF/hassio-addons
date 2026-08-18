@@ -491,6 +491,51 @@ async function runTests() {
     'Unknown command from admin triggers warning response with fuzzy suggestions'
   );
 
+  // Test: Safe alias for Save command
+  const saveWithSafeMsg = {
+    key: { remoteJid: testGroupJid, fromMe: true, id: 'SAFE_MSG_1' },
+    message: { conversation: '!safe testnote This is a test note content' },
+  };
+  const safeHandled = await processCommand(
+    mockSession,
+    saveWithSafeMsg,
+    '!safe testnote This is a test note content',
+    '491761234567@s.whatsapp.net',
+    true,
+    testGroupJid
+  );
+  assert(safeHandled === true, '!safe alias executes save command');
+
+  // Test: Invoking note via #testnote hashtag
+  const noteHashtagMsg = {
+    key: { remoteJid: testGroupJid, fromMe: false, id: 'NOTE_TAG_MSG_1' },
+    message: { conversation: '#testnote' },
+  };
+  const noteTagHandled = await processCommand(
+    mockSession,
+    noteHashtagMsg,
+    '#testnote',
+    '491769999999@s.whatsapp.net',
+    false,
+    testGroupJid
+  );
+  assert(noteTagHandled === true, '#testnote retrieves and replies with saved note content');
+
+  // Test: Non-existent hashtag is safely ignored (returns false without unknown command warning)
+  const regularHashtagMsg = {
+    key: { remoteJid: testGroupJid, fromMe: false, id: 'RANDOM_TAG_MSG_1' },
+    message: { conversation: '#randomnonexistenttag' },
+  };
+  const regularTagHandled = await processCommand(
+    mockSession,
+    regularHashtagMsg,
+    '#randomnonexistenttag',
+    '491769999999@s.whatsapp.net',
+    false,
+    testGroupJid
+  );
+  assert(regularTagHandled === false, 'Non-note hashtag is safely ignored without unknown command error');
+
   // Count total commands (deduplicated)
   const seen = new Set();
   let totalCommands = 0;
