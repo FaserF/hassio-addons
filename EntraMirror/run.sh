@@ -223,10 +223,10 @@ fi
 # </App_BANNER_INJECTION>
 
 export PATH="/usr/local/bin:/root/.local/bin:$PATH"
+# shellcheck disable=SC1091
 . /usr/lib/bashio/app.sh
 # Enable strict mode
 set -e
-# shellcheck disable=SC1091
 
 # --- CONFIGURATION ---
 DATA_DIR="/data"
@@ -801,8 +801,8 @@ if ! python3 -c "import uvicorn" 2>/dev/null; then
 	fi
 fi
 
-# Start Uvicorn in background on port 8001 (internal)
-python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --proxy-headers --forwarded-allow-ips="*" --log-level "$(echo "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" &
+# Start Uvicorn in background on port 8095 (internal)
+python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8095 --proxy-headers --forwarded-allow-ips="*" --log-level "$(echo "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" &
 BACKEND_PID=$!
 
 # --- NGINX START ---

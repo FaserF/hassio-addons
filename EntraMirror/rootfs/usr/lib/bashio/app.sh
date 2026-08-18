@@ -9,8 +9,8 @@
 # Set an addon option via Supervisor API
 # ------------------------------------------------------------------------------
 bashio::app.option() {
-	local option=$1
-	local value=${2:-false} # Default to false if not provided
+	local option="$1"
+	local value="${2:-false}" # Default to false if not provided
 
 	bashio::log.info "Requesting Supervisor to set option '$option' to '$value'..."
 
