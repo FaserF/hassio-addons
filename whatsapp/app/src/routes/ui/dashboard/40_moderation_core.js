@@ -315,7 +315,8 @@ async function loadModerationConfig() {
         modStoreCache = json.data;
         const globalToggle = document.getElementById('mod-global-toggle');
         if (globalToggle) globalToggle.checked = Boolean(modStoreCache.global_enabled);
-        const aiKeyEl = document.getElementById('mod-ai-api-key') || document.getElementById('mod-ai-key');
+        const aiKeyEl =
+          document.getElementById('mod-ai-api-key') || document.getElementById('mod-ai-key');
         const aiKeyHint = document.getElementById('mod-ai-key-hint');
         if (aiKeyEl) {
           if (modStoreCache.gemini_api_key) {

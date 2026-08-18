@@ -30,9 +30,7 @@ export function getSTTDiagnostics(groupConfig = {}, store = {}) {
   const effectiveGemini = resolveEffectiveGeminiKey(
     store?.gemini_api_key || groupConfig?.ai?.api_key
   );
-  const effectiveOpenAI = resolveEffectiveOpenAIKey(
-    groupConfig?.ai?.openai_api_key
-  );
+  const effectiveOpenAI = resolveEffectiveOpenAIKey(groupConfig?.ai?.openai_api_key);
   const hasGeminiKey = Boolean(effectiveGemini?.key);
   const hasOpenAIKey = Boolean(effectiveOpenAI?.key);
   const hasAegisBotUrl = Boolean(
@@ -192,12 +190,8 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     }
 
     // 2. Perform STT transcription using AegisBot Server, Gemini Multimodal Audio API, or OpenAI Whisper API
-    const effectiveGemini = resolveEffectiveGeminiKey(
-      store.gemini_api_key || config.ai?.api_key
-    );
-    const effectiveOpenAI = resolveEffectiveOpenAIKey(
-      config.ai?.openai_api_key
-    );
+    const effectiveGemini = resolveEffectiveGeminiKey(store.gemini_api_key || config.ai?.api_key);
+    const effectiveOpenAI = resolveEffectiveOpenAIKey(config.ai?.openai_api_key);
     const geminiKey = effectiveGemini?.key || null;
     const openAiKey = effectiveOpenAI?.key || null;
     const aegisbotUrl = config.stt_aegisbot_url || store.aegisbot_url || process.env.AEGISBOT_URL;

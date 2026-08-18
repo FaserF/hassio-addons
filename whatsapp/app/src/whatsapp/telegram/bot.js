@@ -173,7 +173,10 @@ export class TelegramBotClient {
     try {
       return await this.request('sendMessage', payload);
     } catch (err) {
-      if (err.message && (err.message.includes("can't parse entities") || err.message.includes('entity'))) {
+      if (
+        err.message &&
+        (err.message.includes("can't parse entities") || err.message.includes('entity'))
+      ) {
         payload.parse_mode = undefined;
         payload.text = stripHtmlTags(strText);
         return await this.request('sendMessage', payload);

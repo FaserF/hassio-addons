@@ -229,7 +229,8 @@ describe('Telegram Bridge Unit Tests', () => {
   });
 
   it('splitMessageText splits text within maxLength on whitespace/newlines', () => {
-    const longText = 'Paragraph one.\n\nParagraph two.\n\nParagraph three is a bit longer with more words.';
+    const longText =
+      'Paragraph one.\n\nParagraph two.\n\nParagraph three is a bit longer with more words.';
     const chunks = splitMessageText(longText, 30);
     assert.ok(chunks.length > 1);
     for (const chunk of chunks) {

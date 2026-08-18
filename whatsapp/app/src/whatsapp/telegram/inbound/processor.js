@@ -1,11 +1,7 @@
 import { loadTelegramStore, saveTelegramStore, updateCachedChat } from '../store.js';
 import { getTelegramBotClient } from '../bot.js';
 import { recordMessageMap, resolveWaMsgFromTg } from '../message_map.js';
-import {
-  telegramToWaFormatting,
-  splitMessageText,
-  WHATSAPP_MAX_TEXT_LENGTH,
-} from '../format.js';
+import { telegramToWaFormatting, splitMessageText, WHATSAPP_MAX_TEXT_LENGTH } from '../format.js';
 import { formatHeader } from '../headers.js';
 import { getSession, sessions } from '../../../session.js';
 import { logger } from '../../../logger.js';
@@ -1280,7 +1276,10 @@ export async function processTelegramUpdates() {
                     );
                     if (i === 0) sentWaMsg = sent;
                   }
-                } else if (waContent.caption && waContent.caption.length > WHATSAPP_MAX_TEXT_LENGTH) {
+                } else if (
+                  waContent.caption &&
+                  waContent.caption.length > WHATSAPP_MAX_TEXT_LENGTH
+                ) {
                   const chunks = splitMessageText(waContent.caption, WHATSAPP_MAX_TEXT_LENGTH);
                   waContent.caption = chunks[0];
                   sentWaMsg = await session.sock.sendMessage(
