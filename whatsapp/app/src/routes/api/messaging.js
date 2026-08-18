@@ -282,30 +282,81 @@ export function registerMessagingRoutes(app) {
     })
   );
 
-  app.post(
-    '/send_video',
-    authMiddleware,
-    asyncHandler(async (req, res) => {
-      try {
-        const session = getReqSession(req);
-        const { number, url, caption } = req.body;
-        if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
+    app.post(
+      '/send_sticker',
+      authMiddleware,
+      asyncHandler(async (req, res) => {
+        try {
+          const session = getReqSession(req);
+          const { number, url } = req.body;
+          if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
 
-        const connected = await ensureConnected(session);
-        if (!connected) return res.status(503).json({ detail: 'Not connected' });
+          const connected = await ensureConnected(session);
+          if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-        const jid = getJid(number);
-        const sentMsg = await session.sock.sendMessage(jid, {
-          video: { url },
-          caption: caption || '',
-        });
-        trackSent(session, number, `[Video] ${caption || ''}`);
-        res.json({ status: 'sent', id: sentMsg?.key?.id });
-      } catch (err) {
-        res.status(500).json({ detail: err.message });
-      }
-    })
-  );
+          const jid = getJid(number);
+          const sentMsg = await session.sock.sendMessage(jid, {
+            sticker: { url },
+          });
+          trackSent(session, number, `[Sticker]`);
+          res.json({ status: 'sent', id: sentMsg?.key?.id });
+        } catch (err) {
+          res.status(500).json({ detail: err.message });
+        }
+      })
+    );
+
+    app.post(
+      '/send_gif',
+      authMiddleware,
+      asyncHandler(async (req, res) => {
+        try {
+          const session = getReqSession(req);
+          const { number, url, caption } = req.body;
+          if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
+
+          const connected = await ensureConnected(session);
+          if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+          const jid = getJid(number);
+          const sentMsg = await session.sock.sendMessage(jid, {
+            video: { url },
+            caption: caption || '',
+            gifPlayback: true,
+          });
+          trackSent(session, number, `[GIF] ${caption || ''}`);
+          res.json({ status: 'sent', id: sentMsg?.key?.id });
+        } catch (err) {
+          res.status(500).json({ detail: err.message });
+        }
+      })
+    );
+
+    app.post(
+      '/send_video',
+      authMiddleware,
+      asyncHandler(async (req, res) => {
+        try {
+          const session = getReqSession(req);
+          const { number, url, caption, gifPlayback } = req.body;
+          if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
+
+          const connected = await ensureConnected(session);
+          if (!connected) return res.status(503).json({ detail: 'Not connected' });
+
+          const jid = getJid(number);
+          const sentMsg = await session.sock.sendMessage(jid, {
+            video: { url },
+            caption: caption || '',
+            gifPlayback: !!gifPlayback,
+          });
+          trackSent(session, number, `[Video] ${caption || ''}`);
+          res.json({ status: 'sent', id: sentMsg?.key?.id });
+        } catch (err) {
+          res.status(500).json({ detail: err.message });
+        }
+      })
+    );
 
   app.post(
     '/send_audio',

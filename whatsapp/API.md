@@ -200,7 +200,7 @@ Sends a document (PDF, Zip, Doc, etc.).
 
 #### `POST /send_video`
 
-Sends a video file.
+Sends a video file. Set `gifPlayback: true` for looping GIF playback.
 
 **Payload:**
 
@@ -208,7 +208,35 @@ Sends a video file.
 {
   "number": "1234567890",
   "url": "https://example.com/video.mp4",
-  "caption": "Watch this!"
+  "caption": "Watch this!",
+  "gifPlayback": true
+}
+```
+
+#### `POST /send_sticker`
+
+Sends a WebP sticker image.
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "url": "https://example.com/sticker.webp"
+}
+```
+
+#### `POST /send_gif`
+
+Sends a looping GIF / video animation.
+
+**Payload:**
+
+```json
+{
+  "number": "1234567890",
+  "url": "https://example.com/animation.mp4",
+  "caption": "Funny reaction"
 }
 ```
 
