@@ -32,14 +32,8 @@ export function registerAutoResponderRoutes(app) {
     try {
       const store = loadAutoResponderStore();
       const wasEnabled = store.enabled;
-      const {
-        enabled,
-        start_time,
-        end_time,
-        direct_only,
-        once_per_contact,
-        message_template,
-      } = req.body || {};
+      const { enabled, start_time, end_time, direct_only, once_per_contact, message_template } =
+        req.body || {};
 
       if (enabled !== undefined) {
         store.enabled = Boolean(enabled);

@@ -561,4 +561,3 @@ window.loadAutoResponderConfig = loadAutoResponderConfig;
 window.saveAutoResponderConfig = saveAutoResponderConfig;
 window.resetAutoResponderTemplate = resetAutoResponderTemplate;
 window.resetAutoResponderSeen = resetAutoResponderSeen;
-

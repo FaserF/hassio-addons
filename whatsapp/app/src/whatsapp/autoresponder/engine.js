@@ -1,11 +1,7 @@
 import { logger } from '../../logger.js';
 import { maskData } from '../../utils/security.js';
 import { reply } from '../actions.js';
-import {
-  loadAutoResponderStore,
-  isAutoResponderActive,
-  recordRecipientReplied,
-} from './store.js';
+import { loadAutoResponderStore, isAutoResponderActive, recordRecipientReplied } from './store.js';
 
 /**
  * Formats a message template by substituting dynamic variables.

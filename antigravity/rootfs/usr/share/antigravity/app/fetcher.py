@@ -455,9 +455,9 @@ class AntigravityFetcher:
             ),
             models=models,
             status="active",
-            error_message="Running in demo / simulation mode (Enter your refresh token in Settings)"
-            if is_demo
-            else None,
+            error_message=(
+                "Running in demo / simulation mode (Enter your refresh token in Settings)" if is_demo else None
+            ),
             last_updated=now.isoformat(),
         )
 

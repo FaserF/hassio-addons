@@ -5,6 +5,7 @@ All notable changes to the Google Antigravity Home Assistant Add-on will be docu
 ## [1.0.0] - 2026-08-18
 
 ### Added
+
 - Initial release of the Google Antigravity Home Assistant Addon.
 - Full support for multi-account OAuth credentials with refresh token management.
 - Dynamic & Adaptive Polling engine (configurable base scan, 3m fast poll upon detected activity, 60m idle backoff).

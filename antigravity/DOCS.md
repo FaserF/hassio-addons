@@ -39,9 +39,11 @@ Open the JSON file and copy the `refresh_token` string.
 
 1. Install `gcloud` CLI on your computer.
 2. Run the command in your terminal:
+
    ```bash
    gcloud auth application-default login
    ```
+
 3. Complete the login in your web browser.
 4. Locate the generated `application_default_credentials.json` file.
 5. Copy the `"refresh_token"` field value.
@@ -66,26 +68,26 @@ adaptive_polling: true
 fast_poll_interval: 180
 idle_backoff_interval: 3600
 accounts:
-  - name: "Personal Google Account"
-    refresh_token: "1//0gxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    client_id: ""
-    client_secret: ""
-    project_id: "antigravity-personal"
-  - name: "Work Account"
-    refresh_token: "1//0gyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
-    client_id: ""
-    client_secret: ""
-    project_id: "antigravity-work"
+  - name: 'Personal Google Account'
+    refresh_token: '1//0gxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+    client_id: ''
+    client_secret: ''
+    project_id: 'antigravity-personal'
+  - name: 'Work Account'
+    refresh_token: '1//0gyyyyyyyyyyyyyyyyyyyyyyyyyyyyy'
+    client_id: ''
+    client_secret: ''
+    project_id: 'antigravity-work'
 ```
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `log_level` | string | `info` | Logging verbosity (`trace`, `debug`, `info`, `warning`, `error`). |
-| `scan_interval` | int | `1800` | Standard base polling interval in seconds (30m). |
-| `adaptive_polling` | bool | `true` | Enables automatic polling frequency scaling. |
-| `fast_poll_interval` | int | `180` | Polling interval during active usage (3m). |
-| `idle_backoff_interval` | int | `3600` | Polling interval during idle periods > 2h (60m). |
-| `accounts` | list | `[...]` | List of Google accounts to monitor. |
+| Option                  | Type   | Default | Description                                                       |
+| ----------------------- | ------ | ------- | ----------------------------------------------------------------- |
+| `log_level`             | string | `info`  | Logging verbosity (`trace`, `debug`, `info`, `warning`, `error`). |
+| `scan_interval`         | int    | `1800`  | Standard base polling interval in seconds (30m).                  |
+| `adaptive_polling`      | bool   | `true`  | Enables automatic polling frequency scaling.                      |
+| `fast_poll_interval`    | int    | `180`   | Polling interval during active usage (3m).                        |
+| `idle_backoff_interval` | int    | `3600`  | Polling interval during idle periods > 2h (60m).                  |
+| `accounts`              | list   | `[...]` | List of Google accounts to monitor.                               |
 
 ---
 

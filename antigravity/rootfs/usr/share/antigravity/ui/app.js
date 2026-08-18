@@ -1,6 +1,6 @@
 // Google Antigravity Ingress Dashboard Client
 
-(function() {
+(function () {
   'use strict';
 
   // Ingress-aware API base path resolver
@@ -137,7 +137,7 @@
       accountSelect.appendChild(opt);
     });
 
-    if (prevSelected && systemStatus.accounts.some(a => a.account_name === prevSelected)) {
+    if (prevSelected && systemStatus.accounts.some((a) => a.account_name === prevSelected)) {
       accountSelect.value = prevSelected;
       selectedAccountName = prevSelected;
     } else if (systemStatus.accounts.length > 0) {
@@ -147,7 +147,10 @@
   }
 
   function getSelectedAccount() {
-    return systemStatus.accounts.find(a => a.account_name === selectedAccountName) || systemStatus.accounts[0];
+    return (
+      systemStatus.accounts.find((a) => a.account_name === selectedAccountName) ||
+      systemStatus.accounts[0]
+    );
   }
 
   function renderAccountCard(acc) {
@@ -156,7 +159,8 @@
     projectId.textContent = acc.project_id || 'antigravity-core';
 
     if (acc.status === 'unauthenticated') {
-      accountStatus.innerHTML = '<span class="status-dot" style="background:#f43f5e;box-shadow:0 0 8px #f43f5e;"></span> Unauthenticated';
+      accountStatus.innerHTML =
+        '<span class="status-dot" style="background:#f43f5e;box-shadow:0 0 8px #f43f5e;"></span> Unauthenticated';
       accountStatus.style.color = '#f43f5e';
     } else {
       accountStatus.innerHTML = '<span class="status-dot"></span> Active';
@@ -188,7 +192,9 @@
     }
 
     currentIntervalDisplay.textContent = `${Math.round(sched.current_interval / 60)} minutes`;
-    lastUpdatedTime.textContent = sched.last_polled_at ? formatTimeAgo(new Date(sched.last_polled_at)) : 'Recently';
+    lastUpdatedTime.textContent = sched.last_polled_at
+      ? formatTimeAgo(new Date(sched.last_polled_at))
+      : 'Recently';
   }
 
   function renderRollingGauge(limit) {
@@ -218,7 +224,8 @@
   function renderModels(models) {
     modelsGrid.innerHTML = '';
     if (models.length === 0) {
-      modelsGrid.innerHTML = '<div class="model-card"><p style="color:var(--text-muted);">No model data available.</p></div>';
+      modelsGrid.innerHTML =
+        '<div class="model-card"><p style="color:var(--text-muted);">No model data available.</p></div>';
       return;
     }
 
@@ -293,7 +300,11 @@
   }
 
   function escapeHtml(str) {
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   // Credentials Testing Tool in Modal

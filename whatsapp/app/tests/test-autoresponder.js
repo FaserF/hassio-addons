@@ -20,7 +20,11 @@ try {
   const store = getDefaultAutoResponderStore();
   assert.strictEqual(store.enabled, false, 'Auto responder should be disabled by default');
   assert.strictEqual(store.direct_only, true, 'Default scope should be direct_only: true');
-  assert.strictEqual(store.once_per_contact, true, 'Default frequency should be once_per_contact: true');
+  assert.strictEqual(
+    store.once_per_contact,
+    true,
+    'Default frequency should be once_per_contact: true'
+  );
   assert.strictEqual(typeof store.message_template, 'string', 'Message template should be string');
   console.log('✅ PASSED: Default Auto Responder store configuration');
 
@@ -35,7 +39,11 @@ try {
   store.start_time = null;
   store.end_time = null;
   saveAutoResponderStore(store);
-  assert.strictEqual(isAutoResponderActive(), true, 'Should be active immediately when start_time/end_time are null');
+  assert.strictEqual(
+    isAutoResponderActive(),
+    true,
+    'Should be active immediately when start_time/end_time are null'
+  );
 
   // Case C: Start time in future
   const now = Date.now();
@@ -46,13 +54,13 @@ try {
 
   // Case D: Currently within timeframe
   store.start_time = new Date(now - 600000).toISOString(); // -10 min
-  store.end_time = new Date(now + 600000).toISOString();   // +10 min
+  store.end_time = new Date(now + 600000).toISOString(); // +10 min
   saveAutoResponderStore(store);
   assert.strictEqual(isAutoResponderActive(now), true, 'Should be active within timeframe');
 
   // Case E: End time in past
   store.start_time = new Date(now - 1200000).toISOString(); // -20 min
-  store.end_time = new Date(now - 600000).toISOString();   // -10 min
+  store.end_time = new Date(now - 600000).toISOString(); // -10 min
   saveAutoResponderStore(store);
   assert.strictEqual(isAutoResponderActive(now), false, 'Should not be active after end_time');
   console.log('✅ PASSED: Time window evaluation (past, present, future)');
@@ -66,7 +74,10 @@ try {
   });
   assert.ok(renderedWithEnd.includes('Hi Alice!'), 'Should interpolate sender_name');
   assert.ok(renderedWithEnd.includes('(until 2026-08-25)'), 'Should interpolate end_time_text');
-  assert.ok(renderedWithEnd.includes('only receive this automated reply once'), 'Should interpolate once_notice');
+  assert.ok(
+    renderedWithEnd.includes('only receive this automated reply once'),
+    'Should interpolate once_notice'
+  );
 
   const renderedWithoutEnd = formatAutoResponderText(tpl, {
     sender_name: 'Bob',
@@ -75,7 +86,10 @@ try {
   });
   assert.ok(renderedWithoutEnd.includes('Hi Bob!'), 'Should interpolate sender_name');
   assert.ok(!renderedWithoutEnd.includes('(until'), 'Should not have end_time_text when empty');
-  assert.ok(!renderedWithoutEnd.includes('only receive this automated reply once'), 'Should omit once_notice when once_per_contact is false');
+  assert.ok(
+    !renderedWithoutEnd.includes('only receive this automated reply once'),
+    'Should omit once_notice when once_per_contact is false'
+  );
   console.log('✅ PASSED: Template formatting & placeholder substitution');
 
   // Test 4: Engine message handling & deduplication
@@ -118,7 +132,11 @@ try {
     is_group: true,
     raw: { key: { fromMe: false, remoteJid: '1203630123456789@g.us' } },
   });
-  assert.strictEqual(sentMessages.length, 0, 'Group messages must be ignored when direct_only is true');
+  assert.strictEqual(
+    sentMessages.length,
+    0,
+    'Group messages must be ignored when direct_only is true'
+  );
 
   // Incoming direct message from Contact A -> should reply and record seen
   await handleAutoResponder(mockSession, {
@@ -137,7 +155,11 @@ try {
     is_group: false,
     raw: { key: { fromMe: false, remoteJid: '491761111111@s.whatsapp.net' } },
   });
-  assert.strictEqual(sentMessages.length, 1, 'Second message from same contact must not trigger another reply');
+  assert.strictEqual(
+    sentMessages.length,
+    1,
+    'Second message from same contact must not trigger another reply'
+  );
 
   // Reset seen contacts -> Contact A should receive reply again
   resetSeenRecipients();
@@ -147,7 +169,11 @@ try {
     is_group: false,
     raw: { key: { fromMe: false, remoteJid: '491761111111@s.whatsapp.net' } },
   });
-  assert.strictEqual(sentMessages.length, 2, 'Contact should receive reply again after seen recipients reset');
+  assert.strictEqual(
+    sentMessages.length,
+    2,
+    'Contact should receive reply again after seen recipients reset'
+  );
 
   console.log('✅ PASSED: Engine message filtering, loop safety, and once_per_contact deduping');
 
@@ -160,9 +186,19 @@ try {
     sender: '491769999999@s.whatsapp.net',
     sender_name: 'Group Member',
     is_group: true,
-    raw: { key: { fromMe: false, remoteJid: '1203630123456789@g.us', participant: '491769999999@s.whatsapp.net' } },
+    raw: {
+      key: {
+        fromMe: false,
+        remoteJid: '1203630123456789@g.us',
+        participant: '491769999999@s.whatsapp.net',
+      },
+    },
   });
-  assert.strictEqual(sentMessages.length, 3, 'Group message must trigger reply when direct_only is false');
+  assert.strictEqual(
+    sentMessages.length,
+    3,
+    'Group message must trigger reply when direct_only is false'
+  );
   assert.strictEqual(sentMessages[2].targetJid, '1203630123456789@g.us');
   console.log('✅ PASSED: Group chat response when direct_only is disabled');
 
