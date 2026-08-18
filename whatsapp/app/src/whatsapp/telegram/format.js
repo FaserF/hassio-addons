@@ -201,7 +201,11 @@ export function splitTelegramHtml(htmlText, maxLength = 4096, maxChunks = MAX_ME
       const isClosing = match[0].startsWith('</');
       const tagName = match[1].toLowerCase();
 
-      if (['b', 'strong', 'i', 'em', 'code', 'pre', 's', 'strike', 'del', 'blockquote', 'a'].includes(tagName)) {
+      if (
+        ['b', 'strong', 'i', 'em', 'code', 'pre', 's', 'strike', 'del', 'blockquote', 'a'].includes(
+          tagName
+        )
+      ) {
         if (isClosing) {
           const lastIdx = currentOpenTags.lastIndexOf(tagName);
           if (lastIdx !== -1) {
@@ -215,7 +219,10 @@ export function splitTelegramHtml(htmlText, maxLength = 4096, maxChunks = MAX_ME
 
     // Close any tags still open at end of this chunk (in reverse order)
     if (currentOpenTags.length > 0 && i < totalRaw - 1) {
-      const suffix = [...currentOpenTags].reverse().map((t) => `</${t}>`).join('');
+      const suffix = [...currentOpenTags]
+        .reverse()
+        .map((t) => `</${t}>`)
+        .join('');
       chunk = chunk + suffix;
     }
 
