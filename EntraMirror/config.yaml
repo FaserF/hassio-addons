@@ -9,7 +9,6 @@ arch:
   - aarch64
   - amd64
 init: false
-host_network: true
 ingress: true
 ingress_port: 8094
 ingress_stream: true
