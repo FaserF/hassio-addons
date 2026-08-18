@@ -2,6 +2,7 @@ import { loadModerationStore, getGroupModerationConfig } from '../store.js';
 import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 import { logger } from '../../../logger.js';
 import { t } from '../../../locales/loader.js';
+import { reply } from '../../actions.js';
 
 export function gt(config, key, params = {}) {
   const lang = config?.language || 'en';
@@ -91,16 +92,14 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
     }
   }
 
-  if (!record || !record.botKey) {
-    logger.debug(
-      { groupId, sourceWaId: cleanSourceId },
-      'No translation map record found for edited WhatsApp message'
-    );
-    return;
-  }
-
   const store = loadModerationStore();
   const config = getGroupModerationConfig(groupId) || {};
+  const isTranslationActive =
+    config.translation?.enabled !== false &&
+    (config.translation?.mode === 'auto' ||
+      config.translation?.mode === 'inbound' ||
+      config.translation?.mode === 'both');
+
   const targetLang = config.translation?.target_lang || 'en';
   const provider = config.translation?.provider || 'auto';
 
@@ -119,7 +118,7 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
               }
             );
           })()
-        : await translateTextGatewayWithReason(newText, targetLang, provider);
+        : await translateTextGatewayWithReason(newText, targetLang, provider, config);
 
     if (
       transResult?.translation &&
@@ -139,44 +138,61 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
         : transResult.provider
           ? `\n\n_🌐 [${transResult.provider}]_`
           : '';
-      const updatedText = `${header} *(edited)*\n\n"${transResult.translation}"${provBadge}`;
 
-      if (session?.sock?.sendMessage) {
-        const editKey = {
-          remoteJid: groupId,
-          id: record.botKey.id || record.botWaId,
-          fromMe: true,
-        };
-        try {
-          await session.sock.sendMessage(groupId, {
-            text: updatedText,
-            edit: editKey,
-          });
-          logger.info(
-            { groupId, sourceWaId: cleanSourceId, botWaId: record.botWaId },
-            '✏️ Successfully synchronized edited WhatsApp auto-translation'
-          );
-        } catch (editErr) {
-          logger.debug(
-            { error: editErr.message },
-            'Native WhatsApp translation edit rejected, sending update reply'
-          );
-          const sentNew = await session.sock.sendMessage(
-            groupId,
-            { text: updatedText },
-            { quoted: { key: editKey } }
-          );
-          if (sentNew?.key?.id) {
-            record.botWaId = sentNew.key.id;
-            record.botKey = sentNew.key;
+      if (record && record.botKey) {
+        const updatedText = `${header} *(edited)*\n\n"${transResult.translation}"${provBadge}`;
+        if (session?.sock?.sendMessage) {
+          const editKey = {
+            remoteJid: groupId,
+            id: record.botKey.id || record.botWaId,
+            fromMe: true,
+          };
+          try {
+            await session.sock.sendMessage(groupId, {
+              text: updatedText,
+              edit: editKey,
+            });
+            logger.info(
+              { groupId, sourceWaId: cleanSourceId, botWaId: record.botWaId },
+              '✏️ Successfully synchronized edited WhatsApp auto-translation'
+            );
+          } catch (editErr) {
+            logger.debug(
+              { error: editErr.message },
+              'Native WhatsApp translation edit rejected, sending update reply'
+            );
+            const sentNew = await session.sock.sendMessage(
+              groupId,
+              { text: updatedText },
+              { quoted: { key: editKey } }
+            );
+            if (sentNew?.key?.id) {
+              record.botWaId = sentNew.key.id;
+              record.botKey = sentNew.key;
+            }
           }
+        }
+      } else if (isTranslationActive) {
+        // If no prior translation existed, send a new translation reply for the edited text
+        const sentTransMsg = await reply(
+          session,
+          groupId,
+          { text: `${header}\n\n"${transResult.translation}"${provBadge}` },
+          { key: { id: cleanSourceId, remoteJid: groupId } }
+        );
+        if (sentTransMsg?.key?.id) {
+          recordTranslationMap(groupId, cleanSourceId, sentTransMsg.key.id, sentTransMsg.key);
+          logger.info(
+            { groupId, sourceWaId: cleanSourceId, botWaId: sentTransMsg.key.id },
+            '✅ Sent new WhatsApp auto-translation for edited message'
+          );
         }
       }
     }
   } catch (err) {
     logger.warn(
       { error: err.message, groupId, sourceWaId: cleanSourceId },
-      '⚠️ Failed to edit translated WhatsApp bot message'
+      '⚠️ Failed to process translated WhatsApp bot message edit'
     );
   }
 }

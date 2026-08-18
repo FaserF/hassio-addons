@@ -1342,12 +1342,12 @@ export function handleIncomingMessages(session) {
               syncWhatsAppDeleteToTelegram(deletedId, targetJid);
             }
           } else if (
-            prot &&
-            (prot.type === 14 || prot.type === 'MESSAGE_EDIT' || String(prot.type) === '14')
+            (prot && (prot.type === 14 || prot.type === 'MESSAGE_EDIT' || String(prot.type) === '14')) ||
+            update.message
           ) {
-            const editedWaMsgId = prot.key?.id || key?.id;
-            const targetJid = prot.key?.remoteJid || key?.remoteJid;
-            const newText = extractEditedText(prot.editedMessage || update.message);
+            const editedWaMsgId = prot?.key?.id || key?.id;
+            const targetJid = prot?.key?.remoteJid || key?.remoteJid;
+            const newText = extractEditedText(prot?.editedMessage || update.message);
             if (editedWaMsgId && targetJid && newText) {
               logger.info(
                 { editedWaMsgId, targetJid },

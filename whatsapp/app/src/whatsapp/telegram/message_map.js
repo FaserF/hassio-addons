@@ -92,16 +92,21 @@ export function resolveTgMsgFromWa(waMsgId) {
   const store = loadTelegramStore();
   if (!store.message_maps) return null;
 
-  const cleanId = String(waMsgId).trim();
+  const rawId = String(waMsgId).trim();
+  const cleanId = rawId.replace(/:\d+$/, '');
   const directKey = `wa:${cleanId}`;
   if (store.message_maps[directKey]) return store.message_maps[directKey];
+  if (store.message_maps[`wa:${rawId}`]) return store.message_maps[`wa:${rawId}`];
 
   for (const [k, v] of Object.entries(store.message_maps)) {
     if (!v) continue;
+    const itemWaId = String(v.waMsgId || '').trim();
     if (
-      v.waMsgId === cleanId ||
+      itemWaId === cleanId ||
+      itemWaId === rawId ||
       k === `wa:${cleanId}` ||
-      (v.waMsgId && (v.waMsgId.includes(cleanId) || cleanId.includes(v.waMsgId)))
+      k === `wa:${rawId}` ||
+      (itemWaId && (itemWaId.includes(cleanId) || cleanId.includes(itemWaId)))
     ) {
       return v;
     }
