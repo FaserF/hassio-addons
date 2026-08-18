@@ -118,20 +118,22 @@ export function anonymizePhoneNumber(phoneStr) {
 export const TELEGRAM_MAX_TEXT_LENGTH = 4096;
 export const TELEGRAM_MAX_CAPTION_LENGTH = 1024;
 export const WHATSAPP_MAX_TEXT_LENGTH = 4096;
+export const MAX_MESSAGE_CHUNKS = 50;
 
 /**
  * Intelligently split text into chunks within maxLength.
  * Splits on paragraphs (\n\n), newlines (\n), or spaces where possible.
  */
-export function splitMessageText(text, maxLength = 4096) {
+export function splitMessageText(text, maxLength = 4096, maxChunks = MAX_MESSAGE_CHUNKS) {
   if (!text || typeof text !== 'string') return [];
   if (text.length <= maxLength) return [text];
 
   const chunks = [];
   let remaining = text;
+  const bound = Math.min(Math.max(1, maxChunks), 100);
 
-  while (remaining.length > 0) {
-    if (remaining.length <= maxLength) {
+  while (remaining.length > 0 && chunks.length < bound) {
+    if (remaining.length <= maxLength || chunks.length === bound - 1) {
       chunks.push(remaining);
       break;
     }
@@ -173,14 +175,15 @@ export function splitMessageText(text, maxLength = 4096) {
 /**
  * Split Telegram HTML text into balanced chunks, preserving opened formatting tags across splits.
  */
-export function splitTelegramHtml(htmlText, maxLength = 4096) {
+export function splitTelegramHtml(htmlText, maxLength = 4096, maxChunks = MAX_MESSAGE_CHUNKS) {
   if (!htmlText || htmlText.length <= maxLength) return [htmlText];
 
-  const rawChunks = splitMessageText(htmlText, maxLength - 60);
+  const rawChunks = splitMessageText(htmlText, maxLength - 60, maxChunks);
   const balancedChunks = [];
   let openTags = [];
+  const totalRaw = Math.min(rawChunks.length, Math.max(1, maxChunks));
 
-  for (let i = 0; i < rawChunks.length; i++) {
+  for (let i = 0; i < totalRaw; i++) {
     let chunk = rawChunks[i];
 
     // Prepend open tags from previous chunk
@@ -198,11 +201,7 @@ export function splitTelegramHtml(htmlText, maxLength = 4096) {
       const isClosing = match[0].startsWith('</');
       const tagName = match[1].toLowerCase();
 
-      if (
-        ['b', 'strong', 'i', 'em', 'code', 'pre', 's', 'strike', 'del', 'blockquote', 'a'].includes(
-          tagName
-        )
-      ) {
+      if (['b', 'strong', 'i', 'em', 'code', 'pre', 's', 'strike', 'del', 'blockquote', 'a'].includes(tagName)) {
         if (isClosing) {
           const lastIdx = currentOpenTags.lastIndexOf(tagName);
           if (lastIdx !== -1) {
@@ -215,11 +214,8 @@ export function splitTelegramHtml(htmlText, maxLength = 4096) {
     }
 
     // Close any tags still open at end of this chunk (in reverse order)
-    if (currentOpenTags.length > 0 && i < rawChunks.length - 1) {
-      const suffix = [...currentOpenTags]
-        .reverse()
-        .map((t) => `</${t}>`)
-        .join('');
+    if (currentOpenTags.length > 0 && i < totalRaw - 1) {
+      const suffix = [...currentOpenTags].reverse().map((t) => `</${t}>`).join('');
       chunk = chunk + suffix;
     }
 

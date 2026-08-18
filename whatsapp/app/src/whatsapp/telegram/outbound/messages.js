@@ -2,7 +2,7 @@ import fs from 'fs';
 import { loadTelegramStore, saveTelegramStore } from '../store.js';
 import { getTelegramBotClient } from '../bot.js';
 import { recordMessageMap, resolveTgMsgFromWa } from '../message_map.js';
-import { waToTelegramHtml } from '../format.js';
+import { waToTelegramHtml, stripHtmlTags } from '../format.js';
 import { applyRegexReplacements } from '../regex.js';
 import { formatHeader } from '../headers.js';
 import { logger } from '../../../logger.js';
@@ -371,8 +371,7 @@ export async function syncWhatsAppToTelegram(
             const isMulti = Boolean((pollObj?.selectableCount || 1) > 1);
             const plainHeader =
               !isDirectMirror && header
-                ? header
-                    .replace(/<[^>]+>/g, '')
+                ? stripHtmlTags(header)
                     .trim()
                     .replace(/:$/, '')
                 : '';

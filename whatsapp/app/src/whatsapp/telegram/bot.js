@@ -6,6 +6,7 @@ import {
   splitTelegramHtml,
   TELEGRAM_MAX_TEXT_LENGTH,
   TELEGRAM_MAX_CAPTION_LENGTH,
+  MAX_MESSAGE_CHUNKS,
 } from './format.js';
 
 const TELEGRAM_TOKEN_REGEX = /^[0-9]{6,}:[A-Za-z0-9_-]{20,}$/;
@@ -125,12 +126,13 @@ export class TelegramBotClient {
     // Split messages exceeding Telegram's 4096 character limit into balanced chunks
     if (strText.length > TELEGRAM_MAX_TEXT_LENGTH) {
       const chunks = splitTelegramHtml(strText, TELEGRAM_MAX_TEXT_LENGTH);
+      const totalChunks = Math.min(chunks.length, MAX_MESSAGE_CHUNKS);
       let firstResult = null;
       let lastMsgId = replyToMessageId;
 
-      for (let i = 0; i < chunks.length; i++) {
+      for (let i = 0; i < totalChunks; i++) {
         const isFirst = i === 0;
-        const isLast = i === chunks.length - 1;
+        const isLast = i === totalChunks - 1;
         const payload = {
           chat_id: chatId,
           text: chunks[i],

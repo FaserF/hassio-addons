@@ -18,7 +18,11 @@ import {
   importGroupModeration,
 } from '../../whatsapp/moderation/migration.js';
 import { registry } from '../../whatsapp/moderation/commands.js';
-import { resolveCanonicalUserKey, resolveUserDisplayName } from '../../utils/security.js';
+import {
+  resolveCanonicalUserKey,
+  resolveUserDisplayName,
+  validateSafeHttpUrl,
+} from '../../utils/security.js';
 import { sessions } from '../../session.js';
 
 import { logger } from '../../logger.js';
@@ -57,29 +61,15 @@ export function registerModerationRoutes(app) {
         return res.json({ success: false, error: 'AegisBot Server URL is required.' });
       }
 
-      let parsedUrl;
-      try {
-        parsedUrl = new URL(url.trim());
-      } catch {
-        return res.json({ success: false, error: 'Invalid AegisBot Server URL format.' });
-      }
-
-      if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      const validated = validateSafeHttpUrl(url);
+      if (!validated) {
         return res.json({
           success: false,
-          error: 'AegisBot Server URL must use http or https protocol.',
+          error: 'Invalid, insecure, or blocked AegisBot Server URL.',
         });
       }
 
-      let basePath = parsedUrl.pathname;
-      while (basePath.endsWith('/')) {
-        basePath = basePath.slice(0, -1);
-      }
-
-      const cleanUrl = `${parsedUrl.origin}${basePath}`;
-      const healthUrl = new URL(`${basePath}/api/v1/health`, parsedUrl.origin).href;
-      const configUrl = new URL(`${basePath}/api/v1/ai/stt/config`, parsedUrl.origin).href;
-
+      const cleanUrl = validated.cleanUrl;
       const startTime = Date.now();
       const headers = { 'User-Agent': 'AegisBot-WhatsApp-Gateway/1.0' };
       if (token && typeof token === 'string' && token.trim()) {
@@ -91,7 +81,7 @@ export function registerModerationRoutes(app) {
 
       let response;
       try {
-        response = await fetch(healthUrl, {
+        response = await fetch(validated.healthUrl, {
           method: 'GET',
           headers,
           signal: controller.signal,
@@ -99,7 +89,7 @@ export function registerModerationRoutes(app) {
       } catch (_err) {
         // Fallback check to /api/v1/ai/stt/config
         try {
-          response = await fetch(configUrl, {
+          response = await fetch(validated.configUrl, {
             method: 'GET',
             headers,
             signal: controller.signal,

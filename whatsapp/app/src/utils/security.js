@@ -1,3 +1,4 @@
+import path from 'path';
 import { MASK_SENSITIVE_DATA, ADMIN_NUMBERS, refreshAdminNumbers } from '../config.js';
 import { logger } from '../logger.js';
 
@@ -327,4 +328,66 @@ export function resolveUserDisplayName(rawUserId, session = null, options = {}) 
   if (phoneNumber) return phoneNumber;
   if (fallbackMode === 'user') return '@User';
   return isLid ? '@User' : canonicalKey || String(rawUserId);
+}
+
+const BLOCKED_SSRF_HOSTS = new Set([
+  '169.254.169.254',
+  'metadata.google.internal',
+  '100.100.100.200',
+  '169.254.170.2',
+  'instance-data',
+]);
+
+/**
+ * Validates and normalizes an external HTTP/HTTPS URL to prevent Server-Side Request Forgery (SSRF, CWE-918).
+ * Ensures safe protocol, rejects credentials, blocks cloud metadata endpoints, and canonicalizes destination URLs.
+ */
+export function validateSafeHttpUrl(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string') return null;
+  let parsed;
+  try {
+    parsed = new URL(rawUrl.trim());
+  } catch {
+    return null;
+  }
+
+  // 1. Strict protocol check
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    return null;
+  }
+
+  // 2. Reject credentials in URL
+  if (parsed.username || parsed.password) {
+    return null;
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+  if (!hostname || BLOCKED_SSRF_HOSTS.has(hostname)) {
+    return null;
+  }
+
+  // 3. Reject cloud link-local metadata IP ranges
+  if (hostname.startsWith('169.254.') || hostname.startsWith('fe80:')) {
+    return null;
+  }
+
+  // 4. Clean base path
+  let basePath = parsed.pathname || '';
+  while (basePath.endsWith('/')) {
+    basePath = basePath.slice(0, -1);
+  }
+  basePath = path.posix.normalize(basePath);
+  if (basePath === '.') basePath = '';
+
+  const protocol = parsed.protocol;
+  const port = parsed.port ? `:${parsed.port}` : '';
+  const cleanOrigin = `${protocol}//${hostname}${port}`;
+
+  return {
+    origin: cleanOrigin,
+    basePath,
+    cleanUrl: `${cleanOrigin}${basePath}`,
+    healthUrl: `${cleanOrigin}${basePath}/api/v1/health`,
+    configUrl: `${cleanOrigin}${basePath}/api/v1/ai/stt/config`,
+  };
 }
