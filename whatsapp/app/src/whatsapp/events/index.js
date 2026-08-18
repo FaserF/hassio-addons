@@ -9,6 +9,8 @@ import { fetchHAVersions } from '../../ha.js';
 import { formatDuration } from '../../utils/format.js';
 import { maskData, isAdmin, normalizeJid } from '../../utils/security.js';
 import { triggerWebhook } from '../../webhook.js';
+import { t } from '../../locales/loader.js';
+import { getGroupModerationConfig } from '../moderation/store.js';
 import {
   trackReceived,
   trackSent,
@@ -751,13 +753,24 @@ export function handleIncomingMessages(session) {
           const originalPollName = pollObj?.name || '';
           const pollResult = await resolvePollVotes(msg, originalPoll, session);
           vote = pollResult.vote;
+          const groupCfg = getGroupModerationConfig(senderJid);
+          const lang = groupCfg?.language || 'de';
           const qTitle = originalPollName ? `: ${originalPollName}` : '';
           if (pollResult.error) {
-            text = `📊 [Poll Vote Update${qTitle}]\n🗳️ Vote: (${pollResult.error})`;
+            text = t(lang, 'bot_replies.bridge_poll_vote_update_simple', {
+              question: qTitle,
+              vote: `(${pollResult.error})`,
+            });
           } else if (vote.length > 0) {
-            text = `📊 [Poll Vote Update${qTitle}]\n🗳️ Vote: ${vote.join(', ')}`;
+            text = t(lang, 'bot_replies.bridge_poll_vote_update_simple', {
+              question: qTitle,
+              vote: vote.join(', '),
+            });
           } else {
-            text = `📊 [Poll Vote Update${qTitle}]\n🗳️ Vote: Retracted (No options selected)`;
+            text = t(lang, 'bot_replies.bridge_poll_vote_update_simple', {
+              question: qTitle,
+              vote: t(lang, 'bot_replies.bridge_poll_vote_retracted'),
+            });
           }
         } else if (messageType === 'eventMessage') {
           eventType = 'event';

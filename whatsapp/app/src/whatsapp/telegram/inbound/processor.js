@@ -19,6 +19,107 @@ const lastUpdateIds = new Map();
 const recentPinnedFallbacks = new Map();
 let isProcessingTelegramUpdates = false;
 
+export function getMediaPlaceholderText(msg, lang = 'de') {
+  if (msg.sticker) {
+    const emoji = msg.sticker.emoji ? ` ${msg.sticker.emoji}` : '';
+    return t(lang, 'bot_replies.bridge_media_sticker', { emoji });
+  }
+  if (msg.animation) {
+    return t(lang, 'bot_replies.bridge_media_gif');
+  }
+  if (msg.photo && Array.isArray(msg.photo) && msg.photo.length > 0) {
+    return t(lang, 'bot_replies.bridge_media_photo');
+  }
+  if (msg.video) {
+    return t(lang, 'bot_replies.bridge_media_video');
+  }
+  if (msg.video_note) {
+    return t(lang, 'bot_replies.bridge_media_video_note');
+  }
+  if (msg.voice) {
+    return t(lang, 'bot_replies.bridge_media_voice_note');
+  }
+  if (msg.audio) {
+    return t(lang, 'bot_replies.bridge_media_audio');
+  }
+  if (msg.document) {
+    return t(lang, 'bot_replies.bridge_media_document', {
+      fileName: msg.document.file_name || 'file',
+    });
+  }
+  if (msg.contact) {
+    const c = msg.contact;
+    const fullName = `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Contact';
+    const phone = c.phone_number || '';
+    return t(lang, 'bot_replies.bridge_media_contact', { name: fullName, phone });
+  }
+  if (msg.location) {
+    const loc = msg.location;
+    const isLive = Boolean(loc.live_period || msg.live_location);
+    return isLive
+      ? t(lang, 'bot_replies.bridge_media_live_location', {
+          lat: loc.latitude,
+          lng: loc.longitude,
+        })
+      : t(lang, 'bot_replies.bridge_media_location', {
+          lat: loc.latitude,
+          lng: loc.longitude,
+        });
+  }
+  if (
+    msg.new_chat_members &&
+    Array.isArray(msg.new_chat_members) &&
+    msg.new_chat_members.length > 0
+  ) {
+    const names = msg.new_chat_members
+      .map(
+        (m) => `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User'
+      )
+      .join(', ');
+    return t(lang, 'bot_replies.bridge_sys_joined', { name: names });
+  }
+  if (msg.left_chat_member) {
+    const m = msg.left_chat_member;
+    const name = `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User';
+    return t(lang, 'bot_replies.bridge_sys_left', { name });
+  }
+  if (msg.pinned_message) {
+    const pinnedObj = msg.pinned_message;
+    const pinnedSender = pinnedObj.from
+      ? `${pinnedObj.from.first_name || ''} ${pinnedObj.from.last_name || ''}`.trim() ||
+        pinnedObj.from.username ||
+        'User'
+      : 'User';
+    const rawSnippet =
+      pinnedObj.text ||
+      pinnedObj.caption ||
+      (pinnedObj.photo ? t(lang, 'bot_replies.bridge_media_photo') : '') ||
+      (pinnedObj.video ? t(lang, 'bot_replies.bridge_media_video') : '') ||
+      (pinnedObj.document
+        ? t(lang, 'bot_replies.bridge_media_document', {
+            fileName: pinnedObj.document.file_name || 'Document',
+          })
+        : '') ||
+      'Message';
+    const snippet =
+      rawSnippet.length > 500 ? `${rawSnippet.slice(0, 500)}...` : rawSnippet;
+    return t(lang, 'bot_replies.bridge_sys_pinned', { sender: pinnedSender, snippet });
+  }
+  if (msg.poll) {
+    const p = msg.poll;
+    const pollOptions = (p.options || []).map((o) => o.text);
+    const optStr =
+      pollOptions.length > 0
+        ? `\nOptions:\n${pollOptions.map((o, i) => `  ${i + 1}️⃣ ${o}`).join('\n')}`
+        : '';
+    return t(lang, 'bot_replies.bridge_media_poll', {
+      question: p.question || 'Untitled',
+      options: optStr,
+    });
+  }
+  return '';
+}
+
 export async function processTelegramUpdates() {
   if (isProcessingTelegramUpdates) return;
   isProcessingTelegramUpdates = true;
@@ -58,37 +159,37 @@ export async function processTelegramUpdates() {
           lastUpdateId = Math.max(lastUpdateId, update.update_id);
           lastUpdateIds.set(botConfig.id, lastUpdateId);
 
-          // Handle Telegram Poll Answers (when a user votes or changes vote in a poll)
+          // Handle Telegram Poll Vote Updates (PollAnswer)
           if (update.poll_answer) {
             const pa = update.poll_answer;
             const pollId = String(pa.poll_id);
-            const voterName = pa.user
-              ? `${pa.user.first_name || ''} ${pa.user.last_name || ''}`.trim() ||
-                pa.user.username ||
+            const user = pa.user;
+            const voterName = user
+              ? `${user.first_name || ''} ${user.last_name || ''}`.trim() ||
+                user.username ||
                 'Telegram User'
               : 'Telegram User';
             const selectedOptionIds = pa.option_ids || [];
 
-            // Find stored poll details if cached
-            const cachedPoll = store.cached_polls?.[pollId];
-            const pollQuestion = cachedPoll?.question || 'Poll';
-            const pollOptions = cachedPoll?.options || [];
-            const selectedText = selectedOptionIds
-              .map((idx) => pollOptions[idx] || `Option ${idx + 1}`)
-              .join(', ');
-
-            // Cache last vote info for consolidated update with update.poll
             if (!store.cached_polls) store.cached_polls = {};
-            if (!store.cached_polls[pollId]) store.cached_polls[pollId] = {};
-            store.cached_polls[pollId].last_vote_info = {
-              voterName,
-              selectedText,
-              selectedOptionIds,
-              timestamp: Date.now(),
-            };
-            saveTelegramStore(store);
+            const cachedPoll = store.cached_polls[pollId];
+            const pollQuestion = cachedPoll?.question || 'Telegram Poll';
+            const pollOptions = cachedPoll?.options || [];
 
-            const tgChatId = String(pa.voter_chat?.id || cachedPoll?.chat_id || '');
+            const selectedOptionTexts = selectedOptionIds.map((idx) => pollOptions[idx] || `Option ${idx + 1}`);
+            const selectedText = selectedOptionTexts.join(', ');
+
+            // Track last vote info for consolidated update
+            if (cachedPoll) {
+              cachedPoll.last_vote_info = {
+                voterName,
+                selectedText: selectedText || 'Retracted',
+                timestamp: Date.now(),
+              };
+              saveTelegramStore(store);
+            }
+
+            const tgChatId = String(cachedPoll?.chat_id || '');
             const mappings = (store.mappings || []).filter(
               (m) =>
                 m.enabled &&
@@ -105,10 +206,16 @@ export async function processTelegramUpdates() {
               if (pollMode === 'native_sync') continue;
               if (mapping.poll_send_update_message === false) continue;
 
-              const voteText =
+              const lang = getGroupModerationConfig(mapping.wa_jid)?.language || 'de';
+              const voteVal =
                 selectedOptionIds.length > 0
-                  ? `📊 [Poll Vote Update: ${pollQuestion}]\n👤 Voter: ${voterName}\n🗳️ Vote: ${selectedText}`
-                  : `📊 [Poll Vote Update: ${pollQuestion}]\n👤 Voter: ${voterName}\n🗳️ Vote: Retracted (No options selected)`;
+                  ? selectedText
+                  : t(lang, 'bot_replies.bridge_poll_vote_retracted');
+              const voteText = t(lang, 'bot_replies.bridge_poll_vote_update', {
+                question: pollQuestion,
+                voter: voterName,
+                vote: voteVal,
+              });
 
               let session = getSession('default');
               if (!session || !session.sock || !session.isConnected) {
@@ -173,8 +280,6 @@ export async function processTelegramUpdates() {
               buttonText = data.split(':')[1] || data;
             }
 
-            const responseText = `🔘 [Telegram Button Interaction]\n👤 User: ${voterName}\n🗳️ Selected: ${buttonText}`;
-
             const mappings = (store.mappings || []).filter(
               (m) =>
                 m.enabled &&
@@ -184,6 +289,12 @@ export async function processTelegramUpdates() {
             );
 
             for (const mapping of mappings) {
+              const lang = getGroupModerationConfig(mapping.wa_jid)?.language || 'de';
+              const responseText = t(lang, 'bot_replies.bridge_tg_button_interaction', {
+                user: voterName,
+                selection: buttonText,
+              });
+
               let session = getSession('default');
               if (!session || !session.sock || !session.isConnected) {
                 for (const s of sessions.values()) {
@@ -250,13 +361,26 @@ export async function processTelegramUpdates() {
                   const winner = sortedOpts[0];
                   if (winner && winner.voter_count > 0) {
                     const isRecentVote = lastVote && Date.now() - lastVote.timestamp < 15000;
-                    const winnerLine = `🏆 Leading Option: ${winner.text} (${winner.voter_count}/${totalVotes} votes)`;
+                    const lang = getGroupModerationConfig(mapping.wa_jid)?.language || 'de';
+                    const winnerLine = t(lang, 'bot_replies.bridge_leading_option', {
+                      option: winner.text,
+                      count: winner.voter_count,
+                      total: totalVotes,
+                    });
 
                     let unifiedPollText;
                     if (isRecentVote) {
-                      unifiedPollText = `📊 [Poll Vote Update: ${p.question}]\n👤 Voter: ${lastVote.voterName}\n🗳️ Vote: ${lastVote.selectedText}\n${winnerLine}`;
+                      unifiedPollText = t(lang, 'bot_replies.bridge_poll_vote_update_full', {
+                        question: p.question,
+                        voter: lastVote.voterName,
+                        vote: lastVote.selectedText,
+                        winnerLine,
+                      });
                     } else {
-                      unifiedPollText = `🗳️ [Poll Leader / Auto-Vote: ${p.question}]\n${winnerLine}`;
+                      unifiedPollText = t(lang, 'bot_replies.bridge_poll_leader_auto_vote', {
+                        question: p.question,
+                        winnerLine,
+                      });
                     }
 
                     let session = getSession('default');
@@ -445,8 +569,6 @@ export async function processTelegramUpdates() {
 
           try {
             if (msg.sticker) {
-              const emoji = msg.sticker.emoji ? ` ${msg.sticker.emoji}` : '';
-              tgText = tgText || `[🎨 Sticker${emoji}]`;
               const fileId = msg.sticker.file_id;
               const fileUrl = await bot.getFileUrl(fileId);
               if (fileUrl) {
@@ -457,7 +579,6 @@ export async function processTelegramUpdates() {
                 };
               }
             } else if (msg.animation) {
-              tgText = tgText || '[🎞️ GIF]';
               const fileId = msg.animation.file_id;
               const fileUrl = await bot.getFileUrl(fileId);
               if (fileUrl) {
@@ -468,7 +589,6 @@ export async function processTelegramUpdates() {
                 };
               }
             } else if (msg.photo && Array.isArray(msg.photo) && msg.photo.length > 0) {
-              tgText = tgText || '[📷 Photo]';
               const bestPhoto = msg.photo[msg.photo.length - 1];
               const fileUrl = await bot.getFileUrl(bestPhoto.file_id);
               if (fileUrl) {
@@ -480,7 +600,6 @@ export async function processTelegramUpdates() {
                 };
               }
             } else if (msg.video) {
-              tgText = tgText || '[🎥 Video]';
               const fileUrl = await bot.getFileUrl(msg.video.file_id);
               if (fileUrl) {
                 mediaPayload = {
@@ -491,7 +610,6 @@ export async function processTelegramUpdates() {
                 };
               }
             } else if (msg.video_note) {
-              tgText = tgText || '[📹 Video Note]';
               const fileUrl = await bot.getFileUrl(msg.video_note.file_id);
               if (fileUrl) {
                 mediaPayload = {
@@ -502,7 +620,6 @@ export async function processTelegramUpdates() {
                 };
               }
             } else if (msg.voice) {
-              tgText = tgText || '[🎤 Voice Note]';
               const fileUrl = await bot.getFileUrl(msg.voice.file_id);
               if (fileUrl) {
                 let audioBuffer = null;
@@ -521,7 +638,6 @@ export async function processTelegramUpdates() {
                 };
               }
             } else if (msg.audio) {
-              tgText = tgText || '[🎵 Audio]';
               const fileUrl = await bot.getFileUrl(msg.audio.file_id);
               if (fileUrl) {
                 let audioBuffer = null;
@@ -540,7 +656,6 @@ export async function processTelegramUpdates() {
                 };
               }
             } else if (msg.document) {
-              tgText = tgText || `[📄 Document: ${msg.document.file_name || 'file'}]`;
               const fileUrl = await bot.getFileUrl(msg.document.file_id);
               if (fileUrl) {
                 mediaPayload = {
@@ -560,7 +675,6 @@ export async function processTelegramUpdates() {
                 displayName: fullName,
                 vcard: vcardStr,
               };
-              tgText = tgText || `👤 [Contact: ${fullName} (${phone})]`;
             } else if (msg.location) {
               const loc = msg.location;
               const isLive = Boolean(loc.live_period || msg.live_location);
@@ -569,53 +683,9 @@ export async function processTelegramUpdates() {
                 latitude: loc.latitude,
                 longitude: loc.longitude,
               };
-              tgText =
-                tgText ||
-                (isLive
-                  ? `📍 [Live Location Share: ${loc.latitude}, ${loc.longitude}]`
-                  : `📍 [Location Share: ${loc.latitude}, ${loc.longitude}]`);
-            } else if (
-              msg.new_chat_members &&
-              Array.isArray(msg.new_chat_members) &&
-              msg.new_chat_members.length > 0
-            ) {
-              const names = msg.new_chat_members
-                .map(
-                  (m) => `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User'
-                )
-                .join(', ');
-              tgText = `👥 [System: ${names} joined the Telegram group]`;
-            } else if (msg.left_chat_member) {
-              const m = msg.left_chat_member;
-              const name =
-                `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'User';
-              tgText = `👥 [System: ${name} left the Telegram group]`;
-            } else if (msg.pinned_message) {
-              const pinnedObj = msg.pinned_message;
-              const pinnedSender = pinnedObj.from
-                ? `${pinnedObj.from.first_name || ''} ${pinnedObj.from.last_name || ''}`.trim() ||
-                  pinnedObj.from.username ||
-                  'User'
-                : 'User';
-              const rawSnippet =
-                pinnedObj.text ||
-                pinnedObj.caption ||
-                (pinnedObj.photo ? '[📷 Photo]' : '') ||
-                (pinnedObj.video ? '[🎥 Video]' : '') ||
-                (pinnedObj.document ? `[📄 ${pinnedObj.document.file_name || 'Document'}]` : '') ||
-                'Message';
-              const snippet =
-                rawSnippet.length > 500 ? `${rawSnippet.slice(0, 500)}...` : rawSnippet;
-              tgText = `📌 [Pinned Message by ${pinnedSender}]:\n\n${snippet}`;
             } else if (msg.poll) {
               const p = msg.poll;
               const pollOptions = (p.options || []).map((o) => o.text);
-              const optStr =
-                pollOptions.length > 0
-                  ? `\nOptions:\n${pollOptions.map((o, i) => `  ${i + 1}️⃣ ${o}`).join('\n')}`
-                  : '';
-              tgText = `📊 [Poll: ${p.question || 'Untitled'}]${optStr}`;
-              // Store native poll payload so per-mapping handler can create a native WA poll
               mediaPayload = {
                 type: 'poll',
                 question: p.question || 'Poll',
@@ -637,7 +707,15 @@ export async function processTelegramUpdates() {
             logger.warn({ error: mediaErr.message }, '⚠️ Failed to fetch Telegram file URL');
           }
 
-          if (!tgText && !mediaPayload) continue;
+          if (
+            !tgText &&
+            !mediaPayload &&
+            !msg.new_chat_members &&
+            !msg.left_chat_member &&
+            !msg.pinned_message
+          ) {
+            continue;
+          }
 
           const replyToTgId = msg.reply_to_message?.message_id;
           let quotedWaMsgId = null;
@@ -650,19 +728,7 @@ export async function processTelegramUpdates() {
               const qMsg = msg.reply_to_message;
               const qSender =
                 qMsg.from?.first_name || qMsg.from?.username || qMsg.author_signature || 'User';
-              const qMediaTag = qMsg.animation
-                ? '🎥 [GIF/Video]'
-                : qMsg.sticker
-                  ? `🎨 [Sticker ${qMsg.sticker.emoji || ''}]`.trim()
-                  : qMsg.photo
-                    ? '📷 [Photo]'
-                    : qMsg.video
-                      ? '🎥 [Video]'
-                      : qMsg.audio || qMsg.voice
-                        ? '🎵 [Audio]'
-                        : qMsg.document
-                          ? `📄 [Document: ${qMsg.document.file_name || ''}]`.trim()
-                          : '';
+              const qMediaTag = getMediaPlaceholderText(qMsg, 'de');
               const qText = qMsg.text || qMsg.caption || qMediaTag;
               const snippet = qText
                 ? qText.length > 80
@@ -681,13 +747,19 @@ export async function processTelegramUpdates() {
             if (isSystemMsg && mapping.sync_system_events === false) continue;
             if (isPinMsg && mapping.sync_pins === false) continue;
 
+            const groupModCfg = getGroupModerationConfig(mapping.wa_jid);
+            const mappingLang = groupModCfg?.language || 'de';
+            const effectiveTgText = tgText || getMediaPlaceholderText(msg, mappingLang);
+
             if (
-              tgText &&
-              (tgText.trim().startsWith('/unpin') || tgText.trim().startsWith('!unpin'))
+              effectiveTgText &&
+              (effectiveTgText.trim().startsWith('/unpin') ||
+                effectiveTgText.trim().startsWith('!unpin'))
             ) {
               if (mapping.sync_pins !== false) {
                 const isUnpinAll =
-                  tgText.trim().startsWith('/unpinall') || tgText.trim().startsWith('!unpinall');
+                  effectiveTgText.trim().startsWith('/unpinall') ||
+                  effectiveTgText.trim().startsWith('!unpinall');
                 let session = getSession('default');
                 if (!session || !session.sock || !session.isConnected) {
                   for (const s of sessions.values()) {
@@ -795,36 +867,26 @@ export async function processTelegramUpdates() {
                               },
                             });
                             unpinSent = true;
-                          } catch (e2) {
-                            logger.warn(
-                              { error: e2.message, waMsgId: mappedWaMsg.waMsgId },
-                              'Failed to unpin message in WhatsApp'
-                            );
-                          }
+                          } catch (_e2) {}
                         }
 
                         if (unpinSent) {
                           untrackPinnedMessage(mapping.wa_jid, mappedWaMsg.waMsgId);
+                          logger.info(
+                            {
+                              tgChatId,
+                              waJid: mapping.wa_jid,
+                              waMsgId: mappedWaMsg.waMsgId,
+                            },
+                            '📌 Mirrored /unpin from Telegram to WhatsApp'
+                          );
                         }
-
-                        if (bot && targetTgMsgId) {
-                          await bot
-                            .request('unpinChatMessage', {
-                              chat_id: tgChatId,
-                              message_id: targetTgMsgId,
-                            })
-                            .catch(() => null);
-                        }
-                        logger.info(
-                          { tgChatId, waMsgId: mappedWaMsg.waMsgId },
-                          '📌 Mirrored /unpin from Telegram to WhatsApp'
-                        );
                       }
                     }
                   } catch (unpinErr) {
-                    logger.warn(
-                      { error: unpinErr.message },
-                      'Failed to unpin message in WhatsApp from TG command'
+                    logger.error(
+                      { error: unpinErr.message, tgChatId, waJid: mapping.wa_jid },
+                      '❌ Failed to process Telegram unpin command'
                     );
                   }
                 }
@@ -832,8 +894,8 @@ export async function processTelegramUpdates() {
               continue;
             }
 
-            if (mapping.ignore_command_prefixes && tgText) {
-              const cleanText = tgText.trim();
+            if (mapping.ignore_command_prefixes && effectiveTgText) {
+              const cleanText = effectiveTgText.trim();
               const prefixes = String(mapping.ignore_command_prefixes)
                 .split(/[,;\s]+/)
                 .map((s) => s.trim())
@@ -846,8 +908,9 @@ export async function processTelegramUpdates() {
               }
             }
 
-            const isGroupChat = msg.chat.type === 'group' || msg.chat.type === 'supergroup';
-            const isDirectMirror = Boolean(mapping.is_direct_chat_mirror);
+            const isGroupChat =
+              msg.chat.type === 'group' || msg.chat.type === 'supergroup';
+            const isDirectMirror = mapping.header_mode === 'direct_mirror';
             const rawHeader = isDirectMirror
               ? ''
               : formatHeader(
@@ -860,26 +923,31 @@ export async function processTelegramUpdates() {
             const entities = msg.entities || msg.caption_entities || null;
             let formattedTgText =
               mapping.convert_formatting !== false
-                ? telegramToWaFormatting(tgText, entities)
-                : tgText;
+                ? telegramToWaFormatting(effectiveTgText, entities)
+                : effectiveTgText;
 
-            const groupModCfg = getGroupModerationConfig(mapping.wa_jid);
             const isTranslateActive =
               Boolean(mapping.translate_tg_to_wa) ||
               (groupModCfg?.translation?.enabled !== false &&
                 (groupModCfg?.translation?.mode === 'auto' ||
                   groupModCfg?.translation?.mode === 'forwards'));
 
-            if (isTranslateActive && tgText && tgText.trim() && !isSystemMsg && !isPinMsg) {
+            if (
+              isTranslateActive &&
+              effectiveTgText &&
+              effectiveTgText.trim() &&
+              !isSystemMsg &&
+              !isPinMsg &&
+              !effectiveTgText.startsWith('[')
+            ) {
               try {
                 const targetLang =
                   mapping.translate_tg_to_wa_lang ||
                   groupModCfg?.translation?.target_lang ||
-                  groupModCfg?.language ||
-                  'de';
+                  mappingLang;
                 const provider = groupModCfg?.translation?.provider || 'auto';
                 const transRes = await translateTextGatewayWithReason(
-                  tgText,
+                  effectiveTgText,
                   targetLang,
                   provider,
                   groupModCfg
@@ -887,7 +955,8 @@ export async function processTelegramUpdates() {
                 if (
                   transRes?.translation &&
                   transRes.translation.trim() &&
-                  transRes.translation.trim().toLowerCase() !== tgText.trim().toLowerCase()
+                  transRes.translation.trim().toLowerCase() !==
+                    effectiveTgText.trim().toLowerCase()
                 ) {
                   const srcBadge =
                     transRes.sourceLang &&
