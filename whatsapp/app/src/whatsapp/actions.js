@@ -15,6 +15,8 @@ import { gt } from './moderation/engine.js';
 const botOutboundWindows = new Map();
 // Map<jid, number> (timestamp until muted)
 const botMutedUntilMap = new Map();
+// Set of active diagnostic target JIDs (exempt from self-message filtering and outbound anti-spam mute)
+export const activeDiagnosticChats = new Set();
 
 /**
  * Resets the bot outbound rate limit window and mute state.
@@ -35,12 +37,12 @@ export function resetBotOutboundSpamGuard(jid = null) {
  * EXEMPT: Telegram Relay messages (options.isTelegramRelay) or options.skipSpamGuard.
  */
 export async function checkBotOutboundSpamGuard(session, jid, options = {}) {
-  if (options?.isTelegramRelay || options?.skipSpamGuard) {
+  const targetJid = String(jid || '').trim();
+  if (options?.isTelegramRelay || options?.skipSpamGuard || activeDiagnosticChats.has(targetJid)) {
     return { allowed: true };
   }
 
   const now = Date.now();
-  const targetJid = String(jid || '').trim();
   if (!targetJid) return { allowed: true };
 
   // 1. Check if chat is currently stummschaltet (muted)
@@ -296,6 +298,7 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
   }
 
   try {
+    activeDiagnosticChats.add(targetJid);
     addLogFn(session, `Starting diagnostic test for ${maskData(targetJid)}`, 'info');
     addLogFn(session, `Diagnostic target: ${maskData(targetJid)}`, 'info');
 
@@ -587,6 +590,48 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
       } catch (modErr) {
         logger.warn({ error: modErr.message }, 'Failed to append moderation diagnostic report');
       }
+
+      // 10. Telegram Bridge Diagnostic for Groups with active mappings
+      try {
+        const { loadTelegramStore } = await import('./telegram/store.js');
+        const tgStore = loadTelegramStore();
+        if (tgStore && tgStore.enabled && Array.isArray(tgStore.mappings)) {
+          const groupMappings = tgStore.mappings.filter(
+            (m) => m.enabled && m.wa_jid && m.wa_jid.toLowerCase() === targetJid.toLowerCase()
+          );
+
+          if (groupMappings.length > 0) {
+            const groupModCfg = getGroupModerationConfig(targetJid);
+            for (const map of groupMappings) {
+              await delay(800);
+              const bot = tgStore.bots?.find((b) => b.id === map.bot_id);
+              const botLabel = bot ? `@${bot.username || bot.name}` : map.bot_id || 'Default';
+              const modeLabel = map.sync_mode || 'bidirectional';
+              const threadInfo = map.tg_thread_id ? ` (Topic / Thread: ${map.tg_thread_id})` : '';
+
+              const bridgeReport = gt(groupModCfg, 'bot_replies.telegram_bridge_diag', {
+                chatId: map.tg_chat_id,
+                threadInfo,
+                botLabel,
+                modeLabel,
+                edits: map.sync_edits !== false ? '✅' : '❌',
+                deletions: map.sync_deletions !== false ? '✅' : '❌',
+                reactions: map.sync_reactions !== false ? '✅' : '❌',
+                pins: map.sync_pins !== false ? '✅' : '❌',
+                systemEvents: map.sync_system_events !== false ? '✅' : '❌',
+                polls: map.poll_sync_mode || 'native_sync',
+                translation: map.translate_wa_to_tg
+                  ? `✅ (${map.translate_wa_to_tg_lang || 'Auto'})`
+                  : '❌',
+              });
+
+              await reply(session, targetJid, { text: bridgeReport });
+            }
+          }
+        }
+      } catch (tgErr) {
+        logger.warn({ error: tgErr.message }, 'Failed to append telegram bridge diagnostic report');
+      }
     }
 
     // 8. Final Completion Message
@@ -605,6 +650,8 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
   } catch (err) {
     logger.error({ error: err.message }, 'Diagnostic test failed');
     await reply(session, targetJid, { text: `❌ *Diagnostic Failed:* ${err.message}` });
+  } finally {
+    activeDiagnosticChats.delete(targetJid);
   }
 }
 

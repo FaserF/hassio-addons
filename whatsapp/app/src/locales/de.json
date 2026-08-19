@@ -1072,6 +1072,7 @@
     "current_goodbye": "Aktuelle Abschiedsnachricht:\n\n{text}",
     "id_info": "Gruppen-ID: `{groupId}`\nDeine ID: `{userId}`",
     "mod_test_header": "🛡️ *WhatsApp Moderationstests für Gruppe: \"{groupName}\"*\n📌 *Gruppen-ID:* `{groupId}`\n⚙️ *Präfix:* `{prefix}`\n\n_Nachfolgend findest du kopierbereite Testnachrichten für jede Kategorie. Du kannst einen gesamten Block oder einzelne Zeilen kopieren, um in \"{groupName}\" zu testen:_ ",
+    "telegram_bridge_diag": "🔗 *Telegram-Brücke Diagnose für diese Gruppe*\n\n• *Status:* Aktiv ✅\n• *Telegram Chat:* `{chatId}`{threadInfo}\n• *Bot:* {botLabel}\n• *Synchronisationsmodus:* {modeLabel}\n• *Funktionen & Synchronisation:*\n  - Text & Medien: ✅\n  - Nachrichten-Bearbeitungen: {edits}\n  - Nachrichten-Löschungen: {deletions}\n  - Reaktionen: {reactions}\n  - Angepinnte Nachrichten: {pins}\n  - System-Ereignisse: {systemEvents}\n  - Umfragen (Polls): {polls}\n  - Übersetzung (WA ➔ TG): {translation}\n\n_Alle während des Tests gesendeten Diagnose-Nachrichten wurden in Echtzeit an Telegram übertragen._",
     "edited_msg_indicator": "✏️ *[Bearbeitete Nachricht]*",
     "edited_msg_indicator_html": "✏️ <i>[Bearbeitete Nachricht]</i>",
     "edited_msg_old": "_(Original vor längerer Zeit gesendet)_",

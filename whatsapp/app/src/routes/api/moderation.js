@@ -1,4 +1,4 @@
-import { uiAuthMiddleware, anyAuthMiddleware } from '../../middleware.js';
+import { uiAuthMiddleware } from '../../middleware.js';
 import {
   loadModerationStore,
   saveModerationStore,

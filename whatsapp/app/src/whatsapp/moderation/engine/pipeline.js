@@ -1,7 +1,7 @@
 import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from '../store.js';
 import { processAiModeration } from '../ai.js';
 import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
-import { reply } from '../../actions.js';
+import { reply, activeDiagnosticChats } from '../../actions.js';
 import { logger } from '../../../logger.js';
 import { checkSuspiciousName } from '../securityScanner.js';
 import { gt, recordTranslationMap, shouldSkipDuplicateTranslation } from './translations.js';
@@ -30,8 +30,9 @@ export async function handleModerationMessage(session, event) {
     return false;
   }
 
-  // Never moderate or auto-respond to outgoing bot messages (prevents self-loop)
-  if (event.raw?.key?.fromMe) return false;
+  // Never moderate or auto-respond to outgoing bot messages unless diagnostic test is actively running in this group
+  const isDiagActive = activeDiagnosticChats.has(groupId);
+  if (event.raw?.key?.fromMe && !isDiagActive) return false;
 
   // Handle Private Chat (DM) messages for pending Captchas
   if (!isGroup) {

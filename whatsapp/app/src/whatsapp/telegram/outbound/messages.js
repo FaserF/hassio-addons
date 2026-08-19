@@ -8,6 +8,7 @@ import { formatHeader } from '../headers.js';
 import { logger } from '../../../logger.js';
 import { getGroupModerationConfig } from '../../moderation/store.js';
 import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
+import { activeDiagnosticChats } from '../../actions.js';
 
 const recentWaSyncMessages = new Map(); // key: waMsgId -> timestamp
 
@@ -142,14 +143,15 @@ export async function syncWhatsAppToTelegram(
   }
 
   const isFromMe = Boolean(msg.key?.fromMe);
+  const isDiag = activeDiagnosticChats.has(waJid);
 
   for (const mapping of mappings) {
-    if (isFromMe && !mapping.sync_self_messages) {
+    if (isFromMe && !mapping.sync_self_messages && !isDiag) {
       continue;
     }
     const bot = getTelegramBotClient(mapping.bot_id);
     if (!bot) continue;
-    if (mapping.ignore_command_prefixes && textContent) {
+    if (mapping.ignore_command_prefixes && textContent && !isDiag) {
       const cleanText = textContent.trim();
       const prefixes = String(mapping.ignore_command_prefixes)
         .split(/[,;\s]+/)
