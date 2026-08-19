@@ -71,7 +71,7 @@ export async function deleteTranslationIfExists(session, groupId, sourceWaId) {
 export async function updateTranslationIfExists(session, groupId, sourceWaId, newText) {
   if (!groupId || !sourceWaId || !newText || newText.trim().length < 2) return;
   if (
-    /^(📍\s*\[(Location|Live Location) Share|👤\s*\[Contact:|📊\s*\[Poll:|🔘\s*\[|📋\s*\[List:|🗳️\s*Vote:|📅\s*\*?\[Event)/i.test(
+    /^(📍\s*\[(Location|Live Location) Share|👤\s*\[Contact:|📊\s*\[Poll|🔘\s*\[|📋\s*\[List:|🗳️\s*Vote:|📅\s*\*?\[Event)/i.test(
       newText
     ) ||
     /^[!/#.?]\w+/i.test(newText) ||

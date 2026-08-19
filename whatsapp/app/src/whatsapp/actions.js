@@ -352,14 +352,13 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
       await delay(1000);
     }
 
-    // 4. Buttons (with Poll Fallback & Feedback verification)
+    // 4. Interactive Poll Test (WhatsApp MD native replacement for deprecated buttons)
     await reply(session, targetJid, {
-      text: '🧪 *Diagnostic Test [4/7]*: Buttons & Poll Interactive Test',
-      footer: 'WhatsApp Diagnostic',
-      buttons: [
-        { buttonId: 'diag_1', displayText: 'Option 1' },
-        { buttonId: 'diag_2', displayText: 'Option 2' },
-      ],
+      poll: {
+        name: '🧪 *Diagnostic Test [4/7]*: Interactive Poll Choice',
+        values: ['Option 1 (Pass)', 'Option 2 (Pass)'],
+        selectableCount: 1,
+      },
     });
     await delay(1000);
 

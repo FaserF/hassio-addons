@@ -377,7 +377,7 @@ export async function handleModerationMessage(session, event) {
     event.type === 'location' ||
     event.type === 'contact' ||
     event.type === 'reaction' ||
-    /^(📍\s*\[(Location|Live Location) Share|👤\s*\[Contact:|📊\s*\[Poll:|🔘\s*\[|📋\s*\[List:|🗳️\s*Vote:|📅\s*\*?\[Event)/i.test(
+    /^(📍\s*\[(Location|Live Location) Share|👤\s*\[Contact:|📊\s*\[Poll|🔘\s*\[|📋\s*\[List:|🗳️\s*Vote:|📅\s*\*?\[Event)/i.test(
       text
     ) ||
     /^[!/#.?]\w+/i.test(text);

@@ -323,16 +323,16 @@ export async function syncWhatsAppEditToTelegram(
   const mapped =
     resolveTgMsgFromWa(waMsgId) || (rawMsgKeyId ? resolveTgMsgFromWa(rawMsgKeyId) : null);
 
-  // If this message was sent to WhatsApp from Telegram (bridge echo), do NOT mirror it back to Telegram
-  if (mapped && mapped.origin === 'tg') {
+  const targetWaJid = waJid || mapped?.waJid || '';
+
+  // If this message was sent to WhatsApp from Telegram (bridge echo) and not originated in WhatsApp, skip mirroring back
+  if (mapped && mapped.origin === 'tg' && !mapped.isWaEdit) {
     logger.debug(
       { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
       'Skipping WhatsApp edit mirror for message originated from Telegram'
     );
     return;
   }
-
-  const targetWaJid = waJid || mapped?.waJid || '';
 
   const targetMappings = (store.mappings || []).filter((m) => {
     if (!m.enabled) return false;
