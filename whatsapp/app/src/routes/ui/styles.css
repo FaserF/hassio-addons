@@ -1430,6 +1430,14 @@ html[data-theme='dark'] .banner-warning-icon {
   font-size: 20px;
   font-weight: 800;
   color: var(--primary);
+  line-height: 1.2;
+}
+
+.stat-subval {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .stat-label {
@@ -1438,6 +1446,31 @@ html[data-theme='dark'] .banner-warning-icon {
   text-transform: uppercase;
   margin-top: 4px;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.info-tooltip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  font-size: 9px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  cursor: help;
+  opacity: 0.75;
+  transition: opacity 0.2s, color 0.2s;
+  text-transform: none;
+  font-weight: 700;
+}
+
+.info-tooltip-icon:hover {
+  opacity: 1;
+  color: var(--primary);
 }
 
 .qr-container {

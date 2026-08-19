@@ -85,6 +85,11 @@ export function getSession(rawSessionId) {
         sent: 0,
         received: 0,
         failed: 0,
+        lifetime_sent: 0,
+        lifetime_received: 0,
+        lifetime_failed: 0,
+        lifetime_reconnects: 0,
+        first_install_time: null,
         last_sent_message: 'None',
         last_sent_target: 'None',
         last_received_message: 'None',
@@ -103,6 +108,7 @@ export function getSession(rawSessionId) {
         version: BAILEYS_VERSION,
       },
     });
+    loadStats(sessions.get(sessionId));
     loadMessageStore(sessions.get(sessionId));
     loadContactCache(sessions.get(sessionId));
     loadChatCache(sessions.get(sessionId));
@@ -114,6 +120,7 @@ export function getSession(rawSessionId) {
           clearInterval(saveInterval);
           return;
         }
+        saveStats(s);
         saveMessageStore(s);
         saveContactCache(s);
         saveChatCache(s);
@@ -229,6 +236,50 @@ export function loadContactCache(session) {
       logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to load contact cache');
     }
   }
+}
+
+/**
+ * Persists session stats (including lifetime stats) to disk.
+ */
+export function saveStats(session) {
+  if (!session || !session.stats) return;
+  const file = path.join(getAuthDir(session.id), 'stats.json');
+  try {
+    fs.writeFileSync(file, JSON.stringify(session.stats, null, 2), 'utf-8');
+  } catch (e) {
+    logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to save session stats');
+  }
+}
+
+/**
+ * Loads persisted stats from disk and merges lifetime counters.
+ */
+export function loadStats(session) {
+  const file = path.join(getAuthDir(session.id), 'stats.json');
+  if (fs.existsSync(file)) {
+    try {
+      const persisted = JSON.parse(fs.readFileSync(file, 'utf-8'));
+      if (persisted && typeof persisted === 'object') {
+        session.stats.lifetime_sent = (persisted.lifetime_sent || persisted.sent || 0);
+        session.stats.lifetime_received = (persisted.lifetime_received || persisted.received || 0);
+        session.stats.lifetime_failed = (persisted.lifetime_failed || persisted.failed || 0);
+        session.stats.lifetime_reconnects = (persisted.lifetime_reconnects || persisted.totalReconnects || 0);
+        if (persisted.first_install_time) {
+          session.stats.first_install_time = persisted.first_install_time;
+        }
+        logger.info(
+          { sessionId: session.id, lifetimeSent: session.stats.lifetime_sent },
+          '📂 Session stats loaded from disk'
+        );
+      }
+    } catch (e) {
+      logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to load session stats');
+    }
+  }
+  if (!session.stats.first_install_time) {
+    session.stats.first_install_time = Date.now();
+  }
+  saveStats(session);
 }
 
 /**

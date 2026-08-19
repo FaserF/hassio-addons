@@ -245,7 +245,8 @@ import { handleOptOutCommand } from '../../rbac.js';
 export function handleIncomingMessages(session) {
   session.sock.ev.on('messages.upsert', async (m) => {
     if (!m.messages || m.messages.length === 0) return;
-    session.stats.received += m.messages.length;
+    session.stats.received = (session.stats.received || 0) + m.messages.length;
+    session.stats.lifetime_received = (session.stats.lifetime_received || 0) + m.messages.length;
 
     // Check for anti-spam opt-out command (/stoplogin, !stoplogin, /optout)
     for (const msg of m.messages) {

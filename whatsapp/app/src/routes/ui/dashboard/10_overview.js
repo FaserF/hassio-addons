@@ -281,27 +281,65 @@ async function updateDashboard() {
 
     // Stats properties
     const stats = data.stats || {};
-    setElText('stat-sent', stats.sent || 0);
-    setElText('stat-received', stats.received || 0);
-    setElText('stat-failed', stats.failed || 0);
+    const lifetimeSent = stats.lifetime_sent != null ? stats.lifetime_sent : (stats.sent || 0);
+    const lifetimeReceived = stats.lifetime_received != null ? stats.lifetime_received : (stats.received || 0);
+    const lifetimeFailed = stats.lifetime_failed != null ? stats.lifetime_failed : (stats.failed || 0);
+    const lifetimeReconnects = stats.lifetime_reconnects != null ? stats.lifetime_reconnects : (stats.totalReconnects ?? data.reconnectAttempts ?? 0);
+
+    setElText('stat-sent', lifetimeSent);
+    setElText('stat-received', lifetimeReceived);
+    setElText('stat-failed', lifetimeFailed);
+
+    const sinceRestartText = window.t ? window.t('dashboard.since_restart') : 'since restart';
+    setElText('stat-sent-sub', `${stats.sent || 0} ${sinceRestartText}`);
+    setElText('stat-received-sub', `${stats.received || 0} ${sinceRestartText}`);
+    setElText('stat-failed-sub', `${stats.failed || 0} ${sinceRestartText}`);
 
     // Uptime: prefer start_time from stats (epoch ms), fall back to server process uptime
     let uptimeStr = '00:00:00';
-    if (stats.start_time && stats.start_time > 0) {
-      const diffSec = Math.max(0, Math.floor((Date.now() - stats.start_time) / 1000));
+    let startTimeMs = stats.start_time || 0;
+    if (startTimeMs > 0) {
+      const diffSec = Math.max(0, Math.floor((Date.now() - startTimeMs) / 1000));
       const hrs = String(Math.floor(diffSec / 3600)).padStart(2, '0');
       const mins = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
       const secs = String(diffSec % 60).padStart(2, '0');
       uptimeStr = `${hrs}:${mins}:${secs}`;
     } else if (data.uptimeSeconds > 0) {
       const diffSec = data.uptimeSeconds;
+      startTimeMs = Date.now() - diffSec * 1000;
       const hrs = String(Math.floor(diffSec / 3600)).padStart(2, '0');
       const mins = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
       const secs = String(diffSec % 60).padStart(2, '0');
       uptimeStr = `${hrs}:${mins}:${secs}`;
     }
     setElText('val-uptime', uptimeStr);
-    setElText('val-reconnects', stats.totalReconnects ?? data.reconnectAttempts ?? 0);
+
+    const sessionReconnects = stats.totalReconnects ?? data.reconnectAttempts ?? 0;
+    setElText(
+      'val-reconnects',
+      lifetimeReconnects > sessionReconnects
+        ? `${lifetimeReconnects} (${sessionReconnects} ${sinceRestartText})`
+        : `${sessionReconnects}`
+    );
+
+    const startedAtEl = document.getElementById('val-started-at');
+    if (startedAtEl && startTimeMs > 0) {
+      const d = new Date(startTimeMs);
+      const dateStr = d.toLocaleDateString(undefined, {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+      const timeStr = d.toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+      const formattedTime = `${dateStr} ${timeStr}`;
+      startedAtEl.textContent = window.t
+        ? window.t('dashboard.addon_started_at', { time: formattedTime })
+        : `Addon started on ${formattedTime}`;
+    }
 
     // Render streams lists (always escape content to prevent XSS)
     const esc = (v) =>

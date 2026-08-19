@@ -379,7 +379,8 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       } else {
         session.disconnectReason = 'connection_error';
         session.reconnectAttempts += 1;
-        session.stats.totalReconnects += 1;
+        session.stats.totalReconnects = (session.stats.totalReconnects || 0) + 1;
+        session.stats.lifetime_reconnects = (session.stats.lifetime_reconnects || 0) + 1;
         if (!session.firstFailureTime) session.firstFailureTime = Date.now();
 
         setHealthStatus('running', `Disconnected: ${disconnectReason}`);

@@ -253,8 +253,10 @@ jobs:
       contents: read
     strategy:
       fail-fast: false
+      max-parallel: 4
       matrix:
         App: ${{ fromJSON(needs.filter.outputs.Apps) }}
+
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v7
@@ -444,9 +446,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 4
       # Only matrix on Apps, build all arches sequentially on same runner
       matrix:
         App: ${{ fromJSON(needs.filter.outputs.Apps) }}
+
     steps:
       - name: 🧹 Free Disk Space
         run: |

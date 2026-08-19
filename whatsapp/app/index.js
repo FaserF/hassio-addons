@@ -13,6 +13,7 @@ import {
   getAuthDir,
   deleteSession,
   saveMessageStore,
+  saveStats,
 } from './src/session.js';
 import { registerRoutes } from './src/routes/index.js';
 import { SHOULD_RESET, DATA_DIR, AUTH_DIR } from './src/config.js';
@@ -137,9 +138,10 @@ async function handleShutdown(signal) {
     saveSystemState();
   }
 
-  // Save all message stores
+  // Save all message stores and stats
   for (const session of sessions.values()) {
     saveMessageStore(session);
+    saveStats(session);
   }
 
   // Stop mDNS

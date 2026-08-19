@@ -132,7 +132,27 @@ export function renderDashboard(sessionId) {
         document.head.appendChild(b);
       })();
     </script>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+    <meta name="theme-color" content="#00a884">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WA Gateway">
+    <meta name="msapplication-TileColor" content="#00a884">
+    <meta name="msapplication-TileImage" content="ui-assets/icon-144.png">
+    <meta name="msapplication-config" content="none">
+
+    <!-- Standard and Retina iOS Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="ui-assets/icon-180.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="ui-assets/icon-152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="ui-assets/icon-180.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="ui-assets/icon-192.png">
+
+    <!-- Multi-Resolution Favicons for Desktop & Android -->
+    <link rel="icon" type="image/png" sizes="32x32" href="ui-assets/icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="ui-assets/icon-16.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="ui-assets/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="ui-assets/icon-512.png">
+    <link rel="manifest" href="ui-assets/manifest.webmanifest">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -221,6 +241,7 @@ export function renderDashboard(sessionId) {
                 <h1 class="header-title" id="page-title">Dashboard</h1>
             </div>
             <div class="header-actions">
+                <button id="pwa-install-btn" class="btn btn-primary btn-sm" style="display:none; align-items:center; gap:6px; font-weight:600; padding:6px 12px; border-radius:8px;" onclick="triggerPwaInstall()" title="Install WhatsApp Gateway as App" data-i18n-title="pwa.install_tooltip"><i class="fas fa-download"></i> <span data-i18n="pwa.install_btn">Install App</span></button>
                 <div class="session-selector-container">
                     <span class="session-label" data-i18n="shell.session_label">Session:</span>
                     <select id="session-select" class="session-select" onchange="switchSession(this.value)">
@@ -843,6 +864,60 @@ export function renderDashboard(sessionId) {
         isChatTabActive = true;
         loadChats();
     }
+
+    // PWA Service Worker Registration & Install Prompt Handler
+    let deferredPwaPrompt = null;
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('ui-assets/sw.js')
+                .then((reg) => {
+                    console.log('✅ Service Worker registered successfully:', reg.scope);
+                })
+                .catch((err) => {
+                    console.debug('⚠️ Service Worker registration note:', err);
+                });
+        });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent default mini-infobar on mobile so our header button is ready
+        e.preventDefault();
+        deferredPwaPrompt = e;
+        const installBtn = document.getElementById('pwa-install-btn');
+        if (installBtn) {
+            installBtn.style.display = 'inline-flex';
+        }
+        console.log('📲 Native PWA install prompt ready');
+    });
+
+    window.addEventListener('appinstalled', () => {
+        deferredPwaPrompt = null;
+        const installBtn = document.getElementById('pwa-install-btn');
+        if (installBtn) installBtn.style.display = 'none';
+        if (typeof showToast === 'function') {
+            showToast(window.t ? window.t('pwa.installed_success') : 'WhatsApp Gateway installed successfully! 🎉', 'success');
+        }
+        console.log('🎉 PWA application was successfully installed');
+    });
+
+    async function triggerPwaInstall() {
+        if (!deferredPwaPrompt) {
+            if (typeof showToast === 'function') {
+                showToast(window.t ? window.t('pwa.already_installed') : 'PWA is already installed or managed by your browser.', 'info');
+            }
+            return;
+        }
+        // Directly display the native OS / Browser installation modal dialog
+        deferredPwaPrompt.prompt();
+        const choiceResult = await deferredPwaPrompt.userChoice;
+        if (choiceResult && choiceResult.outcome === 'accepted') {
+            const installBtn = document.getElementById('pwa-install-btn');
+            if (installBtn) installBtn.style.display = 'none';
+        }
+        deferredPwaPrompt = null;
+    }
+    window.triggerPwaInstall = triggerPwaInstall;
 
     updateDashboard();
     setInterval(updateDashboard, 10000);

@@ -16,13 +16,40 @@ export default ({ PORT, API_TOKEN, getLocalIP }) => `
                             <span id="init-log-text" style="font-size:11px;color:var(--text-muted);text-align:center;max-width:200px;line-height:1.4;"></span>
                         </div>
                         <div class="stats-row">
-                            <div class="stat-box"><div id="stat-sent" class="stat-val">0</div><div class="stat-label" data-i18n="dashboard.sent">Sent</div></div>
-                            <div class="stat-box"><div id="stat-received" class="stat-val">0</div><div class="stat-label" data-i18n="dashboard.received">Received</div></div>
-                            <div class="stat-box"><div id="stat-failed" class="stat-val">0</div><div class="stat-label" data-i18n="dashboard.failed">Failed</div></div>
+                            <div class="stat-box">
+                                <div id="stat-sent" class="stat-val">0</div>
+                                <div id="stat-sent-sub" class="stat-subval">0 <span data-i18n="dashboard.since_restart">since restart</span></div>
+                                <div class="stat-label">
+                                    <span data-i18n="dashboard.sent">Sent</span>
+                                    <i class="fas fa-info-circle info-tooltip-icon" data-i18n-title="dashboard.tooltip_sent" title="Total outbound WhatsApp messages successfully transmitted."></i>
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <div id="stat-received" class="stat-val">0</div>
+                                <div id="stat-received-sub" class="stat-subval">0 <span data-i18n="dashboard.since_restart">since restart</span></div>
+                                <div class="stat-label">
+                                    <span data-i18n="dashboard.received">Received</span>
+                                    <i class="fas fa-info-circle info-tooltip-icon" data-i18n-title="dashboard.tooltip_received" title="Total incoming WhatsApp messages processed over the connection."></i>
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <div id="stat-failed" class="stat-val">0</div>
+                                <div id="stat-failed-sub" class="stat-subval">0 <span data-i18n="dashboard.since_restart">since restart</span></div>
+                                <div class="stat-label">
+                                    <span data-i18n="dashboard.failed">Failed</span>
+                                    <i class="fas fa-info-circle info-tooltip-icon" data-i18n-title="dashboard.tooltip_failed" title="Failed message dispatch attempts."></i>
+                                </div>
+                            </div>
                         </div>
-                        <div style="font-size:11px; text-align:center; color: var(--text-muted); font-weight:600;">
-                            <span data-i18n="dashboard.uptime">Uptime</span>: <span id="val-uptime" style="color:var(--text-main);">00:00:00</span> &bull; 
-                            <span data-i18n="dashboard.reconnections">Reconnections</span>: <span id="val-reconnects" style="color:var(--text-main);">0</span>
+                        <div style="font-size:11px; text-align:center; color: var(--text-muted); font-weight:600; line-height:1.6; margin-top:8px;">
+                            <div>
+                                <span data-i18n="dashboard.uptime">Uptime</span>: <span id="val-uptime" style="color:var(--text-main);">00:00:00</span>
+                                <i class="fas fa-info-circle info-tooltip-icon" data-i18n-title="dashboard.tooltip_uptime" title="Time elapsed since this addon was last started."></i>
+                                &bull; 
+                                <span data-i18n="dashboard.reconnections">Reconnections</span>: <span id="val-reconnects" style="color:var(--text-main);">0</span>
+                                <i class="fas fa-info-circle info-tooltip-icon" data-i18n-title="dashboard.tooltip_reconnections" title="Count of automatic reconnect attempts to WhatsApp servers."></i>
+                            </div>
+                            <div id="val-started-at" style="font-size:10px; color:var(--text-muted); font-weight:500;"></div>
                         </div>
                     </div>
 

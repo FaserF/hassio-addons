@@ -99,6 +99,13 @@
     "failed": "Fehlgeschlagen",
     "uptime": "Laufzeit",
     "reconnections": "Wiederverbindungen",
+    "since_restart": "seit Neustart",
+    "addon_started_at": "Addon gestartet am {time}",
+    "tooltip_sent": "Erfolgreich übermittelte ausgehende WhatsApp-Nachrichten.",
+    "tooltip_received": "Über die Verbindung empfangene eingehende WhatsApp-Nachrichten.",
+    "tooltip_failed": "Fehlgeschlagene Sendeversuche.",
+    "tooltip_uptime": "Zeitspanne seit dem letzten Start dieses Addons.",
+    "tooltip_reconnections": "Anzahl der automatischen Neuverbindungen zu den WhatsApp-Servern (z. B. nach kurzen Netzunterbrechungen oder Server-Pings).",
     "ha_setup": "Home Assistant Setup",
     "addon_host_uri": "Addon Host URI",
     "api_bearer_token": "API Bearer Token",
@@ -1387,5 +1394,14 @@
     "reset_seen_btn": "Liste beantworteter Kontakte zurücksetzen",
     "save_success": "Auto-Responder Einstellungen erfolgreich gespeichert! ✅",
     "reset_seen_success": "Liste der beantworteten Kontakte erfolgreich zurückgesetzt! ✅"
+  },
+  "pwa": {
+    "install_title": "WhatsApp Gateway installieren",
+    "install_desc": "Installiere das Gateway als eigenständige Desktop- oder Smartphone-App für schnellen Zugriff und Vollbildansicht.",
+    "install_btn": "App installieren",
+    "dismiss_btn": "Nicht jetzt",
+    "installed_success": "WhatsApp Gateway erfolgreich als App installiert! 🎉",
+    "install_tooltip": "WhatsApp Gateway als App installieren (PWA)",
+    "already_installed": "Die App ist bereits installiert oder wird vom Browser verwaltet."
   }
 }

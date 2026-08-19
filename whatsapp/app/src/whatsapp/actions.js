@@ -175,7 +175,8 @@ export async function reply(session, jid, content, quotedMsg = null, options = {
     const reasonText = err?.message || String(err || 'Unknown sending error');
     trackFailure(session, jid, text, reasonText);
     logger.error({ error: reasonText, jid }, 'Failed to send reply');
-    session.stats.failed += 1;
+    session.stats.failed = (session.stats.failed || 0) + 1;
+    session.stats.lifetime_failed = (session.stats.lifetime_failed || 0) + 1;
     logger.debug({ sessionId: session.id, jid: maskData(jid) }, '📉 Stat: Failed incremented');
     return null;
   }
@@ -194,6 +195,7 @@ export function trackSent(session, target, message) {
   // Update session stats for sent counter and attributes
   if (session.stats) {
     session.stats.sent = (session.stats.sent || 0) + 1;
+    session.stats.lifetime_sent = (session.stats.lifetime_sent || 0) + 1;
     session.stats.last_sent_message = maskData(message);
     session.stats.last_sent_target = maskData(displayTarget);
     session.stats.last_sent_time = Date.now();
