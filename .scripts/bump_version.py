@@ -96,37 +96,20 @@ def get_git_log_for_addon(addon_path, since_tag=None, ignore_tag=None):
             ]
             tag = addon_tags[0] if addon_tags else None
 
-        # Fallback: If no tag found, search for the last "release(slug)" commit
+        # Fallback: If no tag found, search for the last "release(slug)" or "release(addon_name)" commit
         if not tag and not since_tag:
             try:
-                # Search for "release(addon_name)" in commit messages
-                result = subprocess.run(
-                    [
-                        "git",
-                        "log",
-                        "-n",
-                        "1",
-                        "--pretty=format:%H",
-                        f"--grep=release({addon_name})",
-                    ],
-                    capture_output=True,
-                    text=True,
-                    encoding="utf-8",
-                    cwd=os.path.dirname(addon_path) or ".",
-                )
-                if result.returncode == 0 and result.stdout.strip():
-                    tag = result.stdout.strip()
-                    print(f"ℹ️ Found previous release commit for {addon_name}: {tag}")
-                else:
-                    # Fallback for "release(all)" or generic releases
+                # Search for specific "release(addon_name)" in commit messages with --fixed-strings
+                for pattern in [f"release({addon_name})", f"release({addon_slug})"]:
                     result = subprocess.run(
                         [
                             "git",
                             "log",
                             "-n",
                             "1",
+                            "--fixed-strings",
+                            f"--grep={pattern}",
                             "--pretty=format:%H",
-                            "--grep=release(",
                         ],
                         capture_output=True,
                         text=True,
@@ -135,7 +118,30 @@ def get_git_log_for_addon(addon_path, since_tag=None, ignore_tag=None):
                     )
                     if result.returncode == 0 and result.stdout.strip():
                         tag = result.stdout.strip()
-                        print(f"ℹ️ Found generic previous release commit: {tag}")
+                        print(f"ℹ️ Found previous release commit for {addon_name}: {tag}")
+                        break
+
+                # Fallback: If still no release commit found, find the previous commit that changed this addon's config.yaml
+                if not tag:
+                    result = subprocess.run(
+                        [
+                            "git",
+                            "log",
+                            "-n",
+                            "1",
+                            "--skip=1",
+                            "--pretty=format:%H",
+                            "--",
+                            os.path.join(addon_path, "config.yaml"),
+                        ],
+                        capture_output=True,
+                        text=True,
+                        encoding="utf-8",
+                        cwd=os.path.dirname(addon_path) or ".",
+                    )
+                    if result.returncode == 0 and result.stdout.strip():
+                        tag = result.stdout.strip()
+                        print(f"ℹ️ Found previous config.yaml commit for {addon_name}: {tag}")
             except Exception as e:
                 print(f"⚠️ Could not search for release commits: {e}")
 
@@ -224,7 +230,7 @@ def categorize_commits(commits, repo_url, addon_slug=None):
             # Also skip if it IS the target addon (we don't want the bump commit in its own changelog)
             continue
 
-        # Skip version bump commits, auto-fix commits and CI fixes
+        # Skip version bump commits, auto-fix commits, reset commits, and CI noise
         if any(
             x in msg_lower
             for x in [
@@ -232,6 +238,9 @@ def categorize_commits(commits, repo_url, addon_slug=None):
                 "auto-fix",
                 "ci fix",
                 "auto-update documentation standards",
+                "reset all 28 addons",
+                "revert accidental duplicate",
+                "[skip ci]",
             ]
         ):
             continue

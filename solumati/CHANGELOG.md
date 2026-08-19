@@ -1,17 +1,30 @@
 # Changelog
 
-## 2.4.0 (2026-06-16)
+## 2.4.0 (2026-08-19)
+
+### ✨ Features
+
+- add Google Antigravity Usage monitor addon ([`81495c890`](https://github.com/FaserF/hassio-addons/commit/81495c890a4d15605f44d0ac5c30ff2b85db4dd0))
+
+### 🐛 Bug Fixes
+
+- replace deprecated bashio::addon.stop with bashio::app.stop and harmonize APP_VERSION variables ([`e74d22d66`](https://github.com/FaserF/hassio-addons/commit/e74d22d66be715d3ea2efad6e4919b70bf4a81ce))
+- harden parameter expansion in startup banner for set -u strict mode ([`cb8ad15bd`](https://github.com/FaserF/hassio-addons/commit/cb8ad15bd5df93dd1da6081ac20ab2332f4d3b29))
+- use safe expansion \ for set -u compatibility ([`560bc0fce`](https://github.com/FaserF/hassio-addons/commit/560bc0fce19cd258f025a328ffd5f6addd78f688))
+- add restart loop protection to startup banners and fix gt import error ([`da3008348`](https://github.com/FaserF/hassio-addons/commit/da3008348fc12ea389004b10665cbae4d7a8e112))
 
 ### 📦 Dependencies
 
-- fix docker build for musl dependency ([`5c5d45ee`](https://github.com/FaserF/hassio-addons/commit/5c5d45eee91ef4223b5feae85b87011977406dd5))
+- update icons and convert logos to official landscape banners ([`e6d061bd8`](https://github.com/FaserF/hassio-addons/commit/e6d061bd8292ae6ca473fa21a2e55d5e5f4e70ea))
+
+### 🔧 Configuration
+
+- CI hadolint linter fixes ([`44ea2cc01`](https://github.com/FaserF/hassio-addons/commit/44ea2cc0151b77d64b24e83eacfe2fff00be618d))
 
 ### 🚀 Other
 
-- docker build fixes ([`8f318832`](https://github.com/FaserF/hassio-addons/commit/8f3188323de16d4d1b3c625c01b4eba4eaca53d4))
-- CI supervisor test fixes ([`c5acd8a5`](https://github.com/FaserF/hassio-addons/commit/c5acd8a53079cd4b2d746699c397cc3499e47613))
-- fix docker build ([`db25a412`](https://github.com/FaserF/hassio-addons/commit/db25a4124eab24641d43807fc7b97df694d6e758))
-- fix docker build in newer alpine version ([`7a040ec8`](https://github.com/FaserF/hassio-addons/commit/7a040ec8304f4f6ffc2a5dbbcc237ef19e9aca10))
+- improved debug logging ([`5d4e8eaca`](https://github.com/FaserF/hassio-addons/commit/5d4e8eaca22e75584a761193f49096de486d0995))
+
 
 ## 2.3.1 (2026-04-09)
 

@@ -1,11 +1,7 @@
 # Changelog
 
-## 0.1.0 (2026-08-17)
+## 0.1.0 (2026-08-19)
 
-### ✨ Features
+### 📦 Dependencies
 
-- Initial release of EntraMirror Home Assistant Add-on
-- Full support for private repositories via GitHub PAT (classic & fine-grained)
-- Developer mode with automatic download & build from `main` branch
-- Ingress support for frontend dashboard and docs
-- Persistent SQLite database and snapshot/secret storage
+- ⬆️ Update Add-on base images ([`cff61763`](https://github.com/FaserF/hassio-addons/commit/cff61763699487bc020cab1735cafd22ebd6f0cf))

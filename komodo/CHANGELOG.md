@@ -2,10 +2,34 @@
 
 ## 0.2.5 (2026-08-19)
 
+### ✨ Features
+
+- add Google Antigravity Usage monitor addon ([`81495c890`](https://github.com/FaserF/hassio-addons/commit/81495c890a4d15605f44d0ac5c30ff2b85db4dd0))
+
 ### 🐛 Bug Fixes
 
-- reset all 28 addons to pre-release base versions and clean changelogs ([`e1ff3f48`](https://github.com/FaserF/hassio-addons/commit/e1ff3f489b5e1b95a4bb57eeb33a19d39c3b67d3))
-- fix docker build ([`dfe60f8f`](https://github.com/FaserF/hassio-addons/commit/dfe60f8f413dfb9a5221e9a83ab501dc72a6ea27))
+- convert pseudo-PNG jpeg images to genuine PNG format and improve autofix ([`9803f56c2`](https://github.com/FaserF/hassio-addons/commit/9803f56c2606138cf0e41de1c02368cf2b32566c))
+- replace deprecated bashio::addon.stop with bashio::app.stop and harmonize APP_VERSION variables ([`e74d22d66`](https://github.com/FaserF/hassio-addons/commit/e74d22d66be715d3ea2efad6e4919b70bf4a81ce))
+- harden parameter expansion in startup banner for set -u strict mode ([`cb8ad15bd`](https://github.com/FaserF/hassio-addons/commit/cb8ad15bd5df93dd1da6081ac20ab2332f4d3b29))
+- use safe expansion \ for set -u compatibility ([`560bc0fce`](https://github.com/FaserF/hassio-addons/commit/560bc0fce19cd258f025a328ffd5f6addd78f688))
+- add restart loop protection to startup banners and fix gt import error ([`da3008348`](https://github.com/FaserF/hassio-addons/commit/da3008348fc12ea389004b10665cbae4d7a8e112))
+
+### 📦 Dependencies
+
+- ⬆️ Update Add-on base images ([`cff617636`](https://github.com/FaserF/hassio-addons/commit/cff61763699487bc020cab1735cafd22ebd6f0cf))
+- update icons and convert logos to official landscape banners ([`e6d061bd8`](https://github.com/FaserF/hassio-addons/commit/e6d061bd8292ae6ca473fa21a2e55d5e5f4e70ea))
+- ⬆️ Update ghcr.io/moghtech/komodo-core Docker tag to v2.3.2 (#969) ([`4f1a380ca`](https://github.com/FaserF/hassio-addons/commit/4f1a380caac5e034803faff934d961ce81d72dc4))
+- ⬆️ Update dependency moghtech/komodo to v2.3.2 ([`e7590f75a`](https://github.com/FaserF/hassio-addons/commit/e7590f75a862cdb29959bd734a85c7798e8eb218))
+
+### 🔧 Configuration
+
+- CI linter fixes ([`9ca6bd762`](https://github.com/FaserF/hassio-addons/commit/9ca6bd762a6407dc2edd20c327df5d6fc212e6a2))
+
+### 🚀 Other
+
+- fix docker build ([`f89243402`](https://github.com/FaserF/hassio-addons/commit/f892434026b36edf563754a966ead13ab1976c6f))
+- fix docker build ([`dfe60f8f4`](https://github.com/FaserF/hassio-addons/commit/dfe60f8f413dfb9a5221e9a83ab501dc72a6ea27))
+
 
 ## 0.2.4 (2026-08-04)
 

@@ -1,19 +1,67 @@
 # Changelog
 
-## 0.6.1 (2026-08-07)
+## 0.6.1 (2026-08-19)
 
 ### ✨ Features
 
-- add contacts cache and check_number API (#902) ([`a44ab335`](https://github.com/FaserF/hassio-addons/commit/a44ab335378d65594085055d68c90994e1e9c998))
-- add supervisor discovery and auto-install/update ([`da8d4b48`](https://github.com/FaserF/hassio-addons/commit/da8d4b4828cbc22bd6a1bc65fd87e47bb0368a22))
+- add Google Antigravity Usage monitor addon ([`81495c890`](https://github.com/FaserF/hassio-addons/commit/81495c890a4d15605f44d0ac5c30ff2b85db4dd0))
+- Github availablity check ([`8a5c7967f`](https://github.com/FaserF/hassio-addons/commit/8a5c7967fe45a835d4763dcde8afa26c8048c502))
+- add cmake, openblas and linux-headers to Dockerfile and re-enable faster-whisper dependency ([`3ee18e333`](https://github.com/FaserF/hassio-addons/commit/3ee18e333d202168dd66a9b2e04a1ad6d7f55cb8))
+- support AegisBot STT provider, native dice/roll commands and dependencies ([`70c5f3cc6`](https://github.com/FaserF/hassio-addons/commit/70c5f3cc65b56cbc589ca116d7e81c7302e12d8b))
+- send server and addon version in /about command for WhatsApp and AegisBot ([`c60f954ed`](https://github.com/FaserF/hassio-addons/commit/c60f954ed28a0113750d3b1c6ca19b372a5ac9b9))
+- configure specific startup phases and integration discovery for relevant addons ([`2f939fbd8`](https://github.com/FaserF/hassio-addons/commit/2f939fbd8771f1d02798081dff4759e5c67fcc88))
+- set host_network: true for AegisBot and DBF mDNS discovery and update docs ([`e2a051cc3`](https://github.com/FaserF/hassio-addons/commit/e2a051cc3468d9a19bf6ecbae928bd1811d39a84))
+- add dedicated JSON file upload button & drag-and-drop support for group config import ([`de52ae91d`](https://github.com/FaserF/hassio-addons/commit/de52ae91dec0c87dab8e664d362460ffd47e8228))
+- add first_admin_password option for initial admin credentials ([`bc829e4b0`](https://github.com/FaserF/hassio-addons/commit/bc829e4b015a81f7471e9409b8ea2441c3d25250))
 
 ### 🐛 Bug Fixes
 
-- CI hadolint linter fixes ([`44ea2cc0`](https://github.com/FaserF/hassio-addons/commit/44ea2cc0151b77d64b24e83eacfe2fff00be618d))
+- convert pseudo-PNG jpeg images to genuine PNG format and improve autofix ([`9803f56c2`](https://github.com/FaserF/hassio-addons/commit/9803f56c2606138cf0e41de1c02368cf2b32566c))
+- replace deprecated bashio::addon.stop with bashio::app.stop and harmonize APP_VERSION variables ([`e74d22d66`](https://github.com/FaserF/hassio-addons/commit/e74d22d66be715d3ea2efad6e4919b70bf4a81ce))
+- remove faster-whisper from requirements.txt to avoid ctranslate2 musllinux build errors ([`cedd8d665`](https://github.com/FaserF/hassio-addons/commit/cedd8d6657fdaff4c9f19fca59ecb90b935155d7))
+- preserve port and host header in nginx proxy ([`b5702e842`](https://github.com/FaserF/hassio-addons/commit/b5702e84261395da9e21db6f0adbc81adee83bdb))
+- remove vite base './' patch from frontend build ([`612c914fd`](https://github.com/FaserF/hassio-addons/commit/612c914fd0942e20149021209cb4b67cd7dd9680))
+- enable host_network and auto-install zeroconf for mDNS discovery ([`784979032`](https://github.com/FaserF/hassio-addons/commit/78497903208703f15b24d4c2f5e8b6dc8f67bbc6))
+- pin websockets==16.0 to resolve google-genai dependency conflict ([`db588e934`](https://github.com/FaserF/hassio-addons/commit/db588e934ebe2668b8395e0f1171bc0c9d4894f0))
+- fix line continuation syntax error in Dockerfile before COPY command ([`45dee3a05`](https://github.com/FaserF/hassio-addons/commit/45dee3a05a8ab54d725b9c6c1cae746a1b9fa4db))
+- pre-install python core dependencies in Dockerfile and add uvicorn auto-install fallback in run.sh ([`2a1b857e1`](https://github.com/FaserF/hassio-addons/commit/2a1b857e1b49dc5225aa3986b2d5719612a62d49))
+- fix Nginx location /api/ proxy_pass URI mapping for uvicorn backend ([`5778e9ac7`](https://github.com/FaserF/hassio-addons/commit/5778e9ac78c37cfd560d761131e08641493ff557))
+- add explicit ingress_port: 8077 to config.yaml ([`0e711b25c`](https://github.com/FaserF/hassio-addons/commit/0e711b25cf7b32ce9962413a208e6832210be814))
+- prevent protocolMessage metadata leakage and deduplicate edit events ([`f185914dc`](https://github.com/FaserF/hassio-addons/commit/f185914dc7bf9cf4953db0b3f2a9c553af610c6f))
+- ensure DB files across all paths are wiped during database reset ([`ec8bdf1c1`](https://github.com/FaserF/hassio-addons/commit/ec8bdf1c1872aca3ee2e606878e105e85ad5923a))
+- harden parameter expansion in startup banner for set -u strict mode ([`cb8ad15bd`](https://github.com/FaserF/hassio-addons/commit/cb8ad15bd5df93dd1da6081ac20ab2332f4d3b29))
+- use safe expansion \ for set -u compatibility ([`560bc0fce`](https://github.com/FaserF/hassio-addons/commit/560bc0fce19cd258f025a328ffd5f6addd78f688))
 
-### 🔧 Configuration
+### 📦 Dependencies
 
-- align APP_VERSION in Dockerfiles with config.yaml version ([`a815262c`](https://github.com/FaserF/hassio-addons/commit/a815262c04aaee9b76412f34840022159dd446b2))
+- ⬆️ Update dependency uvicorn to v0.52.4 ([`650cd95f2`](https://github.com/FaserF/hassio-addons/commit/650cd95f28daf01ea5cf29c61add4f1fab763764))
+- update icons and convert logos to official landscape banners ([`e6d061bd8`](https://github.com/FaserF/hassio-addons/commit/e6d061bd8292ae6ca473fa21a2e55d5e5f4e70ea))
+- ⬆️ Update dependency openai to v3.3.0 (#996) ([`605dc796f`](https://github.com/FaserF/hassio-addons/commit/605dc796f307f24a30988842140c27168f5a2bfb))
+- ⬆️ Update dependency openai to v3.2.0 (#995) ([`b4e37f665`](https://github.com/FaserF/hassio-addons/commit/b4e37f66564843a2f2a9c5b5bd13f95d7ba34116))
+- Update requirements.txt ([`c77c7dff4`](https://github.com/FaserF/hassio-addons/commit/c77c7dff413d5a5f08970dacaf0d13a241d900e3))
+- ⬆️ Update dependency faster-whisper to v1.2.1 ([`776c43612`](https://github.com/FaserF/hassio-addons/commit/776c436121c1b63ce63b1308242c53632846c303))
+- ⬆️ Update dependency python-dotenv to v1.2.3 (#981) ([`08e83a926`](https://github.com/FaserF/hassio-addons/commit/08e83a92665094c01b26032bbba9934b27ad300f))
+- ⬆️ Update dependency openai to v3.1.0 (#980) ([`a644b6f89`](https://github.com/FaserF/hassio-addons/commit/a644b6f89d68ad8aba4a13490e0be26337c48114))
+- ⬆️ Update dependency google-genai to v2.18.1 (#977) ([`b1a19411f`](https://github.com/FaserF/hassio-addons/commit/b1a19411f8ead5f8dc4b87ba0489e88a5ff84bcf))
+- ⬆️ Pin dependency zeroconf to ==0.150.0 (#976) ([`c3ebf3515`](https://github.com/FaserF/hassio-addons/commit/c3ebf35154e39eb5f2f508c70ce63ee28a993a0a))
+- set bridge network as default and update docs on host network and auto-prefill ([`46f8f013b`](https://github.com/FaserF/hassio-addons/commit/46f8f013bc619a7fe62f24631053aafc116d7b4d))
+- ⬆️ Update dependency uvicorn to v0.52.3 (#974) ([`d372d687d`](https://github.com/FaserF/hassio-addons/commit/d372d687d92aae6b52e9e26ded6178d5b69ec453))
+- ⬆️ Update dependency websockets to v16.1.1 (#975) ([`93de21f61`](https://github.com/FaserF/hassio-addons/commit/93de21f619e1aa3a58f5cec6b85b095364359ef3))
+- ⬆️ Pin dependencies (#973) ([`9bb578aba`](https://github.com/FaserF/hassio-addons/commit/9bb578aba155c8b8eac7507ceb3c8c8a74f28b3d))
+
+### 🔒 Security
+
+- security: redact raw malicious URLs/filenames from Security Shield warning messages ([`ade966039`](https://github.com/FaserF/hassio-addons/commit/ade966039b2598e67454d06150f65b21032bfa5e))
+
+### 🚀 Other
+
+- small fixes ([`dfa67c70e`](https://github.com/FaserF/hassio-addons/commit/dfa67c70e23664d0d3f8486cad46a048e7f3d5ae))
+- improved auto versioning ([`6426777db`](https://github.com/FaserF/hassio-addons/commit/6426777db225d2eac785b190788ce2f0f9eb5653))
+- document host_network and zeroconf auto-discovery in AegisBot and DBF ([`5028f4786`](https://github.com/FaserF/hassio-addons/commit/5028f47864f66d7c47adc1ccd4b52ef42dae5664))
+- small fixes ([`2d647895f`](https://github.com/FaserF/hassio-addons/commit/2d647895f170fbc5febe683bcb7cc0c4937029fa))
+- small fix ([`fbf111681`](https://github.com/FaserF/hassio-addons/commit/fbf111681f949629e1690ff83e2c6a71b7a5d385))
+- small fixes ([`d0f7207cc`](https://github.com/FaserF/hassio-addons/commit/d0f7207cc23afb1ba93d093d4091db96d3166d53))
+
 
 ## 0.6.0 (2026-06-16)
 

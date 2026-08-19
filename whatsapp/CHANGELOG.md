@@ -2,9 +2,61 @@
 
 ## 2.1.1 (2026-08-19)
 
+### ✨ Features
+
+- reset auto responder start time to now and end time to unlimited when enabled via HA integration ([`76a303074`](https://github.com/FaserF/hassio-addons/commit/76a3030740160b00d2f871e8dd565c0b73aabd46))
+- add missed messages card to main dashboard view ([`87599a380`](https://github.com/FaserF/hassio-addons/commit/87599a38081566342a2f6ea8dd76d7b9fc51810c))
+- add missed messages settings UI and fix TG edit translation mirror ([`2d0f31059`](https://github.com/FaserF/hassio-addons/commit/2d0f31059f223ee5ba151996c728ac5be23e6031))
+- translation map persistence, missed messages feature ([`bb2b09d21`](https://github.com/FaserF/hassio-addons/commit/bb2b09d21e94d3af362600181acfbafd48a8f2d0))
+- allow self-message evaluation, add localized telegram bridge diagnostics and anti-spam bypass ([`9dbe6bb84`](https://github.com/FaserF/hassio-addons/commit/9dbe6bb84076df6df08e34ba44546f125ccc19e3))
+- add clear all-time scope tags and layout separation to stats ([`217a5baaa`](https://github.com/FaserF/hassio-addons/commit/217a5baaaf15bf8bbaefc17a94fb437ff82dd7a1))
+- persist stats and recent queues across restarts with tooltips ([`59ad0f87f`](https://github.com/FaserF/hassio-addons/commit/59ad0f87fb5c3c9915bc054bd180b2c81844ff0d))
+- implement complete PWA support with Service Worker, responsive icons, and install prompts ([`fc0e41f54`](https://github.com/FaserF/hassio-addons/commit/fc0e41f5448d97408e32de6c034a2677eeed3ddb))
+- add auto responder placeholder guide, live preview, and localized datetime resolution ([`f9e8cae0e`](https://github.com/FaserF/hassio-addons/commit/f9e8cae0e99eafb394e08b75b269c051fc19e350))
+- add Google Antigravity Usage monitor addon ([`81495c890`](https://github.com/FaserF/hassio-addons/commit/81495c890a4d15605f44d0ac5c30ff2b85db4dd0))
+- add auto responder feature ([`4f7f2f64f`](https://github.com/FaserF/hassio-addons/commit/4f7f2f64faa52689a0f6525002c59fa087cd254a))
+- add reaction emoji, sticker/GIF replies, file attachments and poll creator in WhatsApp Addon and AegisBot Auto-Responder UI ([`e3af31a3a`](https://github.com/FaserF/hassio-addons/commit/e3af31a3a403aa6b980594ea916cc114e1fa61a1))
+- add sticker and gif endpoints with gifPlayback support in messaging API ([`b65f38e9f`](https://github.com/FaserF/hassio-addons/commit/b65f38e9fd604fefe7248197b6acc33c8c181340))
+- add safe alias for save and allow direct note retrieval via hashtag (#notename) ([`bae8eb2fc`](https://github.com/FaserF/hassio-addons/commit/bae8eb2fc18c2f2e519c6213f0c8da29b37bfa6b))
+- localize bridge poll leader, vote updates, media placeholders, and system messages ([`2d1f3371f`](https://github.com/FaserF/hassio-addons/commit/2d1f3371fc13eba9f3e041c8ee9ebb7804f52fd7))
+
 ### 🐛 Bug Fixes
 
-- reset all 28 addons to pre-release base versions and clean changelogs ([`e1ff3f48`](https://github.com/FaserF/hassio-addons/commit/e1ff3f489b5e1b95a4bb57eeb33a19d39c3b67d3))
+- use informal Du-form for missed_messages German notification strings ([`79f8f750d`](https://github.com/FaserF/hassio-addons/commit/79f8f750d3ad862bf628696e39980f1839e7cfbd))
+- ensure auto-translation edit sync triggers across all enabled translation modes ([`63bca203b`](https://github.com/FaserF/hassio-addons/commit/63bca203b7ffd068b7506bc72cbc15abc91b29ba))
+- delete corresponding WhatsApp message, auto-translation and mappings when revoked from Telegram ([`0281f1a54`](https://github.com/FaserF/hassio-addons/commit/0281f1a544d44f6e36ebf1bb6746938a7a344a02))
+- suppress poll vote auto-translations, use native poll in diagnostic, and mirror WA edits to TG ([`4f863bf43`](https://github.com/FaserF/hassio-addons/commit/4f863bf43e09eb619ed985f94ee387ac04e79fbb))
+- resolve auto-translation loops and strengthen command self-message handling with i18n support ([`2eebc13a1`](https://github.com/FaserF/hassio-addons/commit/2eebc13a1a6a80b3a33d6729da539aa302619d48))
+- resolve CodeQL SSRF alerts in moderation test-aegisbot route ([`941b646c5`](https://github.com/FaserF/hassio-addons/commit/941b646c5d29fed9c6c651f615cdf43574742f40))
+- resolve CodeQL SSRF alerts and prevent auto-responder loops during diagnostics ([`29bd5c1fb`](https://github.com/FaserF/hassio-addons/commit/29bd5c1fbbef843dafeeacff6a51ab5c0a844c82))
+- ensure translated edits update reliably on WhatsApp and Telegram ([`db2f0579f`](https://github.com/FaserF/hassio-addons/commit/db2f0579fc941ee1f592173b21cd0904abfc5da9))
+- route diagnostics to source chat and limit mod report to groups ([`9457282f2`](https://github.com/FaserF/hassio-addons/commit/9457282f29fb4da1b468c01d38d0ddc32dc8d650))
+- reset expired end_time on activation and streamline compact UI ([`e761b09bd`](https://github.com/FaserF/hassio-addons/commit/e761b09bd14d418453f990fe79999b61c46ac2c9))
+- fixes & improvements ([`5804026d2`](https://github.com/FaserF/hassio-addons/commit/5804026d20fbdd0ad0989b2d1db0e8a17d76d84d))
+- convert pseudo-PNG jpeg images to genuine PNG format and improve autofix ([`9803f56c2`](https://github.com/FaserF/hassio-addons/commit/9803f56c2606138cf0e41de1c02368cf2b32566c))
+- sync WhatsApp message edits to auto-translations and Telegram bridge ([`b71fb70d7`](https://github.com/FaserF/hassio-addons/commit/b71fb70d7bb1dc6dd288f0df5fee0e332bed193f))
+- support message_id/new_content in edit_message and implement sendPoll on TelegramBotClient ([`8d55fdb6f`](https://github.com/FaserF/hassio-addons/commit/8d55fdb6fd95e18a44489ea4d3cd1f61cbf33b2b))
+- resolve CodeQL SSRF, loop bound injection and regex sanitization alerts ([`67c20e0e3`](https://github.com/FaserF/hassio-addons/commit/67c20e0e31cb055dd5ac960660da020a6c704f2b))
+
+### 📦 Dependencies
+
+- Update autoresponder.js ([`4026a4818`](https://github.com/FaserF/hassio-addons/commit/4026a481807a284f73da2060d0b53b5b77c51cb3))
+- ⬆️ Update Add-on base images ([`cff617636`](https://github.com/FaserF/hassio-addons/commit/cff61763699487bc020cab1735cafd22ebd6f0cf))
+- ⬆️ Update dependency uvicorn to v0.52.4 ([`650cd95f2`](https://github.com/FaserF/hassio-addons/commit/650cd95f28daf01ea5cf29c61add4f1fab763764))
+- update icons and convert logos to official landscape banners ([`e6d061bd8`](https://github.com/FaserF/hassio-addons/commit/e6d061bd8292ae6ca473fa21a2e55d5e5f4e70ea))
+- small dependency fix ([`67c45f4be`](https://github.com/FaserF/hassio-addons/commit/67c45f4bee3119ca50b1f7e85bf4b5e5338fabc3))
+
+### 🚀 Other
+
+- small ha-app-diag fix ([`043bf1ca1`](https://github.com/FaserF/hassio-addons/commit/043bf1ca1313557b47e607c6d4868cf3ecab212c))
+- STT improvements & fixes ([`4fb419c6a`](https://github.com/FaserF/hassio-addons/commit/4fb419c6a57bf0fb877a240a043ff26fe980c2f5))
+- STT API Key fallback from HA config #982 ([`88e1f5e5e`](https://github.com/FaserF/hassio-addons/commit/88e1f5e5edba8c03df92b6e1147c1cab9c6be0f7))
+- fix missing closing bracket ([`b613d6a7f`](https://github.com/FaserF/hassio-addons/commit/b613d6a7f191390593292c2c0cf6f40ea027fe1c))
+- small fix ([`f13654481`](https://github.com/FaserF/hassio-addons/commit/f13654481c0f0ceb4cd8aab6993cf6eb0f4f13bb))
+- small fixes ([`dfa67c70e`](https://github.com/FaserF/hassio-addons/commit/dfa67c70e23664d0d3f8486cad46a048e7f3d5ae))
+- CodeQL security fixes ([`4f140cd86`](https://github.com/FaserF/hassio-addons/commit/4f140cd86a667e0f28da5730567e8b2ff81b7f79))
+- small fixes ([`ca5cd05a8`](https://github.com/FaserF/hassio-addons/commit/ca5cd05a8d3711abdad950d355c22d595629a3dd))
+
 
 ## 2.1.0 (2026-08-16)
 
