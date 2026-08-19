@@ -14,6 +14,8 @@ ENV APP_UNSUPPORTED="false"
 ENV PIP_BREAK_SYSTEM_PACKAGES=1 \
     PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1
 
+COPY requirements.txt /tmp/requirements.txt
+
 # Setup base system & Python runtime
 RUN \
     apk add --no-cache \
@@ -28,8 +30,8 @@ RUN \
         openssl \
         libssl3 \
         libcrypto3 \
-    && pip3 install --no-cache-dir --break-system-packages \
-        google-auth==2.38.0
+    && pip3 install --no-cache-dir --break-system-packages -r /tmp/requirements.txt \
+    && rm -f /tmp/requirements.txt
 
 # Copy rootfs
 COPY rootfs /
