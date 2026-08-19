@@ -486,89 +486,66 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
               // 1. Individual Allowed Commands
               if (activeBuiltins.length > 0) {
                 await delay(500);
+                const cmdLines = activeBuiltins.slice(0, 15).map((cmd) => `• \`${prefix}${cmd}\``).join('\n');
                 await reply(session, targetJid, {
-                  text: `🟢 *[TEST PACK 1/6] Allowed Commands for "${groupName}":*`,
+                  text: `🟢 *[TEST PACK 1/6] Allowed Commands for "${groupName}":*\n\n${cmdLines}`,
                 });
-                for (const cmd of activeBuiltins.slice(0, 15)) {
-                  await delay(300);
-                  await reply(session, targetJid, { text: `${prefix}${cmd}` });
-                }
               }
 
               // 2. Individual Disabled Commands
               if (disabledCmds.size > 0) {
                 await delay(500);
+                const disabledLines = Array.from(disabledCmds).map((cmd) => `• \`${prefix}${cmd}\``).join('\n');
                 await reply(session, targetJid, {
-                  text: `🔴 *[TEST PACK 2/6] Disabled Commands for "${groupName}":*`,
+                  text: `🔴 *[TEST PACK 2/6] Disabled Commands for "${groupName}":*\n\n${disabledLines}`,
                 });
-                for (const cmd of Array.from(disabledCmds)) {
-                  await delay(300);
-                  await reply(session, targetJid, { text: `${prefix}${cmd}` });
-                }
               }
 
               // 3. Individual Custom Commands
               if (customCmds.length > 0) {
                 await delay(500);
+                const customLines = customCmds.map((c) => `• \`${prefix}${c.command.replace(/^[!/#]+/, '')}\``).join('\n');
                 await reply(session, targetJid, {
-                  text: `⚡ *[TEST PACK 3/6] Custom Commands for "${groupName}":*`,
+                  text: `⚡ *[TEST PACK 3/6] Custom Commands for "${groupName}":*\n\n${customLines}`,
                 });
-                for (const c of customCmds) {
-                  await delay(300);
-                  const formattedCmd = c.command.replace(/^[!/#]+/, '');
-                  await reply(session, targetJid, { text: `${prefix}${formattedCmd}` });
-                }
               }
 
               // 4. Individual Auto-Responder Filters
               if (cfg.filters && cfg.filters.length > 0) {
                 await delay(500);
+                const filterLines = cfg.filters.map((f) => `• \`${f.trigger}\` ➔ ${f.response || f.reaction_emoji || 'Action'}`).join('\n');
                 await reply(session, targetJid, {
-                  text: `💬 *[TEST PACK 4/6] Auto-Responder Filters for "${groupName}":*`,
+                  text: `💬 *[TEST PACK 4/6] Auto-Responder Filters for "${groupName}":*\n\n${filterLines}`,
                 });
-                for (const f of cfg.filters) {
-                  await delay(300);
-                  // Prefix with zero-width non-joiner (U+200C) so the filter's substring
-                  // match won't fire on the bot's own diagnostic display message.
-                  await reply(session, targetJid, { text: `\u200C${f.trigger}` });
-                }
               }
 
               // 5. Individual Saved Notes
               if (cfg.notes && Object.keys(cfg.notes).length > 0) {
                 await delay(500);
+                const noteLines = Object.keys(cfg.notes).map((n) => `• \`${prefix}get #${n}\``).join('\n');
                 await reply(session, targetJid, {
-                  text: `📌 *[TEST PACK 5/6] Saved Notes for "${groupName}":*`,
+                  text: `📌 *[TEST PACK 5/6] Saved Notes for "${groupName}":*\n\n${noteLines}`,
                 });
-                for (const n of Object.keys(cfg.notes)) {
-                  await delay(300);
-                  await reply(session, targetJid, { text: `${prefix}get #${n}` });
-                }
               }
 
               // 6. Individual Blacklist Words
               if (cfg.blacklist && cfg.blacklist.enabled && cfg.blacklist.words?.length > 0) {
                 await delay(500);
+                const blacklistLines = cfg.blacklist.words.map((w) => `• \`${w}\``).join('\n');
                 await reply(session, targetJid, {
-                  text: `⚠️ *[TEST PACK 6/7] Blacklist Words (Action: ${cfg.blacklist.action}) for "${groupName}":*`,
+                  text: `⚠️ *[TEST PACK 6/7] Blacklist Words (Action: ${cfg.blacklist.action}) for "${groupName}":*\n\n${blacklistLines}`,
                 });
-                for (const w of cfg.blacklist.words) {
-                  await delay(300);
-                  // Prefix with zero-width non-joiner (U+200C) so blacklist matching
-                  // won't fire on the bot's own diagnostic display message.
-                  await reply(session, targetJid, { text: `\u200C${w}` });
-                }
               }
 
               // 7. Anti-Spam Link Triggers (t.me, wa.me, etc.)
               if (cfg.anti_spam_links_enabled) {
                 await delay(500);
                 await reply(session, targetJid, {
-                  text: `🔗 *[TEST PACK 7/7] Anti-Spam Link Triggers for "${groupName}":*\nhttps://t.me/joinchat/SPAMMER123\nhttps://wa.me/491761234567\nhttps://chat.whatsapp.com/AbCdEfGhIjKlMnOpQrStUv`,
+                  text: `🔗 *[TEST PACK 7/7] Anti-Spam Link Triggers for "${groupName}":*\n• \`https://t.me/joinchat/SPAMMER123\`\n• \`https://wa.me/491761234567\`\n• \`https://chat.whatsapp.com/AbCdEfGhIjKlMnOpQrStUv\``,
                 });
               }
 
-              // 7. Active Content Locks Instructions
+              // 8. Active Content Locks Instructions
               if (cfg.locks) {
                 const activeLocks = Object.entries(cfg.locks).filter(
                   ([_, lock]) => lock && lock.enabled

@@ -69,7 +69,7 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
   if (!store.global_enabled) return false;
 
   const isPrivateChat = !groupId || !groupId.endsWith('@g.us');
-  const config = getGroupModerationConfig(groupId);
+  const config = getGroupModerationConfig(groupId) || {};
   if (!isPrivateChat && (!config.enabled || !config.commands?.enabled)) return false;
 
   const prefix = config.commands?.prefix || '!';
@@ -80,6 +80,18 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
     .replace(/^```[a-z]*\n?/i, '')
     .replace(/\n?```$/i, '')
     .trim();
+
+  if (!rawText) return false;
+
+  // Allow self/fromMe command execution if the user sent it, but block bot notification/diagnostic/feedback responses
+  if (msg?.key?.fromMe) {
+    const BOT_PREFIXES = ['⚠️', '🔒', '🌐', '🟢', '🔴', '⚡', '💬', '📌', '🔗', '❌', '✅', 'ℹ️', '🤖'];
+    const isBotResponse =
+      BOT_PREFIXES.some((p) => rawText.startsWith(p)) ||
+      rawText.startsWith('*[TEST PACK') ||
+      rawText.includes('---');
+    if (isBotResponse) return false;
+  }
 
   // Escape prefix for regex
   const escapedPrefix = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -102,7 +114,6 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
 
   // If text is a regular conversation or paragraph (not starting with a command or containing mostly non-command lines), do not treat as command block
   const validCommandLines = [];
-  const storeNotes = config.notes || store.groups?.[groupId]?.notes || {};
   for (const line of rawLines) {
     const match = line.match(prefixRegex);
     if (match) {
@@ -110,17 +121,29 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
       const cmdName = match[2].toLowerCase();
       const restArgs = match[4] ? match[4].trim() : '';
       const normalizedCmd = `${usedPrefix}${cmdName}${restArgs ? ' ' + restArgs : ''}`.trim();
-      // Check if command is known, is a saved note, or line is strictly a single short command line
+      const currentStore = loadModerationStore();
+      const currentGroupCfg = getGroupModerationConfig(groupId) || {};
+      const currentNotes = currentGroupCfg.notes || currentStore.groups?.[groupId]?.notes || {};
+      const currentCustom = currentGroupCfg.commands?.custom_commands || [];
+      const isCustom = currentCustom.some(
+        (c) => c.command.toLowerCase().replace(/^[!/#]+/, '') === cmdName
+      );
+
+      // Check if command is known, is a saved note, is custom, or line is strictly a single short command line
       if (
         registry.getCommand(cmdName) !== undefined ||
-        Boolean(storeNotes[cmdName]) ||
+        Boolean(currentNotes[cmdName]) ||
+        isCustom ||
         rawLines.length === 1
       ) {
         validCommandLines.push(normalizedCmd);
       }
     } else if (isPrivateChat) {
       const firstWord = line.split(/\s+/)[0].replace(/@.*$/, '').toLowerCase();
-      if (registry.getCommand(firstWord) !== undefined || Boolean(storeNotes[firstWord])) {
+      const currentStore = loadModerationStore();
+      const currentGroupCfg = getGroupModerationConfig(groupId) || {};
+      const currentNotes = currentGroupCfg.notes || currentStore.groups?.[groupId]?.notes || {};
+      if (registry.getCommand(firstWord) !== undefined || Boolean(currentNotes[firstWord])) {
         validCommandLines.push(line);
       }
     }

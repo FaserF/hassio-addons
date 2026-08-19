@@ -1,7 +1,7 @@
 import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from '../store.js';
 import { processAiModeration } from '../ai.js';
 import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
-import { reply, activeDiagnosticChats } from '../../actions.js';
+import { reply } from '../../actions.js';
 import { logger } from '../../../logger.js';
 import { checkSuspiciousName } from '../securityScanner.js';
 import { gt, recordTranslationMap, shouldSkipDuplicateTranslation } from './translations.js';
@@ -36,12 +36,10 @@ export async function handleModerationMessage(session, event) {
     return false;
   }
 
-  // Skip bot's own outgoing messages UNLESS diagnostic is actively testing this group.
-  // During diagnostic, fromMe messages intentionally pass through so auto-responders
-  // can be verified. Loop protection is handled by the per-trigger cooldown in the
-  // filter loop below — not by blocking fromMe messages here.
-  const isDiagActive = activeDiagnosticChats.has(groupId);
-  if (event.raw?.key?.fromMe && !isDiagActive) return false;
+  // Bot's own outgoing messages must NEVER be processed by the moderation pipeline,
+  // auto-responders, translation engine, or blacklist under any circumstance.
+  // This completely eliminates any feedback loops where bot responses trigger further reactions.
+  if (event.raw?.key?.fromMe || event.from_me) return false;
 
   // Handle Private Chat (DM) messages for pending Captchas
   if (!isGroup) {
@@ -356,8 +354,17 @@ export async function handleModerationMessage(session, event) {
     }
   }
 
-  // 0. Non-destructive Auto-Translation Engine
+  // 0. Non-destructive Auto-Translation Engine (never translate bot's own messages or existing translations)
+  const isTranslationHeader =
+    text &&
+    (/🌐\s*\*.*[→\->].*\*\s*:?/i.test(text) ||
+      /_\s*🌐\s*\[.*\]\s*_/i.test(text) ||
+      text.includes('🌐 ['));
+
   const isSyntheticMessage =
+    rawMsg?.key?.fromMe ||
+    event.from_me ||
+    isTranslationHeader ||
     event.media_type === 'location' ||
     event.media_type === 'contact' ||
     event.media_type === 'poll' ||

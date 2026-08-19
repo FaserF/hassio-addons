@@ -74,7 +74,10 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
     /^(📍\s*\[(Location|Live Location) Share|👤\s*\[Contact:|📊\s*\[Poll:|🔘\s*\[|📋\s*\[List:|🗳️\s*Vote:|📅\s*\*?\[Event)/i.test(
       newText
     ) ||
-    /^[!/#.?]\w+/i.test(newText)
+    /^[!/#.?]\w+/i.test(newText) ||
+    /🌐\s*\*.*[→\->].*\*\s*:?/i.test(newText) ||
+    /_\s*🌐\s*\[.*\]\s*_/i.test(newText) ||
+    newText.includes('🌐 [')
   ) {
     return;
   }
