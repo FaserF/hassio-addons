@@ -3,14 +3,34 @@ import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator
 import { logger } from '../../../logger.js';
 import { t } from '../../../locales/loader.js';
 import { reply } from '../../actions.js';
+import { loadTranslationCache, saveTranslationCache } from './translation_cache.js';
 
 export function gt(config, key, params = {}) {
   const lang = config?.language || 'en';
   return t(lang, key, params);
 }
 
-export const _TRANSLATION_MAP = new Map(); // key: groupId:sourceWaId -> { botWaId, botKey }
+export const _TRANSLATION_MAP = new Map(); // key: groupId:sourceWaId -> { botWaId, botKey, ts }
 export const _RECENT_TRANSLATIONS = new Map(); // key: groupId:normalizedText:targetLang -> timestamp
+
+// Restore translation map from disk on module load (survives addon restarts)
+try {
+  const cached = loadTranslationCache();
+  for (const [k, v] of Object.entries(cached)) {
+    _TRANSLATION_MAP.set(k, v);
+  }
+  if (_TRANSLATION_MAP.size > 0) {
+    logger.info({ count: _TRANSLATION_MAP.size }, '🗺️ Restored translation map from disk cache');
+  }
+} catch (_) {}
+
+function _persistTranslationMap() {
+  const cacheObj = {};
+  for (const [k, v] of _TRANSLATION_MAP.entries()) {
+    cacheObj[k] = { ...v, ts: v.ts || Date.now() };
+  }
+  saveTranslationCache(cacheObj);
+}
 
 export function shouldSkipDuplicateTranslation(groupId, text, targetLang = 'en', ttlMs = 120000) {
   if (!groupId || !text) return false;
@@ -34,7 +54,7 @@ export function shouldSkipDuplicateTranslation(groupId, text, targetLang = 'en',
 export function recordTranslationMap(groupId, sourceWaId, botWaId, botKey) {
   if (!sourceWaId || !botWaId) return;
   const cleanSourceId = String(sourceWaId).trim();
-  const entry = { botWaId, botKey, groupId: groupId || null };
+  const entry = { botWaId, botKey, groupId: groupId || null, ts: Date.now() };
   if (groupId) {
     _TRANSLATION_MAP.set(`${groupId}:${cleanSourceId}`, entry);
   }
@@ -43,7 +63,9 @@ export function recordTranslationMap(groupId, sourceWaId, botWaId, botKey) {
     const firstKey = _TRANSLATION_MAP.keys().next().value;
     _TRANSLATION_MAP.delete(firstKey);
   }
+  _persistTranslationMap();
 }
+
 
 export async function deleteTranslationIfExists(session, groupId, sourceWaId) {
   if (!sourceWaId) return;
@@ -53,6 +75,7 @@ export async function deleteTranslationIfExists(session, groupId, sourceWaId) {
   if (record) {
     if (groupId) _TRANSLATION_MAP.delete(`${groupId}:${cleanSourceId}`);
     _TRANSLATION_MAP.delete(cleanSourceId);
+    _persistTranslationMap();
     try {
       if (session?.sock?.sendMessage && record.botKey) {
         const targetGroup = groupId || record.groupId || record.botKey.remoteJid;

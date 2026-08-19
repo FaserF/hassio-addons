@@ -1396,5 +1396,11 @@
     "installed_success": "WhatsApp Gateway installed successfully! 🎉",
     "install_tooltip": "Install WhatsApp Gateway App (PWA)",
     "already_installed": "PWA is already installed or managed by your browser."
+  },
+  "missed_messages": {
+    "notify_skipped_default": "⚠️ While the WhatsApp gateway was offline, your message could not be processed. Any commands or triggers were skipped and will not be retried.",
+    "notify_skipped_too_old": "⚠️ While the WhatsApp gateway was offline, your message could not be processed. It is too old to be retried automatically.",
+    "startup_processing": "🔄 Processing {{count}} missed message(s) from the last {{hours}}h...",
+    "startup_done": "✅ Processed {{processed}} missed message(s). {{skipped}} message(s) were too old or skipped."
   }
 }

@@ -40,6 +40,12 @@ import {
 } from './events/index.js';
 import { PORT, API_TOKEN } from '../config.js';
 import { isHANetwork } from '../ha.js';
+import {
+  recordDisconnectTime,
+  consumeDisconnectTime,
+  clearNotifiedChats,
+} from './startup/missedMessages.js';
+
 
 export async function connectToWhatsApp(sessionId = 'default', sessions, getSession) {
   const session = getSession(sessionId);
@@ -279,6 +285,8 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
     }
 
     if (connection === 'close') {
+      // Track disconnect time for missed-messages feature
+      recordDisconnectTime(sessionId);
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       const isLoggedOut = statusCode === DisconnectReason.loggedOut;
       const errorMsg =
@@ -418,6 +426,11 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       session.firstFailureTime = null;
       session.qrGenerated = false;
       session.currentQR = null;
+
+      // Initialize missed-messages window: record when we reconnected and when we went offline
+      session._reconnectedAt = Date.now();
+      session._offlineSince = consumeDisconnectTime(sessionId) || session._reconnectedAt;
+      clearNotifiedChats();
 
       // Populate groupCache with all participating group subjects (names)
       if (sock.groupFetchAllParticipating) {

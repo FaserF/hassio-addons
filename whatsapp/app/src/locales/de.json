@@ -1410,5 +1410,11 @@
     "installed_success": "WhatsApp Gateway erfolgreich als App installiert! 🎉",
     "install_tooltip": "WhatsApp Gateway als App installieren (PWA)",
     "already_installed": "Die App ist bereits installiert oder wird vom Browser verwaltet."
+  },
+  "missed_messages": {
+    "notify_skipped_default": "⚠️ Während der WhatsApp-Gateway offline war, konnte Ihre Nachricht nicht verarbeitet werden. Befehle oder Auslöser wurden übersprungen und werden nicht nachgeholt.",
+    "notify_skipped_too_old": "⚠️ Während der WhatsApp-Gateway offline war, konnte Ihre Nachricht nicht verarbeitet werden. Sie ist zu alt, um automatisch nachverarbeitet zu werden.",
+    "startup_processing": "🔄 Verarbeite {{count}} verpasste Nachricht(en) aus den letzten {{hours}}h...",
+    "startup_done": "✅ {{processed}} verpasste Nachricht(en) verarbeitet. {{skipped}} Nachricht(en) waren zu alt oder wurden übersprungen."
   }
 }

@@ -46,6 +46,8 @@ import {
 import { trackPinnedMessage, untrackPinnedMessage } from '../moderation/commands/admin/content.js';
 import { handleWhatsAppVoiceSTT } from '../sttHandler.js';
 import { processCommand } from '../moderation/commands.js';
+import { evaluateMissedMessage } from '../startup/missedMessages.js';
+
 
 export { bindStore } from './store.js';
 export { getChangelogUrl, checkSystemUpdates, monitorHACore } from './system.js';
@@ -1117,6 +1119,12 @@ export function handleIncomingMessages(session) {
           },
           '🛡️ Moderation evaluation for group message'
         );
+
+        // Missed-messages check: skip or replay messages that arrived while offline
+        const { shouldProcess } = await evaluateMissedMessage(session, msg);
+        if (!shouldProcess) {
+          return;
+        }
 
         // 1. Process as command (requiring actual admin status for admin commands)
         let handledAsCommand = false;

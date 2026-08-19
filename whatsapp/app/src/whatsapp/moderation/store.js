@@ -246,6 +246,11 @@ export function getDefaultModerationStore() {
         ],
       },
     ],
+    missed_messages: {
+      enabled: true,
+      lookback_hours: 3,
+      notify_skipped: false,
+    },
     groups: {},
   };
 }
