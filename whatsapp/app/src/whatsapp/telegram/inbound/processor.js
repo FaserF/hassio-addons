@@ -19,7 +19,7 @@ const lastUpdateIds = new Map();
 const recentPinnedFallbacks = new Map();
 let isProcessingTelegramUpdates = false;
 
-export function getMediaPlaceholderText(msg, lang = 'de') {
+export function getMediaPlaceholderText(msg, lang = 'en') {
   if (msg.sticker) {
     const emoji = msg.sticker.emoji ? ` ${msg.sticker.emoji}` : '';
     return t(lang, 'bot_replies.bridge_media_sticker', { emoji });
@@ -206,7 +206,7 @@ export async function processTelegramUpdates() {
               if (pollMode === 'native_sync') continue;
               if (mapping.poll_send_update_message === false) continue;
 
-              const lang = getGroupModerationConfig(mapping.wa_jid)?.language || 'de';
+              const lang = getGroupModerationConfig(mapping.wa_jid)?.language || 'en';
               const voteVal =
                 selectedOptionIds.length > 0
                   ? selectedText
@@ -289,7 +289,7 @@ export async function processTelegramUpdates() {
             );
 
             for (const mapping of mappings) {
-              const lang = getGroupModerationConfig(mapping.wa_jid)?.language || 'de';
+              const lang = getGroupModerationConfig(mapping.wa_jid)?.language || 'en';
               const responseText = t(lang, 'bot_replies.bridge_tg_button_interaction', {
                 user: voterName,
                 selection: buttonText,
@@ -361,7 +361,7 @@ export async function processTelegramUpdates() {
                   const winner = sortedOpts[0];
                   if (winner && winner.voter_count > 0) {
                     const isRecentVote = lastVote && Date.now() - lastVote.timestamp < 15000;
-                    const lang = getGroupModerationConfig(mapping.wa_jid)?.language || 'de';
+                    const lang = getGroupModerationConfig(mapping.wa_jid)?.language || 'en';
                     const winnerLine = t(lang, 'bot_replies.bridge_leading_option', {
                       option: winner.text,
                       count: winner.voter_count,
@@ -728,7 +728,7 @@ export async function processTelegramUpdates() {
               const qMsg = msg.reply_to_message;
               const qSender =
                 qMsg.from?.first_name || qMsg.from?.username || qMsg.author_signature || 'User';
-              const qMediaTag = getMediaPlaceholderText(qMsg, 'de');
+              const qMediaTag = getMediaPlaceholderText(qMsg, 'en');
               const qText = qMsg.text || qMsg.caption || qMediaTag;
               const snippet = qText
                 ? qText.length > 80
@@ -748,7 +748,7 @@ export async function processTelegramUpdates() {
             if (isPinMsg && mapping.sync_pins === false) continue;
 
             const groupModCfg = getGroupModerationConfig(mapping.wa_jid);
-            const mappingLang = groupModCfg?.language || 'de';
+            const mappingLang = groupModCfg?.language || 'en';
             const effectiveTgText = tgText || getMediaPlaceholderText(msg, mappingLang);
 
             if (

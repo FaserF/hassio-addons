@@ -275,7 +275,7 @@ export function registerTelegramRoutes(app) {
       sync_system_events: sync_system_events !== undefined ? Boolean(sync_system_events) : true,
       sync_pins: sync_pins !== undefined ? Boolean(sync_pins) : true,
       translate_tg_to_wa: Boolean(translate_tg_to_wa),
-      translate_tg_to_wa_lang: translate_tg_to_wa_lang ? String(translate_tg_to_wa_lang) : 'de',
+      translate_tg_to_wa_lang: translate_tg_to_wa_lang ? String(translate_tg_to_wa_lang) : 'en',
       translate_wa_to_tg: Boolean(translate_wa_to_tg),
       translate_wa_to_tg_lang: translate_wa_to_tg_lang ? String(translate_wa_to_tg_lang) : 'en',
       enabled: enabled !== undefined ? Boolean(enabled) : true,

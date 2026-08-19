@@ -3,6 +3,8 @@ import { maskData } from '../../utils/security.js';
 import { reply } from '../actions.js';
 import { loadAutoResponderStore, isAutoResponderActive, recordRecipientReplied } from './store.js';
 
+import { t } from '../../locales/loader.js';
+
 /**
  * Formats an ISO datetime string into user-friendly localized text based on locale or language code.
  */
@@ -12,7 +14,7 @@ export function formatLocalizedDateTime(isoStr, lang = 'en') {
   if (isNaN(date.getTime())) return String(isoStr);
 
   try {
-    const localeCode = lang === 'de' ? 'de-DE' : 'en-US';
+    const localeCode = (lang || 'en').startsWith('de') ? 'de-DE' : 'en-US';
     return date.toLocaleString(localeCode, {
       dateStyle: 'medium',
       timeStyle: 'short',
@@ -54,15 +56,12 @@ export function formatAutoResponderText(template, vars = {}) {
 
   let endTimeText = '';
   if (endTimeFormatted) {
-    endTimeText = lang === 'de' ? ` (bis ${endTimeFormatted})` : ` (until ${endTimeFormatted})`;
+    endTimeText = t(lang, 'autoresponder.until_time', { time: endTimeFormatted });
   }
 
   let onceNotice = '';
   if (vars.once_per_contact) {
-    onceNotice =
-      lang === 'de'
-        ? 'ℹ️ *Hinweis:* Du erhältst diese automatische Antwort nur einmalig.'
-        : 'ℹ️ *Note:* You will only receive this automated reply once.';
+    onceNotice = t(lang, 'autoresponder.once_notice_text');
   }
 
   text = text

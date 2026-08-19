@@ -1010,6 +1010,8 @@
     "participant_hint": "Gib die Teilnehmernummern kommagetrennt ein"
   },
   "bot_replies": {
+    "opt_out_success": "🚫 Du wurdest erfolgreich von weiteren Login-Benachrichtigungen des WhatsApp Gateways abgemeldet.",
+    "outbound_spam_warning": "⚠️ *Bot Anti-Spam Schutz*: Outbound-Limit ({msgCount} Nachrichten in 5s) in diesem Chat überschritten.\n\nDer Bot pausiert automatische Antworten in dieser Gruppe/Chat für *{muteSeconds} Sekunden* ({msgCount} Msg × {memberCount} Mitglieder), um Spam-Loops und Fehler zu vermeiden.",
     "muted": "⚠️ @{user} wurde stummgeschaltet. Grund: {reason}",
     "banned_dm": "🚫 *Aus der Gruppe gebannt*\n\nDu wurdest dauerhaft aus der Gruppe `{group}` gebannt.\n\n*Grund:* {reason}\n\nWenn du versuchst, der Gruppe erneut beizutreten, wirst du automatisch entfernt.",
     "cannot_action_admin": "⚠️ Kann {name} nicht {action}.\n\n*Grund:* Die Zielperson ist ein Gruppenadministrator oder Superadmin. WhatsApp erlaubt es Bots nicht, Gruppenadmins zu entfernen.",
@@ -1401,8 +1403,10 @@
     "seen_count_label": "{count} Kontakt(e) haben in diesem Zeitraum eine automatische Antwort erhalten",
     "advanced_options": "Erweiterte Optionen & Vorlage anpassen",
     "reset_seen_btn": "Liste beantworteter Kontakte zurücksetzen",
-    "save_success": "Auto-Responder Einstellungen erfolgreich gespeichert! ✅",
-    "reset_seen_success": "Liste der beantworteten Kontakte erfolgreich zurückgesetzt! ✅"
+    "save_success": "Auto-Responder-Einstellungen erfolgreich gespeichert! ✅",
+    "reset_seen_success": "Liste der beantworteten Kontakte erfolgreich zurückgesetzt! ✅",
+    "once_notice_text": "ℹ️ *Hinweis:* Du erhältst diese automatische Antwort nur einmalig.",
+    "until_time": " (bis {time})"
   },
   "pwa": {
     "install_title": "WhatsApp Gateway installieren",

@@ -996,6 +996,8 @@
     "participant_hint": "Enter participant numbers separated by commas"
   },
   "bot_replies": {
+    "opt_out_success": "🚫 You have been successfully unsubscribed from further login notifications from the WhatsApp Gateway.",
+    "outbound_spam_warning": "⚠️ *Bot Anti-Spam Protection*: Outbound limit ({msgCount} messages in 5s) exceeded in this chat.\n\nThe bot is pausing automated responses in this group/chat for *{muteSeconds} seconds* ({msgCount} msg × {memberCount} members) to avoid spam loops and rate limits.",
     "muted": "⚠️ @{user} has been muted. Reason: {reason}",
     "banned_dm": "🚫 *Banned from Group*\n\nYou have been permanently banned from the group `{group}`.\n\n*Reason:* {reason}\n\nIf you attempt to rejoin, you will be automatically removed.",
     "cannot_action_admin": "⚠️ Cannot {action} {name}.\n\n*Reason:* Target user is a Group Administrator or Superadmin. WhatsApp does not allow bots to kick group admins.",
@@ -1388,7 +1390,9 @@
     "advanced_options": "Advanced Options & Template Customization",
     "reset_seen_btn": "Reset Replied Contacts",
     "save_success": "Auto Responder settings saved successfully! ✅",
-    "reset_seen_success": "Replied contacts list reset successfully! ✅"
+    "reset_seen_success": "Replied contacts list reset successfully! ✅",
+    "once_notice_text": "ℹ️ *Note:* You will only receive this automated reply once.",
+    "until_time": " (until {time})"
   },
   "pwa": {
     "install_title": "Install WhatsApp Gateway",

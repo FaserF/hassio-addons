@@ -9,6 +9,7 @@ import { sessions, enqueue } from '../session.js';
 import { sendHANotification } from '../ha.js';
 import { getGroupModerationConfig, loadModerationStore } from './moderation/store.js';
 import { gt } from './moderation/engine.js';
+import { t } from '../locales/loader.js';
 
 // Sliding window store for bot outbound message rate limiting
 // Map<jid, Array<timestamp>>
@@ -144,7 +145,13 @@ export async function reply(session, jid, content, quotedMsg = null, options = {
       return null;
     }
     if (spamCheck.triggerWarning) {
-      const warningText = `⚠️ *Bot Anti-Spam Schutz*: Outbound-Limit (${spamCheck.msgCount} Nachrichten in 5s) in diesem Chat überschritten.\n\nDer Bot pausiert automatische Antworten in dieser Gruppe/Chat für *${spamCheck.muteSeconds} Sekunden* (${spamCheck.msgCount} Msg × ${spamCheck.memberCount} Mitglieder), um Spam-Loops und Fehler zu vermeiden.`;
+      const groupCfg = jid.endsWith('@g.us') ? getGroupModerationConfig(jid) : null;
+      const lang = groupCfg?.language || 'en';
+      const warningText = t(lang, 'bot_replies.outbound_spam_warning', {
+        msgCount: spamCheck.msgCount,
+        muteSeconds: spamCheck.muteSeconds,
+        memberCount: spamCheck.memberCount,
+      });
       try {
         await enqueue(session, () =>
           session.sock.sendMessage(

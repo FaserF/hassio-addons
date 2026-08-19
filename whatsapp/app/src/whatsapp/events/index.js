@@ -263,11 +263,11 @@ export function handleIncomingMessages(session) {
           const optedOut = handleOptOutCommand(senderJid);
           if (optedOut && session.sock) {
             try {
-              await reply(
-                session,
-                msg,
-                '🚫 Du wurdest erfolgreich von weiteren Login-Benachrichtigungen des WhatsApp Gateways gesperrt.'
-              );
+              const groupCfg = senderJid.endsWith('@g.us')
+                ? getGroupModerationConfig(senderJid)
+                : null;
+              const lang = groupCfg?.language || 'en';
+              await reply(session, msg, t(lang, 'bot_replies.opt_out_success'));
             } catch (_e) {}
           }
         }
@@ -741,7 +741,7 @@ export function handleIncomingMessages(session) {
           const pollResult = await resolvePollVotes(msg, originalPoll, session);
           vote = pollResult.vote;
           const groupCfg = getGroupModerationConfig(senderJid);
-          const lang = groupCfg?.language || 'de';
+          const lang = groupCfg?.language || 'en';
           const qTitle = originalPollName ? `: ${originalPollName}` : '';
           if (pollResult.error) {
             text = t(lang, 'bot_replies.bridge_poll_vote_update_simple', {
@@ -764,16 +764,18 @@ export function handleIncomingMessages(session) {
           const evData = msg.message.eventMessage;
           const evName = evData?.name || 'Untitled Event';
           const evDesc = evData?.description || '';
+          const groupCfg = getGroupModerationConfig(senderJid);
+          const lang = groupCfg?.language || 'en';
+          const localeCode = lang.startsWith('de') ? 'de-DE' : 'en-US';
           const evStart = evData?.startTime
-            ? new Date(Number(evData.startTime) * 1000).toLocaleString('de-DE', {
+            ? new Date(Number(evData.startTime) * 1000).toLocaleString(localeCode, {
                 dateStyle: 'full',
                 timeStyle: 'short',
-                timeZone: 'Europe/Berlin',
               })
             : null;
           const evLoc = evData?.location?.name || '';
           const evLink = evData?.joinLink || '';
-          const evCanceled = evData?.isCanceled ? ' ❌ ABGESAGT' : '';
+          const evCanceled = evData?.isCanceled ? (lang === 'de' ? ' ❌ ABGESAGT' : ' ❌ CANCELED') : '';
           const lines = [`📅 *[Event${evCanceled}]: ${evName}*`];
           if (evStart) lines.push(`🕐 ${evStart}`);
           if (evDesc) lines.push(`📝 ${evDesc}`);

@@ -601,7 +601,7 @@ function getTgMappingCurrentState() {
     sync_system_events: document.getElementById('tg-modal-sync-system-events')?.checked || false,
     sync_pins: document.getElementById('tg-modal-sync-pins')?.checked || false,
     translate_tg_to_wa: document.getElementById('tg-modal-translate-tg-to-wa')?.checked || false,
-    translate_tg_to_wa_lang: document.getElementById('tg-modal-trans-tg-wa-lang')?.value || 'de',
+    translate_tg_to_wa_lang: document.getElementById('tg-modal-trans-tg-wa-lang')?.value || 'en',
     translate_wa_to_tg: document.getElementById('tg-modal-translate-wa-to-tg')?.checked || false,
     translate_wa_to_tg_lang: document.getElementById('tg-modal-trans-wa-tg-lang')?.value || 'en',
   };
@@ -750,7 +750,7 @@ async function editTelegramMapping(id) {
     if (transTgWaEl) transTgWaEl.checked = Boolean(mapping.translate_tg_to_wa);
 
     const transTgWaLangEl = document.getElementById('tg-modal-trans-tg-wa-lang');
-    if (transTgWaLangEl) transTgWaLangEl.value = mapping.translate_tg_to_wa_lang || 'de';
+    if (transTgWaLangEl) transTgWaLangEl.value = mapping.translate_tg_to_wa_lang || 'en';
 
     const transWaTgEl = document.getElementById('tg-modal-translate-wa-to-tg');
     if (transWaTgEl) transWaTgEl.checked = Boolean(mapping.translate_wa_to_tg);
@@ -867,7 +867,7 @@ async function saveTelegramMappingModal() {
   const translate_tg_to_wa =
     document.getElementById('tg-modal-translate-tg-to-wa')?.checked || false;
   const translate_tg_to_wa_lang =
-    document.getElementById('tg-modal-trans-tg-wa-lang')?.value || 'de';
+    document.getElementById('tg-modal-trans-tg-wa-lang')?.value || 'en';
   const translate_wa_to_tg =
     document.getElementById('tg-modal-translate-wa-to-tg')?.checked || false;
   const translate_wa_to_tg_lang =
