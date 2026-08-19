@@ -99,9 +99,7 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
   const config = getGroupModerationConfig(groupId) || {};
   const isTranslationActive =
     config.translation?.enabled !== false &&
-    (config.translation?.mode === 'auto' ||
-      config.translation?.mode === 'inbound' ||
-      config.translation?.mode === 'both');
+    Boolean(config.translation?.enabled || config.translation?.mode);
 
   const targetLang = config.translation?.target_lang || 'en';
   const provider = config.translation?.provider || 'auto';
