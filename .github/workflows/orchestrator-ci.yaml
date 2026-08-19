@@ -452,7 +452,20 @@ jobs:
         App: ${{ fromJSON(needs.filter.outputs.Apps) }}
 
     steps:
+      - name: ⚡ Check Apache2 Resource Optimization
+        id: check_opt
+        run: |
+          ALL_APPS='${{ needs.filter.outputs.Apps }}'
+          APP='${{ matrix.App }}'
+          if [[ "$APP" == "apache2-minimal" || "$APP" == "apache2-minimal-mariadb" ]] && echo "$ALL_APPS" | grep -q '"apache2"'; then
+            echo "::notice title=Resource Optimization::Skipping Docker build for $APP because full 'apache2' add-on is included in this CI run."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: 🧹 Free Disk Space
+        if: steps.check_opt.outputs.skip != 'true'
         run: |
           echo "Freeing up disk space on Mono, Android, and .NET..."
           sudo rm -rf /usr/share/dotnet
@@ -462,10 +475,13 @@ jobs:
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
       - name: ⤵️ Check out code
+        if: steps.check_opt.outputs.skip != 'true'
         uses: actions/checkout@v7
       - name: 🐳 Set up Docker Buildx
+        if: steps.check_opt.outputs.skip != 'true'
         uses: docker/setup-buildx-action@v4
       - name: 🔑 Login to GitHub Container Registry
+        if: steps.check_opt.outputs.skip != 'true'
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -473,6 +489,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 💾 Cache Docker layers (optimized for shared base image)
+        if: steps.check_opt.outputs.skip != 'true'
         uses: actions/cache@v6
         with:
           path: /tmp/.buildx-cache
@@ -487,6 +504,7 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: ⚙️ Prepare Image Info
+        if: steps.check_opt.outputs.skip != 'true'
         id: prep
         run: |
           VERSION=$(yq -r '.version' "${{ matrix.App }}/config.yaml")
@@ -514,6 +532,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: 🏗️ Test Build amd64 (CI optimized)
+        if: steps.check_opt.outputs.skip != 'true'
         uses: docker/build-push-action@v7
         with:
           context: ./${{ matrix.App }}
@@ -527,6 +546,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.App }}
 
       - name: ✅ Build Success
+        if: steps.check_opt.outputs.skip != 'true'
         run: echo "✅ amd64 build successful"
 
   # --------------------------------------------------------------------------------

@@ -125,6 +125,24 @@ jobs:
             fi
           done <<< "$AppS"
 
+          # Resource optimization: If full 'apache2' is included, skip minimal variants
+          if echo ",$INGRESS_AppS," | grep -q ",apache2,"; then
+            OPTIMIZED_APPS=""
+            IFS=',' read -ra ADDR <<< "$INGRESS_AppS"
+            for app in "${ADDR[@]}"; do
+              if [[ "$app" == "apache2-minimal" || "$app" == "apache2-minimal-mariadb" ]]; then
+                echo "::notice title=Resource Optimization::Skipping Supervisor test for $app because full 'apache2' add-on is tested in this CI run."
+              else
+                if [ -n "$OPTIMIZED_APPS" ]; then
+                  OPTIMIZED_APPS="$OPTIMIZED_APPS,$app"
+                else
+                  OPTIMIZED_APPS="$app"
+                fi
+              fi
+            done
+            INGRESS_AppS="$OPTIMIZED_APPS"
+          fi
+
           if [ -z "$INGRESS_AppS" ]; then
             echo "No ingress-enabled Apps to test"
             {
@@ -251,6 +269,8 @@ jobs:
             fi
           done
 
+          echo "✅ Successfully staged all local add-ons."
+
           # Create log file for debugging
           touch /tmp/supervisor.log
 
@@ -264,6 +284,7 @@ jobs:
 
           # We use -t to satisfy stty requirements and sleep infinity as PID 1 for stability
           # Using DinD (Docker-in-Docker) model - removed host socket linkage
+          echo "🐳 Starting Home Assistant Supervisor devcontainer..."
 
           docker run -d -t \
             --name ha-supervisor-test \
@@ -283,12 +304,6 @@ jobs:
             "${{ env.DEVCONTAINER_IMAGE }}" \
             sleep infinity
 
-          echo "Container started, waiting for initialization..."
-
-          # Authenticate internal Docker to GHCR without mounting host config
-          echo "Authenticating internal Docker to GHCR..."
-          docker exec ha-supervisor-test sh -c "echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin 2>/dev/null"
-
           # Verify container is actually running
           CONTAINER_STATUS="$(docker inspect -f '{{.State.Status}}' ha-supervisor-test 2>/dev/null || echo 'not found')"
           if [ "$CONTAINER_STATUS" != "running" ]; then
@@ -298,9 +313,10 @@ jobs:
             echo "supervisor_ready=false" >> "$GITHUB_OUTPUT"
             exit 1
           fi
-          echo "Container running (PID $(docker inspect -f '{{.State.Pid}}' ha-supervisor-test))"
+          echo "✅ Container running (PID $(docker inspect -f '{{.State.Pid}}' ha-supervisor-test))"
 
           # Prepare environment: remove debugpy to avoid port conflicts
+          echo "🔧 Preparing container environment..."
           docker exec ha-supervisor-test bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + 2>/dev/null || true"
 
           # Verify supervisor_run is available
@@ -312,7 +328,7 @@ jobs:
           fi
 
           # Patch stty sane and prevent watchdog/s6 from stopping Docker daemon on restart
-          echo "Patching supervisor scripts inside container..."
+          echo "🔧 Patching supervisor scripts inside container..."
           docker exec ha-supervisor-test bash -c "
             # Patch stty in all supervisor scripts, s6 overlay files, and binaries
             find /etc/supervisor_scripts /etc/s6-overlay /usr/bin /etc/services.d -type f 2>/dev/null | xargs -r sed -i 's/stty sane/stty sane || true/g; s/\bstty\b/true # stty/g' || true
@@ -326,24 +342,22 @@ jobs:
           "
 
           # Start Supervisor in background with output redirected to log file
+          echo "⏳ Launching Supervisor background service..."
           docker exec -d ha-supervisor-test bash -c "nohup bash -c 'while true; do supervisor_run; sleep 2; done' > /tmp/supervisor.log 2>&1 &"
 
-          echo "Waiting for Supervisor to be ready..."
-          # Show the very first bootup logs in a group
-          sleep 5
-          echo "::group::Early Bootup Logs"
-          docker exec ha-supervisor-test head -n 50 /tmp/supervisor.log 2>/dev/null || echo "No logs yet"
-          echo "::endgroup::"
-
+          echo "⏳ Waiting for Supervisor API to become ready (Timeout: ${{ env.SUPERVISOR_STARTUP_TIMEOUT }}s)..."
           for i in $(seq 1 "${{ env.SUPERVISOR_STARTUP_TIMEOUT }}"); do
-            # Stream logs every 15s to avoid flooding the CI output
-            if [ "$((i % 15))" -eq 0 ]; then
-              echo "--- Live Logs (T+${i}s) ---"
-              docker exec ha-supervisor-test tail -n 10 /tmp/supervisor.log 2>/dev/null || echo "Waiting..."
+            # Log progress every 5 seconds
+            if [ "$((i % 5))" -eq 0 ]; then
+              LAST_LOG=$(docker exec ha-supervisor-test tail -n 1 /tmp/supervisor.log 2>/dev/null || echo "Starting up...")
+              echo "[T+${i}s] Waiting for Supervisor... (Last log: $LAST_LOG)"
             fi
 
             if docker exec ha-supervisor-test ha supervisor info >/dev/null 2>&1; then
               echo "✅ Supervisor is ready after ${i}s"
+              # Authenticate internal Docker to GHCR now that dockerd is confirmed running
+              echo "🔐 Authenticating internal Docker to GHCR..."
+              docker exec ha-supervisor-test sh -c "echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin 2>/dev/null" || true
               echo "supervisor_ready=true" >> "$GITHUB_OUTPUT"
               break
             fi
