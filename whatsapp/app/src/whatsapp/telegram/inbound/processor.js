@@ -1203,9 +1203,8 @@ export async function processTelegramUpdates() {
                         id: mapped.waMsgId,
                       },
                     });
-                    const { deleteTranslationIfExists } = await import(
-                      '../../moderation/engine/translations.js'
-                    );
+                    const { deleteTranslationIfExists } =
+                      await import('../../moderation/engine/translations.js');
                     await deleteTranslationIfExists(session, mapping.wa_jid, mapped.waMsgId);
                     removeMessageMap(mapped.waMsgId, tgChatId, replyToTgId);
                     // Clean up both the target message and the !del command message in Telegram
