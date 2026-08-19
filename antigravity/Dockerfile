@@ -24,7 +24,6 @@ RUN \
         py3-pydantic \
         py3-pydantic-core \
         py3-fastapi \
-        py3-uvicorn \
         py3-httpx \
         curl \
         openssl \

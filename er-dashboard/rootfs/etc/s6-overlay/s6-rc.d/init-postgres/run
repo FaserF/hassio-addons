@@ -124,7 +124,17 @@ else
             echo "${POSTGRES_PASSWORD}" > /tmp/pgpass
             chown postgres:postgres /tmp/pgpass
 
-            if ! su-exec postgres initdb -D /data/er_dashboard/database_new --username=postgres --auth=md5 --pwfile=/tmp/pgpass 2>&1; then
+            # Detect if old cluster used data page checksums
+            CHECKSUM_FLAG="--no-data-checksums"
+            if [ -x "$OLD_BINDIR/pg_controldata" ]; then
+                if "$OLD_BINDIR/pg_controldata" -D /data/er_dashboard/database 2>/dev/null | grep -qi "Data page checksum version:.*[1-9]"; then
+                    CHECKSUM_FLAG="--data-checksums"
+                fi
+            elif pg_controldata -D /data/er_dashboard/database 2>/dev/null | grep -qi "Data page checksum version:.*[1-9]"; then
+                CHECKSUM_FLAG="--data-checksums"
+            fi
+
+            if ! su-exec postgres initdb -D /data/er_dashboard/database_new --username=postgres --auth=md5 --pwfile=/tmp/pgpass "$CHECKSUM_FLAG" 2>&1; then
                 bashio::log.error "initdb for upgrade failed!"
                 rm -f /tmp/pgpass
                 exit 1
