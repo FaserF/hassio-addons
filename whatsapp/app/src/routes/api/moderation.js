@@ -1,3 +1,5 @@
+import http from 'http';
+import https from 'https';
 import { uiAuthMiddleware } from '../../middleware.js';
 import {
   loadModerationStore,
@@ -31,6 +33,58 @@ import { reply } from '../../whatsapp/actions.js';
 import { getHAApiKeys } from '../../ha.js';
 import { getTranslationDiagnostics } from '../../utils/gatewayTranslator.js';
 import { getSTTDiagnostics } from '../../whatsapp/sttHandler.js';
+
+function safeProbeAegisEndpoint(validated, endpointPath, headers, timeoutMs = 7000) {
+  return new Promise((resolve, reject) => {
+    const isHttps = validated.protocol === 'https:';
+    const client = isHttps ? https : http;
+    const reqPath = `${validated.basePath}${endpointPath}`;
+
+    const req = client.request(
+      {
+        protocol: validated.protocol,
+        hostname: validated.hostname,
+        port: validated.port,
+        path: reqPath,
+        method: 'GET',
+        headers,
+        timeout: timeoutMs,
+      },
+      (res) => {
+        let body = '';
+        res.setEncoding('utf8');
+        res.on('data', (chunk) => {
+          body += chunk;
+        });
+        res.on('end', () => {
+          let json = {};
+          try {
+            json = JSON.parse(body);
+          } catch {
+            json = {};
+          }
+          resolve({
+            ok: (res.statusCode >= 200 && res.statusCode < 300),
+            status: res.statusCode || 500,
+            statusText: res.statusMessage || '',
+            json: async () => json,
+          });
+        });
+      }
+    );
+
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('Connection timed out'));
+    });
+
+    req.on('error', (err) => {
+      reject(err);
+    });
+
+    req.end();
+  });
+}
 
 export function registerModerationRoutes(app) {
   // GET /api/moderation/diagnostics — Real-time health, active providers & reasons for STT & Translation
@@ -77,37 +131,20 @@ export function registerModerationRoutes(app) {
         headers['Authorization'] = `Bearer ${token.trim()}`;
       }
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 7000);
-
-      const targetHealthUrl = new URL(validated.healthUrl).toString();
-      const targetConfigUrl = new URL(validated.configUrl).toString();
-
       let response;
       try {
-        response = await fetch(targetHealthUrl, {
-          method: 'GET',
-          headers,
-          signal: controller.signal,
-        });
+        response = await safeProbeAegisEndpoint(validated, '/api/v1/health', headers, 7000);
       } catch (_err) {
         // Fallback check to /api/v1/ai/stt/config
         try {
-          response = await fetch(targetConfigUrl, {
-            method: 'GET',
-            headers,
-            signal: controller.signal,
-          });
+          response = await safeProbeAegisEndpoint(validated, '/api/v1/ai/stt/config', headers, 7000);
         } catch (subErr) {
-          clearTimeout(timeoutId);
           return res.json({
             success: false,
             latency: Date.now() - startTime,
             error: `Connection refused: ${subErr.message}`,
           });
         }
-      } finally {
-        clearTimeout(timeoutId);
       }
 
       const latency = Date.now() - startTime;
