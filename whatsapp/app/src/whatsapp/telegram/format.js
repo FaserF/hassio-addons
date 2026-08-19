@@ -209,9 +209,19 @@ export function splitTelegramHtml(htmlText, maxLength = 4096, maxChunks = MAX_ME
         const tagName = namePart ? namePart.toLowerCase() : '';
 
         if (
-          ['b', 'strong', 'i', 'em', 'code', 'pre', 's', 'strike', 'del', 'blockquote', 'a'].includes(
-            tagName
-          )
+          [
+            'b',
+            'strong',
+            'i',
+            'em',
+            'code',
+            'pre',
+            's',
+            'strike',
+            'del',
+            'blockquote',
+            'a',
+          ].includes(tagName)
         ) {
           if (isClosing) {
             const lastIdx = currentOpenTags.lastIndexOf(tagName);

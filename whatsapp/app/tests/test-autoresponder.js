@@ -74,7 +74,10 @@ try {
     lang: 'en',
   });
   assert.ok(renderedWithEnd.includes('Hi Alice!'), 'Should interpolate sender_name');
-  assert.ok(renderedWithEnd.includes('until'), 'Should interpolate end_time_text with localized clause');
+  assert.ok(
+    renderedWithEnd.includes('until'),
+    'Should interpolate end_time_text with localized clause'
+  );
   assert.ok(
     renderedWithEnd.includes('only receive this automated reply once'),
     'Should interpolate once_notice'
@@ -88,10 +91,7 @@ try {
   });
   assert.ok(renderedGerman.includes('Hi Max!'), 'Should interpolate sender_name');
   assert.ok(renderedGerman.includes('bis'), 'Should interpolate German bis in end_time_text');
-  assert.ok(
-    renderedGerman.includes('nur einmalig'),
-    'Should interpolate German once_notice'
-  );
+  assert.ok(renderedGerman.includes('nur einmalig'), 'Should interpolate German once_notice');
 
   const renderedWithoutEnd = formatAutoResponderText(tpl, {
     sender_name: 'Bob',

@@ -281,10 +281,15 @@ async function updateDashboard() {
 
     // Stats properties
     const stats = data.stats || {};
-    const lifetimeSent = stats.lifetime_sent != null ? stats.lifetime_sent : (stats.sent || 0);
-    const lifetimeReceived = stats.lifetime_received != null ? stats.lifetime_received : (stats.received || 0);
-    const lifetimeFailed = stats.lifetime_failed != null ? stats.lifetime_failed : (stats.failed || 0);
-    const lifetimeReconnects = stats.lifetime_reconnects != null ? stats.lifetime_reconnects : (stats.totalReconnects ?? data.reconnectAttempts ?? 0);
+    const lifetimeSent = stats.lifetime_sent != null ? stats.lifetime_sent : stats.sent || 0;
+    const lifetimeReceived =
+      stats.lifetime_received != null ? stats.lifetime_received : stats.received || 0;
+    const lifetimeFailed =
+      stats.lifetime_failed != null ? stats.lifetime_failed : stats.failed || 0;
+    const lifetimeReconnects =
+      stats.lifetime_reconnects != null
+        ? stats.lifetime_reconnects
+        : (stats.totalReconnects ?? data.reconnectAttempts ?? 0);
 
     setElText('stat-sent', lifetimeSent);
     setElText('stat-received', lifetimeReceived);

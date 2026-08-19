@@ -6,7 +6,9 @@ Usage:
 
 import os
 from pathlib import Path
+
 from PIL import Image
+
 
 def generate_icons():
     root_dir = Path(__file__).resolve().parent.parent
@@ -30,10 +32,9 @@ def generate_icons():
 
     # Multi-resolution favicon.ico
     ico_path = ui_dir / "favicon.ico"
-    img.resize((48, 48), Image.Resampling.LANCZOS).save(
-        ico_path, format="ICO", sizes=[(16, 16), (32, 32), (48, 48)]
-    )
+    img.resize((48, 48), Image.Resampling.LANCZOS).save(ico_path, format="ICO", sizes=[(16, 16), (32, 32), (48, 48)])
     print("Generated favicon.ico (16, 32, 48)")
+
 
 if __name__ == "__main__":
     generate_icons()
