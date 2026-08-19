@@ -23,7 +23,7 @@ ENV \
 ARG DBF_VERSION="4.37.28"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.1.1"
+ENV APP_VERSION="1.1.2"
 ENV APP_NAME="DBF (DB-Infoscreen)"
 ENV APP_SLUG="dbf"
 ENV APP_UNSUPPORTED="false"

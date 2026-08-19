@@ -1,5 +1,30 @@
 # Changelog
 
+## 1.1.2 (2026-08-19)
+
+### ✨ Features
+- add Google Antigravity Usage monitor addon ([`81495c89`](https://github.com/FaserF/hassio-addons/commit/81495c890a4d15605f44d0ac5c30ff2b85db4dd0))
+- Github availablity check ([`8a5c7967`](https://github.com/FaserF/hassio-addons/commit/8a5c7967fe45a835d4763dcde8afa26c8048c502))
+- set host_network: true for AegisBot and DBF mDNS discovery and update docs ([`e2a051cc`](https://github.com/FaserF/hassio-addons/commit/e2a051cc3468d9a19bf6ecbae928bd1811d39a84))
+- add background mDNS discovery broadcaster ([`db2fee39`](https://github.com/FaserF/hassio-addons/commit/db2fee390e115f863150212cea3093f7f5c22062))
+- add restart loop protection to startup banners and fix gt import error ([`da300834`](https://github.com/FaserF/hassio-addons/commit/da3008348fc12ea389004b10665cbae4d7a8e112))
+
+### 🐛 Bug Fixes
+- replace deprecated bashio::addon.stop with bashio::app.stop and harmonize APP_VERSION variables ([`e74d22d6`](https://github.com/FaserF/hassio-addons/commit/e74d22d66be715d3ea2efad6e4919b70bf4a81ce))
+- resolve participant deduplication and silent native pin mirroring ([`412f921f`](https://github.com/FaserF/hassio-addons/commit/412f921fbfc98370d59fc042249a6bd38e2e4240))
+- enable host_network and auto-install zeroconf for mDNS discovery ([`78497903`](https://github.com/FaserF/hassio-addons/commit/78497903208703f15b24d4c2f5e8b6dc8f67bbc6))
+- harden parameter expansion in startup banner for set -u strict mode ([`cb8ad15b`](https://github.com/FaserF/hassio-addons/commit/cb8ad15bd5df93dd1da6081ac20ab2332f4d3b29))
+- use safe expansion \ for set -u compatibility ([`560bc0fc`](https://github.com/FaserF/hassio-addons/commit/560bc0fce19cd258f025a328ffd5f6addd78f688))
+
+### 📦 Dependencies
+- ⬆️ Update Add-on base images ([`cff61763`](https://github.com/FaserF/hassio-addons/commit/cff61763699487bc020cab1735cafd22ebd6f0cf))
+- update icons and convert logos to official landscape banners ([`e6d061bd`](https://github.com/FaserF/hassio-addons/commit/e6d061bd8292ae6ca473fa21a2e55d5e5f4e70ea))
+- set bridge network as default and update docs on host network and auto-prefill ([`46f8f013`](https://github.com/FaserF/hassio-addons/commit/46f8f013bc619a7fe62f24631053aafc116d7b4d))
+
+### 🚀 Other
+- document host_network and zeroconf auto-discovery in AegisBot and DBF ([`5028f478`](https://github.com/FaserF/hassio-addons/commit/5028f47864f66d7c47adc1ccd4b52ef42dae5664))
+
+
 ## 1.1.1 (2026-07-31)
 
 ### ✨ Features
