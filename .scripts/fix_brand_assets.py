@@ -9,6 +9,7 @@ Ensures:
 
 import os
 import sys
+
 import yaml
 from PIL import Image, ImageDraw, ImageFont
 
