@@ -1354,6 +1354,7 @@
     "master_switch_hint": "When enabled, incoming messages will receive the configured automated response.",
     "active_status": "Active Now",
     "scheduled_status": "Scheduled",
+    "expired_status": "Expired",
     "inactive_status": "Disabled",
     "timeframe_title": "Active Time Window (Optional)",
     "start_time_label": "Start Date & Time (Optional)",
@@ -1369,6 +1370,7 @@
     "frequency_hint": "When enabled once per contact, seen contacts are automatically reset whenever you re-enable the feature.",
     "template_title": "Message Template",
     "template_hint": "Placeholders available: {sender_name}, {start_time}, {end_time}, {end_time_text}, {once_notice}",
+    "default_template": "Hello {sender_name},\n\nThank you for your message! 🌴\nThis is an automated reply: I am currently away / on vacation{end_time_text} and have limited or no access to WhatsApp.\n\n{once_notice}",
     "reset_template_btn": "Reset to Default Template",
     "placeholders_guide_title": "Available Placeholders & Live Resolution",
     "placeholder_sender_name": "Sender name or phone number (+49... / there)",
@@ -1380,6 +1382,7 @@
     "live_preview_empty": "(Enter a template message above to see preview)",
     "seen_recipients_title": "Replied Contacts",
     "seen_count_label": "{count} contact(s) received an auto-reply during this session",
+    "advanced_options": "Advanced Options & Template Customization",
     "reset_seen_btn": "Reset Replied Contacts",
     "save_success": "Auto Responder settings saved successfully! ✅",
     "reset_seen_success": "Replied contacts list reset successfully! ✅"

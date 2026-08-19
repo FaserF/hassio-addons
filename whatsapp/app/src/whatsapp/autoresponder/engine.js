@@ -31,7 +31,23 @@ export function formatAutoResponderText(template, vars = {}) {
   const senderName = vars.sender_name || 'there';
   const rawStart = vars.start_time || '';
   const rawEnd = vars.end_time || '';
-  const lang = vars.lang || (vars.config && vars.config.language) || 'en';
+  // Detect language: check explicit vars.lang, config, or template content itself to prevent Denglish
+  let lang = vars.lang || (vars.config && vars.config.language);
+  if (!lang) {
+    // If template has German words like 'hallo', 'vielen dank', 'urlaub', 'abwesend', 'nachricht', treat as German
+    const lowerTpl = text.toLowerCase();
+    if (
+      lowerTpl.includes('hallo') ||
+      lowerTpl.includes('vielen dank') ||
+      lowerTpl.includes('urlaub') ||
+      lowerTpl.includes('abwesend') ||
+      lowerTpl.includes('nachricht')
+    ) {
+      lang = 'de';
+    } else {
+      lang = 'en';
+    }
+  }
 
   const startTimeFormatted = rawStart ? formatLocalizedDateTime(rawStart, lang) : '';
   const endTimeFormatted = rawEnd ? formatLocalizedDateTime(rawEnd, lang) : '';

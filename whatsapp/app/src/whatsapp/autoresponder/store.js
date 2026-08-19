@@ -110,21 +110,25 @@ export function parseDateTimeToMs(dateStr) {
 
 /**
  * Checks if the auto-responder is currently active according to start_time and end_time.
+ * Automatically disables store.enabled if end_time has passed.
  */
 export function isAutoResponderActive(nowMs = Date.now()) {
   const store = loadAutoResponderStore();
   if (!store.enabled) return false;
 
-  if (store.start_time) {
-    const startMs = parseDateTimeToMs(store.start_time);
-    if (startMs !== null && nowMs < startMs) {
+  if (store.end_time) {
+    const endMs = parseDateTimeToMs(store.end_time);
+    if (endMs !== null && nowMs > endMs) {
+      // Auto-turn off when expiration is reached
+      store.enabled = false;
+      saveAutoResponderStore(store);
       return false;
     }
   }
 
-  if (store.end_time) {
-    const endMs = parseDateTimeToMs(store.end_time);
-    if (endMs !== null && nowMs > endMs) {
+  if (store.start_time) {
+    const startMs = parseDateTimeToMs(store.start_time);
+    if (startMs !== null && nowMs < startMs) {
       return false;
     }
   }

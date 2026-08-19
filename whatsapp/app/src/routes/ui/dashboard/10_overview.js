@@ -479,9 +479,18 @@ async function loadAutoResponderConfig() {
     if (!json.success || !json.data) return;
 
     const data = json.data;
+    const now = Date.now();
+    let isExpired = false;
+    if (data.end_time) {
+      const endMs = new Date(data.end_time).getTime();
+      if (!isNaN(endMs) && now > endMs) {
+        isExpired = true;
+      }
+    }
+
     const enabledInput = document.getElementById('ar-enabled');
     if (enabledInput && document.activeElement !== enabledInput) {
-      enabledInput.checked = Boolean(data.enabled);
+      enabledInput.checked = Boolean(data.enabled) && !isExpired;
     }
 
     const startTimeInput = document.getElementById('ar-start-time');
@@ -514,13 +523,22 @@ async function loadAutoResponderConfig() {
       // Calculate is_active client-side as well to guarantee instant real-time status with user's local clock
       const now = Date.now();
       let isClientActive = Boolean(data.enabled);
-      if (isClientActive && data.start_time) {
+      let isFutureStart = false;
+      let isPastEnd = false;
+
+      if (data.start_time) {
         const startMs = new Date(data.start_time).getTime();
-        if (!isNaN(startMs) && now < startMs) isClientActive = false;
+        if (!isNaN(startMs) && now < startMs) {
+          isClientActive = false;
+          isFutureStart = true;
+        }
       }
-      if (isClientActive && data.end_time) {
+      if (data.end_time) {
         const endMs = new Date(data.end_time).getTime();
-        if (!isNaN(endMs) && now > endMs) isClientActive = false;
+        if (!isNaN(endMs) && now > endMs) {
+          isClientActive = false;
+          isPastEnd = true;
+        }
       }
 
       if (!data.enabled) {
@@ -528,16 +546,26 @@ async function loadAutoResponderConfig() {
         badge.style.background = 'var(--bg-app)';
         badge.style.color = 'var(--text-muted)';
         badge.textContent = window.t ? window.t('autoresponder.inactive_status') : 'Disabled';
-      } else if (isClientActive || data.is_active) {
+      } else if (isClientActive || (data.is_active && !isPastEnd)) {
         badge.className = 'badge';
         badge.style.background = 'rgba(16, 185, 129, 0.15)';
         badge.style.color = 'var(--primary)';
         badge.textContent = window.t ? window.t('autoresponder.active_status') : 'Active Now 🌴';
-      } else {
+      } else if (isPastEnd) {
+        badge.className = 'badge';
+        badge.style.background = 'rgba(239, 68, 68, 0.15)';
+        badge.style.color = 'var(--danger)';
+        badge.textContent = window.t ? window.t('autoresponder.expired_status') : 'Expired ⏰';
+      } else if (isFutureStart) {
         badge.className = 'badge';
         badge.style.background = 'rgba(245, 158, 11, 0.15)';
         badge.style.color = 'var(--warning)';
         badge.textContent = window.t ? window.t('autoresponder.scheduled_status') : 'Scheduled ⏳';
+      } else {
+        badge.className = 'badge';
+        badge.style.background = 'var(--bg-app)';
+        badge.style.color = 'var(--text-muted)';
+        badge.textContent = window.t ? window.t('autoresponder.inactive_status') : 'Disabled';
       }
     }
 
@@ -580,8 +608,24 @@ function updateAutoResponderPreview() {
   const rawEnd = document.getElementById('ar-end-time')?.value || '';
   const oncePerContact = document.getElementById('ar-once-per-contact')?.value === 'true';
 
-  const lang = window.currentLang || (window.t ? window.t('meta.code') : 'en') || 'en';
-  const isDe = lang.startsWith('de');
+  let isDe = (window.currentLang || (window.t ? window.t('meta.code') : 'en') || 'en').startsWith('de');
+  const lowerTpl = (tpl || '').toLowerCase();
+  if (
+    lowerTpl.includes('hallo') ||
+    lowerTpl.includes('vielen dank') ||
+    lowerTpl.includes('urlaub') ||
+    lowerTpl.includes('abwesend') ||
+    lowerTpl.includes('nachricht')
+  ) {
+    isDe = true;
+  } else if (
+    lowerTpl.includes('hello') ||
+    lowerTpl.includes('thank you') ||
+    lowerTpl.includes('vacation') ||
+    lowerTpl.includes('automated reply')
+  ) {
+    isDe = false;
+  }
 
   const senderName = isDe ? 'Max Mustermann' : 'John Doe';
   const startTimeFormatted = rawStart ? formatPreviewDateTime(rawStart) : '';
@@ -673,11 +717,12 @@ async function saveAutoResponderConfig() {
 }
 
 async function resetAutoResponderTemplate() {
-  const defaultTpl =
-    'Hello {sender_name},\n\n' +
-    'Thank you for your message! 🌴\n' +
-    'This is an automated reply: I am currently away / on vacation{end_time_text} and have limited or no access to WhatsApp.\n\n' +
-    '{once_notice}';
+  const defaultTpl = window.t
+    ? window.t('autoresponder.default_template')
+    : 'Hello {sender_name},\n\n' +
+      'Thank you for your message! 🌴\n' +
+      'This is an automated reply: I am currently away / on vacation{end_time_text} and have limited or no access to WhatsApp.\n\n' +
+      '{once_notice}';
 
   const tplInput = document.getElementById('ar-message-template');
   if (tplInput) {
