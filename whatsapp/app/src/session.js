@@ -260,10 +260,11 @@ export function loadStats(session) {
     try {
       const persisted = JSON.parse(fs.readFileSync(file, 'utf-8'));
       if (persisted && typeof persisted === 'object') {
-        session.stats.lifetime_sent = (persisted.lifetime_sent || persisted.sent || 0);
-        session.stats.lifetime_received = (persisted.lifetime_received || persisted.received || 0);
-        session.stats.lifetime_failed = (persisted.lifetime_failed || persisted.failed || 0);
-        session.stats.lifetime_reconnects = (persisted.lifetime_reconnects || persisted.totalReconnects || 0);
+        session.stats.lifetime_sent = persisted.lifetime_sent || persisted.sent || 0;
+        session.stats.lifetime_received = persisted.lifetime_received || persisted.received || 0;
+        session.stats.lifetime_failed = persisted.lifetime_failed || persisted.failed || 0;
+        session.stats.lifetime_reconnects =
+          persisted.lifetime_reconnects || persisted.totalReconnects || 0;
         if (persisted.first_install_time) {
           session.stats.first_install_time = persisted.first_install_time;
         }
