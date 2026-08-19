@@ -96,13 +96,21 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
     /^(📍\s*\[(Location|Live Location) Share|👤\s*\[Contact:|📊\s*\[Poll|🔘\s*\[|📋\s*\[List:|🗳️\s*Vote:|📅\s*\*?\[Event)/i.test(
       newText
     ) ||
-    /^[!/#.?]\w+/i.test(newText) ||
-    /🌐\s*\*.*[→\->].*\*\s*:?/i.test(newText) ||
-    /_\s*🌐\s*\[.*\]\s*_/i.test(newText) ||
-    newText.includes('🌐 [')
+    /^[!/#.?]\w+/i.test(newText)
   ) {
     return;
   }
+
+  // Strip existing translation headers if text contains them
+  let cleanText = newText
+    .replace(/^🌐\s*\*.*[→\->].*\*\s*:?\s*/i, '')
+    .replace(/^_\s*🌐\s*\[.*\]\s*_\s*/i, '')
+    .replace(/^🌐\s*\[.*\]\s*/i, '')
+    .trim();
+  if (cleanText.startsWith('"') && cleanText.endsWith('"') && cleanText.length > 2) {
+    cleanText = cleanText.slice(1, -1).trim();
+  }
+  if (!cleanText || cleanText.length < 2) return;
 
   const cleanSourceId = String(sourceWaId).trim();
   const exactKey = `${groupId}:${cleanSourceId}`;
@@ -119,12 +127,38 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
 
   const store = loadModerationStore();
   const config = getGroupModerationConfig(groupId) || {};
-  const isTranslationActive =
+  let targetLang = config.translation?.target_lang;
+  let provider = config.translation?.provider || 'auto';
+  let isTranslationActive =
     config.translation?.enabled !== false &&
     Boolean(config.translation?.enabled || config.translation?.mode);
 
-  const targetLang = config.translation?.target_lang || 'en';
-  const provider = config.translation?.provider || 'auto';
+  if (!isTranslationActive || !targetLang) {
+    try {
+      const { loadTelegramStore } = await import('../../telegram/store.js');
+      const tgStore = loadTelegramStore();
+      const matchingMapping = (tgStore.mappings || []).find(
+        (m) => m.enabled && m.wa_jid && m.wa_jid.toLowerCase() === groupId.toLowerCase()
+      );
+      if (matchingMapping) {
+        if (!isTranslationActive) {
+          isTranslationActive = Boolean(
+            matchingMapping.translate_wa_to_tg || matchingMapping.translate_tg_to_wa
+          );
+        }
+        if (!targetLang) {
+          targetLang =
+            matchingMapping.translate_wa_to_tg_lang ||
+            matchingMapping.translate_tg_to_wa_lang ||
+            config.language ||
+            'en';
+        }
+      }
+    } catch (_e) {}
+  }
+  if (!targetLang) targetLang = config.language || 'en';
+
+  if (!record && !isTranslationActive) return;
 
   try {
     const transResult =
@@ -132,7 +166,7 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
         ? await (async () => {
             const { processAiModeration } = await import('../ai.js');
             return processAiModeration(
-              newText,
+              cleanText,
               config.ai || {},
               store.gemini_api_key,
               'translate',
@@ -141,11 +175,11 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
               }
             );
           })()
-        : await translateTextGatewayWithReason(newText, targetLang, provider, config);
+        : await translateTextGatewayWithReason(cleanText, targetLang, provider, config);
 
     if (
       transResult?.translation &&
-      transResult.translation.trim().toLowerCase() !== newText.trim().toLowerCase()
+      transResult.translation.trim().toLowerCase() !== cleanText.trim().toLowerCase()
     ) {
       const srcCode = (transResult.sourceLang || transResult.detectedSource || '?').toLowerCase();
       const dstCode = targetLang.toLowerCase();
@@ -186,12 +220,13 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
             session,
             groupId,
             { text: updatedText },
-            { key: editKey },
+            { key: editKey, message: { conversation: '...' } },
             { skipSpamGuard: true }
           );
           if (sentNew?.key?.id) {
             record.botWaId = sentNew.key.id;
             record.botKey = sentNew.key;
+            _persistTranslationMap();
           }
         }
       } else if (isTranslationActive) {
@@ -200,7 +235,7 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
           session,
           groupId,
           { text: `${header}\n\n"${transResult.translation}"${provBadge}` },
-          { key: { id: cleanSourceId, remoteJid: groupId } },
+          { key: { id: cleanSourceId, remoteJid: groupId }, message: { conversation: cleanText } },
           { skipSpamGuard: true }
         );
         if (sentTransMsg?.key?.id) {

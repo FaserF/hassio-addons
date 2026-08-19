@@ -274,6 +274,11 @@ export async function syncTelegramDeleteToWhatsApp(tgChatId, tgMsgId) {
           id: mapped.waMsgId,
         },
       });
+      try {
+        const { deleteTranslationIfExists } = await import('../../moderation/engine.js');
+        await deleteTranslationIfExists(session, mapped.waJid, mapped.waMsgId);
+      } catch (_e) {}
+      removeMessageMap(mapped.waMsgId, tgChatId, tgMsgId);
       logger.info(
         { tgChatId, tgMsgId, waMsgId: mapped.waMsgId },
         '🗑️ Successfully mirrored Telegram message deletion to WhatsApp'
@@ -325,15 +330,6 @@ export async function syncWhatsAppEditToTelegram(
 
   const targetWaJid = waJid || mapped?.waJid || '';
 
-  // If this message was sent to WhatsApp from Telegram (bridge echo) and not originated in WhatsApp, skip mirroring back
-  if (mapped && mapped.origin === 'tg' && !mapped.isWaEdit) {
-    logger.debug(
-      { waMsgId, tgChatId: mapped.tgChatId, tgMsgId: mapped.tgMsgId },
-      'Skipping WhatsApp edit mirror for message originated from Telegram'
-    );
-    return;
-  }
-
   const targetMappings = (store.mappings || []).filter((m) => {
     if (!m.enabled) return false;
     if (m.sync_mode !== 'bidirectional' && m.sync_mode !== 'outbound') return false;
@@ -361,7 +357,14 @@ export async function syncWhatsAppEditToTelegram(
           mapping.anonymize_phone_numbers
         );
 
-    let effectiveText = newText;
+    // Strip existing translation header if text contains it before re-translating
+    let cleanSourceText = newText
+      .replace(/^🌐\s*\*.*[→\->].*\*\s*:?\s*/i, '')
+      .replace(/^_\s*🌐\s*\[.*\]\s*_\s*/i, '')
+      .replace(/^🌐\s*\[.*\]\s*/i, '')
+      .trim();
+
+    let effectiveText = cleanSourceText || newText;
     const groupModCfg = getGroupModerationConfig(targetWaJid);
     const isTranslateActive =
       Boolean(mapping.translate_wa_to_tg) ||
@@ -371,7 +374,7 @@ export async function syncWhatsAppEditToTelegram(
           Boolean(groupModCfg?.translation?.enabled)));
 
     let translationBanner = '';
-    if (isTranslateActive && newText && newText.trim()) {
+    if (isTranslateActive && effectiveText && effectiveText.trim()) {
       try {
         const targetLang =
           mapping.translate_wa_to_tg_lang ||
@@ -380,7 +383,7 @@ export async function syncWhatsAppEditToTelegram(
           'en';
         const provider = groupModCfg?.translation?.provider || 'auto';
         const transRes = await translateTextGatewayWithReason(
-          newText,
+          effectiveText,
           targetLang,
           provider,
           groupModCfg
@@ -388,7 +391,7 @@ export async function syncWhatsAppEditToTelegram(
         if (
           transRes?.translation &&
           transRes.translation.trim() &&
-          transRes.translation.trim().toLowerCase() !== newText.trim().toLowerCase()
+          transRes.translation.trim().toLowerCase() !== effectiveText.trim().toLowerCase()
         ) {
           const srcBadge =
             transRes.sourceLang && transRes.sourceLang !== '?' && transRes.sourceLang !== 'auto'

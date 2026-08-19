@@ -1112,6 +1112,26 @@ export async function processTelegramUpdates() {
                   continue;
                 }
 
+                if (
+                  isEdit &&
+                  /^(?:[./!]?(?:del|delete|rm|purge)|\[deleted\]|\.)$/i.test(
+                    (effectiveTgText || '').trim()
+                  )
+                ) {
+                  const mapped = resolveWaMsgFromTg(tgChatId, String(msg.message_id));
+                  if (mapped && mapped.waMsgId && mapped.waJid) {
+                    const { syncTelegramDeleteToWhatsApp } = await import(
+                      '../outbound/mutations.js'
+                    );
+                    await syncTelegramDeleteToWhatsApp(tgChatId, msg.message_id);
+                    logger.info(
+                      { tgChatId, tgMsgId: msg.message_id, waMsgId: mapped.waMsgId },
+                      '🗑️ Mirrored Telegram edit-to-delete to WhatsApp'
+                    );
+                    continue;
+                  }
+                }
+
                 if (isEdit) {
                   let editSucceeded = false;
                   const mapped = resolveWaMsgFromTg(tgChatId, String(msg.message_id));
@@ -1141,6 +1161,17 @@ export async function processTelegramUpdates() {
                         effectiveTgText,
                         mapped.origin || 'tg'
                       );
+                      try {
+                        const { updateTranslationIfExists } = await import(
+                          '../../moderation/engine.js'
+                        );
+                        await updateTranslationIfExists(
+                          session,
+                          mapping.wa_jid,
+                          mapped.waMsgId,
+                          effectiveTgText
+                        );
+                      } catch (_e) {}
                       logger.info(
                         { tgChatId, tgMsgId: msg.message_id, waMsgId: mapped.waMsgId },
                         '✏️ Mirrored Telegram message edit natively to WhatsApp'
