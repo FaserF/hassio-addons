@@ -45,7 +45,11 @@ jobs:
           python-version: "3.14"
           cache: "pip"
       - name: 📦 Install Python Deps
-        run: pip install pyyaml
+        run: pip install pyyaml pillow
+
+      - name: 🎨 Auto-Fix Addon Brand Assets (Icons & Logos)
+        continue-on-error: true
+        run: python3 .scripts/fix_brand_assets.py
 
       - name: 🏷️ Auto-Generate OCI Labels
         continue-on-error: true

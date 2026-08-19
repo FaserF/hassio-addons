@@ -372,7 +372,7 @@ jobs:
           cache: "pip"
 
       - name: 📦 Install Compliance Deps
-        run: pip install pyyaml
+        run: pip install pyyaml pillow
 
       - name: 🏆 Platinum Compliance Check
         id: compliance

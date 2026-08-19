@@ -97,11 +97,34 @@ def check_addon(addon_path):
     if not os.path.exists(os.path.join(translations_dir, "de.yaml")):
         errors.append("Missing German translation (translations/de.yaml)")
 
-    # Check 6: Images
+    # Check 6: Images (Presence, Format, and Dimensions)
     if not os.path.exists(icon_path):
         errors.append("Missing icon.png")
+    else:
+        try:
+            from PIL import Image
+
+            icon_im = Image.open(icon_path)
+            if icon_im.format != "PNG":
+                errors.append(f"icon.png is not in PNG format (found {icon_im.format})")
+            if icon_im.width != icon_im.height:
+                warnings.append(f"icon.png should be square 1:1 ratio (found {icon_im.size})")
+        except Exception as e:
+            errors.append(f"icon.png is unreadable or corrupted: {e}")
+
     if not os.path.exists(logo_path):
         errors.append("Missing logo.png")
+    else:
+        try:
+            from PIL import Image
+
+            logo_im = Image.open(logo_path)
+            if logo_im.format != "PNG":
+                errors.append(f"logo.png is not in PNG format (found {logo_im.format})")
+            if logo_im.width == logo_im.height:
+                warnings.append("logo.png is square (should be a landscape banner, e.g. 512x180)")
+        except Exception as e:
+            errors.append(f"logo.png is unreadable or corrupted: {e}")
 
     # Check 7: Log Level Configuration
     config_path = os.path.join(addon_path, "config.yaml")
