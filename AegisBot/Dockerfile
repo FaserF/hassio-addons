@@ -18,7 +18,7 @@ ENV PATH="/usr/local/bin:/root/.local/bin:${PATH}"
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.6.1"
+ENV APP_VERSION="0.6.2"
 ENV APP_NAME="AegisBot"
 ENV APP_SLUG="aegisbot"
 ENV APP_UNSUPPORTED="false"

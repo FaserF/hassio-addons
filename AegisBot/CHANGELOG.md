@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.6.2 (2026-08-19)
+
+### ✨ Features
+- add Google Antigravity Usage monitor addon ([`81495c89`](https://github.com/FaserF/hassio-addons/commit/81495c890a4d15605f44d0ac5c30ff2b85db4dd0))
+- Github availablity check ([`8a5c7967`](https://github.com/FaserF/hassio-addons/commit/8a5c7967fe45a835d4763dcde8afa26c8048c502))
+- add cmake, openblas and linux-headers to Dockerfile and re-enable faster-whisper dependency ([`3ee18e33`](https://github.com/FaserF/hassio-addons/commit/3ee18e333d202168dd66a9b2e04a1ad6d7f55cb8))
+
+### 🐛 Bug Fixes
+- regenerate accurate changelogs for all addons and fix release commit matching in bump_version.py ([`b667eef9`](https://github.com/FaserF/hassio-addons/commit/b667eef9f23c882efd02c11535c2ea4c9bbad5f5))
+- convert pseudo-PNG jpeg images to genuine PNG format and improve autofix ([`9803f56c`](https://github.com/FaserF/hassio-addons/commit/9803f56c2606138cf0e41de1c02368cf2b32566c))
+- replace deprecated bashio::addon.stop with bashio::app.stop and harmonize APP_VERSION variables ([`e74d22d6`](https://github.com/FaserF/hassio-addons/commit/e74d22d66be715d3ea2efad6e4919b70bf4a81ce))
+- small fixes ([`dfa67c70`](https://github.com/FaserF/hassio-addons/commit/dfa67c70e23664d0d3f8486cad46a048e7f3d5ae))
+- remove faster-whisper from requirements.txt to avoid ctranslate2 musllinux build errors ([`cedd8d66`](https://github.com/FaserF/hassio-addons/commit/cedd8d6657fdaff4c9f19fca59ecb90b935155d7))
+
+### 📦 Dependencies
+- ⬆️ Update dependency openai to v3.3.1 (#1000) ([`897a738c`](https://github.com/FaserF/hassio-addons/commit/897a738cc775b4df763a1bb206d8b12ce69691b7))
+- ⬆️ Update dependency uvicorn to v0.52.4 ([`650cd95f`](https://github.com/FaserF/hassio-addons/commit/650cd95f28daf01ea5cf29c61add4f1fab763764))
+- update icons and convert logos to official landscape banners ([`e6d061bd`](https://github.com/FaserF/hassio-addons/commit/e6d061bd8292ae6ca473fa21a2e55d5e5f4e70ea))
+- ⬆️ Update dependency openai to v3.3.0 (#996) ([`605dc796`](https://github.com/FaserF/hassio-addons/commit/605dc796f307f24a30988842140c27168f5a2bfb))
+- ⬆️ Update dependency openai to v3.2.0 (#995) ([`b4e37f66`](https://github.com/FaserF/hassio-addons/commit/b4e37f66564843a2f2a9c5b5bd13f95d7ba34116))
+- Update requirements.txt ([`c77c7dff`](https://github.com/FaserF/hassio-addons/commit/c77c7dff413d5a5f08970dacaf0d13a241d900e3))
+- ⬆️ Update dependency faster-whisper to v1.2.1 ([`776c4361`](https://github.com/FaserF/hassio-addons/commit/776c436121c1b63ce63b1308242c53632846c303))
+
+
 ## 0.6.1 (2026-08-19)
 
 ### ✨ Features
