@@ -758,7 +758,7 @@ jobs:
           build-args: |
             BUILD_ARCH=amd64
           cache-from: type=gha,scope=${{ matrix.App }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.App }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.App }},ignore-error=true
 
   # ================================================================================
   # RELEASE: Build & Push
@@ -1218,7 +1218,7 @@ jobs:
           build-args: |
             BUILD_ARCH=${{ matrix.App }}
           cache-from: type=gha,scope=${{ matrix.App }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.App }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.App }},ignore-error=true
 
       - name: 📅 Get BUILD_DATE for Standalone WhatsApp
         if: matrix.App == 'whatsapp'

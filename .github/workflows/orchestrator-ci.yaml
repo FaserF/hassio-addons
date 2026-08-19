@@ -543,7 +543,7 @@ jobs:
             BUILD_ARCH=amd64
             BUILD_FROM=${{ steps.prep.outputs.build_from }}
           cache-from: type=gha,scope=${{ matrix.App }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.App }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.App }},ignore-error=true
 
       - name: ✅ Build Success
         if: steps.check_opt.outputs.skip != 'true'
