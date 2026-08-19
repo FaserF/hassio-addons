@@ -391,7 +391,7 @@ export function validateSafeHttpUrl(rawUrl) {
   return {
     protocol,
     hostname,
-    port: parsed.port ? parseInt(parsed.port, 10) : (protocol === 'https:' ? 443 : 80),
+    port: parsed.port ? parseInt(parsed.port, 10) : protocol === 'https:' ? 443 : 80,
     origin: cleanOrigin,
     basePath,
     cleanUrl: `${cleanOrigin}${basePath}`,

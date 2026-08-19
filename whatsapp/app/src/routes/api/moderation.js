@@ -64,7 +64,7 @@ function safeProbeAegisEndpoint(validated, endpointPath, headers, timeoutMs = 70
             json = {};
           }
           resolve({
-            ok: (res.statusCode >= 200 && res.statusCode < 300),
+            ok: res.statusCode >= 200 && res.statusCode < 300,
             status: res.statusCode || 500,
             statusText: res.statusMessage || '',
             json: async () => json,
@@ -137,7 +137,12 @@ export function registerModerationRoutes(app) {
       } catch (_err) {
         // Fallback check to /api/v1/ai/stt/config
         try {
-          response = await safeProbeAegisEndpoint(validated, '/api/v1/ai/stt/config', headers, 7000);
+          response = await safeProbeAegisEndpoint(
+            validated,
+            '/api/v1/ai/stt/config',
+            headers,
+            7000
+          );
         } catch (subErr) {
           return res.json({
             success: false,
