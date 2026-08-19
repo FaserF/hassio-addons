@@ -608,7 +608,9 @@ function updateAutoResponderPreview() {
   const rawEnd = document.getElementById('ar-end-time')?.value || '';
   const oncePerContact = document.getElementById('ar-once-per-contact')?.value === 'true';
 
-  let isDe = (window.currentLang || (window.t ? window.t('meta.code') : 'en') || 'en').startsWith('de');
+  let isDe = (window.currentLang || (window.t ? window.t('meta.code') : 'en') || 'en').startsWith(
+    'de'
+  );
   const lowerTpl = (tpl || '').toLowerCase();
   if (
     lowerTpl.includes('hallo') ||
