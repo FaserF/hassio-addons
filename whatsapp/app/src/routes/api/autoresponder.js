@@ -3,6 +3,7 @@ import {
   saveAutoResponderStore,
   resetSeenRecipients,
   isAutoResponderActive,
+  parseDateTimeToMs,
 } from '../../whatsapp/autoresponder/store.js';
 import { sessions } from '../../session.js';
 import { logger } from '../../logger.js';
@@ -37,6 +38,13 @@ export function registerAutoResponderRoutes(app) {
 
       if (enabled !== undefined) {
         store.enabled = Boolean(enabled);
+        // If enabling and existing end_time was already in the past, clear expired end_time
+        if (store.enabled && store.end_time && end_time === undefined) {
+          const endMs = parseDateTimeToMs(store.end_time);
+          if (endMs !== null && Date.now() > endMs) {
+            store.end_time = null;
+          }
+        }
         // If re-enabling from disabled state, reset seen recipients
         if (store.enabled && !wasEnabled) {
           store.seen_recipients = {};
