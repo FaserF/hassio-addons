@@ -1,5 +1,6 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.4.0
 ARG KOMODO_VERSION=2.3.2
+FROM mongo:8.3 AS mongo
 FROM ghcr.io/moghtech/komodo-core:${KOMODO_VERSION} AS komodo
 FROM ${BUILD_FROM}
 
@@ -20,17 +21,13 @@ RUN \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
-        gnupg \
         netcat-traditional \
         sudo \
-    && curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | \
-       gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor \
-    && ARCH=$(dpkg --print-architecture) \
-    && echo "deb [ arch=$ARCH trusted=yes ] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" | \
-       tee /etc/apt/sources.list.d/mongodb-org-7.0.list \
-    && apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowUnauthenticated=true -o Dir::Bin::sqv="" \
-    && apt-get install -y --no-install-recommends --allow-unauthenticated \
-        mongodb-org-server \
+        libcurl4 \
+        libssl3 \
+    && groupadd -r mongodb && useradd -r -g mongodb mongodb \
+    && mkdir -p /data/db \
+    && chown -R mongodb:mongodb /data/db \
     && rm -fr \
         /tmp/* \
         /var/cache/* \
@@ -40,8 +37,10 @@ RUN \
 # Copy rootfs
 COPY rootfs /
 
-# Copy Komodo binary
+# Copy Komodo and MongoDB binaries
 COPY --from=komodo /usr/local/bin/core /usr/bin/komodo
+COPY --from=mongo /usr/bin/mongod /usr/bin/mongod
+COPY --from=mongo /usr/bin/mongos /usr/bin/mongos
 
 # Build arguments
 ARG BUILD_ARCH
