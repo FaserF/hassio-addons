@@ -1,6 +1,6 @@
-fastapi==0.115.8
-uvicorn==0.34.0
+fastapi==0.141.1
+uvicorn==0.52.3
 httpx==0.28.1
-pydantic==2.10.6
-google-auth==2.38.0
-starlette==0.45.3
+pydantic==2.13.4
+google-auth==2.56.3
+starlette==1.6.0
