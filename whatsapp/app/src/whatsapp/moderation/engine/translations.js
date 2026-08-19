@@ -147,13 +147,9 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
           fromMe: true,
         };
         try {
-          await reply(
-            session,
-            groupId,
-            { text: updatedText, edit: editKey },
-            null,
-            { skipSpamGuard: true }
-          );
+          await reply(session, groupId, { text: updatedText, edit: editKey }, null, {
+            skipSpamGuard: true,
+          });
           logger.info(
             { groupId, sourceWaId: cleanSourceId, botWaId: record.botWaId },
             '✏️ Successfully synchronized edited WhatsApp auto-translation'

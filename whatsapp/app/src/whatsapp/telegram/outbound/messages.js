@@ -370,10 +370,7 @@ export async function syncWhatsAppToTelegram(
         const intObj = msg.message?.interactiveMessage;
         const body = intObj?.body?.text || intObj?.header?.title || fullText;
         const footer = intObj?.footer?.text || '';
-        const rawBtns =
-          intObj?.nativeFlowMessage?.buttons ||
-          intObj?.carouselMessage?.cards ||
-          [];
+        const rawBtns = intObj?.nativeFlowMessage?.buttons || intObj?.carouselMessage?.cards || [];
         const inlineKeyboard = [];
         for (const [i, b] of rawBtns.entries()) {
           let label = `Option ${i + 1}`;
