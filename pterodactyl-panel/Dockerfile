@@ -65,25 +65,15 @@ RUN \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
     && apk upgrade --no-cache --available \
     && apk add --no-cache \
-    yarn \
-    git \
-    && git clone https://github.com/pterodactyl/panel ./ --depth 1 --branch "release/${PTERODACTYL_VERSION}" \
-    && rm -rf .git \
+        curl \
+        tar \
+    && curl -Lo panel.tar.gz "https://github.com/pterodactyl/panel/releases/download/${PTERODACTYL_VERSION}/panel.tar.gz" \
+    && tar -xzvf panel.tar.gz \
+    && rm panel.tar.gz \
     && chmod -R 755 storage/* bootstrap/cache \
     && find storage -type d > .storage.tmpl \
-    && curl -fsSL https://getcomposer.org/installer -o /tmp/composer-setup.php \
-    && php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer \
-    && rm /tmp/composer-setup.php \
     && cp .env.example .env \
-    && export COMPOSER_PROCESS_TIMEOUT=2000 \
-    && (for _ in 1 2 3; do composer install --ansi --no-dev --optimize-autoloader --prefer-dist && break || sleep 15; done) \
-    && rm -rf .git \
-    && chown -R nginx:nginx . \
-    && yarn install --production \
-    && yarn add cross-env \
-    && export NODE_OPTIONS \
-    && yarn run build:production \
-    && rm -rf node_modules
+    && chown -R nginx:nginx .
 
 # Final Production phase of the controller
 # All build requirements get scrapped as to maintain a small image
