@@ -88,6 +88,27 @@ export function saveAutoResponderStore(data) {
 }
 
 /**
+ * Helper to parse a datetime string (ISO or datetime-local 'YYYY-MM-DDTHH:mm') safely to millisecond timestamp.
+ */
+export function parseDateTimeToMs(dateStr) {
+  if (!dateStr) return null;
+  const str = String(dateStr).trim();
+  if (!str) return null;
+
+  // If already full ISO or contains timezone offset/Z, use standard Date.parse
+  if (str.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(str)) {
+    const ms = Date.parse(str);
+    return isNaN(ms) ? null : ms;
+  }
+
+  // HTML5 datetime-local format 'YYYY-MM-DDTHH:mm' (or with seconds) without timezone
+  // Treat as local machine time (Date constructor uses local time for non-Z/non-UTC formatted strings)
+  const date = new Date(str);
+  const ms = date.getTime();
+  return isNaN(ms) ? null : ms;
+}
+
+/**
  * Checks if the auto-responder is currently active according to start_time and end_time.
  */
 export function isAutoResponderActive(nowMs = Date.now()) {
@@ -95,15 +116,15 @@ export function isAutoResponderActive(nowMs = Date.now()) {
   if (!store.enabled) return false;
 
   if (store.start_time) {
-    const startMs = new Date(store.start_time).getTime();
-    if (!isNaN(startMs) && nowMs < startMs) {
+    const startMs = parseDateTimeToMs(store.start_time);
+    if (startMs !== null && nowMs < startMs) {
       return false;
     }
   }
 
   if (store.end_time) {
-    const endMs = new Date(store.end_time).getTime();
-    if (!isNaN(endMs) && nowMs > endMs) {
+    const endMs = parseDateTimeToMs(store.end_time);
+    if (endMs !== null && nowMs > endMs) {
       return false;
     }
   }

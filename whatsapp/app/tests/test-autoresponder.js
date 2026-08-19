@@ -69,20 +69,35 @@ try {
   const tpl = 'Hi {sender_name}! I am away{end_time_text}.\n{once_notice}';
   const renderedWithEnd = formatAutoResponderText(tpl, {
     sender_name: 'Alice',
-    end_time: '2026-08-25',
+    end_time: '2026-08-25T18:00',
     once_per_contact: true,
+    lang: 'en',
   });
   assert.ok(renderedWithEnd.includes('Hi Alice!'), 'Should interpolate sender_name');
-  assert.ok(renderedWithEnd.includes('(until 2026-08-25)'), 'Should interpolate end_time_text');
+  assert.ok(renderedWithEnd.includes('until'), 'Should interpolate end_time_text with localized clause');
   assert.ok(
     renderedWithEnd.includes('only receive this automated reply once'),
     'Should interpolate once_notice'
+  );
+
+  const renderedGerman = formatAutoResponderText(tpl, {
+    sender_name: 'Max',
+    end_time: '2026-08-25T18:00',
+    once_per_contact: true,
+    lang: 'de',
+  });
+  assert.ok(renderedGerman.includes('Hi Max!'), 'Should interpolate sender_name');
+  assert.ok(renderedGerman.includes('bis'), 'Should interpolate German bis in end_time_text');
+  assert.ok(
+    renderedGerman.includes('nur einmalig'),
+    'Should interpolate German once_notice'
   );
 
   const renderedWithoutEnd = formatAutoResponderText(tpl, {
     sender_name: 'Bob',
     end_time: '',
     once_per_contact: false,
+    lang: 'en',
   });
   assert.ok(renderedWithoutEnd.includes('Hi Bob!'), 'Should interpolate sender_name');
   assert.ok(!renderedWithoutEnd.includes('(until'), 'Should not have end_time_text when empty');
@@ -90,7 +105,7 @@ try {
     !renderedWithoutEnd.includes('only receive this automated reply once'),
     'Should omit once_notice when once_per_contact is false'
   );
-  console.log('✅ PASSED: Template formatting & placeholder substitution');
+  console.log('✅ PASSED: Template formatting & placeholder substitution with localization');
 
   // Test 4: Engine message handling & deduplication
   const sentMessages = [];

@@ -192,27 +192,35 @@ export function splitTelegramHtml(htmlText, maxLength = 4096, maxChunks = MAX_ME
       chunk = prefix + chunk;
     }
 
-    // Find HTML tags in this chunk using simple linear regex without nested quantifiers
-    const tagRegex = /<\/?([a-zA-Z0-9]+)[^>]*>/g;
-    let match;
+    // Linear character scanning to parse HTML tags without regular expressions (eliminating any ReDoS risk)
     const currentOpenTags = [...openTags];
+    let tagStart = -1;
 
-    while ((match = tagRegex.exec(chunk)) !== null) {
-      const isClosing = match[0].startsWith('</');
-      const tagName = match[1].toLowerCase();
+    for (let c = 0; c < chunk.length; c++) {
+      if (chunk[c] === '<') {
+        tagStart = c;
+      } else if (chunk[c] === '>' && tagStart !== -1) {
+        const rawInside = chunk.slice(tagStart + 1, c).trim();
+        tagStart = -1;
+        if (!rawInside) continue;
 
-      if (
-        ['b', 'strong', 'i', 'em', 'code', 'pre', 's', 'strike', 'del', 'blockquote', 'a'].includes(
-          tagName
-        )
-      ) {
-        if (isClosing) {
-          const lastIdx = currentOpenTags.lastIndexOf(tagName);
-          if (lastIdx !== -1) {
-            currentOpenTags.splice(lastIdx, 1);
+        const isClosing = rawInside.startsWith('/');
+        const namePart = (isClosing ? rawInside.slice(1) : rawInside).split(/[\s/]/)[0];
+        const tagName = namePart ? namePart.toLowerCase() : '';
+
+        if (
+          ['b', 'strong', 'i', 'em', 'code', 'pre', 's', 'strike', 'del', 'blockquote', 'a'].includes(
+            tagName
+          )
+        ) {
+          if (isClosing) {
+            const lastIdx = currentOpenTags.lastIndexOf(tagName);
+            if (lastIdx !== -1) {
+              currentOpenTags.splice(lastIdx, 1);
+            }
+          } else {
+            currentOpenTags.push(tagName);
           }
-        } else {
-          currentOpenTags.push(tagName);
         }
       }
     }

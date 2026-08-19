@@ -3459,3 +3459,60 @@ body.tab-chats-active .footer-info {
   border-color: var(--primary-hover, var(--primary)) !important;
   transform: translateY(-1px);
 }
+
+/* ── WhatsApp Theme Input & DateTime Local Form Elements ── */
+input[type='datetime-local'],
+input[type='date'],
+input[type='time'] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-color: var(--bg-input) !important;
+  color: var(--text-main) !important;
+  border: 1.5px solid var(--border-color) !important;
+  border-radius: 10px !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  font-family: inherit !important;
+  line-height: 1.4 !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+  color-scheme: dark light;
+}
+
+html[data-theme='dark'] input[type='datetime-local'],
+html[data-theme='dark'] input[type='date'],
+html[data-theme='dark'] input[type='time'] {
+  color-scheme: dark !important;
+  background-color: var(--bg-input, #1f2c34) !important;
+}
+
+input[type='datetime-local']:hover,
+input[type='date']:hover,
+input[type='time']:hover {
+  border-color: var(--primary) !important;
+  background-color: var(--bg-hover) !important;
+}
+
+input[type='datetime-local']:focus,
+input[type='date']:focus,
+input[type='time']:focus {
+  border-color: var(--primary) !important;
+  background-color: var(--bg-input-focus, var(--bg-input)) !important;
+  box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.25) !important;
+}
+
+input[type='datetime-local']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.6) sepia(1) saturate(5) hue-rotate(110deg);
+  opacity: 0.85;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+input[type='datetime-local']::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  transform: scale(1.15);
+}
+

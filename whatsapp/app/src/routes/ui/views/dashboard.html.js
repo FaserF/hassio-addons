@@ -49,63 +49,99 @@ export default ({ PORT, API_TOKEN, getLocalIP }) => `
 
                     <!-- Auto Responder Card -->
                     <div class="card" id="card-autoresponder">
-                        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
-                            <span><i class="fas fa-umbrella-beach"></i> <span data-i18n="autoresponder.title">Auto Responder (Away / Vacation)</span></span>
-                            <span id="ar-status-badge" class="badge" data-i18n="autoresponder.inactive_status" style="font-size:11px;padding:3px 8px;border-radius:12px;background:var(--bg-app);color:var(--text-muted);">Disabled</span>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <div class="card-title" style="margin-bottom:0;"><i class="fas fa-umbrella-beach"></i> <span data-i18n="autoresponder.title">Auto Responder (Away / Vacation)</span></div>
+                            <span id="ar-status-badge" class="badge" style="font-size:11px; text-transform:uppercase; font-weight:700; letter-spacing:0.5px; padding:4px 8px; border-radius:6px; background:rgba(255,255,255,0.06); color:var(--text-muted);" data-i18n="autoresponder.inactive_status">Disabled</span>
                         </div>
-                        <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px 0;" data-i18n="autoresponder.subtitle">Automatically reply to incoming WhatsApp messages during vacations or off-hours.</p>
-                        
-                        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-app);padding:10px 14px;border-radius:8px;margin-bottom:12px;">
+                        <p style="font-size:12px; color:var(--text-muted); margin:0 0 16px 0;" data-i18n="autoresponder.subtitle">Automatically reply to incoming WhatsApp messages during vacations, off-hours, or phone-free times.</p>
+
+                        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(37, 211, 102, 0.05); border:1px solid rgba(37, 211, 102, 0.2); border-radius:12px; padding:14px 16px; margin-bottom:16px;">
                             <div>
-                                <strong style="font-size:13px;" data-i18n="autoresponder.master_switch">Enable Auto Responder</strong>
-                                <div style="font-size:11px;color:var(--text-muted);" data-i18n="autoresponder.master_switch_hint">When enabled, incoming messages receive an automatic reply.</div>
+                                <div style="font-size:13px; font-weight:600; color:var(--text-main); margin-bottom:2px;" data-i18n="autoresponder.master_switch">Enable Auto Responder</div>
+                                <div style="font-size:11px; color:var(--text-muted);" data-i18n="autoresponder.master_switch_hint">When enabled, incoming messages receive an automatic reply.</div>
                             </div>
-                            <label class="toggle-switch">
+                            <label class="mod-toggle-switch">
                                 <input type="checkbox" id="ar-enabled" onchange="saveAutoResponderConfig()">
-                                <span class="toggle-slider"></span>
+                                <div class="mod-toggle-track">
+                                    <div class="mod-toggle-thumb"></div>
+                                </div>
                             </label>
                         </div>
 
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:16px;">
                             <div>
-                                <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px;" data-i18n="autoresponder.start_time_label">Start Time (Optional)</label>
-                                <input type="datetime-local" id="ar-start-time" class="input-control" style="width:100%;font-size:12px;" onchange="saveAutoResponderConfig()">
+                                <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:6px;" data-i18n="autoresponder.start_time_label">Start Time (Optional)</label>
+                                <input type="datetime-local" id="ar-start-time" class="mod-input" style="width:100%;" onchange="saveAutoResponderConfig()">
                             </div>
                             <div>
-                                <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px;" data-i18n="autoresponder.end_time_label">End Time (Optional)</label>
-                                <input type="datetime-local" id="ar-end-time" class="input-control" style="width:100%;font-size:12px;" onchange="saveAutoResponderConfig()">
+                                <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:6px;" data-i18n="autoresponder.end_time_label">End Time (Optional)</label>
+                                <input type="datetime-local" id="ar-end-time" class="mod-input" style="width:100%;" onchange="saveAutoResponderConfig()">
                             </div>
                         </div>
 
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:16px;">
                             <div>
-                                <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px;" data-i18n="autoresponder.scope_title">Scope</label>
-                                <select id="ar-direct-only" class="input-control" style="width:100%;font-size:12px;" onchange="saveAutoResponderConfig()">
+                                <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:6px;" data-i18n="autoresponder.scope_title">Scope</label>
+                                <select id="ar-direct-only" class="mod-select" style="width:100%;" onchange="saveAutoResponderConfig()">
                                     <option value="true" data-i18n="autoresponder.direct_only">Direct Messages Only (1:1)</option>
                                     <option value="false" data-i18n="autoresponder.all_chats">Direct Messages & Groups</option>
                                 </select>
                             </div>
                             <div>
-                                <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px;" data-i18n="autoresponder.frequency_title">Frequency</label>
-                                <select id="ar-once-per-contact" class="input-control" style="width:100%;font-size:12px;" onchange="saveAutoResponderConfig()">
+                                <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:6px;" data-i18n="autoresponder.frequency_title">Frequency</label>
+                                <select id="ar-once-per-contact" class="mod-select" style="width:100%;" onchange="saveAutoResponderConfig()">
                                     <option value="true" data-i18n="autoresponder.once_per_contact">Once per contact (Recommended)</option>
                                     <option value="false" data-i18n="autoresponder.every_message">Every message</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div style="margin-bottom:12px;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                                <label style="font-size:11px;font-weight:600;" data-i18n="autoresponder.template_title">Message Template</label>
-                                <button type="button" class="btn btn-secondary btn-xs" onclick="resetAutoResponderTemplate()" data-i18n="autoresponder.reset_template_btn" style="font-size:10px;padding:2px 6px;">Reset Template</button>
+                        <div style="margin-bottom:16px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;" data-i18n="autoresponder.template_title">Message Template</label>
+                                <button type="button" class="btn btn-secondary btn-xs" onclick="resetAutoResponderTemplate()" style="font-size:11px; padding:4px 8px;"><i class="fas fa-undo"></i> <span data-i18n="autoresponder.reset_template_btn">Reset Template</span></button>
                             </div>
-                            <textarea id="ar-message-template" class="input-control" rows="4" style="width:100%;font-size:12px;resize:vertical;" onchange="saveAutoResponderConfig()"></textarea>
-                            <div style="font-size:10px;color:var(--text-muted);margin-top:2px;" data-i18n="autoresponder.template_hint">Placeholders: {sender_name}, {start_time}, {end_time}, {end_time_text}, {once_notice}</div>
+                            <textarea id="ar-message-template" class="mod-textarea" rows="4" style="min-height:90px; width:100%;" oninput="updateAutoResponderPreview()" onchange="saveAutoResponderConfig()"></textarea>
                         </div>
 
-                        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg-app);padding:8px 12px;border-radius:6px;">
-                            <span id="ar-seen-count" style="font-size:11px;color:var(--text-muted);"><span data-i18n="autoresponder.seen_count_label">0 contacts replied</span></span>
-                            <button type="button" class="btn btn-secondary btn-xs" onclick="resetAutoResponderSeen()" data-i18n="autoresponder.reset_seen_btn" style="font-size:11px;padding:4px 8px;"><i class="fas fa-redo"></i> <span data-i18n="autoresponder.reset_seen_btn">Reset Contacts</span></button>
+                        <!-- Placeholders Guide & Live Resolution Table -->
+                        <div style="margin-bottom:16px; background:rgba(0, 0, 0, 0.1); border:1px solid var(--border-color); border-radius:10px; padding:12px 14px;">
+                            <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;"><i class="fas fa-code"></i> <span data-i18n="autoresponder.placeholders_guide_title">Available Placeholders & Live Resolution</span></div>
+                            <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:4px;">
+                                    <div><code style="color:var(--primary); font-weight:600;">{sender_name}</code> <span style="color:var(--text-muted); font-size:11px;" data-i18n="autoresponder.placeholder_sender_name">Sender name or phone number</span></div>
+                                    <div id="ar-val-sender" style="color:var(--text-main); font-weight:500; font-family:monospace; font-size:11px;">-</div>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:4px;">
+                                    <div><code style="color:var(--primary); font-weight:600;">{start_time}</code> <span style="color:var(--text-muted); font-size:11px;" data-i18n="autoresponder.placeholder_start_time">Formatted start datetime</span></div>
+                                    <div id="ar-val-start" style="color:var(--text-main); font-weight:500; font-family:monospace; font-size:11px;">—</div>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:4px;">
+                                    <div><code style="color:var(--primary); font-weight:600;">{end_time}</code> <span style="color:var(--text-muted); font-size:11px;" data-i18n="autoresponder.placeholder_end_time">Formatted end datetime</span></div>
+                                    <div id="ar-val-end" style="color:var(--text-main); font-weight:500; font-family:monospace; font-size:11px;">—</div>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:4px;">
+                                    <div><code style="color:var(--primary); font-weight:600;">{end_time_text}</code> <span style="color:var(--text-muted); font-size:11px;" data-i18n="autoresponder.placeholder_end_time_text">Localized clause (until ...)</span></div>
+                                    <div id="ar-val-end-text" style="color:var(--text-main); font-weight:500; font-family:monospace; font-size:11px;">—</div>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <div><code style="color:var(--primary); font-weight:600;">{once_notice}</code> <span style="color:var(--text-muted); font-size:11px;" data-i18n="autoresponder.placeholder_once_notice">Single-reply notice</span></div>
+                                    <div id="ar-val-once" style="color:var(--text-main); font-weight:500; font-size:11px; max-width:50%; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Message Bubble Preview -->
+                        <div style="margin-bottom:16px;">
+                            <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:6px;"><i class="fas fa-eye"></i> <span data-i18n="autoresponder.live_preview_title">Live Message Preview (How contacts see it)</span></label>
+                            <div style="background:var(--bg-app); border:1px solid var(--border-color); border-radius:12px; padding:14px 16px; position:relative;">
+                                <div style="background:var(--primary-glow); border:1px solid rgba(37, 211, 102, 0.25); color:var(--text-main); border-radius:10px 10px 2px 10px; padding:10px 14px; font-size:13px; line-height:1.5; white-space:pre-wrap; word-break:break-word;" id="ar-live-preview-bubble">...</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0, 0, 0, 0.15); border:1px solid var(--border-color); padding:10px 14px; border-radius:10px;">
+                            <span id="ar-seen-count" style="font-size:12px; color:var(--text-muted); font-weight:500;"><span data-i18n="autoresponder.seen_count_label">0 contacts replied</span></span>
+                            <button type="button" class="btn btn-secondary btn-xs" onclick="resetAutoResponderSeen()" style="font-size:12px; padding:6px 12px;"><i class="fas fa-redo"></i> <span data-i18n="autoresponder.reset_seen_btn">Reset Contacts</span></button>
                         </div>
                     </div>
 

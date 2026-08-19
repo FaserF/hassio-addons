@@ -4,23 +4,55 @@ import { reply } from '../actions.js';
 import { loadAutoResponderStore, isAutoResponderActive, recordRecipientReplied } from './store.js';
 
 /**
- * Formats a message template by substituting dynamic variables.
+ * Formats an ISO datetime string into user-friendly localized text based on locale or language code.
+ */
+export function formatLocalizedDateTime(isoStr, lang = 'en') {
+  if (!isoStr) return '';
+  const date = new Date(isoStr);
+  if (isNaN(date.getTime())) return String(isoStr);
+
+  try {
+    const localeCode = lang === 'de' ? 'de-DE' : 'en-US';
+    return date.toLocaleString(localeCode, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+  } catch (_e) {
+    return date.toLocaleString();
+  }
+}
+
+/**
+ * Formats a message template by substituting dynamic variables with localized datetime support.
  */
 export function formatAutoResponderText(template, vars = {}) {
   let text = template || '';
 
   const senderName = vars.sender_name || 'there';
-  const startTime = vars.start_time || '';
-  const endTime = vars.end_time || '';
-  const endTimeText = endTime ? ` (until ${endTime})` : '';
-  const onceNotice = vars.once_per_contact
-    ? 'ℹ️ *Note:* You will only receive this automated reply once.'
-    : '';
+  const rawStart = vars.start_time || '';
+  const rawEnd = vars.end_time || '';
+  const lang = vars.lang || (vars.config && vars.config.language) || 'en';
+
+  const startTimeFormatted = rawStart ? formatLocalizedDateTime(rawStart, lang) : '';
+  const endTimeFormatted = rawEnd ? formatLocalizedDateTime(rawEnd, lang) : '';
+
+  let endTimeText = '';
+  if (endTimeFormatted) {
+    endTimeText = lang === 'de' ? ` (bis ${endTimeFormatted})` : ` (until ${endTimeFormatted})`;
+  }
+
+  let onceNotice = '';
+  if (vars.once_per_contact) {
+    onceNotice =
+      lang === 'de'
+        ? 'ℹ️ *Hinweis:* Du erhältst diese automatische Antwort nur einmalig.'
+        : 'ℹ️ *Note:* You will only receive this automated reply once.';
+  }
 
   text = text
     .replace(/\{sender_name\}/g, senderName)
-    .replace(/\{start_time\}/g, startTime)
-    .replace(/\{end_time\}/g, endTime)
+    .replace(/\{start_time\}/g, startTimeFormatted || rawStart)
+    .replace(/\{end_time\}/g, endTimeFormatted || rawEnd)
     .replace(/\{end_time_text\}/g, endTimeText)
     .replace(/\{once_notice\}/g, onceNotice);
 

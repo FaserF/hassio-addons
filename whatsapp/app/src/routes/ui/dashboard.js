@@ -446,12 +446,23 @@ async function loadAutoResponderConfig() {
 
     const badge = document.getElementById('ar-status-badge');
     if (badge) {
+      const now = Date.now();
+      let isClientActive = Boolean(data.enabled);
+      if (isClientActive && data.start_time) {
+        const startMs = new Date(data.start_time).getTime();
+        if (!isNaN(startMs) && now < startMs) isClientActive = false;
+      }
+      if (isClientActive && data.end_time) {
+        const endMs = new Date(data.end_time).getTime();
+        if (!isNaN(endMs) && now > endMs) isClientActive = false;
+      }
+
       if (!data.enabled) {
         badge.className = 'badge';
         badge.style.background = 'var(--bg-app)';
         badge.style.color = 'var(--text-muted)';
         badge.textContent = window.t ? window.t('autoresponder.inactive_status') : 'Disabled';
-      } else if (data.is_active) {
+      } else if (isClientActive || data.is_active) {
         badge.className = 'badge';
         badge.style.background = 'rgba(16, 185, 129, 0.15)';
         badge.style.color = 'var(--primary)';
@@ -471,6 +482,8 @@ async function loadAutoResponderConfig() {
         ? window.t('autoresponder.seen_count_label', { count })
         : `${count} contact(s) received an auto-reply`;
     }
+
+    updateAutoResponderPreview();
   } catch (err) {
     console.debug('Failed to load auto responder config', err);
   } finally {
@@ -548,6 +561,82 @@ async function resetAutoResponderSeen() {
     }
   } catch (err) {
     console.error('Failed to reset auto responder seen contacts', err);
+  }
+}
+
+function formatPreviewDateTime(isoStr) {
+  if (!isoStr) return '';
+  const date = new Date(isoStr);
+  if (isNaN(date.getTime())) return String(isoStr);
+
+  const lang = window.currentLang || (window.t ? window.t('meta.code') : 'en') || 'en';
+  try {
+    const localeCode = lang.startsWith('de') ? 'de-DE' : 'en-US';
+    return date.toLocaleString(localeCode, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+  } catch (_e) {
+    return date.toLocaleString();
+  }
+}
+
+function updateAutoResponderPreview() {
+  const tpl = document.getElementById('ar-message-template')?.value || '';
+  const rawStart = document.getElementById('ar-start-time')?.value || '';
+  const rawEnd = document.getElementById('ar-end-time')?.value || '';
+  const oncePerContact = document.getElementById('ar-once-per-contact')?.value === 'true';
+
+  const lang = window.currentLang || (window.t ? window.t('meta.code') : 'en') || 'en';
+  const isDe = lang.startsWith('de');
+
+  const senderName = isDe ? 'Max Mustermann' : 'John Doe';
+  const startTimeFormatted = rawStart ? formatPreviewDateTime(rawStart) : '';
+  const endTimeFormatted = rawEnd ? formatPreviewDateTime(rawEnd) : '';
+
+  let endTimeText = '';
+  if (endTimeFormatted) {
+    endTimeText = isDe ? ` (bis ${endTimeFormatted})` : ` (until ${endTimeFormatted})`;
+  }
+
+  let onceNotice = '';
+  if (oncePerContact) {
+    onceNotice = isDe
+      ? 'ℹ️ *Hinweis:* Du erhältst diese automatische Antwort nur einmalig.'
+      : 'ℹ️ *Note:* You will only receive this automated reply once.';
+  }
+
+  // Update live resolution table values
+  const setEl = (id, val, emptyPlaceholder = '—') => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val || emptyPlaceholder;
+  };
+  setEl('ar-val-sender', senderName);
+  setEl('ar-val-start', startTimeFormatted);
+  setEl('ar-val-end', endTimeFormatted);
+  setEl('ar-val-end-text', endTimeText);
+  setEl('ar-val-once', onceNotice);
+
+  // Update live message preview bubble
+  const bubble = document.getElementById('ar-live-preview-bubble');
+  if (bubble) {
+    if (!tpl.trim()) {
+      bubble.textContent = window.t
+        ? window.t('autoresponder.live_preview_empty')
+        : '(Enter a template message above to see preview)';
+      bubble.style.opacity = '0.6';
+      bubble.style.fontStyle = 'italic';
+    } else {
+      bubble.style.opacity = '1';
+      bubble.style.fontStyle = 'normal';
+      const resolved = tpl
+        .replace(/\{sender_name\}/g, senderName)
+        .replace(/\{start_time\}/g, startTimeFormatted || (rawStart ? String(rawStart) : ''))
+        .replace(/\{end_time\}/g, endTimeFormatted || (rawEnd ? String(rawEnd) : ''))
+        .replace(/\{end_time_text\}/g, endTimeText)
+        .replace(/\{once_notice\}/g, onceNotice);
+      bubble.textContent = resolved;
+    }
   }
 }
 
@@ -4956,3 +5045,5 @@ window.loadAutoResponderConfig = loadAutoResponderConfig;
 window.saveAutoResponderConfig = saveAutoResponderConfig;
 window.resetAutoResponderTemplate = resetAutoResponderTemplate;
 window.resetAutoResponderSeen = resetAutoResponderSeen;
+window.updateAutoResponderPreview = updateAutoResponderPreview;
+
