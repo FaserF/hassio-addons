@@ -306,9 +306,25 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
       await session.sock.sendPresenceUpdate('paused', targetJid);
     }
 
+    // 0. Intro Message
+    await reply(session, targetJid, {
+      text:
+        '🤖 *WhatsApp Integration: Diagnostic Test Started*\n\n' +
+        'This test was triggered to verify all communication and message features.\n\n' +
+        '*Upcoming Tests:*\n' +
+        '• 📝 Text Message\n' +
+        '• ✅ Reaction\n' +
+        '• ✏️ Message Edit\n' +
+        '• 🔘 Interactive Buttons & Poll Fallback\n' +
+        '• 📍 Location Sharing\n' +
+        '• 👤 Contact Card\n' +
+        '• 🗑️ Auto-Deletion\n',
+    });
+    await delay(1000);
+
     // 1. Text Message
     const textMsg = await reply(session, targetJid, {
-      text: '🧪 *Diagnostic Test [1/7]*: Text message works!',
+      text: '🧪 *Diagnostic Test [1/7]*: Text message works! ✅',
     });
     await delay(1000);
 
@@ -322,12 +338,12 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
 
     // 3. Edit Message
     const editMsg = await reply(session, targetJid, {
-      text: 'This text will be edited',
+      text: 'This text will be edited...',
     });
     await delay(1000);
     if (editMsg) {
       await reply(session, targetJid, {
-        text: '🧪 *Diagnostic Test [2/7]*: Edit message works! ✅',
+        text: '🧪 *Diagnostic Test [3/7]*: Message successfully edited! ✏️✅',
         edit: editMsg.key,
       });
       await delay(1000);
@@ -335,7 +351,7 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
 
     // 4. Buttons (with Poll Fallback & Feedback verification)
     await reply(session, targetJid, {
-      text: '🧪 *Diagnostic Test [3/6]*: Checking Buttons & Poll Fallback...',
+      text: '🧪 *Diagnostic Test [4/7]*: Checking Buttons & Poll Fallback...',
       footer: 'WhatsApp Diagnostic',
       buttons: [
         { buttonId: 'diag_1', displayText: 'Option 1' },
@@ -351,7 +367,7 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
     // 5. Location (München)
     await reply(session, targetJid, {
       location: { degreesLatitude: 48.1351, degreesLongitude: 11.582 },
-      title: '🧪 Diagnostic Test [4/6]',
+      title: '🧪 Diagnostic Test [5/7]',
       address: 'Munich, Germany',
     });
     await delay(1000);
@@ -374,15 +390,12 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
 
     // 7. Send "Message to be deleted" and delete it
     const toDeleteMsg = await reply(session, targetJid, {
-      text: 'Message to be deleted',
+      text: '🗑️ *Diagnostic Test [7/7]*: This message will be deleted automatically in 2 seconds.',
     });
-    await delay(1000);
+    await delay(2000);
     if (toDeleteMsg) {
       await reply(session, targetJid, { delete: toDeleteMsg.key });
       await delay(1000);
-      await reply(session, targetJid, {
-        text: '🧪 *Diagnostic Test [6/6]*: Cleanup (Delete) verified. All basic tests finished!',
-      });
     }
 
     // 9. Moderation Feature Diagnostic Summary (Only run inside group chats)
@@ -575,6 +588,14 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
         logger.warn({ error: modErr.message }, 'Failed to append moderation diagnostic report');
       }
     }
+
+    // 8. Final Completion Message
+    const completionText =
+      '🏁 *Diagnostic Test Completed*\n\n' +
+      'All functional tests have been performed successfully.\n\n' +
+      '📖 *Documentation:* https://faserf.github.io/ha-whatsapp/\n' +
+      '🐞 *Report Issues:* https://github.com/FaserF/ha-whatsapp/issues';
+    await reply(session, targetJid, { text: completionText });
 
     addLogFn(
       session,
