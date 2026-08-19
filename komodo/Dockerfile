@@ -24,12 +24,12 @@ RUN \
         netcat-traditional \
         sudo \
     && curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | \
-       gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor \
+       gpg -o /etc/apt/keyrings/mongodb-server-7.0.gpg --dearmor \
     && ARCH=$(dpkg --print-architecture) \
-    && echo "deb [ arch=$ARCH trusted=yes ] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" | \
+    && echo "deb [ arch=$ARCH signed-by=/etc/apt/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" | \
        tee /etc/apt/sources.list.d/mongodb-org-7.0.list \
-    && apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowUnauthenticated=true -o Dir::Bin::sqv="" \
-    && apt-get install -y --no-install-recommends --allow-unauthenticated \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
         mongodb-org-server \
     && rm -fr \
         /tmp/* \
