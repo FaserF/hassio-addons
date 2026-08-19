@@ -239,20 +239,26 @@ export function loadContactCache(session) {
 }
 
 /**
- * Persists session stats (including lifetime stats) to disk.
+ * Persists session stats (including lifetime stats and recent message lists) to disk.
  */
 export function saveStats(session) {
   if (!session || !session.stats) return;
   const file = path.join(getAuthDir(session.id), 'stats.json');
   try {
-    fs.writeFileSync(file, JSON.stringify(session.stats, null, 2), 'utf-8');
+    const payload = {
+      ...session.stats,
+      recentSent: session.recentSent || [],
+      recentReceived: session.recentReceived || [],
+      recentFailures: session.recentFailures || [],
+    };
+    fs.writeFileSync(file, JSON.stringify(payload, null, 2), 'utf-8');
   } catch (e) {
     logger.error({ sessionId: session.id, error: e.message }, '❌ Failed to save session stats');
   }
 }
 
 /**
- * Loads persisted stats from disk and merges lifetime counters.
+ * Loads persisted stats and recent message queues from disk.
  */
 export function loadStats(session) {
   const file = path.join(getAuthDir(session.id), 'stats.json');
@@ -266,6 +272,15 @@ export function loadStats(session) {
         session.stats.lifetime_reconnects = (persisted.lifetime_reconnects || persisted.totalReconnects || 0);
         if (persisted.first_install_time) {
           session.stats.first_install_time = persisted.first_install_time;
+        }
+        if (Array.isArray(persisted.recentSent) && persisted.recentSent.length > 0) {
+          session.recentSent = persisted.recentSent.slice(0, 10);
+        }
+        if (Array.isArray(persisted.recentReceived) && persisted.recentReceived.length > 0) {
+          session.recentReceived = persisted.recentReceived.slice(0, 10);
+        }
+        if (Array.isArray(persisted.recentFailures) && persisted.recentFailures.length > 0) {
+          session.recentFailures = persisted.recentFailures.slice(0, 10);
         }
         logger.info(
           { sessionId: session.id, lifetimeSent: session.stats.lifetime_sent },

@@ -83,6 +83,7 @@
     "failed": "Failed",
     "uptime": "Uptime",
     "reconnections": "Reconnections",
+    "total_prefix": "Total",
     "since_restart": "since restart",
     "addon_started_at": "Addon started on {time}",
     "tooltip_sent": "Total outbound WhatsApp messages successfully transmitted.",
