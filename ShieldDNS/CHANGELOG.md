@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.5.3 (2026-08-19)
+
+- Manual release via Orchestrator
+
+
 ## 2.5.2 (2026-08-19)
 
 ### ✨ Features
