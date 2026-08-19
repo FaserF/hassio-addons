@@ -38,16 +38,23 @@ export function registerAutoResponderRoutes(app) {
 
       if (enabled !== undefined) {
         store.enabled = Boolean(enabled);
-        // If enabling and existing end_time was already in the past, clear expired end_time
-        if (store.enabled && store.end_time && end_time === undefined) {
+        // If turning on from disabled state:
+        // Automatically default start_time to now (null/immediate) and end_time to unlimited (null)
+        // unless explicitly specified in the payload.
+        if (store.enabled && !wasEnabled) {
+          if (start_time === undefined) {
+            store.start_time = null;
+          }
+          if (end_time === undefined) {
+            store.end_time = null;
+          }
+          store.seen_recipients = {};
+        } else if (store.enabled && store.end_time && end_time === undefined) {
+          // If enabling and existing end_time was already in the past, clear expired end_time
           const endMs = parseDateTimeToMs(store.end_time);
           if (endMs !== null && Date.now() > endMs) {
             store.end_time = null;
           }
-        }
-        // If re-enabling from disabled state, reset seen recipients
-        if (store.enabled && !wasEnabled) {
-          store.seen_recipients = {};
         }
       }
 

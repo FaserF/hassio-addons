@@ -62,6 +62,8 @@
     "none": "Keine",
     "language_switched": "Sprache gewechselt zu {lang}",
     "failed_switch_language": "Fehler beim Wechseln der Sprache",
+    "settings_saved": "Einstellungen erfolgreich gespeichert! ✅",
+    "settings_save_failed": "Fehler beim Speichern der Einstellungen! ⚠️",
     "or": "ODER"
   },
   "languages": {
