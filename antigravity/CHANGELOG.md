@@ -1,9 +1,5 @@
 # Changelog
 
-## 1.0.2 (2026-08-19)
-
-- Manual release via Orchestrator
-
 ## 1.0.1 (2026-08-19)
 
 ### ✨ Features
