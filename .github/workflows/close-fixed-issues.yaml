@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Close issues marked as fixed with no user activity for 3 weeks
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const THREE_WEEKS_MS = 21 * 24 * 60 * 60 * 1000;
