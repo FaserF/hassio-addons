@@ -453,6 +453,11 @@ async function updateDashboard() {
     if (typeof loadAutoResponderConfig === 'function') {
       loadAutoResponderConfig();
     }
+
+    // Update Missed Messages Card Status
+    if (typeof loadDashboardMissedMessagesConfig === 'function') {
+      loadDashboardMissedMessagesConfig();
+    }
   } catch (e) {
     console.error('❌ updateDashboard error:', e);
     const badge = document.getElementById('status-badge');
@@ -761,3 +766,88 @@ window.saveAutoResponderConfig = saveAutoResponderConfig;
 window.resetAutoResponderTemplate = resetAutoResponderTemplate;
 window.resetAutoResponderSeen = resetAutoResponderSeen;
 window.updateAutoResponderPreview = updateAutoResponderPreview;
+
+let _isLoadingDashboardMissed = false;
+async function loadDashboardMissedMessagesConfig() {
+  if (_isLoadingDashboardMissed) return;
+  const card = document.getElementById('card-missed-messages');
+  if (!card) return;
+
+  _isLoadingDashboardMissed = true;
+  try {
+    const res = await fetch(basePath + 'api/moderation/config');
+    if (!res.ok) return;
+    const json = await res.json();
+    if (!json.success || !json.data) return;
+
+    const missedCfg = json.data.missed_messages || {};
+    const enabledInput = document.getElementById('dash-mm-enabled');
+    if (enabledInput && document.activeElement !== enabledInput) {
+      enabledInput.checked = missedCfg.enabled !== false;
+    }
+
+    const lookbackInput = document.getElementById('dash-mm-lookback');
+    if (lookbackInput && document.activeElement !== lookbackInput) {
+      lookbackInput.value = missedCfg.lookback_hours ?? 3;
+    }
+
+    const notifyInput = document.getElementById('dash-mm-notify');
+    if (notifyInput && document.activeElement !== notifyInput) {
+      notifyInput.value = String(Boolean(missedCfg.notify_skipped));
+    }
+
+    const badge = document.getElementById('mm-status-badge');
+    if (badge) {
+      const isEnabled = missedCfg.enabled !== false;
+      badge.textContent = isEnabled
+        ? (window.t ? window.t('common.active') : 'Active')
+        : (window.t ? window.t('common.disabled') : 'Disabled');
+      badge.style.background = isEnabled ? 'rgba(16, 185, 129, 0.15)' : 'var(--bg-app)';
+      badge.style.color = isEnabled ? 'var(--primary)' : 'var(--text-muted)';
+    }
+  } catch (err) {
+    console.debug('Failed to load missed messages config for dashboard', err);
+  } finally {
+    _isLoadingDashboardMissed = false;
+  }
+}
+
+async function saveDashboardMissedMessagesConfig() {
+  const enabledInput = document.getElementById('dash-mm-enabled');
+  const lookbackInput = document.getElementById('dash-mm-lookback');
+  const notifyInput = document.getElementById('dash-mm-notify');
+
+  const enabled = enabledInput ? enabledInput.checked : true;
+  const lookback_hours = lookbackInput ? parseInt(lookbackInput.value, 10) || 3 : 3;
+  const notify_skipped = notifyInput ? notifyInput.value === 'true' : false;
+
+  try {
+    const res = await fetch(basePath + 'api/moderation/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        missed_messages: {
+          enabled,
+          lookback_hours,
+          notify_skipped,
+        },
+      }),
+    });
+    if (res.ok) {
+      if (typeof showToast === 'function') {
+        showToast(
+          window.t
+            ? window.t('common.settings_saved')
+            : 'Settings saved successfully! ✅',
+          'success'
+        );
+      }
+      loadDashboardMissedMessagesConfig();
+    }
+  } catch (err) {
+    console.error('Failed to save missed messages config', err);
+  }
+}
+
+window.loadDashboardMissedMessagesConfig = loadDashboardMissedMessagesConfig;
+window.saveDashboardMissedMessagesConfig = saveDashboardMissedMessagesConfig;

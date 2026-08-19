@@ -1423,6 +1423,7 @@
     "lookback_label": "Rückblick-Zeitfenster (Stunden)",
     "lookback_hint": "Wie viele Stunden rückwirkend verpasste Nachrichten verarbeitet werden (Standard: 3 Stunden).",
     "notify_label": "Einmalige Benachrichtigung bei übersprungenen Nachrichten",
-    "notify_hint": "Sendet einmalig eine automatische Antwort pro Chat/Gruppe, wenn Nachrichten zu alt waren oder das Feature deaktiviert ist."
+    "notify_hint": "Sendet einmalig eine automatische Antwort pro Chat/Gruppe, wenn Nachrichten zu alt waren oder das Feature deaktiviert ist.",
+    "info_note": "Nachrichten innerhalb des Rückblick-Zeitfensters werden beim Wiederverbinden automatisch nachverarbeitet. Für übersprungene Nachrichten kann optional eine einmalige Warnung gesendet werden."
   }
 }

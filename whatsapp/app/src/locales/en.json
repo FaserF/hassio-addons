@@ -1409,6 +1409,7 @@
     "lookback_label": "Lookback Window (Hours)",
     "lookback_hint": "How far back to replay messages when reconnecting (default: 3 hours).",
     "notify_label": "Notify on Skipped Messages",
-    "notify_hint": "Send a one-time message to the chat if messages were skipped because they were too old or processing is disabled."
+    "notify_hint": "Send a one-time message to the chat if messages were skipped because they were too old or processing is disabled.",
+    "info_note": "Messages within the lookback window are replayed automatically upon reconnect. Skipped messages can trigger a one-time localized warning reply."
   }
 }

@@ -196,6 +196,49 @@ export default ({ PORT, API_TOKEN, getLocalIP }) => `
                         </div>
                     </div>
 
+                    <!-- Missed Messages & Recovery Dashboard Card -->
+                    <div class="card" id="card-missed-messages">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <div class="card-title" style="margin-bottom:0;"><i class="fas fa-history"></i> <span data-i18n="missed_messages.card_title">Missed Messages &amp; Recovery</span></div>
+                            <span id="mm-status-badge" class="badge" style="font-size:11px; text-transform:uppercase; font-weight:700; letter-spacing:0.5px; padding:4px 8px; border-radius:6px; background:rgba(16, 185, 129, 0.15); color:var(--primary);" data-i18n="common.active">Active</span>
+                        </div>
+                        <p style="font-size:12px; color:var(--text-muted); margin:0 0 14px 0;" data-i18n="missed_messages.card_desc">Catch up and replay incoming WhatsApp messages received while the addon was offline or restarting.</p>
+
+                        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(37, 211, 102, 0.05); border:1px solid rgba(37, 211, 102, 0.2); border-radius:12px; padding:12px 14px; margin-bottom:14px;">
+                            <div>
+                                <div style="font-size:13px; font-weight:600; color:var(--text-main); margin-bottom:2px;" data-i18n="missed_messages.enable_label">Process Missed Messages on Startup</div>
+                                <div style="font-size:11px; color:var(--text-muted);" data-i18n="missed_messages.enable_hint">When enabled, messages received within the lookback window while offline are replayed.</div>
+                            </div>
+                            <label class="mod-toggle-switch">
+                                <input type="checkbox" id="dash-mm-enabled" checked onchange="saveDashboardMissedMessagesConfig()">
+                                <div class="mod-toggle-track">
+                                    <div class="mod-toggle-thumb"></div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
+                            <div>
+                                <label style="font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:4px;" data-i18n="missed_messages.lookback_label">Lookback Window (Hours)</label>
+                                <input type="number" id="dash-mm-lookback" class="mod-input" min="1" max="72" value="3" style="width:100%; font-size:12px; padding:6px 8px;" onchange="saveDashboardMissedMessagesConfig()">
+                            </div>
+                            <div>
+                                <label style="font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:4px;" data-i18n="missed_messages.notify_label">Notify on Skipped</label>
+                                <select id="dash-mm-notify" class="mod-select" style="width:100%; font-size:12px; padding:6px 8px;" onchange="saveDashboardMissedMessagesConfig()">
+                                    <option value="false" data-i18n="common.disabled">Disabled</option>
+                                    <option value="true" data-i18n="common.enabled">Enabled (One-time per chat)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="background:var(--bg-app); border:1px solid var(--border-color); border-radius:8px; padding:10px 12px; margin-top:auto;">
+                            <div style="font-size:11px; color:var(--text-muted); line-height:1.4;">
+                                <i class="fas fa-info-circle" style="color:var(--primary); margin-right:4px;"></i>
+                                <span data-i18n="missed_messages.info_note">Messages within the lookback window are replayed automatically upon reconnect. Skipped messages can trigger a one-time localized warning reply.</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card" id="device-card">
                         <div class="card-title"><i class="fas fa-mobile-alt"></i> <span data-i18n="dashboard.connected_account">Connected Account</span></div>
                         <div id="device-info-grid" class="info-grid" style="display:none;">
