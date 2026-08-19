@@ -1,5 +1,28 @@
 # Changelog
 
+## 2.0.1-dev-20260819-1340-b029e42 (2026-08-19)
+
+### ✨ Features
+- Add missing translations ([`e56932f1`](https://github.com/FaserF/hassio-addons/commit/e56932f1337cd6e9503e0c96413abbe0519a020c))
+
+### 🐛 Bug Fixes
+- Linter fixes (#462) ([`05d27ff3`](https://github.com/FaserF/hassio-addons/commit/05d27ff3b8beeecc7ec4843b38cbc1ccab7002f2))
+- [MegaLinter] Apply linters automatic fixes ([`9269b5d6`](https://github.com/FaserF/hassio-addons/commit/9269b5d653e7f17ae3c6fa5d7e11b01faf931209))
+
+### 📦 Dependencies
+- ⬆️ Update ghcr.io/hassio-addons/base-python Docker tag to v18 (#449) ([`bb559963`](https://github.com/FaserF/hassio-addons/commit/bb5599637bab44cb11117826395e0676161f1ed0))
+
+### ♻️ Refactor
+- General improvements ([`bacf3012`](https://github.com/FaserF/hassio-addons/commit/bacf3012857e73c52674dfa2f5d146414a355abd))
+
+### 🚀 Other
+- Prettified Code! ([`fdd64cf9`](https://github.com/FaserF/hassio-addons/commit/fdd64cf9c29b6e4b863b1450f3b43e7986266b15))
+- Improved linting ([`4953c4ec`](https://github.com/FaserF/hassio-addons/commit/4953c4ecf9a299f31539612b06a2efee990d7c5f))
+- Drop support for armhf, armv7, and i386 systems ([`8b929a4d`](https://github.com/FaserF/hassio-addons/commit/8b929a4dba8fa634ee8f4b9749e29048595f884a))
+- Test - increment addon versions ([`b9547c28`](https://github.com/FaserF/hassio-addons/commit/b9547c2891e99559074b254a7e9ee76a6b22e7be))
+- Test ([`5065adf3`](https://github.com/FaserF/hassio-addons/commit/5065adf3f0bbfad927656c7c742aaef430c31ca1))
+
+
 ## 2.0.0 (2026-01-03)
 
 🎉 **Happy New Year 2026!** 🎉

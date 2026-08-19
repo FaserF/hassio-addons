@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.3.1-dev-20260819-1340-b029e42 (2026-08-19)
+
+### ✨ Features
+- Add stage tags ([`75528e61`](https://github.com/FaserF/hassio-addons/commit/75528e6193a0ce55537d2f89fe6069a703f7da88))
+
+### 🐛 Bug Fixes
+- fixed homeassistant app base image links ([`99f50367`](https://github.com/FaserF/hassio-addons/commit/99f503679e9b461f86de82e91555442c700f843d))
+- link fixes ([`cf26f7ef`](https://github.com/FaserF/hassio-addons/commit/cf26f7efead0d32df2ce6d7594a0ba7a7fcc5a93))
+- fix my ha links ([`e0387870`](https://github.com/FaserF/hassio-addons/commit/e0387870696279537f82d97a1593931c3367e1ca))
+- fix HA list usage ([`e4636cd1`](https://github.com/FaserF/hassio-addons/commit/e4636cd1b2a8e60b1a3c23523b8d08a1a22c24b2))
+- HA list interpretation fixes ([`4159d335`](https://github.com/FaserF/hassio-addons/commit/4159d33573e37cd633c097935a3efa47c84f1728))
+
+### 📦 Dependencies
+- update dependencies ([`820d570f`](https://github.com/FaserF/hassio-addons/commit/820d570f49f651f19e4ba7b3fdf0e1d4030ed35e))
+- ⬆️ Update Add-on base images (#713) ([`9e108e8f`](https://github.com/FaserF/hassio-addons/commit/9e108e8f57386150d955808ab69abf14fca64c0e))
+
+### 🚀 Other
+- deprecate sap ha app ([`2597fa82`](https://github.com/FaserF/hassio-addons/commit/2597fa8208bff90d1c5a18e4a93400da078931b2))
+
+
 ## 0.3.0 (2026-06-16)
 
 ### 📦 Dependencies
