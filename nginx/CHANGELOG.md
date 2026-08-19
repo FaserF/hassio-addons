@@ -20,7 +20,6 @@
 - update icons and convert logos to official landscape banners ([`e6d061bd8`](https://github.com/FaserF/hassio-addons/commit/e6d061bd8292ae6ca473fa21a2e55d5e5f4e70ea))
 - ⬆️ Update dependency alpine_edge/nginx to v1.30.4-r3 (#959) ([`789b729c2`](https://github.com/FaserF/hassio-addons/commit/789b729c22fc3fac09d984d05cb6a53dc0547ee8))
 
-
 ## 0.4.3 (2026-07-31)
 
 ### ✨ Features

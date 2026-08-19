@@ -21,7 +21,6 @@
 - ⬆️ Update ghcr.io/plankanban/planka Docker tag to v2.2.1 (#967) ([`052849723`](https://github.com/FaserF/hassio-addons/commit/05284972379b805cb123fbf62893e13520e3b808))
 - ⬆️ Update ghcr.io/plankanban/planka Docker tag to v2.2.0 (#965) ([`4aa6e99ca`](https://github.com/FaserF/hassio-addons/commit/4aa6e99cacb8ce9a497dbb977dea182b9dcbd73f))
 
-
 ## 1.4.1 (2026-07-31)
 
 ### 🐛 Bug Fixes

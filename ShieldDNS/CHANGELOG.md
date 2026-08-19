@@ -21,7 +21,6 @@
 - update icons and convert logos to official landscape banners ([`e6d061bd8`](https://github.com/FaserF/hassio-addons/commit/e6d061bd8292ae6ca473fa21a2e55d5e5f4e70ea))
 - ⬆️ Update dependency coredns/coredns to v1.14.7 (#997) ([`19004a6fa`](https://github.com/FaserF/hassio-addons/commit/19004a6faf6e1a77c60f1055181269fd3b39b809))
 
-
 ## 2.5.1 (2026-07-31)
 
 ### ✨ Features

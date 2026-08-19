@@ -27,7 +27,6 @@
 
 - small docs fixes ([`8a8b58d44`](https://github.com/FaserF/hassio-addons/commit/8a8b58d44760a619a7131f64fc43295115765368))
 
-
 ## 3.4.4 (2026-07-31)
 
 ### ✨ Features

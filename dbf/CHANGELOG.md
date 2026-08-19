@@ -28,7 +28,6 @@
 
 - document host_network and zeroconf auto-discovery in AegisBot and DBF ([`5028f4786`](https://github.com/FaserF/hassio-addons/commit/5028f47864f66d7c47adc1ccd4b52ef42dae5664))
 
-
 ## 1.1.1 (2026-07-31)
 
 ### ✨ Features

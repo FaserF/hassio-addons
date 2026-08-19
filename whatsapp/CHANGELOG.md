@@ -57,7 +57,6 @@
 - CodeQL security fixes ([`4f140cd86`](https://github.com/FaserF/hassio-addons/commit/4f140cd86a667e0f28da5730567e8b2ff81b7f79))
 - small fixes ([`ca5cd05a8`](https://github.com/FaserF/hassio-addons/commit/ca5cd05a8d3711abdad950d355c22d595629a3dd))
 
-
 ## 2.1.0 (2026-08-16)
 
 ### ✨ Features

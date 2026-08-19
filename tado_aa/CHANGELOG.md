@@ -23,7 +23,6 @@
 - CI hadolint linter fixes ([`44ea2cc01`](https://github.com/FaserF/hassio-addons/commit/44ea2cc0151b77d64b24e83eacfe2fff00be618d))
 - CI workflow improvements & linter fixes ([`5498c4d1e`](https://github.com/FaserF/hassio-addons/commit/5498c4d1eced756473db6d63f5f38b7931bcca7f))
 
-
 ## 2.3.1 (2026-04-09)
 
 ### 🐛 Bug Fixes

@@ -28,7 +28,6 @@
 
 - improved debug logging ([`5d4e8eaca`](https://github.com/FaserF/hassio-addons/commit/5d4e8eaca22e75584a761193f49096de486d0995))
 
-
 ## 0.3.0 (2026-06-16)
 
 ### 🚀 Other

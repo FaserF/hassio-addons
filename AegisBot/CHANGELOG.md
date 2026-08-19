@@ -62,7 +62,6 @@
 - small fix ([`fbf111681`](https://github.com/FaserF/hassio-addons/commit/fbf111681f949629e1690ff83e2c6a71b7a5d385))
 - small fixes ([`d0f7207cc`](https://github.com/FaserF/hassio-addons/commit/d0f7207cc23afb1ba93d093d4091db96d3166d53))
 
-
 ## 0.6.0 (2026-06-16)
 
 ### 🚀 Other

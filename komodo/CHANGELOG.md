@@ -30,7 +30,6 @@
 - fix docker build ([`f89243402`](https://github.com/FaserF/hassio-addons/commit/f892434026b36edf563754a966ead13ab1976c6f))
 - fix docker build ([`dfe60f8f4`](https://github.com/FaserF/hassio-addons/commit/dfe60f8f413dfb9a5221e9a83ab501dc72a6ea27))
 
-
 ## 0.2.4 (2026-08-04)
 
 ### 🐛 Bug Fixes

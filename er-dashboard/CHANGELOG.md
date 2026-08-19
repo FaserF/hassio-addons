@@ -25,7 +25,6 @@
 
 - docker build fixes ([`cbd59e1eb`](https://github.com/FaserF/hassio-addons/commit/cbd59e1eb580a004fee7bc6451d76e6a23ec3a49))
 
-
 ## 1.4.6 (2026-08-04)
 
 ### 📦 Dependencies
