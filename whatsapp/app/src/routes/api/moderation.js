@@ -80,9 +80,12 @@ export function registerModerationRoutes(app) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 7000);
 
+      const targetHealthUrl = new URL(validated.healthUrl).toString();
+      const targetConfigUrl = new URL(validated.configUrl).toString();
+
       let response;
       try {
-        response = await fetch(validated.healthUrl, {
+        response = await fetch(targetHealthUrl, {
           method: 'GET',
           headers,
           signal: controller.signal,
@@ -90,7 +93,7 @@ export function registerModerationRoutes(app) {
       } catch (_err) {
         // Fallback check to /api/v1/ai/stt/config
         try {
-          response = await fetch(validated.configUrl, {
+          response = await fetch(targetConfigUrl, {
             method: 'GET',
             headers,
             signal: controller.signal,

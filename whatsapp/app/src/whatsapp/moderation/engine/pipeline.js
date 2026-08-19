@@ -17,6 +17,12 @@ import {
 import { SPAM_INVITE_LINK_PATTERNS, userFloodMap } from './filters.js';
 import { resolveCanonicalUserKey } from '../../../utils/security.js';
 
+// Per-trigger cooldown: prevents the same trigger from firing more than once per group
+// within TRIGGER_COOLDOWN_MS milliseconds. Key: `${groupId}:${trigger}`.
+// This is defense-in-depth against loops where a bot response contains a trigger substring.
+const TRIGGER_COOLDOWN_MS = 30_000;
+const _triggerCooldowns = new Map();
+
 export async function handleModerationMessage(session, event) {
   const store = loadModerationStore();
   const isGroup = event.is_group ?? event.sender?.endsWith('@g.us');
@@ -30,7 +36,10 @@ export async function handleModerationMessage(session, event) {
     return false;
   }
 
-  // Never moderate or auto-respond to outgoing bot messages unless diagnostic test is actively running in this group
+  // Skip bot's own outgoing messages UNLESS diagnostic is actively testing this group.
+  // During diagnostic, fromMe messages intentionally pass through so auto-responders
+  // can be verified. Loop protection is handled by the per-trigger cooldown in the
+  // filter loop below — not by blocking fromMe messages here.
   const isDiagActive = activeDiagnosticChats.has(groupId);
   if (event.raw?.key?.fromMe && !isDiagActive) return false;
 
@@ -176,6 +185,20 @@ export async function handleModerationMessage(session, event) {
       }
 
       if (isMatch) {
+        // Cooldown guard: if this exact trigger already fired in this group within
+        // TRIGGER_COOLDOWN_MS, skip it. Prevents any loop where a bot response
+        // contains the trigger substring and somehow bypasses the fromMe guard.
+        const cooldownKey = `${groupId}:${filter.trigger}`;
+        const lastFired = _triggerCooldowns.get(cooldownKey) ?? 0;
+        if (Date.now() - lastFired < TRIGGER_COOLDOWN_MS) {
+          logger.debug(
+            { groupId, trigger: filter.trigger },
+            'Trigger cooldown active — skipping to prevent loop'
+          );
+          continue;
+        }
+        _triggerCooldowns.set(cooldownKey, Date.now());
+
         // 1. Dispatch Emoji Reaction directly to the triggering message
         if (filter.reaction_emoji && rawMsg?.key?.id) {
           try {

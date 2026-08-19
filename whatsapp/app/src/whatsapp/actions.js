@@ -354,16 +354,12 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
 
     // 4. Buttons (with Poll Fallback & Feedback verification)
     await reply(session, targetJid, {
-      text: '🧪 *Diagnostic Test [4/7]*: Checking Buttons & Poll Fallback...',
+      text: '🧪 *Diagnostic Test [4/7]*: Buttons & Poll Interactive Test',
       footer: 'WhatsApp Diagnostic',
       buttons: [
         { buttonId: 'diag_1', displayText: 'Option 1' },
         { buttonId: 'diag_2', displayText: 'Option 2' },
       ],
-    });
-    await delay(1000);
-    await reply(session, targetJid, {
-      text: '🔘 *Button / Poll Test Dispatched & Verified*\nOptions: 1️⃣ Option 1 | 2️⃣ Option 2\n• Simulated Action: Option 1 (btn_diag_1)\n• Interactive feedback verified! ✅',
     });
     await delay(1000);
 
@@ -532,7 +528,9 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
                 });
                 for (const f of cfg.filters) {
                   await delay(300);
-                  await reply(session, targetJid, { text: `${f.trigger}` });
+                  // Prefix with zero-width non-joiner (U+200C) so the filter's substring
+                  // match won't fire on the bot's own diagnostic display message.
+                  await reply(session, targetJid, { text: `\u200C${f.trigger}` });
                 }
               }
 
@@ -556,7 +554,9 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
                 });
                 for (const w of cfg.blacklist.words) {
                   await delay(300);
-                  await reply(session, targetJid, { text: `${w}` });
+                  // Prefix with zero-width non-joiner (U+200C) so blacklist matching
+                  // won't fire on the bot's own diagnostic display message.
+                  await reply(session, targetJid, { text: `\u200C${w}` });
                 }
               }
 

@@ -351,10 +351,13 @@ export class TelegramBotClient {
     isAnonymous = false,
     allowsMultipleAnswers = false
   ) {
+    const formattedOptions = Array.isArray(options)
+      ? options.map((opt) => (typeof opt === 'string' ? { text: opt } : opt))
+      : [];
     const payload = {
       chat_id: chatId,
       question: question,
-      options: Array.isArray(options) ? options : [],
+      options: formattedOptions,
       is_anonymous: Boolean(isAnonymous),
       allows_multiple_answers: Boolean(allowsMultipleAnswers),
       disable_notification: Boolean(disableNotification),

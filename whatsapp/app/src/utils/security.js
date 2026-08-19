@@ -373,7 +373,13 @@ export function validateSafeHttpUrl(rawUrl) {
     hostname.startsWith('::ffff:169.254.') ||
     hostname === '::1' ||
     hostname === 'localhost' ||
-    hostname === '0.0.0.0'
+    hostname === '0.0.0.0' ||
+    hostname.startsWith('127.') ||
+    hostname.startsWith('10.') ||
+    hostname.startsWith('192.168.') ||
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname) ||
+    /^0[0-7]+(\.[0-7]+)*$/.test(hostname) || // octal bypasses
+    /^\d+$/.test(hostname) // dword/decimal ip bypasses
   ) {
     return null;
   }

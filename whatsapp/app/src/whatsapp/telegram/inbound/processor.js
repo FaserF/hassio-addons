@@ -143,6 +143,7 @@ export async function processTelegramUpdates() {
             'edited_message',
             'channel_post',
             'edited_channel_post',
+            'callback_query',
             'message_reaction',
             'message_reaction_count',
             'poll',

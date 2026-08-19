@@ -366,6 +366,40 @@ export async function syncWhatsAppToTelegram(
             inlineKeyboard.length > 0 ? { inline_keyboard: inlineKeyboard } : null
           )
           .catch(() => null);
+      } else if (mediaType === 'interactive') {
+        const intObj = msg.message?.interactiveMessage;
+        const body = intObj?.body?.text || intObj?.header?.title || fullText;
+        const footer = intObj?.footer?.text || '';
+        const rawBtns =
+          intObj?.nativeFlowMessage?.buttons ||
+          intObj?.carouselMessage?.cards ||
+          [];
+        const inlineKeyboard = [];
+        for (const [i, b] of rawBtns.entries()) {
+          let label = `Option ${i + 1}`;
+          let id = `btn_${i + 1}`;
+          if (b.buttonParamsJson) {
+            try {
+              const params = JSON.parse(b.buttonParamsJson);
+              label = params.display_text || params.title || label;
+              id = params.id || id;
+            } catch {}
+          } else if (b.name) {
+            label = b.name;
+          }
+          inlineKeyboard.push([{ text: label, callback_data: `btn:${id}` }]);
+        }
+        const intCaption = `${header}🔘 <b>${body}</b>${footer ? `\n<i>${footer}</i>` : ''}`;
+        tgResult = await bot
+          .sendMessage(
+            mapping.tg_chat_id,
+            intCaption,
+            replyToTgMsgId,
+            threadId,
+            silent,
+            inlineKeyboard.length > 0 ? { inline_keyboard: inlineKeyboard } : null
+          )
+          .catch(() => null);
       } else if (mediaType === 'poll') {
         const pollMode = mapping.poll_sync_mode || 'native_sync';
         const pollObj =
@@ -425,8 +459,20 @@ export async function syncWhatsAppToTelegram(
             }
             saveTelegramStore(store);
           }
+          if (!tgResult && options.length > 0) {
+            // Fallback 1: Send as Inline Keyboard Buttons before falling back to plain text
+            const inlineKeyboard = options.map((opt, i) => [
+              { text: opt, callback_data: `poll_vote:${i}` },
+            ]);
+            const pollText = `${header}📊 <b>[Poll: ${question}]</b>\nSelect an option below:`;
+            tgResult = await bot
+              .sendMessage(mapping.tg_chat_id, pollText, replyToTgMsgId, threadId, silent, {
+                inline_keyboard: inlineKeyboard,
+              })
+              .catch(() => null);
+          }
           if (!tgResult) {
-            // Fallback to text if sendPoll failed
+            // Fallback 2: Plain text as last resort
             tgResult = await bot
               .sendMessage(mapping.tg_chat_id, fullText, replyToTgMsgId, threadId, silent)
               .catch(() => null);
