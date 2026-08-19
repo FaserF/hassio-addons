@@ -1401,6 +1401,14 @@
     "notify_skipped_default": "⚠️ While the WhatsApp gateway was offline, your message could not be processed. Any commands or triggers were skipped and will not be retried.",
     "notify_skipped_too_old": "⚠️ While the WhatsApp gateway was offline, your message could not be processed. It is too old to be retried automatically.",
     "startup_processing": "🔄 Processing {{count}} missed message(s) from the last {{hours}}h...",
-    "startup_done": "✅ Processed {{processed}} missed message(s). {{skipped}} message(s) were too old or skipped."
+    "startup_done": "✅ Processed {{processed}} missed message(s). {{skipped}} message(s) were too old or skipped.",
+    "card_title": "Missed Messages & Recovery",
+    "card_desc": "Catch up and replay incoming WhatsApp messages received while the addon was offline or restarting.",
+    "enable_label": "Process Missed Messages on Startup",
+    "enable_hint": "When enabled, messages received within the lookback window while offline are replayed.",
+    "lookback_label": "Lookback Window (Hours)",
+    "lookback_hint": "How far back to replay messages when reconnecting (default: 3 hours).",
+    "notify_label": "Notify on Skipped Messages",
+    "notify_hint": "Send a one-time message to the chat if messages were skipped because they were too old or processing is disabled."
   }
 }

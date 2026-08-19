@@ -335,6 +335,23 @@ async function loadModerationConfig() {
         if (globalRulesInp && modStoreCache.global_rules !== undefined) {
           globalRulesInp.value = modStoreCache.global_rules;
         }
+
+        // Missed messages settings
+        const missedEnabledEl = document.getElementById('mod-missed-enabled');
+        const missedLookbackEl = document.getElementById('mod-missed-lookback');
+        const missedNotifyEl = document.getElementById('mod-missed-notify');
+        const missedCfg = modStoreCache.missed_messages || {};
+
+        if (missedEnabledEl) {
+          missedEnabledEl.checked = missedCfg.enabled !== false;
+        }
+        if (missedLookbackEl) {
+          missedLookbackEl.value = missedCfg.lookback_hours ?? 3;
+        }
+        if (missedNotifyEl) {
+          missedNotifyEl.checked = Boolean(missedCfg.notify_skipped);
+        }
+
         updateModerationDisabledState();
       }
     }
@@ -408,11 +425,22 @@ async function loadModerationConfig() {
 
 async function saveGlobalRulesInline() {
   const rules = document.getElementById('mod-global-rules-input')?.value || '';
+  const missedEnabled = document.getElementById('mod-missed-enabled')?.checked ?? true;
+  const missedLookback = parseInt(document.getElementById('mod-missed-lookback')?.value, 10) || 3;
+  const missedNotify = document.getElementById('mod-missed-notify')?.checked ?? false;
+
   try {
     const res = await fetch(basePath + 'api/moderation/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ global_rules: rules }),
+      body: JSON.stringify({
+        global_rules: rules,
+        missed_messages: {
+          enabled: missedEnabled,
+          lookback_hours: missedLookback,
+          notify_skipped: missedNotify,
+        },
+      }),
     });
     if (res.ok) {
       showToast(t('moderation.global_rules_saved'), 'success');

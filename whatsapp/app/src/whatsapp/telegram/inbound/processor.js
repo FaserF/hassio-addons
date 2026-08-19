@@ -1130,6 +1130,17 @@ export async function processTelegramUpdates() {
                         ignoreWaEditEchoes.add(sentEditRes.key.id);
                       }
                       editSucceeded = true;
+                      recordMessageMap(
+                        mapped.waMsgId,
+                        tgChatId,
+                        msg.message_id,
+                        mapping.wa_jid,
+                        mapped.fromMe !== undefined ? mapped.fromMe : true,
+                        mapped.senderName || senderName,
+                        mapped.senderJid || '',
+                        effectiveTgText,
+                        mapped.origin || 'tg'
+                      );
                       logger.info(
                         { tgChatId, tgMsgId: msg.message_id, waMsgId: mapped.waMsgId },
                         '✏️ Mirrored Telegram message edit natively to WhatsApp'

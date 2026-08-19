@@ -53,6 +53,49 @@ export default () => `
                         <textarea id="mod-global-rules-input" class="mod-textarea" style="height:140px;" placeholder="1. Be respectful to all members.&#10;2. No spam or unauthorized advertising.&#10;3. Follow group topic." data-i18n-placeholder="moderation.global_rules_ph"></textarea>
                     </div>
 
+                    <!-- Missed Messages & Recovery Global Card -->
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:12px; padding:18px; margin-bottom:20px;">
+                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+                            <div style="font-size:20px; color:var(--primary);"><i class="fas fa-history"></i></div>
+                            <div>
+                                <h4 style="margin:0; font-size:14px; font-weight:600;" data-i18n="missed_messages.card_title">Missed Messages &amp; Recovery</h4>
+                                <p style="margin:2px 0 0; font-size:11.5px; color:var(--text-muted);" data-i18n="missed_messages.card_desc">Catch up and replay incoming WhatsApp messages received while the addon was offline or restarting.</p>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:12px;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:var(--bg-app); border:1px solid var(--border-color); border-radius:8px;">
+                                <div>
+                                    <div style="font-size:12.5px; font-weight:600; color:var(--text-main);" data-i18n="missed_messages.enable_label">Process Missed Messages on Startup</div>
+                                    <div style="font-size:11px; color:var(--text-muted);" data-i18n="missed_messages.enable_hint">When enabled, messages received within the lookback window while offline are replayed.</div>
+                                </div>
+                                <label class="mod-toggle-switch">
+                                    <input type="checkbox" id="mod-missed-enabled">
+                                    <span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span>
+                                </label>
+                            </div>
+
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                                <div style="padding:10px 12px; background:var(--bg-app); border:1px solid var(--border-color); border-radius:8px;">
+                                    <label class="mod-field-label" style="font-size:11px; margin-bottom:4px;" data-i18n="missed_messages.lookback_label">Lookback Window (Hours)</label>
+                                    <input type="number" id="mod-missed-lookback" class="mod-input" min="1" max="72" value="3" style="width:100%; height:32px; font-size:12px;">
+                                    <div style="font-size:10.5px; color:var(--text-muted); margin-top:4px;" data-i18n="missed_messages.lookback_hint">How far back to replay messages when reconnecting (default: 3 hours).</div>
+                                </div>
+
+                                <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:var(--bg-app); border:1px solid var(--border-color); border-radius:8px;">
+                                    <div>
+                                        <div style="font-size:12px; font-weight:600; color:var(--text-main);" data-i18n="missed_messages.notify_label">Notify on Skipped Messages</div>
+                                        <div style="font-size:10.5px; color:var(--text-muted);" data-i18n="missed_messages.notify_hint">Send a one-time message if messages were skipped (too old or disabled).</div>
+                                    </div>
+                                    <label class="mod-toggle-switch">
+                                        <input type="checkbox" id="mod-missed-notify">
+                                        <span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mod-actions" style="display:flex; justify-content:flex-end;">
                         <button class="btn btn-primary btn-sm" onclick="saveGlobalRulesInline()"><i class="fas fa-save"></i> <span data-i18n="common.save">Save Settings</span></button>
                     </div>

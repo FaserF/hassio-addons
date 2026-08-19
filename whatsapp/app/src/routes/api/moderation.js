@@ -265,6 +265,7 @@ export function registerModerationRoutes(app) {
       global_enabled,
       gemini_api_key,
       global_rules,
+      missed_messages,
       federations,
       filter_subscriptions,
       group_id,
@@ -279,6 +280,12 @@ export function registerModerationRoutes(app) {
     }
     if (global_rules !== undefined) {
       store.global_rules = String(global_rules);
+    }
+    if (missed_messages && typeof missed_messages === 'object') {
+      store.missed_messages = {
+        ...store.missed_messages,
+        ...missed_messages,
+      };
     }
     if (Array.isArray(federations)) {
       store.federations = federations;
