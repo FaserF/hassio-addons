@@ -387,7 +387,16 @@ export async function syncWhatsAppEditToTelegram(
           transRes.translation.trim() &&
           transRes.translation.trim().toLowerCase() !== newText.trim().toLowerCase()
         ) {
-          translationBanner = `🌐 <i>[Auto-translated -> ${targetLang.toUpperCase()}]</i>\n`;
+          const srcBadge =
+            transRes.sourceLang && transRes.sourceLang !== '?' && transRes.sourceLang !== 'auto'
+              ? `${transRes.sourceLang.toUpperCase()} → `
+              : '';
+          const provBadge = transRes.providerName
+            ? ` • ${transRes.providerName}`
+            : transRes.provider
+              ? ` • ${transRes.provider}`
+              : '';
+          translationBanner = `🌐 <i>[${srcBadge}${targetLang.toUpperCase()}${provBadge}]</i>\n`;
           effectiveText = transRes.translation;
         }
       } catch (transErr) {

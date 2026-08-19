@@ -141,35 +141,38 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
 
       if (record && record.botKey) {
         const updatedText = `${header} *(edited)*\n\n"${transResult.translation}"${provBadge}`;
-        if (session?.sock?.sendMessage) {
-          const editKey = {
-            remoteJid: groupId,
-            id: record.botKey.id || record.botWaId,
-            fromMe: true,
-          };
-          try {
-            await session.sock.sendMessage(groupId, {
-              text: updatedText,
-              edit: editKey,
-            });
-            logger.info(
-              { groupId, sourceWaId: cleanSourceId, botWaId: record.botWaId },
-              '✏️ Successfully synchronized edited WhatsApp auto-translation'
-            );
-          } catch (editErr) {
-            logger.debug(
-              { error: editErr.message },
-              'Native WhatsApp translation edit rejected, sending update reply'
-            );
-            const sentNew = await session.sock.sendMessage(
-              groupId,
-              { text: updatedText },
-              { quoted: { key: editKey } }
-            );
-            if (sentNew?.key?.id) {
-              record.botWaId = sentNew.key.id;
-              record.botKey = sentNew.key;
-            }
+        const editKey = {
+          remoteJid: groupId,
+          id: record.botKey.id || record.botWaId,
+          fromMe: true,
+        };
+        try {
+          await reply(
+            session,
+            groupId,
+            { text: updatedText, edit: editKey },
+            null,
+            { skipSpamGuard: true }
+          );
+          logger.info(
+            { groupId, sourceWaId: cleanSourceId, botWaId: record.botWaId },
+            '✏️ Successfully synchronized edited WhatsApp auto-translation'
+          );
+        } catch (editErr) {
+          logger.debug(
+            { error: editErr.message },
+            'Native WhatsApp translation edit rejected, sending update reply'
+          );
+          const sentNew = await reply(
+            session,
+            groupId,
+            { text: updatedText },
+            { key: editKey },
+            { skipSpamGuard: true }
+          );
+          if (sentNew?.key?.id) {
+            record.botWaId = sentNew.key.id;
+            record.botKey = sentNew.key;
           }
         }
       } else if (isTranslationActive) {
@@ -178,7 +181,8 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
           session,
           groupId,
           { text: `${header}\n\n"${transResult.translation}"${provBadge}` },
-          { key: { id: cleanSourceId, remoteJid: groupId } }
+          { key: { id: cleanSourceId, remoteJid: groupId } },
+          { skipSpamGuard: true }
         );
         if (sentTransMsg?.key?.id) {
           recordTranslationMap(groupId, cleanSourceId, sentTransMsg.key.id, sentTransMsg.key);
