@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.4.5 (2026-08-19)
+
+### ✨ Features
+- add Google Antigravity Usage monitor addon ([`81495c89`](https://github.com/FaserF/hassio-addons/commit/81495c890a4d15605f44d0ac5c30ff2b85db4dd0))
+
+### 🐛 Bug Fixes
+- replace deprecated bashio::addon.stop with bashio::app.stop and harmonize APP_VERSION variables ([`e74d22d6`](https://github.com/FaserF/hassio-addons/commit/e74d22d66be715d3ea2efad6e4919b70bf4a81ce))
+
+### 📦 Dependencies
+- ⬆️ Update Add-on base images ([`cff61763`](https://github.com/FaserF/hassio-addons/commit/cff61763699487bc020cab1735cafd22ebd6f0cf))
+- update icons and convert logos to official landscape banners ([`e6d061bd`](https://github.com/FaserF/hassio-addons/commit/e6d061bd8292ae6ca473fa21a2e55d5e5f4e70ea))
+
+
 ## 2.4.4 (2026-08-15)
 
 ### ✨ Features
