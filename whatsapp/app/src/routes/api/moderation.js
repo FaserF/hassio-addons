@@ -1,3 +1,4 @@
+import { uiAuthMiddleware, anyAuthMiddleware } from '../../middleware.js';
 import {
   loadModerationStore,
   saveModerationStore,
@@ -54,7 +55,7 @@ export function registerModerationRoutes(app) {
   });
 
   // POST /api/moderation/test-aegisbot — Test AegisBot server connectivity, authentication & health
-  app.post('/api/moderation/test-aegisbot', async (req, res) => {
+  app.post('/api/moderation/test-aegisbot', uiAuthMiddleware, async (req, res) => {
     try {
       const { url, token } = req.body || {};
       if (!url || typeof url !== 'string' || !url.trim()) {

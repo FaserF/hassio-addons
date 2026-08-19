@@ -295,10 +295,26 @@ async function updateDashboard() {
     setElText('stat-received', lifetimeReceived);
     setElText('stat-failed', lifetimeFailed);
 
-    const sinceRestartText = window.t ? window.t('dashboard.since_restart') : 'since restart';
-    setElText('stat-sent-sub', `${stats.sent || 0} ${sinceRestartText}`);
-    setElText('stat-received-sub', `${stats.received || 0} ${sinceRestartText}`);
-    setElText('stat-failed-sub', `${stats.failed || 0} ${sinceRestartText}`);
+    setElText('stat-sent-sub', stats.sent || 0);
+    setElText('stat-received-sub', stats.received || 0);
+    setElText('stat-failed-sub', stats.failed || 0);
+
+    const updateBadge = (id, lifetime, sessionCount) => {
+      const el = document.getElementById(id);
+      if (el) {
+        if (lifetime > sessionCount) {
+          el.style.display = 'inline-block';
+          el.textContent = window.t
+            ? window.t('dashboard.total_label', { count: lifetime })
+            : `Total: ${lifetime}`;
+        } else {
+          el.style.display = 'none';
+        }
+      }
+    };
+    updateBadge('stat-sent-total', lifetimeSent, stats.sent || 0);
+    updateBadge('stat-received-total', lifetimeReceived, stats.received || 0);
+    updateBadge('stat-failed-total', lifetimeFailed, stats.failed || 0);
 
     // Uptime: prefer start_time from stats (epoch ms), fall back to server process uptime
     let uptimeStr = '00:00:00';

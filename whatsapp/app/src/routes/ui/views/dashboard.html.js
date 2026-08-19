@@ -17,24 +17,39 @@ export default ({ PORT, API_TOKEN, getLocalIP }) => `
                         </div>
                         <div class="stats-row">
                             <div class="stat-box">
-                                <div id="stat-sent" class="stat-val">0</div>
-                                <div id="stat-sent-sub" class="stat-subval">0 <span data-i18n="dashboard.since_restart">since restart</span></div>
+                                <div class="stat-scope-tag" data-i18n="dashboard.all_time">Gesamt</div>
+                                <div class="stat-main-row">
+                                    <span id="stat-sent" class="stat-val">0</span>
+                                </div>
+                                <div class="stat-subval">
+                                    <span id="stat-sent-sub">0</span> <span data-i18n="dashboard.since_restart">seit Neustart</span>
+                                </div>
                                 <div class="stat-label">
                                     <span data-i18n="dashboard.sent">Sent</span>
                                     <i class="fas fa-info-circle info-tooltip-icon" data-i18n-title="dashboard.tooltip_sent" title="Total outbound WhatsApp messages successfully transmitted."></i>
                                 </div>
                             </div>
                             <div class="stat-box">
-                                <div id="stat-received" class="stat-val">0</div>
-                                <div id="stat-received-sub" class="stat-subval">0 <span data-i18n="dashboard.since_restart">since restart</span></div>
+                                <div class="stat-scope-tag" data-i18n="dashboard.all_time">Gesamt</div>
+                                <div class="stat-main-row">
+                                    <span id="stat-received" class="stat-val">0</span>
+                                </div>
+                                <div class="stat-subval">
+                                    <span id="stat-received-sub">0</span> <span data-i18n="dashboard.since_restart">seit Neustart</span>
+                                </div>
                                 <div class="stat-label">
                                     <span data-i18n="dashboard.received">Received</span>
                                     <i class="fas fa-info-circle info-tooltip-icon" data-i18n-title="dashboard.tooltip_received" title="Total incoming WhatsApp messages processed over the connection."></i>
                                 </div>
                             </div>
                             <div class="stat-box">
-                                <div id="stat-failed" class="stat-val">0</div>
-                                <div id="stat-failed-sub" class="stat-subval">0 <span data-i18n="dashboard.since_restart">since restart</span></div>
+                                <div class="stat-scope-tag" data-i18n="dashboard.all_time">Gesamt</div>
+                                <div class="stat-main-row">
+                                    <span id="stat-failed" class="stat-val">0</span>
+                                </div>
+                                <div class="stat-subval">
+                                    <span id="stat-failed-sub">0</span> <span data-i18n="dashboard.since_restart">seit Neustart</span>
+                                </div>
                                 <div class="stat-label">
                                     <span data-i18n="dashboard.failed">Failed</span>
                                     <i class="fas fa-info-circle info-tooltip-icon" data-i18n-title="dashboard.tooltip_failed" title="Failed message dispatch attempts."></i>

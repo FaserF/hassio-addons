@@ -100,6 +100,8 @@
     "uptime": "Laufzeit",
     "reconnections": "Wiederverbindungen",
     "total_prefix": "Gesamt",
+    "total_label": "Gesamt: {count}",
+    "all_time": "Gesamt",
     "since_restart": "seit Neustart",
     "addon_started_at": "Addon gestartet am {time}",
     "tooltip_sent": "Erfolgreich übermittelte ausgehende WhatsApp-Nachrichten.",
