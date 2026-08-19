@@ -13,9 +13,7 @@
 
 ## 📖 About
 
-## ⚙️ Configuration
-
-Configure the app via the **Configuration** tab in the Home Assistant App page.
+Open-Source Gameserver Management Panel
 
 ---
 

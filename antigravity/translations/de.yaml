@@ -34,4 +34,3 @@ configuration:
       description: "Google Cloud Projekt-ID (optional)."
 network:
   8199/tcp: Antigravity Web-Oberfläche & REST-API
-

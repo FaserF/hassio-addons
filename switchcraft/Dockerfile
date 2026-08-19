@@ -56,7 +56,6 @@ RUN curl -L -o /tmp/switchcraft.tar.gz https://github.com/FaserF/SwitchCraft/arc
         unzip -o "$zip" -d "/root/.switchcraft/addons/$(basename "$zip" .zip)"; \
     done
 
-
 # Environment variables
 ENV FLET_SERVER_IP=0.0.0.0
 ENV FLET_SERVER_PORT=8080

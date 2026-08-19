@@ -85,7 +85,6 @@ RUN \
     && yarn run build:production \
     && rm -rf node_modules
 
-
 # Final Production phase of the controller
 # All build requirements get scrapped as to maintain a small image
 FROM base AS production

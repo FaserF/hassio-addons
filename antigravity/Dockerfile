@@ -38,7 +38,6 @@ RUN \
         starlette==0.45.3 \
     && apk del --no-cache gcc g++ python3-dev cargo rust libffi-dev openssl-dev
 
-
 # Copy rootfs
 COPY rootfs /
 
