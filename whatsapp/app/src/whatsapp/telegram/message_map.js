@@ -113,3 +113,19 @@ export function resolveTgMsgFromWa(waMsgId) {
   }
   return null;
 }
+
+export function removeMessageMap(waMsgId, tgChatId, tgMsgId) {
+  const store = loadTelegramStore();
+  if (!store.message_maps) return;
+
+  if (waMsgId) {
+    const rawId = String(waMsgId).trim();
+    const cleanId = rawId.replace(/:\d+$/, '');
+    delete store.message_maps[`wa:${cleanId}`];
+    delete store.message_maps[`wa:${rawId}`];
+  }
+  if (tgChatId && tgMsgId) {
+    delete store.message_maps[`tg:${tgChatId}:${tgMsgId}`];
+  }
+  saveTelegramStore(store);
+}

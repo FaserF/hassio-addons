@@ -1,6 +1,6 @@
 import { loadTelegramStore, saveTelegramStore, updateCachedChat } from '../store.js';
 import { getTelegramBotClient } from '../bot.js';
-import { recordMessageMap, resolveWaMsgFromTg } from '../message_map.js';
+import { recordMessageMap, resolveWaMsgFromTg, removeMessageMap } from '../message_map.js';
 import { telegramToWaFormatting, splitMessageText, WHATSAPP_MAX_TEXT_LENGTH } from '../format.js';
 import { formatHeader } from '../headers.js';
 import { getSession, sessions } from '../../../session.js';
@@ -1203,6 +1203,11 @@ export async function processTelegramUpdates() {
                         id: mapped.waMsgId,
                       },
                     });
+                    const { deleteTranslationIfExists } = await import(
+                      '../../moderation/engine/translations.js'
+                    );
+                    await deleteTranslationIfExists(session, mapping.wa_jid, mapped.waMsgId);
+                    removeMessageMap(mapped.waMsgId, tgChatId, replyToTgId);
                     // Clean up both the target message and the !del command message in Telegram
                     await bot.deleteMessage(tgChatId, replyToTgId).catch(() => null);
                     await bot.deleteMessage(tgChatId, msg.message_id).catch(() => null);
