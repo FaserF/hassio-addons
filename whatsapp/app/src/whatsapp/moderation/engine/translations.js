@@ -66,7 +66,6 @@ export function recordTranslationMap(groupId, sourceWaId, botWaId, botKey) {
   _persistTranslationMap();
 }
 
-
 export async function deleteTranslationIfExists(session, groupId, sourceWaId) {
   if (!sourceWaId) return;
   const cleanSourceId = String(sourceWaId).trim();

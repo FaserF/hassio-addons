@@ -48,7 +48,6 @@ import { handleWhatsAppVoiceSTT } from '../sttHandler.js';
 import { processCommand } from '../moderation/commands.js';
 import { evaluateMissedMessage } from '../startup/missedMessages.js';
 
-
 export { bindStore } from './store.js';
 export { getChangelogUrl, checkSystemUpdates, monitorHACore } from './system.js';
 

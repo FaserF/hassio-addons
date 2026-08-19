@@ -21,7 +21,10 @@ export function loadTranslationCache() {
       return JSON.parse(raw);
     }
   } catch (err) {
-    logger.warn({ error: err.message }, '⚠️ Failed to read translation_map_cache.json, starting fresh.');
+    logger.warn(
+      { error: err.message },
+      '⚠️ Failed to read translation_map_cache.json, starting fresh.'
+    );
   }
   return {};
 }

@@ -46,7 +46,6 @@ import {
   clearNotifiedChats,
 } from './startup/missedMessages.js';
 
-
 export async function connectToWhatsApp(sessionId = 'default', sessions, getSession) {
   const session = getSession(sessionId);
 
