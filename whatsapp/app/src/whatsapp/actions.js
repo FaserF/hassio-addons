@@ -486,7 +486,10 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
               // 1. Individual Allowed Commands
               if (activeBuiltins.length > 0) {
                 await delay(500);
-                const cmdLines = activeBuiltins.slice(0, 15).map((cmd) => `• \`${prefix}${cmd}\``).join('\n');
+                const cmdLines = activeBuiltins
+                  .slice(0, 15)
+                  .map((cmd) => `• \`${prefix}${cmd}\``)
+                  .join('\n');
                 await reply(session, targetJid, {
                   text: `🟢 *[TEST PACK 1/6] Allowed Commands for "${groupName}":*\n\n${cmdLines}`,
                 });
@@ -495,7 +498,9 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
               // 2. Individual Disabled Commands
               if (disabledCmds.size > 0) {
                 await delay(500);
-                const disabledLines = Array.from(disabledCmds).map((cmd) => `• \`${prefix}${cmd}\``).join('\n');
+                const disabledLines = Array.from(disabledCmds)
+                  .map((cmd) => `• \`${prefix}${cmd}\``)
+                  .join('\n');
                 await reply(session, targetJid, {
                   text: `🔴 *[TEST PACK 2/6] Disabled Commands for "${groupName}":*\n\n${disabledLines}`,
                 });
@@ -504,7 +509,9 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
               // 3. Individual Custom Commands
               if (customCmds.length > 0) {
                 await delay(500);
-                const customLines = customCmds.map((c) => `• \`${prefix}${c.command.replace(/^[!/#]+/, '')}\``).join('\n');
+                const customLines = customCmds
+                  .map((c) => `• \`${prefix}${c.command.replace(/^[!/#]+/, '')}\``)
+                  .join('\n');
                 await reply(session, targetJid, {
                   text: `⚡ *[TEST PACK 3/6] Custom Commands for "${groupName}":*\n\n${customLines}`,
                 });
@@ -513,7 +520,9 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
               // 4. Individual Auto-Responder Filters
               if (cfg.filters && cfg.filters.length > 0) {
                 await delay(500);
-                const filterLines = cfg.filters.map((f) => `• \`${f.trigger}\` ➔ ${f.response || f.reaction_emoji || 'Action'}`).join('\n');
+                const filterLines = cfg.filters
+                  .map((f) => `• \`${f.trigger}\` ➔ ${f.response || f.reaction_emoji || 'Action'}`)
+                  .join('\n');
                 await reply(session, targetJid, {
                   text: `💬 *[TEST PACK 4/6] Auto-Responder Filters for "${groupName}":*\n\n${filterLines}`,
                 });
@@ -522,7 +531,9 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
               // 5. Individual Saved Notes
               if (cfg.notes && Object.keys(cfg.notes).length > 0) {
                 await delay(500);
-                const noteLines = Object.keys(cfg.notes).map((n) => `• \`${prefix}get #${n}\``).join('\n');
+                const noteLines = Object.keys(cfg.notes)
+                  .map((n) => `• \`${prefix}get #${n}\``)
+                  .join('\n');
                 await reply(session, targetJid, {
                   text: `📌 *[TEST PACK 5/6] Saved Notes for "${groupName}":*\n\n${noteLines}`,
                 });

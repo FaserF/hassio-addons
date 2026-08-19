@@ -85,7 +85,21 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
 
   // Allow self/fromMe command execution if the user sent it, but block bot notification/diagnostic/feedback responses
   if (msg?.key?.fromMe) {
-    const BOT_PREFIXES = ['⚠️', '🔒', '🌐', '🟢', '🔴', '⚡', '💬', '📌', '🔗', '❌', '✅', 'ℹ️', '🤖'];
+    const BOT_PREFIXES = [
+      '⚠️',
+      '🔒',
+      '🌐',
+      '🟢',
+      '🔴',
+      '⚡',
+      '💬',
+      '📌',
+      '🔗',
+      '❌',
+      '✅',
+      'ℹ️',
+      '🤖',
+    ];
     const isBotResponse =
       BOT_PREFIXES.some((p) => rawText.startsWith(p)) ||
       rawText.startsWith('*[TEST PACK') ||
