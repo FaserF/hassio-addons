@@ -3,8 +3,8 @@
 ## 1.3.1 (2026-08-19)
 
 ### 🐛 Bug Fixes
-- reset all 28 addons to pre-release base versions and clean changelogs ([`e1ff3f48`](https://github.com/FaserF/hassio-addons/commit/e1ff3f489b5e1b95a4bb57eeb33a19d39c3b67d3))
 
+- reset all 28 addons to pre-release base versions and clean changelogs ([`e1ff3f48`](https://github.com/FaserF/hassio-addons/commit/e1ff3f489b5e1b95a4bb57eeb33a19d39c3b67d3))
 
 ## 1.3.0 (2026-06-16)
 
