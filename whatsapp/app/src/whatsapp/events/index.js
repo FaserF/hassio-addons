@@ -600,22 +600,6 @@ export function handleIncomingMessages(session) {
           }
           session.processedMessageIds?.set(msg.key.id, Date.now());
         }
-        if (msg.key.fromMe) {
-          // Allow outgoing messages if they are to an admin (usually to self) OR in a group
-          const isToAdminPrimary = isAdmin(msg.key.remoteJid, session);
-          const isToAdminAlt = msg.key.remoteJidAlt
-            ? isAdmin(msg.key.remoteJidAlt, session)
-            : false;
-          const isToAdmin = isToAdminPrimary || isToAdminAlt;
-          const isGroup = msg.key.remoteJid.endsWith('@g.us');
-
-          if (!isToAdmin && !isGroup) {
-            logger.info(
-              `🔍 Outgoing message filtered. session.user.id: ${session.sock?.user?.id}, remoteJid: ${msg.key.remoteJid}, remoteJidAlt: ${msg.key.remoteJidAlt || 'N/A'}`
-            );
-          }
-          return isToAdmin || isGroup;
-        }
         return true;
       })
       .map(async (msg) => {

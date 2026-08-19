@@ -26,5 +26,6 @@ https://github.com/FaserF/hassio-addons/pkgs/container/.*
 https://github.com/hassio-addons/addon-base/releases/tag/.*
 https://github.com/FaserF/ha-webserver
 https://github.com/FaserF/AegisBot
+https://github.com/FaserF/EntraMirror
 https://github.com/pterodactyl/wings/releases/tag/.*
 https://github.com/requarks/wiki/releases/tag/.*
