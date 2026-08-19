@@ -2,14 +2,13 @@
 """Auto-fix and standardize Home Assistant Add-on brand assets (icon.png and logo.png).
 
 Ensures:
-1. icon.png exists and is valid. If non-square, adjusts to square without re-saving valid square icons.
-2. logo.png exists and is valid. If missing or square (1:1), generates a landscape banner.
+1. icon.png exists and is in true PNG format (converts JPEGs named .png to genuine PNG) and square (1:1).
+2. logo.png exists and is in true PNG format. If missing or square (1:1), generates a landscape banner.
 3. If an existing logo is already a valid non-square landscape banner, it is untouched.
 """
 
 import os
 import sys
-
 import yaml
 from PIL import Image, ImageDraw, ImageFont
 
@@ -34,6 +33,16 @@ def fix_icon(addon_dir: str) -> bool:
 
     try:
         im = Image.open(icon_path)
+        changed = False
+
+        # Convert JPEG (or other formats) falsely named .png into genuine PNG
+        if im.format != "PNG":
+            print(f"Converting {icon_path} from {im.format} to genuine PNG")
+            im_rgba = im.convert("RGBA")
+            im_rgba.save(icon_path, format="PNG")
+            im = Image.open(icon_path)
+            changed = True
+
         if im.width != im.height:
             print(f"Fixing non-square icon in {addon_dir}: {im.size}")
             im_rgba = im.convert("RGBA")
@@ -43,7 +52,9 @@ def fix_icon(addon_dir: str) -> bool:
             if max_dim < 256 or max_dim > 1024:
                 square_img = square_img.resize((256, 256), Image.Resampling.LANCZOS)
             square_img.save(icon_path, format="PNG")
-            return True
+            changed = True
+
+        return changed
     except Exception as e:
         print(f"Error inspecting icon {icon_path}: {e}")
     return False
