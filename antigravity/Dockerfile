@@ -11,32 +11,25 @@ ENV APP_NAME="Antigravity"
 ENV APP_SLUG="antigravity"
 ENV APP_UNSUPPORTED="false"
 
+ENV PIP_BREAK_SYSTEM_PACKAGES=1 \
+    PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1
+
 # Setup base system & Python runtime
 RUN \
     apk add --no-cache \
-        musl \
-        musl-dev \
-        gcc \
-        g++ \
-        python3-dev \
-        cargo \
-        rust \
-        libffi-dev \
-        openssl-dev \
-        libssl3 \
-        libcrypto3 \
         python3 \
         py3-pip \
+        py3-pydantic \
+        py3-pydantic-core \
+        py3-fastapi \
+        py3-uvicorn \
+        py3-httpx \
         curl \
         openssl \
+        libssl3 \
+        libcrypto3 \
     && pip3 install --no-cache-dir --break-system-packages \
-        uvicorn==0.34.0 \
-        fastapi==0.115.8 \
-        httpx==0.28.1 \
-        pydantic==2.10.6 \
-        google-auth==2.38.0 \
-        starlette==0.45.3 \
-    && apk del --no-cache gcc g++ python3-dev cargo rust libffi-dev openssl-dev
+        google-auth==2.38.0
 
 # Copy rootfs
 COPY rootfs /
