@@ -1,5 +1,5 @@
 fastapi==0.141.1
-uvicorn==0.52.3
+uvicorn==0.52.4
 httpx==0.28.1
 pydantic==2.13.4
 google-auth==2.56.3
