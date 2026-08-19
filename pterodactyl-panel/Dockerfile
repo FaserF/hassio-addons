@@ -75,7 +75,8 @@ RUN \
     && php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer \
     && rm /tmp/composer-setup.php \
     && cp .env.example .env \
-    && composer install --ansi --no-dev --optimize-autoloader \
+    && export COMPOSER_PROCESS_TIMEOUT=2000 \
+    && (for i in 1 2 3; do composer install --ansi --no-dev --optimize-autoloader --prefer-dist && break || sleep 15; done) \
     && rm -rf .git \
     && chown -R nginx:nginx . \
     && yarn install --production \
@@ -83,6 +84,7 @@ RUN \
     && export NODE_OPTIONS \
     && yarn run build:production \
     && rm -rf node_modules
+
 
 # Final Production phase of the controller
 # All build requirements get scrapped as to maintain a small image
