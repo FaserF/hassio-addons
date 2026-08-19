@@ -11,7 +11,7 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 ARG IMAPSYNC_VERSION=2.314
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.4.2"
+ENV APP_VERSION="0.4.1"
 ENV APP_NAME="Imapsync"
 ENV APP_SLUG="imapsync"
 ENV APP_UNSUPPORTED="false"

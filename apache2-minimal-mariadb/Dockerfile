@@ -19,7 +19,7 @@ ARG PHP_VERSION="8.5"
 ARG APACHE2_VERSION="2.4.68-r0"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="3.4.5"
+ENV APP_VERSION="3.4.4"
 ENV APP_NAME="Apache2 Minimal with MariaDB Client"
 ENV APP_SLUG="apache2-minimal-mariadb"
 ENV APP_UNSUPPORTED="false"

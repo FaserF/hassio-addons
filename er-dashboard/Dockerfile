@@ -21,7 +21,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3008,DL3013,DL3018,DL3042
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.4.7"
+ENV APP_VERSION="1.4.6"
 ENV APP_NAME="ER-Startseite (Dashboard)"
 ENV APP_SLUG="er-dashboard"
 ENV APP_UNSUPPORTED="false"

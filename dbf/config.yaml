@@ -1,5 +1,5 @@
 name: "DBF (DB-Infoscreen)"
-version: "1.1.2"
+version: "1.1.1"
 slug: "dbf"
 description: "Railway departure display (formerly db-fakescreen) as a Home Assistant App."
 url: "https://github.com/FaserF/ha-db_infoscreen"

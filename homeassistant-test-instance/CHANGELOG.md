@@ -1,35 +1,5 @@
 # Changelog
 
-## 1.0.1 (2026-08-19)
-
-### ✨ Features
-
-- add Google Antigravity Usage monitor addon ([`81495c89`](https://github.com/FaserF/hassio-addons/commit/81495c890a4d15605f44d0ac5c30ff2b85db4dd0))
-- add restart loop protection to startup banners and fix gt import error ([`da300834`](https://github.com/FaserF/hassio-addons/commit/da3008348fc12ea389004b10665cbae4d7a8e112))
-- add host config transfer and option to disable automations in yaml and storage ([`8fe9eb9b`](https://github.com/FaserF/hassio-addons/commit/8fe9eb9bc1099fca79852ab3393f4aa2b2e5e1fe))
-
-### 🐛 Bug Fixes
-
-- convert pseudo-PNG jpeg images to genuine PNG format and improve autofix ([`9803f56c`](https://github.com/FaserF/hassio-addons/commit/9803f56c2606138cf0e41de1c02368cf2b32566c))
-- replace deprecated bashio::addon.stop with bashio::app.stop and harmonize APP_VERSION variables ([`e74d22d6`](https://github.com/FaserF/hassio-addons/commit/e74d22d66be715d3ea2efad6e4919b70bf4a81ce))
-- harden parameter expansion in startup banner for set -u strict mode ([`cb8ad15b`](https://github.com/FaserF/hassio-addons/commit/cb8ad15bd5df93dd1da6081ac20ab2332f4d3b29))
-- use safe expansion \ for set -u compatibility ([`560bc0fc`](https://github.com/FaserF/hassio-addons/commit/560bc0fce19cd258f025a328ffd5f6addd78f688))
-- CI hadolint linter fixes ([`44ea2cc0`](https://github.com/FaserF/hassio-addons/commit/44ea2cc0151b77d64b24e83eacfe2fff00be618d))
-- workflow fixes ([`75f03337`](https://github.com/FaserF/hassio-addons/commit/75f03337dbfea8d613c1f0fc3909a17e5df602cb))
-
-### 📦 Dependencies
-
-- ⬆️ Update Add-on base images ([`cff61763`](https://github.com/FaserF/hassio-addons/commit/cff61763699487bc020cab1735cafd22ebd6f0cf))
-- update icons and convert logos to official landscape banners ([`e6d061bd`](https://github.com/FaserF/hassio-addons/commit/e6d061bd8292ae6ca473fa21a2e55d5e5f4e70ea))
-- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.8.2](https://github.com/home-assistant/core/releases/tag/2026.8.2) (#978) ([`533f2836`](https://github.com/FaserF/hassio-addons/commit/533f2836d3825c0766f551608d2b0d40b87caa0d))
-- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.8.1](https://github.com/home-assistant/core/releases/tag/2026.8.1) (#963) ([`4913c1ff`](https://github.com/FaserF/hassio-addons/commit/4913c1ff9e03bd35de7295f9a3e6c89fecb140f5))
-- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.8.0](https://github.com/home-assistant/core/releases/tag/2026.8.0) (#958) ([`65ac3be1`](https://github.com/FaserF/hassio-addons/commit/65ac3be1dae764071e2059f19570a80cdf100b15))
-- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.1](https://github.com/hassio-addons/addon-base/releases/tag/21.0.1) ([`094ebba0`](https://github.com/FaserF/hassio-addons/commit/094ebba0fdc857838145fd802b3f0fc04af829a1))
-- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.7.4](https://github.com/home-assistant/core/releases/tag/2026.7.4) ([`871cd48e`](https://github.com/FaserF/hassio-addons/commit/871cd48eb73a37317eb7b04848fe09072f1f81db))
-- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.7.3](https://github.com/home-assistant/core/releases/tag/2026.7.3) ([`0d526e2e`](https://github.com/FaserF/hassio-addons/commit/0d526e2e5298d8093bbc1339a5033883bb994a5b))
-- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.7.2](https://github.com/home-assistant/core/releases/tag/2026.7.2) ([`05c56a50`](https://github.com/FaserF/hassio-addons/commit/05c56a50102fa485849a10150e2d11903a91f117))
-- ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.7.1](https://github.com/home-assistant/core/releases/tag/2026.7.1) (#882) ([`7e80dd20`](https://github.com/FaserF/hassio-addons/commit/7e80dd20db08dd9ed038981659033c937dd79e68))
-
 ## 1.0.0 (2026-06-22)
 
 ### 🐛 Bug Fixes
