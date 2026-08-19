@@ -281,14 +281,20 @@ export async function notifyAdmins(session, text) {
  * Runs a set of diagnostic WhatsApp features.
  */
 export async function runDiagnostic(session, senderJid, addLogFn) {
-  // Send diagnostic messages to admin number if configured, otherwise to own number
-  const targetJid = ADMIN_NUMBERS.length > 0 ? getJid(ADMIN_NUMBERS[0]) : senderJid;
+  // Always reply in the chat where the diagnostic was invoked (senderJid), fallback to admin number/own number if not provided
+  let targetJid = senderJid;
+  if (!targetJid || targetJid === 'me') {
+    targetJid = ADMIN_NUMBERS.length > 0 ? getJid(ADMIN_NUMBERS[0]) : (session.stats?.my_number ? getJid(session.stats.my_number) : null);
+  }
+  if (!targetJid) {
+    targetJid = senderJid;
+  }
 
   try {
-    addLogFn(session, `Starting diagnostic test for ${maskData(senderJid)}`, 'info');
+    addLogFn(session, `Starting diagnostic test for ${maskData(targetJid)}`, 'info');
     addLogFn(
       session,
-      `Diagnostic target: ${ADMIN_NUMBERS.length > 0 ? 'admin number' : 'own number'} (${maskData(targetJid)})`,
+      `Diagnostic target: ${maskData(targetJid)}`,
       'info'
     );
 
@@ -378,22 +384,24 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
       });
     }
 
-    // 9. Moderation Feature Diagnostic Summary for all Groups with Moderation Enabled
-    try {
-      const { loadModerationStore } = await import('./moderation/store.js');
-      const store = loadModerationStore();
+    // 9. Moderation Feature Diagnostic Summary (Only run inside group chats)
+    const isGroupChat = targetJid.endsWith('@g.us');
+    if (isGroupChat) {
+      try {
+        const { loadModerationStore } = await import('./moderation/store.js');
+        const store = loadModerationStore();
 
-      if (store && store.global_enabled && store.groups) {
-        const modGroupEntries = Object.entries(store.groups).filter(
-          ([_, cfg]) => cfg && cfg.enabled
-        );
+        if (store && store.global_enabled && store.groups) {
+          const modGroupEntries = Object.entries(store.groups).filter(
+            ([gId, cfg]) => cfg && cfg.enabled && gId === targetJid
+          );
 
-        if (modGroupEntries.length === 0) {
-          await reply(session, targetJid, {
-            text: '🛡️ *Moderation Diagnostic:* Global Moderation Engine is Active, but no specific group has moderation enabled.',
-          });
-        } else {
-          for (const [groupId, cfg] of modGroupEntries) {
+          if (modGroupEntries.length === 0) {
+            await reply(session, targetJid, {
+              text: '🛡️ *Moderation Diagnostic:* Global Moderation is active, but not enabled for this group.',
+            });
+          } else {
+            for (const [groupId, cfg] of modGroupEntries) {
             const prefix = cfg.commands?.prefix || '!';
             const disabledCmds = new Set(cfg.commands?.disabled_commands || []);
             const customCmds = cfg.commands?.custom_commands || [];
@@ -565,6 +573,7 @@ export async function runDiagnostic(session, senderJid, addLogFn) {
     } catch (modErr) {
       logger.warn({ error: modErr.message }, 'Failed to append moderation diagnostic report');
     }
+  }
 
     addLogFn(
       session,
