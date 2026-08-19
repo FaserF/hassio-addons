@@ -17,7 +17,7 @@ panel_title: "Antigravity"
 hassio_api: true
 map:
   - share:rw
-  - config:ro
+  - homeassistant_config:ro
 
 ports:
   8199/tcp: 8199

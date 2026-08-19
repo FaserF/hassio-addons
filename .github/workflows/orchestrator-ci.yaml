@@ -283,13 +283,13 @@ jobs:
         continue-on-error: true # Advisory - auto-fixed by orchestrator-autofix
         uses: actionshub/markdownlint@v3.1.4
         with:
-          args: "-c .markdownlint.yaml ${{ matrix.App }}/*.md"
+          args: "-c .markdownlint.yaml ${{ matrix.App }}"
 
       - name: 📄 YAMLLint
         continue-on-error: true # Advisory - formatting issues are non-blocking
         uses: frenck/action-yamllint@v1
         with:
-          args: "./${{ matrix.App }}/*.yaml"
+          args: "./${{ matrix.App }}"
 
       - name: 💅 Prettier
         continue-on-error: true # Advisory - auto-fixed by orchestrator-autofix
