@@ -76,7 +76,7 @@ RUN \
     && rm /tmp/composer-setup.php \
     && cp .env.example .env \
     && export COMPOSER_PROCESS_TIMEOUT=2000 \
-    && (for i in 1 2 3; do composer install --ansi --no-dev --optimize-autoloader --prefer-dist && break || sleep 15; done) \
+    && (for _ in 1 2 3; do composer install --ansi --no-dev --optimize-autoloader --prefer-dist && break || sleep 15; done) \
     && rm -rf .git \
     && chown -R nginx:nginx . \
     && yarn install --production \
