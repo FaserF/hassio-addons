@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-08-19T12:01:23.018290",
+  "timestamp": "2026-08-19T12:17:53.588842",
   "connections": {
     "AegisBot": {
       "name": "AegisBot",
@@ -64,7 +64,7 @@
     },
     "ShieldDNS": {
       "name": "ShieldDNS",
-      "version": "2.5.1",
+      "version": "2.5.3",
       "description": "High-performance DoT proxy for AdGuard Home",
       "arch": [
         "aarch64",
@@ -96,7 +96,7 @@
     },
     "ShieldFile": {
       "name": "ShieldFile",
-      "version": "2.4.2",
+      "version": "2.4.3",
       "description": "Secure, Web-based File Manager (SFTP over HTTPS)",
       "arch": [
         "aarch64",
@@ -123,7 +123,7 @@
     },
     "antigravity": {
       "name": "Antigravity",
-      "version": "1.0.0",
+      "version": "1.0.2",
       "description": "Google Antigravity Quota Monitor, Multi-Account Dashboard, and Dynamic Polling Gateway for Home Assistant.",
       "arch": [
         "aarch64",
@@ -159,7 +159,7 @@
     },
     "apache2": {
       "name": "Apache2",
-      "version": "3.4.4",
+      "version": "3.4.6",
       "description": "Open Source Webserver with PHP and MariaDB.",
       "arch": [
         "aarch64",
@@ -189,7 +189,7 @@
     },
     "apache2-minimal": {
       "name": "Apache2 Minimal",
-      "version": "3.4.4",
+      "version": "3.4.6",
       "description": "Open Source Webserver without PHP and minimal extra modules.",
       "arch": [
         "aarch64",
@@ -219,7 +219,7 @@
     },
     "apache2-minimal-mariadb": {
       "name": "Apache2 Minimal with MariaDB Client",
-      "version": "3.4.4",
+      "version": "3.4.5",
       "description": "Open Source Webserver with MariaDB Client and some PHP Modules.",
       "arch": [
         "aarch64",
@@ -249,7 +249,7 @@
     },
     "bash_script_executer": {
       "name": "Bash Script Executer",
-      "version": "2.5.1",
+      "version": "2.5.2",
       "description": ">-",
       "arch": [
         "aarch64",
@@ -277,7 +277,7 @@
     },
     "bentopdf": {
       "name": "BentoPDF",
-      "version": "1.3.1",
+      "version": "1.3.2",
       "description": "Self-hosted, privacy-first PDF toolkit",
       "arch": [
         "aarch64",
@@ -305,7 +305,7 @@
     },
     "dbf": {
       "name": "DBF (DB-Infoscreen)",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "description": "Railway departure display (formerly db-fakescreen) as a Home Assistant App.",
       "arch": [
         "aarch64",
@@ -332,7 +332,7 @@
     },
     "er-dashboard": {
       "name": "ER-Startseite (Dashboard)",
-      "version": "1.4.6",
+      "version": "1.4.7",
       "description": "A modern, highly customizable dashboard with a neon aesthetic.",
       "arch": [
         "aarch64",
@@ -361,7 +361,7 @@
     },
     "imapsync": {
       "name": "Imapsync",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "description": "Sync IMAP accounts easily and reliably.",
       "arch": [
         "aarch64",
@@ -388,7 +388,7 @@
     },
     "komodo": {
       "name": "Komodo",
-      "version": "0.2.4",
+      "version": "0.2.5",
       "description": "A tool to build and deploy software on many servers",
       "arch": [
         "amd64"
@@ -413,7 +413,7 @@
     },
     "netboot-xyz": {
       "name": "Netboot.xyz",
-      "version": "2.4.1",
+      "version": "2.4.2",
       "description": "PXE-Server to deploy a OS inside your local network",
       "arch": [
         "aarch64",
@@ -437,7 +437,7 @@
     },
     "nginx": {
       "name": "NGINX",
-      "version": "0.4.3",
+      "version": "0.4.4",
       "description": "Open Source Webserver with PHP and MariaDB.",
       "arch": [
         "aarch64",
@@ -466,7 +466,7 @@
     },
     "openssl": {
       "name": "OpenSSL",
-      "version": "2.4.1",
+      "version": "2.4.2",
       "description": "Generate self-signed certificates",
       "arch": [
         "aarch64",
@@ -494,7 +494,7 @@
     },
     "planka": {
       "name": "Planka",
-      "version": "1.4.1",
+      "version": "1.4.2",
       "description": "The elegant open source project tracking tool",
       "arch": [
         "aarch64",
@@ -660,7 +660,7 @@
     },
     "switchcraft": {
       "name": "SwitchCraft",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "description": "SwitchCraft is your powerful, cross-platform tool designed to be a comprehensive packaging assistant for IT Professionals.",
       "arch": [
         "aarch64",
@@ -716,7 +716,7 @@
     },
     "tt-rss": {
       "name": "Tiny Tiny RSS",
-      "version": "1.3.1",
+      "version": "1.3.2",
       "description": "A web-based news feed (RSS/Atom) reader and aggregator",
       "arch": [
         "aarch64",
@@ -746,7 +746,7 @@
     },
     "whatsapp": {
       "name": "WhatsApp Gateway",
-      "version": "2.1.0",
+      "version": "2.1.1",
       "description": "Home Assistant WhatsApp App (Baileys/Node.js).",
       "arch": [
         "aarch64",
@@ -776,7 +776,7 @@
     },
     "wiki.js": {
       "name": "Wiki.JS",
-      "version": "3.5.1",
+      "version": "3.5.2",
       "description": "The most powerful and extensible open source Wiki software",
       "arch": [
         "amd64"

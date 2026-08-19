@@ -3,23 +3,26 @@
 ## 3.4.5 (2026-08-19)
 
 ### ✨ Features
+
 - add Google Antigravity Usage monitor addon ([`81495c89`](https://github.com/FaserF/hassio-addons/commit/81495c890a4d15605f44d0ac5c30ff2b85db4dd0))
 - Github availablity check ([`8a5c7967`](https://github.com/FaserF/hassio-addons/commit/8a5c7967fe45a835d4763dcde8afa26c8048c502))
 - add restart loop protection to startup banners and fix gt import error ([`da300834`](https://github.com/FaserF/hassio-addons/commit/da3008348fc12ea389004b10665cbae4d7a8e112))
 
 ### 🐛 Bug Fixes
+
 - replace deprecated bashio::addon.stop with bashio::app.stop and harmonize APP_VERSION variables ([`e74d22d6`](https://github.com/FaserF/hassio-addons/commit/e74d22d66be715d3ea2efad6e4919b70bf4a81ce))
 - small docs fixes ([`8a8b58d4`](https://github.com/FaserF/hassio-addons/commit/8a8b58d44760a619a7131f64fc43295115765368))
 - harden parameter expansion in startup banner for set -u strict mode ([`cb8ad15b`](https://github.com/FaserF/hassio-addons/commit/cb8ad15bd5df93dd1da6081ac20ab2332f4d3b29))
 - use safe expansion \ for set -u compatibility ([`560bc0fc`](https://github.com/FaserF/hassio-addons/commit/560bc0fce19cd258f025a328ffd5f6addd78f688))
 
 ### 📦 Dependencies
+
 - ⬆️ Update Add-on base images ([`cff61763`](https://github.com/FaserF/hassio-addons/commit/cff61763699487bc020cab1735cafd22ebd6f0cf))
 - update icons and convert logos to official landscape banners ([`e6d061bd`](https://github.com/FaserF/hassio-addons/commit/e6d061bd8292ae6ca473fa21a2e55d5e5f4e70ea))
 
 ### 🎨 Style
-- auto-format all markdown files with prettier ([`dcb0fdb1`](https://github.com/FaserF/hassio-addons/commit/dcb0fdb122b3a0f84290853ec4d9055daf63446c))
 
+- auto-format all markdown files with prettier ([`dcb0fdb1`](https://github.com/FaserF/hassio-addons/commit/dcb0fdb122b3a0f84290853ec4d9055daf63446c))
 
 ## 3.4.4 (2026-07-31)
 

@@ -3,10 +3,12 @@
 ## 0.2.5 (2026-08-19)
 
 ### ✨ Features
+
 - add Google Antigravity Usage monitor addon ([`81495c89`](https://github.com/FaserF/hassio-addons/commit/81495c890a4d15605f44d0ac5c30ff2b85db4dd0))
 - add restart loop protection to startup banners and fix gt import error ([`da300834`](https://github.com/FaserF/hassio-addons/commit/da3008348fc12ea389004b10665cbae4d7a8e112))
 
 ### 🐛 Bug Fixes
+
 - convert pseudo-PNG jpeg images to genuine PNG format and improve autofix ([`9803f56c`](https://github.com/FaserF/hassio-addons/commit/9803f56c2606138cf0e41de1c02368cf2b32566c))
 - replace deprecated bashio::addon.stop with bashio::app.stop and harmonize APP_VERSION variables ([`e74d22d6`](https://github.com/FaserF/hassio-addons/commit/e74d22d66be715d3ea2efad6e4919b70bf4a81ce))
 - CI linter fixes ([`9ca6bd76`](https://github.com/FaserF/hassio-addons/commit/9ca6bd762a6407dc2edd20c327df5d6fc212e6a2))
@@ -14,11 +16,11 @@
 - use safe expansion \ for set -u compatibility ([`560bc0fc`](https://github.com/FaserF/hassio-addons/commit/560bc0fce19cd258f025a328ffd5f6addd78f688))
 
 ### 📦 Dependencies
+
 - ⬆️ Update Add-on base images ([`cff61763`](https://github.com/FaserF/hassio-addons/commit/cff61763699487bc020cab1735cafd22ebd6f0cf))
 - update icons and convert logos to official landscape banners ([`e6d061bd`](https://github.com/FaserF/hassio-addons/commit/e6d061bd8292ae6ca473fa21a2e55d5e5f4e70ea))
 - ⬆️ Update ghcr.io/moghtech/komodo-core Docker tag to v2.3.2 (#969) ([`4f1a380c`](https://github.com/FaserF/hassio-addons/commit/4f1a380caac5e034803faff934d961ce81d72dc4))
 - ⬆️ Update dependency moghtech/komodo to v2.3.2 ([`e7590f75`](https://github.com/FaserF/hassio-addons/commit/e7590f75a862cdb29959bd734a85c7798e8eb218))
-
 
 ## 0.2.4 (2026-08-04)
 

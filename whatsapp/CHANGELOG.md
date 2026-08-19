@@ -3,6 +3,7 @@
 ## 2.1.1 (2026-08-19)
 
 ### ✨ Features
+
 - use informal Du-form for missed_messages German notification strings ([`79f8f750`](https://github.com/FaserF/hassio-addons/commit/79f8f750d3ad862bf628696e39980f1839e7cfbd))
 - reset auto responder start time to now and end time to unlimited when enabled via HA integration ([`76a30307`](https://github.com/FaserF/hassio-addons/commit/76a3030740160b00d2f871e8dd565c0b73aabd46))
 - add missed messages card to main dashboard view ([`87599a38`](https://github.com/FaserF/hassio-addons/commit/87599a38081566342a2f6ea8dd76d7b9fc51810c))
@@ -20,6 +21,7 @@
 - add auto responder placeholder guide, live preview, and localized datetime resolution ([`f9e8cae0`](https://github.com/FaserF/hassio-addons/commit/f9e8cae0e99eafb394e08b75b269c051fc19e350))
 
 ### 🐛 Bug Fixes
+
 - resolve CodeQL SSRF alerts in moderation test-aegisbot route ([`941b646c`](https://github.com/FaserF/hassio-addons/commit/941b646c5d29fed9c6c651f615cdf43574742f40))
 - resolve CodeQL SSRF alerts and prevent auto-responder loops during diagnostics ([`29bd5c1f`](https://github.com/FaserF/hassio-addons/commit/29bd5c1fbbef843dafeeacff6a51ab5c0a844c82))
 - route diagnostics to source chat and limit mod report to groups ([`9457282f`](https://github.com/FaserF/hassio-addons/commit/9457282f29fb4da1b468c01d38d0ddc32dc8d650))
@@ -37,6 +39,7 @@
 - small fixes ([`ca5cd05a`](https://github.com/FaserF/hassio-addons/commit/ca5cd05a8d3711abdad950d355c22d595629a3dd))
 
 ### 📦 Dependencies
+
 - Update autoresponder.js ([`4026a481`](https://github.com/FaserF/hassio-addons/commit/4026a481807a284f73da2060d0b53b5b77c51cb3))
 - ⬆️ Update Add-on base images ([`cff61763`](https://github.com/FaserF/hassio-addons/commit/cff61763699487bc020cab1735cafd22ebd6f0cf))
 - ⬆️ Update dependency uvicorn to v0.52.4 ([`650cd95f`](https://github.com/FaserF/hassio-addons/commit/650cd95f28daf01ea5cf29c61add4f1fab763764))
@@ -44,10 +47,10 @@
 - small dependency fix ([`67c45f4b`](https://github.com/FaserF/hassio-addons/commit/67c45f4bee3119ca50b1f7e85bf4b5e5338fabc3))
 
 ### 🚀 Other
+
 - small ha-app-diag fix ([`043bf1ca`](https://github.com/FaserF/hassio-addons/commit/043bf1ca1313557b47e607c6d4868cf3ecab212c))
 - STT API Key fallback from HA config #982 ([`88e1f5e5`](https://github.com/FaserF/hassio-addons/commit/88e1f5e5edba8c03df92b6e1147c1cab9c6be0f7))
 - small fix ([`f1365448`](https://github.com/FaserF/hassio-addons/commit/f13654481c0f0ceb4cd8aab6993cf6eb0f4f13bb))
-
 
 ## 2.1.0 (2026-08-16)
 
