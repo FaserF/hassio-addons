@@ -1,6 +1,6 @@
 ---
 name: "Antigravity"
-version: "1.0.0"
+version: "1.0.1"
 slug: "antigravity"
 image: "ghcr.io/faserf/hassio-addons-antigravity-{arch}"
 description: "Google Antigravity Quota Monitor, Multi-Account Dashboard, and Dynamic Polling Gateway for Home Assistant."
