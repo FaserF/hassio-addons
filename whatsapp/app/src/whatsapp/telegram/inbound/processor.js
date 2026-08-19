@@ -1120,9 +1120,8 @@ export async function processTelegramUpdates() {
                 ) {
                   const mapped = resolveWaMsgFromTg(tgChatId, String(msg.message_id));
                   if (mapped && mapped.waMsgId && mapped.waJid) {
-                    const { syncTelegramDeleteToWhatsApp } = await import(
-                      '../outbound/mutations.js'
-                    );
+                    const { syncTelegramDeleteToWhatsApp } =
+                      await import('../outbound/mutations.js');
                     await syncTelegramDeleteToWhatsApp(tgChatId, msg.message_id);
                     logger.info(
                       { tgChatId, tgMsgId: msg.message_id, waMsgId: mapped.waMsgId },
@@ -1162,9 +1161,8 @@ export async function processTelegramUpdates() {
                         mapped.origin || 'tg'
                       );
                       try {
-                        const { updateTranslationIfExists } = await import(
-                          '../../moderation/engine.js'
-                        );
+                        const { updateTranslationIfExists } =
+                          await import('../../moderation/engine.js');
                         await updateTranslationIfExists(
                           session,
                           mapping.wa_jid,
