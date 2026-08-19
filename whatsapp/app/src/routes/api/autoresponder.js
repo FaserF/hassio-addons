@@ -39,11 +39,14 @@ export function registerAutoResponderRoutes(app) {
       if (enabled !== undefined) {
         store.enabled = Boolean(enabled);
         // If turning on from disabled state:
-        // Automatically default start_time to now (null/immediate) and end_time to unlimited (null)
+        // Automatically default start_time to now (formatted for datetime-local) and end_time to unlimited (null)
         // unless explicitly specified in the payload.
         if (store.enabled && !wasEnabled) {
           if (start_time === undefined) {
-            store.start_time = null;
+            const now = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            const localIso = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            store.start_time = localIso;
           }
           if (end_time === undefined) {
             store.end_time = null;
