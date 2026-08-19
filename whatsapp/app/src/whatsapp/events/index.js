@@ -775,7 +775,11 @@ export function handleIncomingMessages(session) {
             : null;
           const evLoc = evData?.location?.name || '';
           const evLink = evData?.joinLink || '';
-          const evCanceled = evData?.isCanceled ? (lang === 'de' ? ' ❌ ABGESAGT' : ' ❌ CANCELED') : '';
+          const evCanceled = evData?.isCanceled
+            ? lang === 'de'
+              ? ' ❌ ABGESAGT'
+              : ' ❌ CANCELED'
+            : '';
           const lines = [`📅 *[Event${evCanceled}]: ${evName}*`];
           if (evStart) lines.push(`🕐 ${evStart}`);
           if (evDesc) lines.push(`📝 ${evDesc}`);
