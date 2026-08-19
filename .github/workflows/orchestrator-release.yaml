@@ -696,6 +696,9 @@ jobs:
     name: ✅ Verify ${{ matrix.App }}
     needs: detect
     if: needs.detect.outputs.should_release == 'true' && github.event.inputs.skip_verification != 'true'
+    concurrency:
+      group: release-verify-${{ matrix.App }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -767,9 +770,12 @@ jobs:
     name: 🚀 Release ${{ matrix.App }}
     needs: [detect, verify]
     if: |
-      always() &&
+      !cancelled() &&
       needs.detect.outputs.should_release == 'true' &&
       (needs.verify.result == 'success' || needs.verify.result == 'skipped' || github.event.inputs.skip_verification == 'true')
+    concurrency:
+      group: release-${{ matrix.App }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.App == 'solumati' }}
     strategy:
