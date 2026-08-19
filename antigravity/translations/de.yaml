@@ -17,5 +17,21 @@ configuration:
   accounts:
     name: Google-Konten
     description: "Liste der Google Antigravity-Konten mit OAuth Refresh-Tokens."
+    name:
+      name: Kontoname
+      description: "Aussagekräftiger Name oder E-Mail-Adresse für dieses Konto."
+    refresh_token:
+      name: OAuth Refresh-Token
+      description: "OAuth 2.0 Refresh-Token für den Antigravity-Zugriff."
+    client_id:
+      name: Client-ID
+      description: "Eigene Google Cloud OAuth Client-ID (optional, verwendet standardmäßig den Standardwert)."
+    client_secret:
+      name: Client-Secret
+      description: "Eigenes Google Cloud OAuth Client-Secret (optional, verwendet standardmäßig den Standardwert)."
+    project_id:
+      name: Projekt-ID
+      description: "Google Cloud Projekt-ID (optional)."
 network:
   8199/tcp: Antigravity Web-Oberfläche & REST-API
+

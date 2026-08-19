@@ -16,6 +16,13 @@ RUN \
     apk add --no-cache \
         musl \
         musl-dev \
+        gcc \
+        g++ \
+        python3-dev \
+        cargo \
+        rust \
+        libffi-dev \
+        openssl-dev \
         libssl3 \
         libcrypto3 \
         python3 \
@@ -28,7 +35,9 @@ RUN \
         httpx==0.28.1 \
         pydantic==2.10.6 \
         google-auth==2.38.0 \
-        starlette==0.45.3
+        starlette==0.45.3 \
+    && apk del --no-cache gcc g++ python3-dev cargo rust libffi-dev openssl-dev
+
 
 # Copy rootfs
 COPY rootfs /
