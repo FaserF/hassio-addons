@@ -800,8 +800,12 @@ async function loadDashboardMissedMessagesConfig() {
     if (badge) {
       const isEnabled = missedCfg.enabled !== false;
       badge.textContent = isEnabled
-        ? (window.t ? window.t('common.active') : 'Active')
-        : (window.t ? window.t('common.disabled') : 'Disabled');
+        ? window.t
+          ? window.t('common.active')
+          : 'Active'
+        : window.t
+          ? window.t('common.disabled')
+          : 'Disabled';
       badge.style.background = isEnabled ? 'rgba(16, 185, 129, 0.15)' : 'var(--bg-app)';
       badge.style.color = isEnabled ? 'var(--primary)' : 'var(--text-muted)';
     }
@@ -836,9 +840,7 @@ async function saveDashboardMissedMessagesConfig() {
     if (res.ok) {
       if (typeof showToast === 'function') {
         showToast(
-          window.t
-            ? window.t('common.settings_saved')
-            : 'Settings saved successfully! ✅',
+          window.t ? window.t('common.settings_saved') : 'Settings saved successfully! ✅',
           'success'
         );
       }
