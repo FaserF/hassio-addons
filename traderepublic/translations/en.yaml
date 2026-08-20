@@ -1,4 +1,7 @@
-﻿configuration:
+configuration:
+  log_level:
+    name: "Log Level"
+    description: "Control the logging verbosity of the add-on."
   keep_alive_interval:
     name: "Keep-Alive Interval (Seconds)"
     description: "Interval in seconds to ping/refresh the web session."

@@ -31,7 +31,7 @@ jobs:
             for (const issue of issues) {
               if (issue.pull_request) continue;
 
-              const hasFixedLabel = issue.labels.some(l => 
+              const hasFixedLabel = issue.labels.some(l =>
                 (typeof l === 'string' ? l : l.name || '').toLowerCase().includes('fixed')
               );
               if (!hasFixedLabel) continue;

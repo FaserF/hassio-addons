@@ -108,33 +108,36 @@ class TradeRepublicBrowserService:
                 _LOGGER.warning("Failed to load session file: %s", e)
 
     async def verify_token_validity(self, token: str) -> bool:
-        """Verify token against Trade Republic API endpoint."""
+        """Verify token against Trade Republic WebSocket backend."""
         if not token:
             return False
         clean_token = token.strip().strip('"').strip("'")
         if clean_token.lower().startswith("bearer "):
             clean_token = clean_token[7:].strip()
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            "Cookie": f"tr_session={clean_token}; sessionToken={clean_token}",
-            "Authorization": f"Bearer {clean_token}",
-        }
+
         try:
+            import websockets
+            import ssl
+            ssl_ctx = ssl.create_default_context()
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                "Origin": "https://app.traderepublic.com",
+                "Cookie": f"tr_session={clean_token}; sessionToken={clean_token}",
+            }
             async with (
-                aiohttp.ClientSession() as session,
-                session.get(
-                    "https://api.traderepublic.com/api/v1/auth/web/session",
-                    headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=4),
-                ) as resp,
+                asyncio.timeout(5),
+                websockets.connect("wss://api.traderepublic.com", ssl=ssl_ctx, additional_headers=headers) as ws,
             ):
-                if resp.status in (200, 204):
+                handshake = {"locale": "de", "platformId": "web", "appVersion": "4.110.0", "osVersion": "10.0.0", "token": clean_token}
+                await ws.send("connect 26 " + json.dumps(handshake))
+                resp = await ws.recv()
+                if resp and "connected" in str(resp):
                     return True
-                if resp.status in (401, 403):
-                    return False
-        except Exception:
-            pass
-        return bool(self.session_token and len(self.session_token) > 30)
+                return False
+        except Exception as e:
+            _LOGGER.debug("Token validation check error: %s", e)
+            return False
+
 
     async def save_session(self, token: str, phone: Optional[str] = None) -> None:
         if not token:

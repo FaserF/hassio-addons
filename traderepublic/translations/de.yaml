@@ -1,4 +1,7 @@
-﻿configuration:
+configuration:
+  log_level:
+    name: "Protokollierungsgrad"
+    description: "Steuert die Detailtiefe der Add-on-Protokollierung."
   keep_alive_interval:
     name: "Keep-Alive Intervall (Sekunden)"
     description: "Intervall in Sekunden für den automatischen Session-Refresh."
