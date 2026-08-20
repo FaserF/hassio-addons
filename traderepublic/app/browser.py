@@ -94,11 +94,48 @@ class TradeRepublicBrowserService:
                     data = json.load(f)
                     self.session_token = data.get("session_token")
                     self.phone_number = data.get("phone_number")
-                    self.is_logged_in = bool(self.session_token)
-                    if self.is_logged_in:
-                        self.status_message = "Session restored from storage."
+                    if self.session_token:
+                        # Verify whether token is actually accepted by Trade Republic
+                        is_valid = await self.verify_token_validity(self.session_token)
+                        self.is_logged_in = is_valid
+                        if is_valid:
+                            self.status_message = "Everything is connected and running normally."
+                            self.last_error = None
+                        else:
+                            self.status_message = "Stored session token is expired. Please re-authenticate."
+                            self.last_error = "Session expired or rejected by Trade Republic (HTTP 401). Please click Re-authenticate."
             except Exception as e:
                 _LOGGER.warning("Failed to load session file: %s", e)
+
+    async def verify_token_validity(self, token: str) -> bool:
+        """Verify token against Trade Republic API endpoint."""
+        if not token:
+            return False
+        clean_token = token.strip().strip('"').strip("'")
+        if clean_token.lower().startswith("bearer "):
+            clean_token = clean_token[7:].strip()
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Cookie": f"tr_session={clean_token}; sessionToken={clean_token}",
+            "Authorization": f"Bearer {clean_token}",
+        }
+        try:
+            async with (
+                aiohttp.ClientSession() as session,
+                session.get(
+                    "https://api.traderepublic.com/api/v1/auth/web/session",
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=4),
+                ) as resp,
+            ):
+                if resp.status in (200, 204):
+                    return True
+                if resp.status in (401, 403):
+                    return False
+        except Exception:
+            pass
+        return bool(self.session_token and len(self.session_token) > 30)
+
 
     async def save_session(self, token: str, phone: Optional[str] = None) -> None:
         self.session_token = token
