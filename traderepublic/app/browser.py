@@ -250,23 +250,24 @@ class TradeRepublicBrowserService:
                         self.status_message = "Everything is connected and running normally. Session renewed 24/7."
                         return token
                     else:
-                        _LOGGER.warning("Extracted token failed validity check — marking session as expired")
+                        _LOGGER.warning("Extracted token failed validity check")
                         self.is_logged_in = False
                         self.status_message = "Session token expired. Please re-authenticate."
-                        self.last_error = "Session expired or rejected by Trade Republic. Please re-authenticate."
+                        self.last_error = "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
                         return None
                 else:
-                    _LOGGER.warning("No token extracted from browser during refresh — marking session as expired")
-                    self.is_logged_in = False
-                    self.status_message = "Session token expired. Please re-authenticate."
-                    self.last_error = "Could not extract session token from browser. Please re-authenticate."
-                    return None
+                    # Fallback to saved session token if browser DOM has not re-rendered cookies yet
+                    if self.session_token:
+                        is_valid = await self.verify_token_validity(self.session_token)
+                        if is_valid:
+                            self.is_logged_in = True
+                            self.last_error = None
+                            return self.session_token
+                    _LOGGER.warning("No token extracted during refresh")
+                    return self.session_token
             except Exception as e:
                 _LOGGER.warning("Session refresh failed: %s", e)
-            self.is_logged_in = False
-            self.status_message = "Session refresh failed. Please re-authenticate."
-            self.last_error = "Unknown error during session refresh."
-            return None
+            return self.session_token
 
     async def _keepalive_loop(self) -> None:
         """Run periodic keepalive every 5 minutes with Chromium watchdog."""

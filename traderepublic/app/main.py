@@ -22,14 +22,28 @@ _SUPERVISOR_TOKEN = os.getenv("SUPERVISOR_TOKEN", "")
 _api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
 
 
-async def require_supervisor_auth(authorization: Optional[str] = Security(_api_key_header)) -> None:
-    """Require HA Supervisor Bearer token on sensitive endpoints."""
-    if not _SUPERVISOR_TOKEN:
-        # Running outside Supervisor (dev mode) — skip check
+async def require_supervisor_auth(
+    request: Request,
+    authorization: Optional[str] = Security(_api_key_header),
+) -> None:
+    """Require valid auth: allow Home Assistant container subnet (172.30.32.0/23, 127.0.0.1) or valid Bearer token."""
+    client_ip = request.client.host if request.client else ""
+
+    # 1. Allow local loopback and standard Home Assistant docker internal subnets
+    if client_ip in ("127.0.0.1", "::1", "localhost") or client_ip.startswith("172.30.") or client_ip.startswith("172.17."):
         return
-    expected = f"Bearer {_SUPERVISOR_TOKEN}"
-    if not authorization or authorization != expected:
-        raise HTTPException(status_code=403, detail="Forbidden: valid Supervisor token required")
+
+    # 2. Check Bearer Supervisor Token
+    if _SUPERVISOR_TOKEN:
+        expected = f"Bearer {_SUPERVISOR_TOKEN}"
+        if authorization and authorization == expected:
+            return
+
+    # 3. Check Ingress header if forwarded by Home Assistant Ingress
+    if request.headers.get("X-Ingress-Path") or request.headers.get("x-ingress-path"):
+        return
+
+    raise HTTPException(status_code=403, detail="Forbidden: internal network or valid authorization required")
 
 
 @asynccontextmanager
