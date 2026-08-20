@@ -37,4 +37,3 @@ ingress: true
 ingress_port: 8095
 ingress_entry: /
 stage: experimental
-

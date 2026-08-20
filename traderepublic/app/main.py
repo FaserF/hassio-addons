@@ -45,7 +45,6 @@ if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-
 class LoginInitRequest(BaseModel):
     phone_number: str
     pin: str
