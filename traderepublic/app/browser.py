@@ -504,30 +504,59 @@ class TradeRepublicBrowserService:
                 return {"success": False, "error": str(e)}
 
     async def refresh_session(self) -> Optional[str]:
+        """Perform active page interaction and token extraction to keep session alive."""
         async with self._lock:
             try:
+                # 1. Reload page in headless browser
                 await self._send_cdp_cmd("Page.reload", {})
-                await asyncio.sleep(3)
+                await asyncio.sleep(4)
+                
+                # 2. Touch the page to trigger Trade Republic background token refresh
+                touch_script = """
+                (() => {
+                    try {
+                        window.dispatchEvent(new Event('mousemove'));
+                        window.dispatchEvent(new Event('focus'));
+                        if (document.body) {
+                            document.body.dispatchEvent(new Event('click'));
+                        }
+                    } catch(e) {}
+                })()
+                """
+                await self._send_cdp_cmd("Runtime.evaluate", {"expression": touch_script})
+                await asyncio.sleep(2)
+
                 token = await self.extract_token_from_cookies()
                 if token:
-                    return token
+                    is_valid = await self.verify_token_validity(token)
+                    if is_valid:
+                        self.is_logged_in = True
+                        self.last_error = None
+                        self.status_message = "Everything is connected and running normally. Session renewed 24/7."
+                        return token
             except Exception as e:
                 _LOGGER.warning("Session refresh failed: %s", e)
             return self.session_token
 
     async def _keepalive_loop(self) -> None:
-        interval = int(os.getenv("KEEP_ALIVE_INTERVAL", "600"))
+        """Run periodic keepalive every 5-10 minutes to prevent token expiration."""
+        interval = int(os.getenv("KEEP_ALIVE_INTERVAL", "300"))
         while True:
             await asyncio.sleep(interval)
-            if self.is_logged_in:
-                _LOGGER.debug("Keepalive refreshing session...")
-                await self.refresh_session()
+            try:
+                _LOGGER.debug("24/7 Keepalive running to refresh session...")
+                new_token = await self.refresh_session()
+                if new_token:
+                    await self.save_session(new_token)
+            except Exception as e:
+                _LOGGER.debug("Keepalive error: %s", e)
 
     async def close(self) -> None:
         if self._keepalive_task:
             self._keepalive_task.cancel()
         if self.proc:
             self.proc.terminate()
+
 
 
 browser_service = TradeRepublicBrowserService()
