@@ -26,6 +26,7 @@ class TradeRepublicBrowserService:
         self.last_sync_time: Optional[float] = None
         self.last_error: Optional[str] = None
         self.client_requests_count: int = 0
+        self.token_verified_at: Optional[float] = None  # Unix timestamp of last successful TR API verify
         self._lock = asyncio.Lock()
         self._keepalive_task: Optional[asyncio.Task] = None
         self._ws_url: Optional[str] = None
@@ -140,6 +141,7 @@ class TradeRepublicBrowserService:
                 await ws.send("connect 26 " + json.dumps(handshake))
                 resp = await ws.recv()
                 if resp and "connected" in str(resp):
+                    self.token_verified_at = time.time()
                     return True
                 return False
 
@@ -198,7 +200,8 @@ class TradeRepublicBrowserService:
                     if cname in ("tr_session", "sessionToken", "tr_session_id", "auth_token"):
                         token = cookie.get("value")
                         if token and (token.startswith("eyJ") or len(token) > 40):
-                            await self.save_session(token)
+                            if token != self.session_token:
+                                await self.save_session(token)
                             return token
 
         # 2. Check localStorage & sessionStorage across window & frames

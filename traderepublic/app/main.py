@@ -167,6 +167,8 @@ async def get_session():
         "session_token": browser_service.session_token,
         "phone_number": browser_service.phone_number,
         "is_logged_in": browser_service.is_logged_in,
+        "token_verified": bool(browser_service.token_verified_at),
+        "token_verified_at": browser_service.token_verified_at,
     }
 
 
