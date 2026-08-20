@@ -1,23 +1,27 @@
 import asyncio
-import json
 import logging
 import os
 import subprocess
 import time
 from typing import Any, Dict, Optional
 
-import aiohttp
+from core.auth import AuthHelper
+from core.cdp import CDPClient
+from core.constants import CDP_PORT, DATA_DIR, KEEP_ALIVE_INTERVAL
+from core.session_manager import SessionManager
+from core.verifier import verify_tr_token
 
 _LOGGER = logging.getLogger(__name__)
 
-DATA_DIR = os.getenv("DATA_DIR", "/data")
-STORAGE_STATE_PATH = os.path.join(DATA_DIR, "browser_cookies.json")
-SESSION_FILE_PATH = os.path.join(DATA_DIR, "session.json")
-CDP_PORT = 9222
-
 
 class TradeRepublicBrowserService:
+    """Orchestrates Chromium, Session Persistence, Authentication, and 24/7 Keepalive."""
+
     def __init__(self) -> None:
+        self.cdp = CDPClient(CDP_PORT)
+        self.session_manager = SessionManager()
+        self.auth_helper = AuthHelper(self.cdp)
+
         self.proc: Optional[subprocess.Popen] = None
         self.is_logged_in: bool = False
         self.session_token: Optional[str] = None
@@ -26,10 +30,10 @@ class TradeRepublicBrowserService:
         self.last_sync_time: Optional[float] = None
         self.last_error: Optional[str] = None
         self.client_requests_count: int = 0
-        self.token_verified_at: Optional[float] = None  # Unix timestamp of last successful TR API verify
+        self.token_verified_at: Optional[float] = None
+
         self._lock = asyncio.Lock()
         self._keepalive_task: Optional[asyncio.Task] = None
-        self._ws_url: Optional[str] = None
 
     async def start(self) -> None:
         """Start headless Chromium with remote debugging port."""
@@ -61,127 +65,35 @@ class TradeRepublicBrowserService:
             _LOGGER.error("Failed to start browser process: %s", e)
             self.status_message = f"Error starting browser: {e}"
 
-    async def _send_cdp_cmd(self, method: str, params: Optional[Dict[str, Any]] = None) -> Any:
-        """Send command via Chrome DevTools Protocol."""
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(f"http://127.0.0.1:{CDP_PORT}/json") as resp:
-                    pages = await resp.json()
-                    if not pages:
-                        return None
-                    ws_url = pages[0].get("webSocketDebuggerUrl")
-                    if not ws_url:
-                        return None
-
-            import websockets
-
-            async with websockets.connect(ws_url) as ws:
-                msg_id = int(time.time() * 1000) % 100000
-                req = {"id": msg_id, "method": method, "params": params or {}}
-                await ws.send(json.dumps(req))
-                while True:
-                    raw = await ws.recv()
-                    data = json.loads(raw)
-                    if data.get("id") == msg_id:
-                        return data.get("result")
-        except Exception as e:
-            _LOGGER.debug("CDP command %s failed: %s", method, e)
-            return None
-
-    async def _load_saved_session(self) -> None:
-        if os.path.exists(SESSION_FILE_PATH):
-            try:
-                with open(SESSION_FILE_PATH, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    self.session_token = data.get("session_token")
-                    self.phone_number = data.get("phone_number")
-                    if self.session_token:
-                        # Verify whether token is actually accepted by Trade Republic
-                        is_valid = await self.verify_token_validity(self.session_token)
-                        if not is_valid:
-                            # If token from file was rejected, check if Chromium has a newer/refreshed token
-                            _LOGGER.info(
-                                "Saved token from file invalid, attempting extraction from browser cookies/storage..."
-                            )
-                            browser_token = await self.extract_token_from_cookies()
-                            if browser_token:
-                                is_valid = await self.verify_token_validity(browser_token)
-                                if is_valid:
-                                    self.session_token = browser_token
-
-                        self.is_logged_in = is_valid
-                        if is_valid:
-                            self.status_message = "Everything is connected and running normally."
-                            self.last_error = None
-                        else:
-                            self.status_message = "Stored session token is expired. Please re-authenticate."
-                            self.last_error = "Session expired or rejected by Trade Republic (HTTP 401). Please click Re-authenticate."
-            except Exception as e:
-                _LOGGER.warning("Failed to load session file: %s", e)
-
     async def verify_token_validity(self, token: str) -> bool:
         """Verify token against Trade Republic WebSocket backend."""
-        if not token:
-            return False
-        clean_token = token.strip().strip('"').strip("'")
-        if clean_token.lower().startswith("bearer "):
-            clean_token = clean_token[7:].strip()
+        is_valid = await verify_tr_token(token)
+        if is_valid:
+            self.token_verified_at = time.time()
+        return is_valid
 
-        try:
-            import ssl
+    async def _load_saved_session(self) -> None:
+        data = self.session_manager.load()
+        if data:
+            self.session_token = data.get("session_token")
+            self.phone_number = data.get("phone_number")
+            if self.session_token:
+                is_valid = await self.verify_token_validity(self.session_token)
+                if not is_valid:
+                    _LOGGER.info("Saved token from file invalid, attempting extraction from browser cookies/storage...")
+                    browser_token = await self.auth_helper.extract_token_from_cookies()
+                    if browser_token:
+                        is_valid = await self.verify_token_validity(browser_token)
+                        if is_valid:
+                            self.session_token = browser_token
 
-            import websockets
-
-            ssl_ctx = ssl.create_default_context()
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-                "Origin": "https://app.traderepublic.com",
-                "Cookie": f"tr_session={clean_token}; tr_session_id={clean_token}; sessionToken={clean_token}",
-            }
-            try:
-                ws = await websockets.connect(
-                    "wss://api.traderepublic.com",
-                    ssl=ssl_ctx,
-                    additional_headers=headers,
-                )
-            except Exception as first_exc:
-                if clean_token and ("401" in str(first_exc) or getattr(first_exc, "status_code", None) == 401):
-                    auth_headers = {
-                        "User-Agent": headers["User-Agent"],
-                        "Origin": headers["Origin"],
-                        "Authorization": f"Bearer {clean_token}",
-                        "Cookie": headers.get("Cookie", ""),
-                    }
-                    ws = await websockets.connect(
-                        "wss://api.traderepublic.com",
-                        ssl=ssl_ctx,
-                        additional_headers=auth_headers,
-                    )
+                self.is_logged_in = is_valid
+                if is_valid:
+                    self.status_message = "Everything is connected and running normally."
+                    self.last_error = None
                 else:
-                    raise
-
-            try:
-                async with asyncio.timeout(6):
-                    handshake = {
-                        "locale": "de",
-                        "platformId": "web",
-                        "appVersion": "4.120.0",
-                        "osVersion": "10.0.0",
-                        "token": clean_token,
-                    }
-                    await ws.send("connect 26 " + json.dumps(handshake))
-                    resp = await ws.recv()
-                    _LOGGER.info("Token validation handshake response: %s", resp)
-                    if resp and ("connected" in str(resp) or "26" in str(resp)):
-                        self.token_verified_at = time.time()
-                        return True
-                    return False
-            finally:
-                await ws.close()
-
-        except Exception as e:
-            _LOGGER.warning("Token validation check error: %s", e)
-            return False
+                    self.status_message = "Stored session token is expired. Please re-authenticate."
+                    self.last_error = "Session expired or rejected by Trade Republic (HTTP 401). Please click Re-authenticate."
 
     async def save_session(self, token: str, phone: Optional[str] = None) -> None:
         if not token:
@@ -194,136 +106,22 @@ class TradeRepublicBrowserService:
         self.is_logged_in = True
         self.status_message = "Everything is connected and running normally. Re-login is only required if your session expires or if you experience connection issues."
         self.last_error = None
-
-        os.makedirs(DATA_DIR, exist_ok=True)
-        try:
-            with open(SESSION_FILE_PATH, "w", encoding="utf-8") as f:
-                json.dump(
-                    {
-                        "session_token": self.session_token,
-                        "phone_number": self.phone_number,
-                        "updated_at": time.time(),
-                    },
-                    f,
-                    indent=2,
-                )
-            _LOGGER.info("Session saved successfully (token length: %s)", len(clean_tok))
-        except Exception as e:
-            _LOGGER.error("Failed to save session: %s", e)
-
-    async def extract_token_from_cookies(self) -> Optional[str]:
-        """Extract valid JWT session token from Chromium via CDP cookies and storage."""
-        # 1. Check CDP Network Cookies across all URLs / domains
-        for cdp_method, params in [
-            (
-                "Network.getCookies",
-                {
-                    "urls": [
-                        "https://app.traderepublic.com",
-                        "https://traderepublic.com",
-                        "https://api.traderepublic.com",
-                    ]
-                },
-            ),
-            ("Storage.getCookies", {}),
-        ]:
-            res = await self._send_cdp_cmd(cdp_method, params)
-            if res and "cookies" in res:
-                for cookie in res["cookies"]:
-                    cname = cookie.get("name", "")
-                    if cname in ("tr_session", "sessionToken", "tr_session_id", "auth_token"):
-                        token = cookie.get("value")
-                        if token and (token.startswith("eyJ") or len(token) > 40):
-                            return token
-
-        # 2. Check localStorage & sessionStorage across window & frames
-        storage_script = """
-        (() => {
-            try {
-                // Check all keys in localStorage
-                for (let i = 0; i < localStorage.length; i++) {
-                    const k = localStorage.key(i);
-                    const v = localStorage.getItem(k);
-                    if (v && typeof v === 'string') {
-                        if (k === 'sessionToken' || k === 'tr_session' || k.includes('session') || k.includes('auth')) {
-                            // Check if raw token or JSON stringified
-                            try {
-                                const parsed = JSON.parse(v);
-                                if (typeof parsed === 'string' && (parsed.startsWith('eyJ') || parsed.length > 30)) return parsed;
-                                if (parsed && typeof parsed === 'object') {
-                                    if (parsed.sessionToken) return parsed.sessionToken;
-                                    if (parsed.token) return parsed.token;
-                                }
-                            } catch(e) {}
-                            if (v.startsWith('eyJ') || v.length > 30) return v;
-                        }
-                    }
-                }
-                // Check sessionStorage
-                for (let i = 0; i < sessionStorage.length; i++) {
-                    const k = sessionStorage.key(i);
-                    const v = sessionStorage.getItem(k);
-                    if (v && typeof v === 'string' && (v.startsWith('eyJ') || v.length > 30)) return v;
-                }
-            } catch(e) {}
-            return null;
-        })()
-        """
-        storage_res = await self._send_cdp_cmd(
-            "Runtime.evaluate", {"expression": storage_script, "returnByValue": True}
-        )
-        if storage_res and isinstance(storage_res, dict):
-            val = storage_res.get("result", {}).get("value")
-            if val and isinstance(val, str) and (val.startswith("eyJ") or len(val) > 30):
-                clean_val = val.strip().strip('"').strip("'")
-                return clean_val
-
-        # 3. Check document.cookie via Runtime evaluation
-        eval_script = """
-        (() => {
-            const match = document.cookie.match(/(?:tr_session|sessionToken)=([^;]+)/);
-            if (match && match[1] && (match[1].startsWith('eyJ') || match[1].length > 30)) return match[1];
-            return null;
-        })()
-        """
-        eval_res = await self._send_cdp_cmd("Runtime.evaluate", {"expression": eval_script, "returnByValue": True})
-        if eval_res and isinstance(eval_res, dict):
-            val = eval_res.get("result", {}).get("value")
-            if val and isinstance(val, str) and (val.startswith("eyJ") or len(val) > 30):
-                clean_val = val.strip().strip('"').strip("'")
-                return clean_val
-
-        return None
-
-    async def get_waf_token(self) -> Optional[str]:
-        """Extract AWS WAF token from browser cookies if solved."""
-        res = await self._send_cdp_cmd(
-            "Network.getCookies",
-            {"urls": ["https://app.traderepublic.com", "https://traderepublic.com", "https://api.traderepublic.com"]},
-        )
-        if res and "cookies" in res:
-            for cookie in res["cookies"]:
-                if "aws-waf" in cookie.get("name", "").lower():
-                    return cookie.get("value")
-        return None
+        self.session_manager.save(clean_tok, self.phone_number)
 
     async def start_login(self, phone: str, pin: str) -> Dict[str, Any]:
         """Navigate and input credentials via CDP + direct API fallback with AWS WAF token."""
         async with self._lock:
             try:
-                # Normalize phone number to strict international E.164 format (+<country_code><number>)
                 raw_phone = (phone or "").strip().replace(" ", "").replace("-", "").replace("/", "")
                 if raw_phone.startswith("00"):
                     clean_phone = "+" + raw_phone[2:]
                 elif raw_phone.startswith("+"):
                     clean_phone = raw_phone
                 elif raw_phone.startswith("0") and len(raw_phone) >= 9:
-                    # National leading zero without country prefix (default to DE/AT/CH +49 or user context)
                     clean_phone = "+49" + raw_phone[1:]
                 else:
                     clean_phone = "+" + raw_phone
 
-                # International phone validation check (E.164: + followed by 7 to 15 digits)
                 digits_only = "".join(filter(str.isdigit, clean_phone))
                 if not clean_phone.startswith("+") or not (7 <= len(digits_only) <= 15):
                     return {
@@ -332,7 +130,6 @@ class TradeRepublicBrowserService:
                     }
 
                 clean_pin = (pin or "").strip()
-                # PIN validation check: must be 4-6 digits, only numbers
                 if not clean_pin.isdigit() or not (4 <= len(clean_pin) <= 6):
                     return {"success": False, "error": "Invalid PIN. PIN must be 4 to 6 digits (numbers only)."}
 
@@ -341,142 +138,15 @@ class TradeRepublicBrowserService:
                 self.session_token = None
 
                 self.status_message = "Navigating to Trade Republic login..."
-                await self._send_cdp_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
-                await asyncio.sleep(4)
+                login_res = await self.auth_helper.execute_login(clean_phone, clean_pin)
 
-                # Step 0: Dismiss cookie banners
-                banner_script = """
-                (() => {
-                    const btns = Array.from(document.querySelectorAll('button'));
-                    const acceptBtn = btns.find(b => b.textContent && (b.textContent.includes('Accept') || b.textContent.includes('Akzeptieren') || b.textContent.includes('Allow')));
-                    if (acceptBtn) { acceptBtn.click(); return true; }
-                    return false;
-                })()
-                """
-                await self._send_cdp_cmd("Runtime.evaluate", {"expression": banner_script})
-                await asyncio.sleep(1)
-
-                # Step 1: React Native Setter & Dispatch for Phone Number
-                phone_script = f"""
-                (() => {{
-                    const input = document.querySelector('input[name="phoneNumber"], input[type="tel"], input[autocomplete="tel"], input');
-                    if (input) {{
-                        input.focus();
-                        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                        nativeSetter.call(input, "{clean_phone}");
-                        input.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                        input.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                        input.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
-
-                        const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"]');
-                        if (btn) btn.click();
-                        return true;
-                    }}
-                    return false;
-                }})()
-                """
-                await self._send_cdp_cmd("Runtime.evaluate", {"expression": phone_script})
-                await asyncio.sleep(3)
-
-                # Step 2: React Native Setter & Dispatch for PIN
-                pin_script = f"""
-                (() => {{
-                    const input = document.querySelector('input[type="password"], input[name="pin"], input[name="password"]');
-                    if (input) {{
-                        input.focus();
-                        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                        nativeSetter.call(input, "{clean_pin}");
-                        input.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                        input.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                        input.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
-                        const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"]');
-                        if (btn) btn.click();
-                        return true;
-                    }}
-                    return false;
-                }})()
-                """
-                await self._send_cdp_cmd("Runtime.evaluate", {"expression": pin_script, "returnByValue": True})
-
-                # Step 3: Direct API Request to Trade Republic Authentication Backend
-                api_feedback_msg = None
-                try:
-                    waf_token = await self.get_waf_token()
-                    headers = {
-                        "Content-Type": "application/json",
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-                    }
-                    if waf_token:
-                        headers["X-aws-waf-token"] = waf_token
-
-                    async with (
-                        aiohttp.ClientSession() as session,
-                        session.post(
-                            "https://api.traderepublic.com/api/v2/auth/web/login",
-                            json={"phoneNumber": clean_phone, "pin": clean_pin},
-                            headers=headers,
-                            timeout=aiohttp.ClientTimeout(total=8),
-                        ) as resp,
-                    ):
-                        resp_text = await resp.text()
-
-                        _LOGGER.info("Trade Republic Auth API response [HTTP %s]: %s", resp.status, resp_text)
-                        if resp.status == 200:
-                            data = json.loads(resp_text)
-                            api_feedback_msg = f"Push notification dispatched (Process ID: {data.get('processId', 'active')}). Please confirm in Trade Republic app."
-                        elif resp.status in (400, 401):
-                            try:
-                                err_data = json.loads(resp_text)
-                                if (
-                                    "errors" in err_data
-                                    and isinstance(err_data["errors"], list)
-                                    and len(err_data["errors"]) > 0
-                                ):
-                                    first_err = err_data["errors"][0]
-                                    err_code = first_err.get("errorCode", "")
-                                    err_msg = first_err.get("errorMessage", "")
-                                    if err_code == "NUMBER_INVALID":
-                                        api_feedback_msg = "Invalid phone number or country code format."
-                                    elif err_code == "PIN_INVALID":
-                                        api_feedback_msg = "Invalid PIN. Please check your PIN."
-                                    else:
-                                        api_feedback_msg = f"{err_code}: {err_msg}" if err_msg else err_code
-                                else:
-                                    err_title = err_data.get("error") or err_data.get("message") or resp_text
-                                    api_feedback_msg = f"Trade Republic Server: {err_title}"
-                            except Exception:
-                                api_feedback_msg = f"Trade Republic Server Error (HTTP {resp.status})"
-
-                        elif resp.status == 403:
-                            api_feedback_msg = "Trade Republic WAF Protection: Solving Bot Challenge, please wait..."
-                except Exception as api_err:  # noqa: BLE001
-                    _LOGGER.warning("Direct Auth API attempt info: %s", api_err)
-
-                # Check if Trade Republic page displays any inline error messages
-                dom_error_script = """
-                (() => {
-                    const errEl = document.querySelector('[role="alert"], [data-testid="error-message"], .error, .alert');
-                    if (errEl && errEl.textContent) return errEl.textContent.trim();
-                    return null;
-                })()
-                """
-                dom_err = await self._send_cdp_cmd(
-                    "Runtime.evaluate", {"expression": dom_error_script, "returnByValue": True}
-                )
-                dom_err_text = dom_err and dom_err.get("result", {}).get("value")
-
-                final_msg = (
-                    dom_err_text
-                    or api_feedback_msg
-                    or "Credentials submitted. Please confirm in your Trade Republic smartphone app."
-                )
-                self.status_message = final_msg
+                self.status_message = login_res.get("message", "Credentials submitted. Please confirm on smartphone.")
                 asyncio.create_task(self._poll_for_app_approval())
 
                 return {
                     "success": True,
                     "step": "2fa_required",
-                    "message": final_msg,
+                    "message": self.status_message,
                 }
             except Exception as e:
                 _LOGGER.error("Login init error: %s", e)
@@ -488,10 +158,13 @@ class TradeRepublicBrowserService:
             await asyncio.sleep(3)
             if self.is_logged_in:
                 break
-            token = await self.extract_token_from_cookies()
+            token = await self.auth_helper.extract_token_from_cookies()
             if token:
-                _LOGGER.info("App approval detected! Session saved successfully.")
-                break
+                is_valid = await self.verify_token_validity(token)
+                if is_valid:
+                    await self.save_session(token)
+                    _LOGGER.info("App approval detected! Session saved successfully.")
+                    break
 
     async def submit_2fa(self, code: str) -> Dict[str, Any]:
         """Submit 2FA code or check In-App approval via CDP."""
@@ -499,33 +172,20 @@ class TradeRepublicBrowserService:
             try:
                 clean_code = (code or "").strip()
                 if clean_code:
-                    code_script = f"""
-                    (() => {{
-                        const otp = document.querySelector('input[name="code"], input[type="number"], input[autocomplete="one-time-code"], input[data-testid="otp-input"]');
-                        if (otp) {{
-                            otp.focus();
-                            otp.value = "{clean_code}";
-                            otp.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                            otp.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                            const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"]');
-                            if (btn) btn.click();
-                            return true;
-                        }}
-                        return false;
-                    }})()
-                    """
-                    await self._send_cdp_cmd("Runtime.evaluate", {"expression": code_script})
+                    await self.auth_helper.submit_2fa_code(clean_code)
 
-                # Check for session token (whether from code or smartphone app approval)
                 for _ in range(6):
                     await asyncio.sleep(1.5)
-                    token = await self.extract_token_from_cookies()
+                    token = await self.auth_helper.extract_token_from_cookies()
                     if token:
-                        return {
-                            "success": True,
-                            "session_token": token,
-                            "message": "Login successful! Session token active.",
-                        }
+                        is_valid = await self.verify_token_validity(token)
+                        if is_valid:
+                            await self.save_session(token)
+                            return {
+                                "success": True,
+                                "session_token": token,
+                                "message": "Login successful! Session token active.",
+                            }
 
                 if clean_code:
                     return {"success": False, "error": "2FA code submitted. Verification in progress or invalid code."}
@@ -540,11 +200,9 @@ class TradeRepublicBrowserService:
         """Perform active page interaction and token extraction to keep session alive."""
         async with self._lock:
             try:
-                # 1. Reload page in headless browser
-                await self._send_cdp_cmd("Page.reload", {})
+                await self.cdp.send_cmd("Page.reload", {})
                 await asyncio.sleep(4)
 
-                # 2. Touch the page to trigger Trade Republic background token refresh
                 touch_script = """
                 (() => {
                     try {
@@ -556,10 +214,10 @@ class TradeRepublicBrowserService:
                     } catch(e) {}
                 })()
                 """
-                await self._send_cdp_cmd("Runtime.evaluate", {"expression": touch_script})
+                await self.cdp.send_cmd("Runtime.evaluate", {"expression": touch_script})
                 await asyncio.sleep(2)
 
-                token = await self.extract_token_from_cookies()
+                token = await self.auth_helper.extract_token_from_cookies()
                 if token:
                     is_valid = await self.verify_token_validity(token)
                     if is_valid:
@@ -588,9 +246,8 @@ class TradeRepublicBrowserService:
 
     async def _keepalive_loop(self) -> None:
         """Run periodic keepalive every 5-10 minutes to prevent token expiration."""
-        interval = int(os.getenv("KEEP_ALIVE_INTERVAL", "300"))
         while True:
-            await asyncio.sleep(interval)
+            await asyncio.sleep(KEEP_ALIVE_INTERVAL)
             try:
                 _LOGGER.debug("24/7 Keepalive running to refresh session...")
                 new_token = await self.refresh_session()

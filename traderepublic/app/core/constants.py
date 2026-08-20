@@ -1,0 +1,7 @@
+import os
+
+DATA_DIR = os.getenv("DATA_DIR", "/data")
+STORAGE_STATE_PATH = os.path.join(DATA_DIR, "browser_cookies.json")
+SESSION_FILE_PATH = os.path.join(DATA_DIR, "session.json")
+CDP_PORT = 9222
+KEEP_ALIVE_INTERVAL = int(os.getenv("KEEP_ALIVE_INTERVAL", "300"))
