@@ -510,7 +510,7 @@ class TradeRepublicBrowserService:
                 # 1. Reload page in headless browser
                 await self._send_cdp_cmd("Page.reload", {})
                 await asyncio.sleep(4)
-                
+
                 # 2. Touch the page to trigger Trade Republic background token refresh
                 touch_script = """
                 (() => {
@@ -556,7 +556,6 @@ class TradeRepublicBrowserService:
             self._keepalive_task.cancel()
         if self.proc:
             self.proc.terminate()
-
 
 
 browser_service = TradeRepublicBrowserService()
