@@ -1,4 +1,4 @@
-﻿#!/usr/bin/with-contenv bashio
+#!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
 
 # Function to compare semantic versions
@@ -21,10 +21,11 @@ check_github_status() {
 	esac
 }
 
-HA_CONFIG_ROOT="/config"
-INTEGRATION_DIR="${HA_CONFIG_ROOT}/custom_components/traderepublic"
-AUTO_INSTALL_INTEGRATION=$(bashio::config 'auto_install_integration' 'true')
-GITHUB_TOKEN=$(bashio::config 'github_token' '')
+HA_CONFIG_ROOT="${HA_CONFIG_ROOT:-/config}"
+INTEGRATION_DIR="${INTEGRATION_DIR:-${HA_CONFIG_ROOT}/custom_components/traderepublic}"
+AUTO_INSTALL_INTEGRATION="${AUTO_INSTALL_INTEGRATION:-true}"
+GITHUB_TOKEN="${GITHUB_TOKEN:-}"
+
 
 install_integration() {
 	local TAG_NAME=$1
@@ -57,12 +58,27 @@ install_integration() {
 			rm -f "/tmp/traderepublic.zip"
 		fi
 	else
+		# Fallback to cloning or downloading main branch
 		if git clone --depth 1 https://github.com/FaserF/ha-traderepublic.git "/tmp/ha-traderepublic_install" >/dev/null 2>&1; then
 			SUCCESS="true"
 		else
-			bashio::log.error "❌ Failed to clone repository."
+			bashio::log.info "Git clone fallback: Downloading main branch archive via curl..."
+			local archive_code
+			archive_code=$(curl -L -s --connect-timeout 10 --max-time 60 -w "%{http_code}" -o "/tmp/main.tar.gz" "https://github.com/FaserF/ha-traderepublic/archive/refs/heads/main.tar.gz" 2>/dev/null)
+			if [ "$archive_code" = "200" ] && [ -s "/tmp/main.tar.gz" ]; then
+				mkdir -p "/tmp/ha-traderepublic_extract"
+				if tar -xzf "/tmp/main.tar.gz" -C "/tmp/ha-traderepublic_extract" 2>/dev/null; then
+					mkdir -p "/tmp/ha-traderepublic_install/custom_components"
+					cp -rf /tmp/ha-traderepublic_extract/*/custom_components/traderepublic "/tmp/ha-traderepublic_install/custom_components/"
+					SUCCESS="true"
+				fi
+				rm -rf "/tmp/ha-traderepublic_extract" "/tmp/main.tar.gz"
+			else
+				bashio::log.error "❌ Failed to clone repository or download archive."
+			fi
 		fi
 	fi
+
 
 	if [ "$SUCCESS" = "true" ] && [ -d "/tmp/ha-traderepublic_install/custom_components/traderepublic" ]; then
 		if [ -d "$INTEGRATION_DIR" ]; then

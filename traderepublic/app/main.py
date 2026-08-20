@@ -71,9 +71,9 @@ class ManualTokenRequest(BaseModel):
 @app.get("//", response_class=HTMLResponse)
 async def get_index(request: Request):
     return templates.TemplateResponse(
-        "index.html",
-        {
-            "request": request,
+        request=request,
+        name="index.html",
+        context={
             "is_logged_in": browser_service.is_logged_in,
             "phone_number": browser_service.phone_number or "Not configured",
             "has_token": bool(browser_service.session_token),
