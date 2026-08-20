@@ -122,22 +122,22 @@ class TradeRepublicBrowserService:
 
             ssl_ctx = ssl.create_default_context()
             headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
                 "Origin": "https://app.traderepublic.com",
                 "Cookie": f"tr_session={clean_token}; sessionToken={clean_token}",
             }
             async with (
                 asyncio.timeout(5),
-                websockets.connect("wss://api.traderepublic.com", ssl=ssl_ctx, additional_headers=headers) as ws,
-            ):
                 handshake = {
                     "locale": "de",
                     "platformId": "web",
-                    "appVersion": "4.110.0",
+                    "appVersion": "4.120.0",
                     "osVersion": "10.0.0",
                     "token": clean_token,
                 }
                 await ws.send("connect 26 " + json.dumps(handshake))
+
+
                 resp = await ws.recv()
                 if resp and "connected" in str(resp):
                     return True
