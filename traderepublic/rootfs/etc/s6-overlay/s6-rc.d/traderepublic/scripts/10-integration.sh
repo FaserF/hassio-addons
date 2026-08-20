@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck disable=SC1091,SC2155
 # shellcheck shell=bash
 
 # Function to compare semantic versions
@@ -27,8 +28,8 @@ AUTO_INSTALL_INTEGRATION="${AUTO_INSTALL_INTEGRATION:-true}"
 GITHUB_TOKEN="${GITHUB_TOKEN:-}"
 
 install_integration() {
-	local TAG_NAME=$1
-	local IS_UPDATE=$2
+	local TAG_NAME="$1"
+	local IS_UPDATE="$2"
 
 	bashio::log.debug "install_integration: TAG_NAME='$TAG_NAME', IS_UPDATE='$IS_UPDATE'"
 	bashio::log.info "Installing Trade Republic integration version: ${TAG_NAME:-Default Branch}..."

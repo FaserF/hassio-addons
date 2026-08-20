@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bashio
+# shellcheck disable=SC1091,SC2155
 # shellcheck shell=bash
 
 export KEEP_ALIVE_INTERVAL=$(bashio::config 'keep_alive_interval' 600)

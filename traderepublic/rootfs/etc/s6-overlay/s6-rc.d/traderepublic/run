@@ -1,5 +1,6 @@
-﻿#!/usr/bin/with-contenv bashio
+#!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
+# shellcheck disable=SC1091
 # shellcheck source=/dev/null
 
 source /usr/lib/bashio/banner.sh
