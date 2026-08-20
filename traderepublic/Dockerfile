@@ -1,4 +1,4 @@
-﻿ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.2
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.2
 # hadolint ignore=DL3006
 FROM $BUILD_FROM
 ARG BUILD_DATE="unknown"
@@ -42,11 +42,13 @@ RUN \
         find /etc/s6-overlay -type f -exec dos2unix {} \;; \
         find /etc/s6-overlay -name run -exec chmod +x {} \;; \
         find /etc/s6-overlay -name finish -exec chmod +x {} \;; \
+        find /usr/lib/bashio -type f -exec dos2unix {} \; 2>/dev/null || true; \
         if [ -d "/etc/services.d" ]; then \
             find /etc/services.d -type f -exec dos2unix {} \; || true; \
             find /etc/services.d -name run -exec chmod +x {} \; || true; \
         fi; \
     fi
+
 
 # 5. Pure Python dependencies (no musl wheel compilation issues)
 RUN \

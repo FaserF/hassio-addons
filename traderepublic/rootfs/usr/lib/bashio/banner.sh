@@ -1,6 +1,7 @@
-﻿#!/usr/bin/with-contenv bashio
+#!/usr/bin/env bash
 # Shared library for displaying App banners
 # shellcheck shell=bash
+
 
 bashio::app.print_banner() {
 	local App_version
