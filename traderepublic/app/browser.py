@@ -363,9 +363,10 @@ class TradeRepublicBrowserService:
                     return false;
                 }})()
                 """
-                pin_res = await self._send_cdp_cmd(
+                await self._send_cdp_cmd(
                     "Runtime.evaluate", {"expression": pin_script, "returnByValue": True}
                 )
+
                 # Step 3: Direct API Request to Trade Republic Authentication Backend
                 api_feedback_msg = None
                 try:
