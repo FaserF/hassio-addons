@@ -27,17 +27,23 @@ This Home Assistant Add-on provides an automated headless browser service powere
 
 ## ✨ Features
 
-- 🛡️ **AWS WAF Solving:** Solves Cloudflare / AWS WAF Bot challenges natively.
-- 📱 **Ingress Web UI:** Easily log in and confirm 2FA without opening desktop developer tools.
+- 🛡️ **AWS WAF Solving:** Solves Cloudflare / AWS WAF Bot challenges natively using Alpine Chromium via Chrome DevTools Protocol (CDP).
+- 📲 **In-Integration Setup:** Complete authentication (Credentials + In-App Approval / SMS) directly from the Home Assistant Integration setup flow without touching the App UI.
+- 📱 **Ingress Web UI (Optional):** Clean Web UI for direct login, live status monitoring, and 1-click In-App verification.
 - 🔄 **Keep-Alive & Auto-Renewal:** Keeps the browser session alive and automatically refreshes tokens in the background.
 - 🔌 **Home Assistant Auto-Discovery:** Seamlessly connects with the [Trade Republic Home Assistant Integration](https://github.com/FaserF/ha-traderepublic).
+- 📦 **Auto-Install & Update:** Automatically installs and keeps the `ha-traderepublic` integration up to date in `/config/custom_components`.
 
 ## 🚀 Installation & Setup
 
-1. Add this repository to your Home Assistant Add-on Store: <https://github.com/FaserF/hassio-addons>.
-2. Install **Trade Republic Headless Browser** and start the add-on.
-3. Open the **Web UI** via Ingress to perform the initial login.
-4. Set up the [Trade Republic Integration](https://github.com/FaserF/ha-traderepublic) in Home Assistant. It will automatically discover the add-on.
+1. Add this repository to your Home Assistant App Store: <https://github.com/FaserF/hassio-addons>.
+2. Install **Trade Republic Headless Browser** and start the app.
+3. Open **Settings → Devices & Services** in Home Assistant:
+   - The Trade Republic integration will automatically discover the App!
+   - Follow the prompt to log in with your Phone Number & PIN.
+   - Confirm the prompt on your Trade Republic smartphone app.
+4. *Optional:* You can also open the App's **Web UI** via Ingress to monitor status or log in manually.
+
 
 ---
 

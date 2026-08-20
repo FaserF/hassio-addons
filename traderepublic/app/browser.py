@@ -120,18 +120,50 @@ class TradeRepublicBrowserService:
             _LOGGER.error("Failed to save session: %s", e)
 
     async def extract_token_from_cookies(self) -> Optional[str]:
-        """Extract tr_session cookie from Chromium via CDP."""
+        """Extract session token from Chromium via CDP cookies and storage."""
+        # 1. Check CDP Network Cookies
         res = await self._send_cdp_cmd(
             "Network.getCookies", {"urls": ["https://app.traderepublic.com", "https://traderepublic.com"]}
         )
         if res and "cookies" in res:
             for cookie in res["cookies"]:
-                if cookie.get("name") == "tr_session":
+                cname = cookie.get("name", "")
+                if cname in ("tr_session", "sessionToken", "tr_session_id", "auth_token"):
                     token = cookie.get("value")
-                    if token:
+                    if token and len(token) > 10:
                         await self.save_session(token)
                         return token
+
+        # 2. Check document.cookie & localStorage / sessionStorage via Runtime evaluation
+        eval_script = """
+        (() => {
+            let token = null;
+            // Check document.cookie
+            const match = document.cookie.match(/(?:tr_session|sessionToken|tr_session_id)=([^;]+)/);
+            if (match) token = match[1];
+
+            // Check localStorage
+            if (!token) {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    if (k && (k.includes('token') || k.includes('session') || k.includes('auth'))) {
+                        const v = localStorage.getItem(k);
+                        if (v && v.length > 20) { token = v.replace(/^"|"$/g, ''); break; }
+                    }
+                }
+            }
+            return token;
+        })()
+        """
+        eval_res = await self._send_cdp_cmd("Runtime.evaluate", {"expression": eval_script, "returnByValue": True})
+        if eval_res and isinstance(eval_res, dict):
+            val = eval_res.get("result", {}).get("value")
+            if val and isinstance(val, str) and len(val) > 10:
+                await self.save_session(val)
+                return val
+
         return None
+
 
     async def start_login(self, phone: str, pin: str) -> Dict[str, Any]:
         """Navigate and input credentials via CDP Runtime evaluation."""
