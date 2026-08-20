@@ -6,366 +6,318 @@
   <title>Trade Republic Session Provider</title>
   <style>
     :root {
-      --bg: #0b0f19;
-      --card: #151e2e;
-      --card-inner: #0f172a;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --accent: #3b82f6;
-      --accent-hover: #2563eb;
-      --success: #22c55e;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --border: #223049;
+      --bg: #0b0f19; --card: #151e2e; --card-inner: #0f172a;
+      --text: #f8fafc; --muted: #94a3b8; --accent: #3b82f6;
+      --accent-hover: #2563eb; --success: #22c55e;
+      --danger: #ef4444; --border: #223049;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 2rem 1rem;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-      box-sizing: border-box;
+      background: var(--bg); color: var(--text);
+      margin: 0; padding: 2rem 1rem;
+      display: flex; justify-content: center;
+      min-height: 100vh; box-sizing: border-box;
     }
     .container {
-      width: 100%;
-      max-width: 620px;
-      background: var(--card);
-      border-radius: 16px;
-      padding: 2rem;
-      border: 1px solid var(--border);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      width: 100%; max-width: 620px; background: var(--card);
+      border-radius: 16px; padding: 2rem;
+      border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.6);
     }
     .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       border-bottom: 1px solid var(--border);
-      padding-bottom: 1.25rem;
-      margin-bottom: 1.5rem;
+      padding-bottom: 1.25rem; margin-bottom: 1.5rem;
     }
-    .title {
-      font-size: 1.35rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      margin: 0;
-    }
+    .title { font-size: 1.35rem; font-weight: 700; display: flex; align-items: center; gap: 0.6rem; margin: 0; }
     .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.35rem 0.85rem;
-      border-radius: 999px;
-      font-size: 0.85rem;
-      font-weight: 600;
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.35rem 0.85rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600;
     }
-    .badge-success { background: rgba(34, 197, 94, 0.15); color: var(--success); border: 1px solid rgba(34, 197, 94, 0.3); }
-    .badge-danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
-    
+    .badge-success { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
+    .badge-danger  { background: rgba(239,68,68,0.15);  color: var(--danger);  border: 1px solid rgba(239,68,68,0.3);  }
     .status-card {
-      background: var(--card-inner);
-      border-radius: 12px;
-      padding: 1.25rem;
-      border: 1px solid var(--border);
-      margin-bottom: 1.5rem;
+      background: var(--card-inner); border-radius: 12px;
+      padding: 1.25rem; border: 1px solid var(--border); margin-bottom: 1.5rem;
     }
     .status-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-top: 1rem;
-      padding-top: 1rem;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1rem; margin-top: 1rem; padding-top: 1rem;
       border-top: 1px solid rgba(255,255,255,0.06);
     }
-    .status-item {
-      font-size: 0.85rem;
-    }
-    .status-label {
-      color: var(--muted);
-      margin-bottom: 0.25rem;
-    }
-    .status-value {
-      font-weight: 600;
-      color: #e2e8f0;
-    }
+    .status-item { font-size: 0.85rem; }
+    .status-label { color: var(--muted); margin-bottom: 0.25rem; }
+    .status-value { font-weight: 600; color: #e2e8f0; }
     .info-banner {
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px solid rgba(59, 130, 246, 0.25);
-      border-radius: 10px;
-      padding: 1rem;
-      font-size: 0.9rem;
-      line-height: 1.45;
-      color: #bfdbfe;
-      margin-bottom: 1.5rem;
+      background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 10px; padding: 1rem; font-size: 0.9rem;
+      line-height: 1.45; color: #bfdbfe; margin-bottom: 1.5rem;
     }
-    .form-group {
-      margin-bottom: 1.25rem;
-    }
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: #cbd5e1;
-    }
+    .form-group { margin-bottom: 1.25rem; }
+    label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; color: #cbd5e1; }
     input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 0.85rem 1rem;
-      background: #090d16;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 1rem;
-      transition: border-color 0.2s;
+      width: 100%; box-sizing: border-box; padding: 0.85rem 1rem;
+      background: #090d16; border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 1rem; transition: border-color 0.2s;
     }
-    input:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
+    input:focus { outline: none; border-color: var(--accent); }
     button {
-      width: 100%;
-      padding: 0.85rem;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
+      width: 100%; padding: 0.85rem; background: var(--accent); color: white;
+      border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; transition: background 0.2s, transform 0.1s;
     }
     button:hover { background: var(--accent-hover); }
     button:active { transform: scale(0.99); }
     .btn-secondary {
-      background: #1e293b;
-      color: #cbd5e1;
-      border: 1px solid var(--border);
-      margin-top: 0.75rem;
+      background: #1e293b; color: #cbd5e1;
+      border: 1px solid var(--border); margin-top: 0.75rem;
     }
     .btn-secondary:hover { background: #334155; }
-    .alert {
-      padding: 0.85rem;
-      border-radius: 8px;
-      margin-bottom: 1.25rem;
-      font-size: 0.9rem;
-      line-height: 1.4;
+    .alert { padding: 0.85rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: 0.9rem; line-height: 1.4; }
+    .alert-info { background: rgba(59,130,246,0.12); border: 1px solid #3b82f6; color: #dbeafe; }
+    .lang-switcher { display: flex; gap: 0.4rem; align-items: center; }
+    .lang-btn {
+      width: auto; padding: 0.2rem 0.65rem; font-size: 0.78rem; font-weight: 600;
+      border-radius: 6px; background: #1e293b; color: #94a3b8;
+      border: 1px solid var(--border); cursor: pointer; transition: background 0.15s, color 0.15s;
     }
-    .alert-info { background: rgba(59, 130, 246, 0.12); border: 1px solid #3b82f6; color: #dbeafe; }
+    .lang-btn.active, .lang-btn:hover { background: var(--accent); color: #fff; }
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1 class="title">📈 Trade Republic Session Provider</h1>
-      <div>
-        {% if is_logged_in and not last_error %}
-          <span class="badge badge-success">● Connected</span>
-        {% else %}
-          <span class="badge badge-danger">● Action Required</span>
-        {% endif %}
+<div class="container">
+  <div class="header">
+    <h1 class="title">📈 <span data-i18n="title">Trade Republic Session Provider</span></h1>
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <div class="lang-switcher">
+        <button class="lang-btn" id="lang-en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" id="lang-de" onclick="setLang('de')">DE</button>
       </div>
-    </div>
-
-    <!-- Active Session Overview Card -->
-    {% if is_logged_in and not last_error %}
-      <div class="status-card">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <div style="font-weight: 600; font-size: 1rem; color: #4ade80;">✓ Integration Ready</div>
-          <span style="font-size: 0.8rem; color: var(--muted);" id="live-time">Keep-Alive Active</span>
-        </div>
-        <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 0.4rem;">
-          {{ status_message }}
-        </div>
-
-        <div class="status-grid">
-          <div class="status-item">
-            <div class="status-label">Account Phone</div>
-            <div class="status-value">{{ phone_number }}</div>
-          </div>
-          <div class="status-item">
-            <div class="status-label">Session Status</div>
-            <div class="status-value" style="color: #4ade80;">Authenticated (24/7 Auto-Renew)</div>
-          </div>
-          <div class="status-item">
-            <div class="status-label">Home Assistant Interaction</div>
-            <div class="status-value" style="color: #60a5fa;">{{ last_sync }} ({{ requests_count }} queries)</div>
-          </div>
-          <div class="status-item">
-            <div class="status-label">Integration Health</div>
-            <div class="status-value" style="color: #4ade80;">✓ Healthy & Operational</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="info-banner">
-        💡 <b>Everything is set up!</b> Home Assistant will automatically fetch portfolio and cash values. You only need to interact with this page if you change your credentials or your session expires.
-      </div>
-
-      <button onclick="toggleRelogin()" class="btn-secondary" id="relogin-toggle-btn">🔄 Re-authenticate / Switch Account</button>
-    {% else %}
-      {% if last_error %}
-        <div class="alert" style="background: rgba(239, 68, 68, 0.18); border: 1px solid #ef4444; color: #fca5a5; margin-bottom: 1.5rem;">
-          <b style="font-size: 1rem;">⚠️ Action Required: Session Expired</b><br>
-          <div style="margin-top: 0.4rem; color: #fecaca;">
-            {{ last_error }}
-          </div>
-          <div style="margin-top: 0.5rem; font-size: 0.85rem; color: #cbd5e1;">
-            Please enter your PIN below and tap <b>Confirm</b> on your Trade Republic smartphone app to renew the session.
-          </div>
-        </div>
+      {% if is_logged_in and not last_error %}
+        <span class="badge badge-success" data-i18n="connected">● Connected</span>
+      {% else %}
+        <span class="badge badge-danger" data-i18n="action_required">● Action Required</span>
       {% endif %}
-    {% endif %}
-
-    <!-- Login Form Section (shown if logged out, expired, or when user clicks re-authenticate) -->
-    <div id="step-login" class="{% if is_logged_in and not last_error %}hidden{% endif %}" style="margin-top: 1rem;">
-      <form onsubmit="event.preventDefault(); submitLogin();">
-        <div class="form-group">
-          <label for="phone">Phone Number (international format, e.g. +491701234567, 0170...)</label>
-          <input type="text" id="phone" placeholder="+491701234567" value="{% if phone_number and phone_number != 'Not configured' %}{{ phone_number }}{% endif %}" required />
-        </div>
-        <div class="form-group">
-          <label for="pin">PIN (4-6 digits)</label>
-          <input type="password" id="pin" placeholder="••••" required autofocus />
-        </div>
-        <button type="submit">Start Login & Solve Challenge</button>
-      </form>
     </div>
-
-
-
-    <!-- 2FA Confirmation Screen -->
-    <div id="step-2fa" class="hidden" style="margin-top: 1rem;">
-      <form onsubmit="event.preventDefault(); submit2FA();">
-        <div class="alert alert-info">
-          <b>Approval Required:</b><br>
-          1. Open the Trade Republic app on your phone and tap <b>Confirm</b>.<br>
-          2. If you received an SMS code instead, enter it below.<br>
-          3. Click <b>Check App Approval / Submit Code</b>.
-        </div>
-        <div class="form-group">
-          <label for="code">2FA Verification Code (optional for in-app approval)</label>
-          <input type="text" id="code" placeholder="1234 (leave empty for in-app approval)" autofocus />
-        </div>
-        <div style="display: flex; gap: 0.75rem; flex-direction: column;">
-          <button type="submit" style="background: #22c55e;">✓ Check App Approval / Submit Code</button>
-        </div>
-      </form>
-    </div>
-
-    <div id="result" style="margin-top: 1.5rem; font-size: 0.9rem;"></div>
   </div>
 
-  <script>
-    let pollTimer = null;
+  {% if is_logged_in and not last_error %}
+    <div class="status-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-weight:600;font-size:1rem;color:#4ade80;" data-i18n="integration_ready">✓ Integration Ready</div>
+        <span style="font-size:0.8rem;color:var(--muted);" id="live-time" data-i18n="keepalive_active">Keep-Alive Active</span>
+      </div>
+      <div style="font-size:0.85rem;color:#94a3b8;margin-top:0.4rem;">{{ status_message }}</div>
+      <div class="status-grid">
+        <div class="status-item">
+          <div class="status-label" data-i18n="lbl_phone">Account Phone</div>
+          <div class="status-value">{{ phone_number }}</div>
+        </div>
+        <div class="status-item">
+          <div class="status-label" data-i18n="lbl_session_status">Session Status</div>
+          <div class="status-value" style="color:#4ade80;" data-i18n="session_authenticated">Authenticated (24/7 Auto-Renew)</div>
+        </div>
+        <div class="status-item">
+          <div class="status-label" data-i18n="lbl_ha_interaction">Home Assistant Interaction</div>
+          <div class="status-value" style="color:#60a5fa;">{{ last_sync }} ({{ requests_count }} <span data-i18n="queries">queries</span>)</div>
+        </div>
+        <div class="status-item">
+          <div class="status-label" data-i18n="lbl_health">Integration Health</div>
+          <div class="status-value" style="color:#4ade80;" data-i18n="health_ok">✓ Healthy &amp; Operational</div>
+        </div>
+      </div>
+    </div>
+    <div class="info-banner">
+      💡 <b data-i18n="all_set_title">Everything is set up!</b>
+      <span data-i18n="all_set_body">Home Assistant will automatically fetch portfolio and cash values. You only need to interact with this page if you change your credentials or your session expires.</span>
+    </div>
+    <button onclick="toggleRelogin()" class="btn-secondary" id="relogin-toggle-btn" data-i18n="btn_reauth">🔄 Re-authenticate / Switch Account</button>
+  {% else %}
+    {% if last_error %}
+      <div class="alert" style="background:rgba(239,68,68,0.18);border:1px solid #ef4444;color:#fca5a5;margin-bottom:1.5rem;">
+        <b style="font-size:1rem;" data-i18n="session_expired_title">⚠️ Action Required: Session Expired</b><br>
+        <div style="margin-top:0.4rem;color:#fecaca;">{{ last_error }}</div>
+        <div style="margin-top:0.5rem;font-size:0.85rem;color:#cbd5e1;" data-i18n="session_expired_hint">Please enter your PIN below and tap Confirm on your Trade Republic smartphone app to renew the session.</div>
+      </div>
+    {% endif %}
+  {% endif %}
 
-    function toggleRelogin() {
-      const loginStep = document.getElementById('step-login');
-      const toggleBtn = document.getElementById('relogin-toggle-btn');
-      if (loginStep.classList.contains('hidden')) {
-        loginStep.classList.remove('hidden');
-        toggleBtn.textContent = '✖ Cancel Re-login';
-      } else {
-        loginStep.classList.add('hidden');
-        toggleBtn.textContent = '🔄 Re-authenticate / Switch Account';
-      }
+  <div id="step-login" class="{% if is_logged_in and not last_error %}hidden{% endif %}" style="margin-top:1rem;">
+    <form onsubmit="event.preventDefault(); submitLogin();">
+      <div class="form-group">
+        <label for="phone" data-i18n="lbl_phone_input">Phone Number (international format, e.g. +491701234567, 0170...)</label>
+        <input type="text" id="phone" data-i18n-ph="phone_placeholder" placeholder="+491701234567"
+               value="{% if phone_number and phone_number != 'Not configured' %}{{ phone_number }}{% endif %}" required />
+      </div>
+      <div class="form-group">
+        <label for="pin" data-i18n="lbl_pin">PIN (4-6 digits)</label>
+        <input type="password" id="pin" placeholder="••••" required autofocus />
+      </div>
+      <button type="submit" data-i18n="btn_start_login">Start Login &amp; Solve Challenge</button>
+    </form>
+  </div>
+
+  <div id="step-2fa" class="hidden" style="margin-top:1rem;">
+    <form onsubmit="event.preventDefault(); submit2FA();">
+      <div class="alert alert-info">
+        <b data-i18n="twofa_title">Approval Required:</b><br>
+        <span data-i18n="twofa_step1">1. Open the Trade Republic app on your phone and tap Confirm.</span><br>
+        <span data-i18n="twofa_step2">2. If you received an SMS code instead, enter it below.</span><br>
+        <span data-i18n="twofa_step3">3. Click Check App Approval / Submit Code.</span>
+      </div>
+      <div class="form-group">
+        <label for="code" data-i18n="lbl_2fa_code">2FA Verification Code (optional for in-app approval)</label>
+        <input type="text" id="code" data-i18n-ph="code_placeholder" placeholder="1234 (leave empty for in-app approval)" autofocus />
+      </div>
+      <button type="submit" style="background:#22c55e;" data-i18n="btn_check_2fa">✓ Check App Approval / Submit Code</button>
+    </form>
+  </div>
+
+  <div id="result" style="margin-top:1.5rem;font-size:0.9rem;"></div>
+</div>
+
+<script>
+  // ── i18n ──────────────────────────────────────────────────────────────
+  const FALLBACK_LANG = 'en';
+  let translations = {};
+  let currentLang = FALLBACK_LANG;
+
+  function detectLang() {
+    const saved = localStorage.getItem('tr_ui_lang');
+    if (saved) return saved;
+    const nav = (navigator.language || 'en').toLowerCase();
+    return nav.startsWith('de') ? 'de' : 'en';
+  }
+
+  async function loadTranslations(lang) {
+    try {
+      const res = await fetch('./static/i18n/' + lang + '.json');
+      if (!res.ok) throw new Error('not found');
+      return await res.json();
+    } catch {
+      if (lang !== FALLBACK_LANG) return loadTranslations(FALLBACK_LANG);
+      return {};
+    }
+  }
+
+  function t(key) {
+    return translations[key] !== undefined ? translations[key] : key;
+  }
+
+  function applyTranslations() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+      el.placeholder = t(el.getAttribute('data-i18n-ph'));
+    });
+    document.getElementById('lang-en').classList.toggle('active', currentLang === 'en');
+    document.getElementById('lang-de').classList.toggle('active', currentLang === 'de');
+    document.documentElement.lang = currentLang;
+  }
+
+  async function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('tr_ui_lang', lang);
+    translations = await loadTranslations(lang);
+    applyTranslations();
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────
+  (async () => {
+    currentLang = detectLang();
+    translations = await loadTranslations(currentLang);
+    applyTranslations();
+  })();
+
+  // ── UI Logic ──────────────────────────────────────────────────────────
+  let pollTimer = null;
+
+  function toggleRelogin() {
+    const loginStep = document.getElementById('step-login');
+    const btn = document.getElementById('relogin-toggle-btn');
+    if (loginStep.classList.contains('hidden')) {
+      loginStep.classList.remove('hidden');
+      btn.textContent = t('btn_cancel_reauth');
+    } else {
+      loginStep.classList.add('hidden');
+      btn.textContent = t('btn_reauth');
+    }
+  }
+
+  async function submitLogin() {
+    let phone = (document.getElementById('phone').value || '').trim().replace(/[\s\-\/]/g, '');
+    const pin = (document.getElementById('pin').value || '').trim();
+    const resEl = document.getElementById('result');
+
+    if (phone.startsWith('00'))       phone = '+' + phone.substring(2);
+    else if (!phone.startsWith('+')) {
+      if (phone.startsWith('0') && phone.length >= 9) phone = '+49' + phone.substring(1);
+      else phone = '+' + phone;
     }
 
-    async function submitLogin() {
-      let phone = (document.getElementById('phone').value || '').trim().replace(/[\s\-\/]/g, '');
-      const pin = (document.getElementById('pin').value || '').trim();
-      const resEl = document.getElementById('result');
-
-      // Normalize phone number to international E.164
-      if (phone.startsWith('00')) {
-        phone = '+' + phone.substring(2);
-      } else if (phone.startsWith('+')) {
-        // already has international plus
-      } else if (phone.startsWith('0') && phone.length >= 9) {
-        phone = '+49' + phone.substring(1);
-      } else {
-        phone = '+' + phone;
-      }
-
-      if (!/^\+[0-9]{7,15}$/.test(phone)) {
-        resEl.innerHTML = '<span style="color: #ef4444;">Please enter a valid international phone number including country code (e.g. +49..., +33..., +34..., +43..., +41...).</span>';
-        return;
-      }
-
-      if (!/^[0-9]{4,6}$/.test(pin)) {
-        resEl.innerHTML = '<span style="color: #ef4444;">PIN must be 4 to 6 digits (numbers only).</span>';
-        return;
-      }
-
-      resEl.innerHTML = '<span style="color: #60a5fa;">Connecting and solving security challenge... Please wait.</span>';
-
-      try {
-        const res = await fetch('./api/v1/login/init', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({phone_number: phone, pin: pin})
-        });
-        const data = await res.json();
-        if (data.success) {
-          document.getElementById('step-login').classList.add('hidden');
-          document.getElementById('step-2fa').classList.remove('hidden');
-          resEl.innerHTML = '<span style="color: #60a5fa;">' + data.message + '</span>';
-
-          // Start polling for in-app approval
-          if (pollTimer) clearInterval(pollTimer);
-          pollTimer = setInterval(async () => {
-            try {
-              const statusRes = await fetch('./api/v1/status');
-              const statusData = await statusRes.json();
-              if (statusData.is_logged_in) {
-                clearInterval(pollTimer);
-                resEl.innerHTML = '<span style="color: #22c55e;">✓ In-App Approval detected! Reloading...</span>';
-                setTimeout(() => window.location.reload(), 1200);
-              }
-            } catch (err) {}
-          }, 2000);
-
-        } else {
-          resEl.innerHTML = '<span style="color: #ef4444;">' + (data.error || 'Failed to start login') + '</span>';
-        }
-      } catch (e) {
-        resEl.innerHTML = '<span style="color: #ef4444;">Request error: ' + e + '</span>';
-      }
+    if (!/^\+[0-9]{7,15}$/.test(phone)) {
+      resEl.innerHTML = '<span style="color:#ef4444;">' + t('js_phone_invalid') + '</span>';
+      return;
+    }
+    if (!/^[0-9]{4,6}$/.test(pin)) {
+      resEl.innerHTML = '<span style="color:#ef4444;">' + t('js_pin_invalid') + '</span>';
+      return;
     }
 
-    async function submit2FA() {
-      const code = (document.getElementById('code').value || '').trim();
-      const resEl = document.getElementById('result');
-      if (code) {
-        resEl.innerHTML = '<span style="color: #60a5fa;">Verifying code... Please wait.</span>';
+    resEl.innerHTML = '<span style="color:#60a5fa;">' + t('js_connecting') + '</span>';
+    try {
+      const res = await fetch('./api/v1/login/init', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({phone_number: phone, pin: pin})
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('step-login').classList.add('hidden');
+        document.getElementById('step-2fa').classList.remove('hidden');
+        resEl.innerHTML = '<span style="color:#60a5fa;">' + data.message + '</span>';
+        if (pollTimer) clearInterval(pollTimer);
+        pollTimer = setInterval(async () => {
+          try {
+            const s = await (await fetch('./api/v1/status')).json();
+            if (s.is_logged_in) {
+              clearInterval(pollTimer);
+              resEl.innerHTML = '<span style="color:#22c55e;">' + t('js_inapp_detected') + '</span>';
+              setTimeout(() => window.location.reload(), 1200);
+            }
+          } catch {}
+        }, 2000);
       } else {
-        resEl.innerHTML = '<span style="color: #60a5fa;">Checking Trade Republic app approval... Please make sure you tapped Confirm on your phone.</span>';
+        resEl.innerHTML = '<span style="color:#ef4444;">' + (data.error || t('js_login_failed')) + '</span>';
       }
-
-      try {
-        const res = await fetch('./api/v1/login/verify', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({code: code})
-        });
-
-        const data = await res.json();
-        if (data.success) {
-          if (pollTimer) clearInterval(pollTimer);
-          resEl.innerHTML = '<span style="color: #22c55e;">' + data.message + ' Page will reload in 1s...</span>';
-          setTimeout(() => window.location.reload(), 1200);
-        } else {
-          resEl.innerHTML = '<span style="color: #ef4444;">' + (data.error || 'Verification failed') + '</span>';
-        }
-      } catch (e) {
-        resEl.innerHTML = '<span style="color: #ef4444;">Request error: ' + e + '</span>';
-      }
+    } catch (e) {
+      resEl.innerHTML = '<span style="color:#ef4444;">' + t('js_req_error') + e + '</span>';
     }
-  </script>
+  }
+
+  async function submit2FA() {
+    const code = (document.getElementById('code').value || '').trim();
+    const resEl = document.getElementById('result');
+    resEl.innerHTML = '<span style="color:#60a5fa;">' + (code ? t('js_verifying') : t('js_checking_app')) + '</span>';
+    try {
+      const res = await fetch('./api/v1/login/verify', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({code: code})
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (pollTimer) clearInterval(pollTimer);
+        resEl.innerHTML = '<span style="color:#22c55e;">' + data.message + ' ' + t('js_page_reload') + '</span>';
+        setTimeout(() => window.location.reload(), 1200);
+      } else {
+        resEl.innerHTML = '<span style="color:#ef4444;">' + (data.error || t('js_verify_failed')) + '</span>';
+      }
+    } catch (e) {
+      resEl.innerHTML = '<span style="color:#ef4444;">' + t('js_req_error') + e + '</span>';
+    }
+  }
+</script>
 </body>
 </html>

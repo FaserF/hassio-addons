@@ -90,3 +90,4 @@ validate_json.py
 data/
 .data/
 /whatsapp/app/scratch
+/traderepublic/app/.mypy_cache

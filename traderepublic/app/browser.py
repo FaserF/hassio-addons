@@ -534,9 +534,24 @@ class TradeRepublicBrowserService:
                         self.last_error = None
                         self.status_message = "Everything is connected and running normally. Session renewed 24/7."
                         return token
+                    else:
+                        _LOGGER.warning("Extracted token failed validity check — marking session as expired")
+                        self.is_logged_in = False
+                        self.status_message = "Session token expired. Please re-authenticate."
+                        self.last_error = "Session expired or rejected by Trade Republic. Please re-authenticate."
+                        return None
+                else:
+                    _LOGGER.warning("No token extracted from browser during refresh — marking session as expired")
+                    self.is_logged_in = False
+                    self.status_message = "Session token expired. Please re-authenticate."
+                    self.last_error = "Could not extract session token from browser. Please re-authenticate."
+                    return None
             except Exception as e:
                 _LOGGER.warning("Session refresh failed: %s", e)
-            return self.session_token
+            self.is_logged_in = False
+            self.status_message = "Session refresh failed. Please re-authenticate."
+            self.last_error = "Unknown error during session refresh."
+            return None
 
     async def _keepalive_loop(self) -> None:
         """Run periodic keepalive every 5-10 minutes to prevent token expiration."""
@@ -548,6 +563,8 @@ class TradeRepublicBrowserService:
                 new_token = await self.refresh_session()
                 if new_token:
                     await self.save_session(new_token)
+                else:
+                    _LOGGER.warning("Keepalive: session refresh returned no valid token — session marked as expired")
             except Exception as e:
                 _LOGGER.debug("Keepalive error: %s", e)
 
