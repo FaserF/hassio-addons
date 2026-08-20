@@ -88,8 +88,10 @@ The table below shows **all apps** in this repository, including unsupported one
 | **[SwitchCraft](switchcraft)**                                  | Packaging assistant for IT Professionals       | ⚠️     | 2026-01 |
 | **[Tado Auto Assist](tado_aa)**                                 | Auto-adjust heating based on presence          | ✅     | 2023-05 |
 | **[Tiny Tiny RSS](tt-rss)**                                     | RSS Feed Aggregator                            | ⚠️     | 2026-01 |
+| **[Trade Republic](traderepublic)**                             | Headless Browser & Session Provider            | ✅     | 2026-08 |
 | **[Tuya Convert](.unsupported/tuya-convert)**                   | Flash Tuya devices OTA (Unsupported/Beta)      | ❌     | 2023-05 |
 | **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend                | ✅     | 2026-01 |
+
 | **[Wiki.js](wiki.js)**                                          | Wiki.js (Stable)                               | ✅     | 2023-05 |
 | **[Wiki.js V3](wiki.js3)**                                      | Wiki.js V3 (Beta)                              | ⚠️     | 2026-01 |
 | **[Wordpress](wordpress)**                                      | The most popular publication platform          | ⚠️     | 2026-01 |

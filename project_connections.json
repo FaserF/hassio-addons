@@ -1,11 +1,11 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-08-19T13:22:59.754160",
+  "timestamp": "2026-08-20T09:48:52.532241",
   "connections": {
     "AegisBot": {
       "name": "AegisBot",
-      "version": "0.6.1",
+      "version": "0.6.2",
       "description": "Professional Telegram Group Defender — Advanced Security, Automated Moderation, and Community Management.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-aegisbot-{arch}",
@@ -559,6 +559,28 @@
         ],
         "rootfs": ["tado_aa/rootfs/usr/lib/bashio/banner.sh"],
         "translations": ["tado_aa/translations/de.yaml", "tado_aa/translations/en.yaml"]
+      }
+    },
+    "traderepublic": {
+      "name": "Trade Republic Headless Browser",
+      "version": "0.1.0",
+      "description": "Trade Republic Headless Browser & Session Provider (WAF Solver & Keep-Alive).",
+      "arch": ["aarch64", "amd64"],
+      "image": "ghcr.io/faserf/hassio-addons-traderepublic-{arch}",
+      "files": {
+        "core": [
+          "traderepublic/config.yaml",
+          "traderepublic/Dockerfile",
+          "traderepublic/build.yaml",
+          "traderepublic/CHANGELOG.md",
+          "traderepublic/README.md",
+          "traderepublic/DOCS.md"
+        ],
+        "rootfs": [
+          "traderepublic/rootfs/etc/s6-overlay/s6-rc.d/traderepublic/scripts/00-env.sh",
+          "traderepublic/rootfs/etc/s6-overlay/s6-rc.d/traderepublic/scripts/10-integration.sh"
+        ],
+        "translations": ["traderepublic/translations/de.yaml", "traderepublic/translations/en.yaml"]
       }
     },
     "tt-rss": {

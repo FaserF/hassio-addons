@@ -101,11 +101,13 @@ body:
         - switch_lan_play_server
         - switchcraft
         - tado_aa
+        - traderepublic
         - tt-rss
         - whatsapp
         - wiki.js
         - wiki.js3
         - wordpress
+
   - type: markdown
     attributes:
       value: |

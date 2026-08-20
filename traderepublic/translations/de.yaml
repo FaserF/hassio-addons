@@ -1,0 +1,10 @@
+﻿configuration:
+  keep_alive_interval:
+    name: "Keep-Alive Intervall (Sekunden)"
+    description: "Intervall in Sekunden für den automatischen Session-Refresh."
+  auto_install_integration:
+    name: "Integration automatisch installieren"
+    description: "Automatische Installation und Aktualisierung der ha-traderepublic Integration."
+  github_token:
+    name: "GitHub API Token"
+    description: "Optionaler GitHub Token zur Vermeidung von Download-Rate-Limits."

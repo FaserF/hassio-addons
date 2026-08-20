@@ -1,0 +1,184 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trade Republic Session Provider</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f8fafc;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --border: #334155;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      background: var(--card);
+      border-radius: 12px;
+      padding: 2rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+    .badge-success { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+    .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.75rem;
+      background: #0b1120;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 1rem;
+    }
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: var(--accent-hover); }
+    .alert {
+      padding: 0.75rem;
+      border-radius: 6px;
+      margin-bottom: 1.25rem;
+      font-size: 0.9rem;
+    }
+    .alert-info { background: #1e3a8a; border: 1px solid #3b82f6; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📈 Trade Republic Session Provider</h1>
+    
+    <div style="margin-bottom: 1.5rem;">
+      Status: 
+      {% if is_logged_in %}
+        <span class="badge badge-success">✓ Session Active</span>
+      {% else %}
+        <span class="badge badge-danger">✗ No Active Session</span>
+      {% endif %}
+      <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 0.5rem;">{{ status_message }}</div>
+    </div>
+
+    <div id="step-login">
+      <div class="form-group">
+        <label for="phone">Phone Number (with country code, e.g. +491701234567)</label>
+        <input type="text" id="phone" placeholder="+491701234567" required />
+      </div>
+      <div class="form-group">
+        <label for="pin">PIN (4-6 digits)</label>
+        <input type="password" id="pin" placeholder="••••" required />
+      </div>
+      <button onclick="submitLogin()">Start Login & Solve Challenge</button>
+    </div>
+
+    <div id="step-2fa" class="hidden">
+      <div class="alert alert-info">
+        Please check your Trade Republic app or SMS and enter the verification code below.
+      </div>
+      <div class="form-group">
+        <label for="code">2FA Verification Code</label>
+        <input type="text" id="code" placeholder="1234" />
+      </div>
+      <button onclick="submit2FA()">Verify & Save Session</button>
+    </div>
+
+    <div id="result" style="margin-top: 1.5rem;"></div>
+  </div>
+
+  <script>
+    async function submitLogin() {
+      const phone = document.getElementById('phone').value;
+      const pin = document.getElementById('pin').value;
+      const resEl = document.getElementById('result');
+      resEl.innerHTML = 'Connecting and solving challenge... Please wait.';
+
+      try {
+        const res = await fetch('./api/v1/login/init', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({phone_number: phone, pin: pin})
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('step-login').classList.add('hidden');
+          document.getElementById('step-2fa').classList.remove('hidden');
+          resEl.innerHTML = '<span style="color: #60a5fa;">' + data.message + '</span>';
+        } else {
+          resEl.innerHTML = '<span style="color: #ef4444;">' + (data.error || 'Failed to start login') + '</span>';
+        }
+      } catch (e) {
+        resEl.innerHTML = '<span style="color: #ef4444;">Request error: ' + e + '</span>';
+      }
+    }
+
+    async function submit2FA() {
+      const code = document.getElementById('code').value;
+      const resEl = document.getElementById('result');
+      resEl.innerHTML = 'Verifying code...';
+
+      try {
+        const res = await fetch('./api/v1/login/verify', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({code: code})
+        });
+        const data = await res.json();
+        if (data.success) {
+          resEl.innerHTML = '<span style="color: #22c55e;">' + data.message + ' Page will reload in 3s...</span>';
+          setTimeout(() => window.location.reload(), 3000);
+        } else {
+          resEl.innerHTML = '<span style="color: #ef4444;">' + (data.error || 'Verification failed') + '</span>';
+        }
+      } catch (e) {
+        resEl.innerHTML = '<span style="color: #ef4444;">Request error: ' + e + '</span>';
+      }
+    }
+  </script>
+</body>
+</html>

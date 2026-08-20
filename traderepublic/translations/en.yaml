@@ -1,0 +1,10 @@
+﻿configuration:
+  keep_alive_interval:
+    name: "Keep-Alive Interval (Seconds)"
+    description: "Interval in seconds to ping/refresh the web session."
+  auto_install_integration:
+    name: "Auto Install Integration"
+    description: "Automatically install or update ha-traderepublic custom integration."
+  github_token:
+    name: "GitHub API Token"
+    description: "Optional GitHub token for rate-limit free integration downloads."
