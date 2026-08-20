@@ -236,11 +236,12 @@ class TradeRepublicBrowserService:
                     return false;
                 }})()
                 """
-                pin_res = await self._send_cdp_cmd("Runtime.evaluate", {"expression": pin_script, "returnByValue": True})
+                pin_res = await self._send_cdp_cmd(
+                    "Runtime.evaluate", {"expression": pin_script, "returnByValue": True}
+                )
                 # Step 3: Direct API Request to Trade Republic Authentication Backend
                 api_feedback_msg = None
                 try:
-
 
                     waf_token = await self.get_waf_token()
                     headers = {
@@ -284,10 +285,16 @@ class TradeRepublicBrowserService:
                     return null;
                 })()
                 """
-                dom_err = await self._send_cdp_cmd("Runtime.evaluate", {"expression": dom_error_script, "returnByValue": True})
+                dom_err = await self._send_cdp_cmd(
+                    "Runtime.evaluate", {"expression": dom_error_script, "returnByValue": True}
+                )
                 dom_err_text = dom_err and dom_err.get("result", {}).get("value")
 
-                final_msg = dom_err_text or api_feedback_msg or "Credentials submitted. Please confirm in your Trade Republic smartphone app."
+                final_msg = (
+                    dom_err_text
+                    or api_feedback_msg
+                    or "Credentials submitted. Please confirm in your Trade Republic smartphone app."
+                )
                 self.status_message = final_msg
                 asyncio.create_task(self._poll_for_app_approval())
 
@@ -299,8 +306,6 @@ class TradeRepublicBrowserService:
             except Exception as e:
                 _LOGGER.error("Login init error: %s", e)
                 return {"success": False, "error": f"Internal browser error: {e}"}
-
-
 
     async def _poll_for_app_approval(self) -> None:
         """Poll for session token in background for 120s after credentials submission."""
