@@ -107,7 +107,7 @@
         <div style="font-weight:600;font-size:1rem;color:#4ade80;" data-i18n="integration_ready">✓ Integration Ready</div>
         <span style="font-size:0.8rem;color:var(--muted);" id="live-time" data-i18n="keepalive_active">Keep-Alive Active</span>
       </div>
-      <div style="font-size:0.85rem;color:#94a3b8;margin-top:0.4rem;">{{ status_message }}</div>
+      <div style="font-size:0.85rem;color:#94a3b8;margin-top:0.4rem;" id="status-msg" data-i18n="status_ok">{{ status_message }}</div>
       <div class="status-grid">
         <div class="status-item">
           <div class="status-label" data-i18n="lbl_phone">Account Phone</div>
@@ -119,7 +119,9 @@
         </div>
         <div class="status-item">
           <div class="status-label" data-i18n="lbl_ha_interaction">Home Assistant Interaction</div>
-          <div class="status-value" style="color:#60a5fa;">{{ last_sync }} ({{ requests_count }} <span data-i18n="queries">queries</span>)</div>
+          <div class="status-value" style="color:#60a5fa;" id="ha-sync-val">
+            <span id="ha-sync-time">{{ last_sync }}</span> ({{ requests_count }} <span data-i18n="queries">queries</span>)
+          </div>
         </div>
         <div class="status-item">
           <div class="status-label" data-i18n="lbl_health">Integration Health</div>
@@ -210,6 +212,13 @@
     return key;
   }
 
+  function formatLastSync(sec) {
+    if (sec === null || sec === undefined) return t('never');
+    if (sec < 60) return sec + t('ago_sec');
+    if (sec < 3600) return Math.floor(sec / 60) + t('ago_min');
+    return Math.floor(sec / 3600) + t('ago_hour');
+  }
+
   function applyTranslations() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
       el.textContent = t(el.getAttribute('data-i18n'));
@@ -217,6 +226,13 @@
     document.querySelectorAll('[data-i18n-ph]').forEach(el => {
       el.placeholder = t(el.getAttribute('data-i18n-ph'));
     });
+
+    const syncEl = document.getElementById('ha-sync-time');
+    if (syncEl) {
+      const rawSec = {% if last_sync_sec is not none %}{{ last_sync_sec }}{% else %}null{% endif %};
+      syncEl.textContent = formatLastSync(rawSec);
+    }
+
     document.getElementById('lang-en').classList.toggle('active', currentLang === 'en');
     document.getElementById('lang-de').classList.toggle('active', currentLang === 'de');
     document.documentElement.lang = currentLang;
