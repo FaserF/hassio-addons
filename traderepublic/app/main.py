@@ -6,7 +6,6 @@ from typing import Optional
 
 import aiohttp
 from browser import browser_service
-
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
