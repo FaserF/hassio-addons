@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.2
+﻿ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.2
 # hadolint ignore=DL3006
 FROM $BUILD_FROM
 ARG BUILD_DATE="unknown"
@@ -8,7 +8,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # App metadata
 ENV APP_VERSION="0.1.0"
-
 ENV APP_NAME="Trade Republic Headless Browser"
 ENV APP_SLUG="traderepublic"
 ENV APP_UNSUPPORTED="false"
@@ -49,13 +48,14 @@ RUN \
         fi; \
     fi
 
-# 5. Minimal Python dependencies
+# 5. Pure Python dependencies (no musl wheel compilation issues)
 RUN \
     pip3 install --no-cache-dir --break-system-packages \
         fastapi \
         uvicorn[standard] \
         jinja2 \
-        playwright \
+        aiohttp \
+        websockets \
         pydantic
 
 # 6. Setup App folder

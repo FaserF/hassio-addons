@@ -1,73 +1,85 @@
-import asyncio
+﻿import asyncio
 import json
 import logging
 import os
+import subprocess
 import time
 from typing import Any, Dict, Optional
-
-from playwright.async_api import Browser, BrowserContext, Page, async_playwright
+import aiohttp
 
 _LOGGER = logging.getLogger(__name__)
 
 DATA_DIR = os.getenv("DATA_DIR", "/data")
-STORAGE_STATE_PATH = os.path.join(DATA_DIR, "browser_state.json")
+STORAGE_STATE_PATH = os.path.join(DATA_DIR, "browser_cookies.json")
 SESSION_FILE_PATH = os.path.join(DATA_DIR, "session.json")
-
+CDP_PORT = 9222
 
 class TradeRepublicBrowserService:
     def __init__(self) -> None:
-        self.playwright = None
-        self.browser: Optional[Browser] = None
-        self.context: Optional[BrowserContext] = None
-        self.page: Optional[Page] = None
+        self.proc: Optional[subprocess.Popen] = None
         self.is_logged_in: bool = False
         self.session_token: Optional[str] = None
         self.phone_number: Optional[str] = None
-        self.status_message: str = "Addon started. Ready for login."
+        self.status_message: str = "App started. Ready for login."
         self._lock = asyncio.Lock()
         self._keepalive_task: Optional[asyncio.Task] = None
+        self._ws_url: Optional[str] = None
 
     async def start(self) -> None:
-        """Start Playwright browser."""
+        """Start headless Chromium with remote debugging port."""
         try:
-            self.playwright = await async_playwright().start()
-            # Launch chromium (using installed alpine chromium if available)
-            executable_path = "/usr/bin/chromium-browser" if os.path.exists("/usr/bin/chromium-browser") else None
-            self.browser = await self.playwright.chromium.launch(
-                headless=True,
-                executable_path=executable_path,
-                args=[
-                    "--no-sandbox",
-                    "--disable-setuid-sandbox",
-                    "--disable-dev-shm-usage",
-                    "--disable-gpu",
-                    "--disable-blink-features=AutomationControlled",
-                ],
-            )
+            os.makedirs(DATA_DIR, exist_ok=True)
+            user_data_dir = os.path.join(DATA_DIR, "chromium_profile")
+            os.makedirs(user_data_dir, exist_ok=True)
 
-            # Load persistent storage state if exists
-            context_kwargs = {
-                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-                "viewport": {"width": 1280, "height": 800},
-            }
-            if os.path.exists(STORAGE_STATE_PATH):
-                try:
-                    context_kwargs["storage_state"] = STORAGE_STATE_PATH
-                    _LOGGER.info("Loaded previous browser storage state.")
-                except Exception as e:
-                    _LOGGER.warning("Could not load storage state: %s", e)
+            cmd = [
+                "/usr/bin/chromium-browser",
+                "--headless=new",
+                f"--remote-debugging-port={CDP_PORT}",
+                f"--user-data-dir={user_data_dir}",
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--disable-blink-features=AutomationControlled",
+                "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                "https://app.traderepublic.com",
+            ]
+            _LOGGER.info("Launching headless Chromium via CDP...")
+            self.proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            await asyncio.sleep(2)
 
-            self.context = await self.browser.new_context(**context_kwargs)
-            self.page = await self.context.new_page()
-
-            # Attempt to extract session from storage
             await self._load_saved_session()
-
-            # Start keep-alive loop
             self._keepalive_task = asyncio.create_task(self._keepalive_loop())
         except Exception as e:
-            _LOGGER.error("Failed to start browser service: %s", e)
+            _LOGGER.error("Failed to start browser process: %s", e)
             self.status_message = f"Error starting browser: {e}"
+
+    async def _send_cdp_cmd(self, method: str, params: Optional[Dict[str, Any]] = None) -> Any:
+        """Send command via Chrome DevTools Protocol."""
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"http://127.0.0.1:{CDP_PORT}/json") as resp:
+                    pages = await resp.json()
+                    if not pages:
+                        return None
+                    ws_url = pages[0].get("webSocketDebuggerUrl")
+                    if not ws_url:
+                        return None
+
+            import websockets
+            async with websockets.connect(ws_url) as ws:
+                msg_id = int(time.time() * 1000) % 100000
+                req = {"id": msg_id, "method": method, "params": params or {}}
+                await ws.send(json.dumps(req))
+                while True:
+                    raw = await ws.recv()
+                    data = json.loads(raw)
+                    if data.get("id") == msg_id:
+                        return data.get("result")
+        except Exception as e:
+            _LOGGER.debug("CDP command %s failed: %s", method, e)
+            return None
 
     async def _load_saved_session(self) -> None:
         if os.path.exists(SESSION_FILE_PATH):
@@ -92,140 +104,129 @@ class TradeRepublicBrowserService:
         os.makedirs(DATA_DIR, exist_ok=True)
         try:
             with open(SESSION_FILE_PATH, "w", encoding="utf-8") as f:
-                json.dump(
-                    {
-                        "session_token": self.session_token,
-                        "phone_number": self.phone_number,
-                        "updated_at": time.time(),
-                    },
-                    f,
-                    indent=2,
-                )
-            if self.context:
-                await self.context.storage_state(path=STORAGE_STATE_PATH)
+                json.dump({
+                    "session_token": self.session_token,
+                    "phone_number": self.phone_number,
+                    "updated_at": time.time(),
+                }, f, indent=2)
         except Exception as e:
-            _LOGGER.error("Failed to save session to disk: %s", e)
+            _LOGGER.error("Failed to save session: %s", e)
 
     async def extract_token_from_cookies(self) -> Optional[str]:
-        """Extract tr_session cookie from active browser context."""
-        if not self.context:
-            return None
-        cookies = await self.context.cookies(["https://app.traderepublic.com", "https://traderepublic.com"])
-        for cookie in cookies:
-            if cookie.get("name") == "tr_session":
-                token = cookie.get("value")
-                if token:
-                    await self.save_session(token)
-                    return token
+        """Extract tr_session cookie from Chromium via CDP."""
+        res = await self._send_cdp_cmd("Network.getCookies", {"urls": ["https://app.traderepublic.com", "https://traderepublic.com"]})
+        if res and "cookies" in res:
+            for cookie in res["cookies"]:
+                if cookie.get("name") == "tr_session":
+                    token = cookie.get("value")
+                    if token:
+                        await self.save_session(token)
+                        return token
         return None
 
     async def start_login(self, phone: str, pin: str) -> Dict[str, Any]:
-        """Navigate to Trade Republic login page and submit phone & PIN."""
+        """Navigate and input credentials via CDP Runtime evaluation."""
         async with self._lock:
-            if not self.page:
-                return {"success": False, "error": "Browser not initialized"}
             try:
                 self.phone_number = phone
                 self.status_message = "Navigating to Trade Republic login..."
-                await self.page.goto("https://app.traderepublic.com/login", wait_until="networkidle", timeout=30000)
+                await self._send_cdp_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
+                await asyncio.sleep(3)
 
-                # Check for phone input
-                phone_input = await self.page.wait_for_selector(
-                    "input[name='phoneNumber'], input[type='tel']", timeout=15000
-                )
-                if not phone_input:
-                    return {"success": False, "error": "Phone number field not found"}
-                await phone_input.fill(phone)
+                # Solve & evaluate input in browser
+                js_script = f"""
+                (() => {{
+                    const phoneInput = document.querySelector('input[name="phoneNumber"], input[type="tel"]');
+                    if (phoneInput) {{
+                        phoneInput.value = "{phone}";
+                        phoneInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                        phoneInput.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                    }}
+                    const btn = document.querySelector('button[type="submit"]');
+                    if (btn) btn.click();
+                    return !!phoneInput;
+                }})()
+                """
+                await self._send_cdp_cmd("Runtime.evaluate", {"expression": js_script})
+                await asyncio.sleep(2)
 
-                # Submit or next
-                submit_btn = await self.page.query_selector("button[type='submit']")
-                if submit_btn:
-                    await submit_btn.click()
-                await self.page.wait_for_timeout(2000)
-
-                # Enter PIN if prompted
-                pin_input = await self.page.query_selector("input[type='password'], input[name='pin']")
-                if pin_input:
-                    await pin_input.fill(pin)
-                    pin_submit = await self.page.query_selector("button[type='submit']")
-                    if pin_submit:
-                        await pin_submit.click()
+                # Enter PIN if available
+                pin_script = f"""
+                (() => {{
+                    const pinInput = document.querySelector('input[type="password"], input[name="pin"]');
+                    if (pinInput) {{
+                        pinInput.value = "{pin}";
+                        pinInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                        pinInput.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                        const btn = document.querySelector('button[type="submit"]');
+                        if (btn) btn.click();
+                        return true;
+                    }}
+                    return false;
+                }})()
+                """
+                await self._send_cdp_cmd("Runtime.evaluate", {"expression": pin_script})
 
                 self.status_message = "Credentials submitted. 2FA (SMS/App approval) required."
-                return {
-                    "success": True,
-                    "step": "2fa_required",
-                    "message": "Please enter the 2FA code or confirm in the Trade Republic app.",
-                }
+                return {"success": True, "step": "2fa_required", "message": "Please enter the 2FA code or confirm in the Trade Republic app."}
             except Exception as e:
-                _LOGGER.error("Login initialization error: %s", e)
-                self.status_message = f"Login failed: {e}"
+                _LOGGER.error("Login init error: %s", e)
                 return {"success": False, "error": str(e)}
 
     async def submit_2fa(self, code: str) -> Dict[str, Any]:
-        """Submit the 2FA code in the browser."""
+        """Submit 2FA code via CDP."""
         async with self._lock:
-            if not self.page:
-                return {"success": False, "error": "Browser not initialized"}
             try:
-                otp_input = await self.page.wait_for_selector(
-                    "input[name='code'], input[type='number'], input[autocomplete='one-time-code']", timeout=10000
-                )
-                if otp_input:
-                    await otp_input.fill(code)
-                    submit_btn = await self.page.query_selector("button[type='submit']")
-                    if submit_btn:
-                        await submit_btn.click()
+                code_script = f"""
+                (() => {{
+                    const otp = document.querySelector('input[name="code"], input[type="number"], input[autocomplete="one-time-code"]');
+                    if (otp) {{
+                        otp.value = "{code}";
+                        otp.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                        otp.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                        const btn = document.querySelector('button[type="submit"]');
+                        if (btn) btn.click();
+                        return true;
+                    }}
+                    return false;
+                }})()
+                """
+                await self._send_cdp_cmd("Runtime.evaluate", {"expression": code_script})
 
-                # Wait for navigation / token cookie
-                for _ in range(10):
-                    await self.page.wait_for_timeout(1500)
+                for _ in range(8):
+                    await asyncio.sleep(2)
                     token = await self.extract_token_from_cookies()
                     if token:
                         return {"success": True, "session_token": token, "message": "Login successful!"}
 
-                return {"success": False, "error": "2FA submitted but token cookie not found yet. Check app approval."}
+                return {"success": False, "error": "2FA code submitted. Check Trade Republic app approval if required."}
             except Exception as e:
-                _LOGGER.error("2FA submission error: %s", e)
                 return {"success": False, "error": str(e)}
 
     async def refresh_session(self) -> Optional[str]:
-        """Reload the app in the browser to trigger WAF token renewal."""
         async with self._lock:
-            if not self.page:
-                return None
             try:
-                self.status_message = "Refreshing session via headless browser..."
-                await self.page.goto("https://app.traderepublic.com", wait_until="networkidle", timeout=30000)
+                await self._send_cdp_cmd("Page.reload", {})
+                await asyncio.sleep(3)
                 token = await self.extract_token_from_cookies()
                 if token:
-                    _LOGGER.info("Session successfully refreshed.")
                     return token
             except Exception as e:
-                _LOGGER.warning("Failed to refresh session: %s", e)
+                _LOGGER.warning("Session refresh failed: %s", e)
             return self.session_token
 
     async def _keepalive_loop(self) -> None:
-        """Periodic background refresh to keep the web session active."""
         interval = int(os.getenv("KEEP_ALIVE_INTERVAL", "600"))
         while True:
             await asyncio.sleep(interval)
-            if self.is_logged_in and self.page:
-                _LOGGER.debug("Running background keep-alive refresh...")
-                try:
-                    await self.refresh_session()
-                except Exception as e:
-                    _LOGGER.warning("Keepalive refresh failed: %s", e)
+            if self.is_logged_in:
+                _LOGGER.debug("Keepalive refreshing session...")
+                await self.refresh_session()
 
     async def close(self) -> None:
         if self._keepalive_task:
             self._keepalive_task.cancel()
-        if self.context:
-            await self.context.close()
-        if self.browser:
-            await self.browser.close()
-        if self.playwright:
-            await self.playwright.stop()
-
+        if self.proc:
+            self.proc.terminate()
 
 browser_service = TradeRepublicBrowserService()
