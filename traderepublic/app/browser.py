@@ -171,7 +171,8 @@ class TradeRepublicBrowserService:
                     }
                     await ws.send("connect 26 " + json.dumps(handshake))
                     resp = await ws.recv()
-                    if resp and "connected" in str(resp):
+                    _LOGGER.info("Token validation handshake response: %s", resp)
+                    if resp and ("connected" in str(resp) or "26" in str(resp)):
                         self.token_verified_at = time.time()
                         return True
                     return False
@@ -179,7 +180,7 @@ class TradeRepublicBrowserService:
                 await ws.close()
 
         except Exception as e:
-            _LOGGER.debug("Token validation check error: %s", e)
+            _LOGGER.warning("Token validation check error: %s", e)
             return False
 
     async def save_session(self, token: str, phone: Optional[str] = None) -> None:
@@ -233,8 +234,6 @@ class TradeRepublicBrowserService:
                     if cname in ("tr_session", "sessionToken", "tr_session_id", "auth_token"):
                         token = cookie.get("value")
                         if token and (token.startswith("eyJ") or len(token) > 40):
-                            if token != self.session_token:
-                                await self.save_session(token)
                             return token
 
         # 2. Check localStorage & sessionStorage across window & frames
@@ -277,7 +276,6 @@ class TradeRepublicBrowserService:
             val = storage_res.get("result", {}).get("value")
             if val and isinstance(val, str) and (val.startswith("eyJ") or len(val) > 30):
                 clean_val = val.strip().strip('"').strip("'")
-                await self.save_session(clean_val)
                 return clean_val
 
         # 3. Check document.cookie via Runtime evaluation
@@ -293,7 +291,6 @@ class TradeRepublicBrowserService:
             val = eval_res.get("result", {}).get("value")
             if val and isinstance(val, str) and (val.startswith("eyJ") or len(val) > 30):
                 clean_val = val.strip().strip('"').strip("'")
-                await self.save_session(clean_val)
                 return clean_val
 
         return None
