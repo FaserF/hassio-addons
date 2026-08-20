@@ -28,14 +28,20 @@ app = FastAPI(title="Trade Republic Headless Browser Session Provider", lifespan
 
 @app.middleware("http")
 async def ingress_middleware(request: Request, call_next):
-    """Handle Home Assistant Ingress dynamic subpath prefix."""
+    """Handle Home Assistant Ingress dynamic subpath prefix and normalize slashes."""
+    import re
+    path = request.scope.get("path", "/")
+    # Normalize double slashes from HA Ingress proxies (e.g. //)
+    path = re.sub(r"/+", "/", path)
+    
     ingress_path = request.headers.get("x-ingress-path")
     if ingress_path:
-        path = request.scope.get("path", "/")
-        clean_prefix = ingress_path.rstrip("/")
-        if path.startswith(clean_prefix):
+        clean_prefix = re.sub(r"/+", "/", ingress_path).rstrip("/")
+        if clean_prefix and path.startswith(clean_prefix):
             path = path[len(clean_prefix) :] or "/"
-            request.scope["path"] = path
+            path = re.sub(r"/+", "/", path)
+
+    request.scope["path"] = path or "/"
     response = await call_next(request)
     return response
 
@@ -59,7 +65,9 @@ class ManualTokenRequest(BaseModel):
     phone_number: Optional[str] = None
 
 
+@app.get("", response_class=HTMLResponse)
 @app.get("/", response_class=HTMLResponse)
+@app.get("//", response_class=HTMLResponse)
 async def get_index(request: Request):
     return templates.TemplateResponse(
         "index.html",
@@ -71,6 +79,7 @@ async def get_index(request: Request):
             "status_message": browser_service.status_message,
         },
     )
+
 
 
 @app.get("/api/v1/status")
