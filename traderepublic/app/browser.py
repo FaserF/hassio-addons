@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 import json
 import logging
 import os
@@ -177,6 +177,9 @@ class TradeRepublicBrowserService:
                 await self._send_cdp_cmd("Runtime.evaluate", {"expression": pin_script})
 
                 self.status_message = "Credentials submitted. 2FA (SMS/App approval) required."
+                # Launch background task to poll for cookie when user clicks confirm in the TR app
+                asyncio.create_task(self._poll_for_app_approval())
+
                 return {
                     "success": True,
                     "step": "2fa_required",
@@ -185,6 +188,17 @@ class TradeRepublicBrowserService:
             except Exception as e:
                 _LOGGER.error("Login init error: %s", e)
                 return {"success": False, "error": str(e)}
+
+    async def _poll_for_app_approval(self) -> None:
+        """Poll for session token in background for 90s after credentials submission."""
+        for _ in range(30):
+            await asyncio.sleep(3)
+            if self.is_logged_in:
+                break
+            token = await self.extract_token_from_cookies()
+            if token:
+                _LOGGER.info("App approval detected! Session saved successfully.")
+                break
 
     async def submit_2fa(self, code: str) -> Dict[str, Any]:
         """Submit 2FA code via CDP."""
@@ -215,6 +229,7 @@ class TradeRepublicBrowserService:
                 return {"success": False, "error": "2FA code submitted. Check Trade Republic app approval if required."}
             except Exception as e:
                 return {"success": False, "error": str(e)}
+
 
     async def refresh_session(self) -> Optional[str]:
         async with self._lock:

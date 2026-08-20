@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -132,6 +132,8 @@
   </div>
 
   <script>
+    let pollTimer = null;
+
     async function submitLogin() {
       const phone = document.getElementById('phone').value;
       const pin = document.getElementById('pin').value;
@@ -149,6 +151,21 @@
           document.getElementById('step-login').classList.add('hidden');
           document.getElementById('step-2fa').classList.remove('hidden');
           resEl.innerHTML = '<span style="color: #60a5fa;">' + data.message + '</span>';
+
+          // Start polling for in-app approval
+          if (pollTimer) clearInterval(pollTimer);
+          pollTimer = setInterval(async () => {
+            try {
+              const statusRes = await fetch('./api/v1/status');
+              const statusData = await statusRes.json();
+              if (statusData.is_logged_in) {
+                clearInterval(pollTimer);
+                resEl.innerHTML = '<span style="color: #22c55e;">✓ In-App Approval detected! Reloading...</span>';
+                setTimeout(() => window.location.reload(), 1500);
+              }
+            } catch (err) {}
+          }, 2000);
+
         } else {
           resEl.innerHTML = '<span style="color: #ef4444;">' + (data.error || 'Failed to start login') + '</span>';
         }
@@ -170,8 +187,9 @@
         });
         const data = await res.json();
         if (data.success) {
-          resEl.innerHTML = '<span style="color: #22c55e;">' + data.message + ' Page will reload in 3s...</span>';
-          setTimeout(() => window.location.reload(), 3000);
+          if (pollTimer) clearInterval(pollTimer);
+          resEl.innerHTML = '<span style="color: #22c55e;">' + data.message + ' Page will reload in 2s...</span>';
+          setTimeout(() => window.location.reload(), 2000);
         } else {
           resEl.innerHTML = '<span style="color: #ef4444;">' + (data.error || 'Verification failed') + '</span>';
         }
@@ -179,6 +197,7 @@
         resEl.innerHTML = '<span style="color: #ef4444;">Request error: ' + e + '</span>';
       }
     }
+
   </script>
 </body>
 </html>
