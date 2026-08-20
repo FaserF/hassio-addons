@@ -28,10 +28,9 @@ schema:
   auto_install_integration: bool
   github_token: str?
 
-ports:
-  8095/tcp: null
+ports: {}
 ports_description:
-  8095/tcp: "Direct Web/API Access (Optional, use Ingress for secure access)"
+  8095/tcp: "Direct Web/API Access (disabled by default — use Ingress for secure access)"
 hassio_api: true
 ingress: true
 ingress_port: 8095

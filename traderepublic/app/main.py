@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -6,14 +7,30 @@ from typing import Any, Optional
 
 import aiohttp
 from browser import browser_service
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request, Security
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.security.api_key import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 _LOGGER = logging.getLogger("traderepublic-addon")
+
+# ── Supervisor token auth ─────────────────────────────────────────────────────
+_SUPERVISOR_TOKEN = os.getenv("SUPERVISOR_TOKEN", "")
+_api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
+
+
+async def require_supervisor_auth(authorization: Optional[str] = Security(_api_key_header)) -> None:
+    """Require HA Supervisor Bearer token on sensitive endpoints."""
+    if not _SUPERVISOR_TOKEN:
+        # Running outside Supervisor (dev mode) — skip check
+        return
+    expected = f"Bearer {_SUPERVISOR_TOKEN}"
+    if not authorization or authorization != expected:
+        raise HTTPException(status_code=403, detail="Forbidden: valid Supervisor token required")
+
 
 
 @asynccontextmanager
@@ -120,7 +137,6 @@ async def get_index(request: Request):
     if browser_service.last_sync_time:
         last_sync_sec = int(time.time() - browser_service.last_sync_time)
 
-    import json
 
     all_i18n: dict[str, Any] = {}
     i18n_dir = os.path.join(static_dir, "i18n")
@@ -165,7 +181,7 @@ async def get_status():
     }
 
 
-@app.get("/api/v1/session")
+@app.get("/api/v1/session", dependencies=[Security(require_supervisor_auth)])
 async def get_session():
     import time
 
@@ -182,7 +198,7 @@ async def get_session():
     }
 
 
-@app.post("/api/v1/session/manual")
+@app.post("/api/v1/session/manual", dependencies=[Security(require_supervisor_auth)])
 async def set_manual_session(req: ManualTokenRequest):
     await browser_service.save_session(req.session_token, req.phone_number)
     return {"success": True, "message": "Session token saved successfully"}
@@ -200,7 +216,7 @@ async def post_login_verify(req: VerifyRequest):
     return result
 
 
-@app.post("/api/v1/refresh")
+@app.post("/api/v1/refresh", dependencies=[Security(require_supervisor_auth)])
 async def post_refresh():
     token = await browser_service.refresh_session()
     return {"success": bool(token), "session_token": token}
