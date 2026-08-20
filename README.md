@@ -92,10 +92,10 @@ The table below shows **all apps** in this repository, including unsupported one
 | **[Tuya Convert](.unsupported/tuya-convert)**                   | Flash Tuya devices OTA (Unsupported/Beta)      | ❌     | 2023-05 |
 | **[WhatsApp](whatsapp)**                                        | Home Assistant WhatsApp Backend                | ✅     | 2026-01 |
 
-| **[Wiki.js](wiki.js)**                                          | Wiki.js (Stable)                               | ✅     | 2023-05 |
-| **[Wiki.js V3](wiki.js3)**                                      | Wiki.js V3 (Beta)                              | ⚠️     | 2026-01 |
-| **[Wordpress](wordpress)**                                      | The most popular publication platform          | ⚠️     | 2026-01 |
-| **[xqrepack](.unsupported/xqrepack)**                           | MiWifi Firmware Modifier (Unsupported)         | ❌     | 2023-05 |
+| **[Wiki.js](wiki.js)** | Wiki.js (Stable) | ✅ | 2023-05 |
+| **[Wiki.js V3](wiki.js3)** | Wiki.js V3 (Beta) | ⚠️ | 2026-01 |
+| **[Wordpress](wordpress)** | The most popular publication platform | ⚠️ | 2026-01 |
+| **[xqrepack](.unsupported/xqrepack)** | MiWifi Firmware Modifier (Unsupported) | ❌ | 2023-05 |
 
 **Dropped HA Apps**: N8N, Paperless. [Get it here instead.](https://github.com/fabio-garavini/hassio-addons)
 
