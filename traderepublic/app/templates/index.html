@@ -106,32 +106,37 @@
     </div>
 
     <div id="step-login">
-      <div class="form-group">
-        <label for="phone">Phone Number (with country code, e.g. +491701234567)</label>
-        <input type="text" id="phone" placeholder="+491701234567" required />
-      </div>
-      <div class="form-group">
-        <label for="pin">PIN (4-6 digits)</label>
-        <input type="password" id="pin" placeholder="••••" required />
-      </div>
-      <button onclick="submitLogin()">Start Login & Solve Challenge</button>
+      <form onsubmit="event.preventDefault(); submitLogin();">
+        <div class="form-group">
+          <label for="phone">Phone Number (with country code, e.g. +491701234567)</label>
+          <input type="text" id="phone" placeholder="+491701234567" required />
+        </div>
+        <div class="form-group">
+          <label for="pin">PIN (4-6 digits)</label>
+          <input type="password" id="pin" placeholder="••••" required />
+        </div>
+        <button type="submit">Start Login & Solve Challenge</button>
+      </form>
     </div>
 
     <div id="step-2fa" class="hidden">
-      <div class="alert alert-info">
-        <b data-i18n="auth_required">Approval Required:</b><br>
-        <span data-i18n="auth_step1">1. Open the Trade Republic app on your phone and tap <b>Confirm</b>.</span><br>
-        <span data-i18n="auth_step2">2. If you received an SMS code instead, enter it below.</span><br>
-        <span data-i18n="auth_step3">3. Click <b>Check App Approval / Submit Code</b>.</span>
-      </div>
-      <div class="form-group">
-        <label for="code" data-i18n="code_label">2FA Verification Code (optional for in-app approval)</label>
-        <input type="text" id="code" placeholder="1234 (leave empty for in-app approval)" />
-      </div>
-      <div style="display: flex; gap: 0.75rem; flex-direction: column;">
-        <button onclick="submit2FA()" style="background: #22c55e;" data-i18n="btn_check_approval">✓ Check App Approval / Submit Code</button>
-      </div>
+      <form onsubmit="event.preventDefault(); submit2FA();">
+        <div class="alert alert-info">
+          <b data-i18n="auth_required">Approval Required:</b><br>
+          <span data-i18n="auth_step1">1. Open the Trade Republic app on your phone and tap <b>Confirm</b>.</span><br>
+          <span data-i18n="auth_step2">2. If you received an SMS code instead, enter it below.</span><br>
+          <span data-i18n="auth_step3">3. Click <b>Check App Approval / Submit Code</b>.</span>
+        </div>
+        <div class="form-group">
+          <label for="code" data-i18n="code_label">2FA Verification Code (optional for in-app approval)</label>
+          <input type="text" id="code" placeholder="1234 (leave empty for in-app approval)" autofocus />
+        </div>
+        <div style="display: flex; gap: 0.75rem; flex-direction: column;">
+          <button type="submit" style="background: #22c55e;" data-i18n="btn_check_approval">✓ Check App Approval / Submit Code</button>
+        </div>
+      </form>
     </div>
+
 
 
 

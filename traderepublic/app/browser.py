@@ -163,7 +163,7 @@ class TradeRepublicBrowserService:
         return None
 
     async def start_login(self, phone: str, pin: str) -> Dict[str, Any]:
-        """Navigate and input credentials via CDP step-by-step."""
+        """Navigate and input credentials via CDP step-by-step with React controlled input support."""
         async with self._lock:
             try:
                 self.phone_number = phone
@@ -173,17 +173,21 @@ class TradeRepublicBrowserService:
                 await self._send_cdp_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
                 await asyncio.sleep(4)
 
-                # Step 1: Enter Phone Number
+                # Step 1: Enter Phone Number (React-compatible native setter)
                 phone_script = f"""
                 (() => {{
-                    const phoneInput = document.querySelector('input[name="phoneNumber"], input[type="tel"], input[autocomplete="tel"]');
-                    if (phoneInput) {{
-                        phoneInput.focus();
-                        phoneInput.value = "{phone}";
-                        phoneInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                        phoneInput.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                        const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"]');
-                        if (btn) btn.click();
+                    const input = document.querySelector('input[name="phoneNumber"], input[type="tel"], input[autocomplete="tel"], input');
+                    if (input) {{
+                        input.focus();
+                        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+                        nativeInputValueSetter.call(input, "{phone}");
+                        input.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                        input.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                        
+                        setTimeout(() => {{
+                            const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"], button');
+                            if (btn) btn.click();
+                        }}, 200);
                         return true;
                     }}
                     return false;
@@ -192,17 +196,21 @@ class TradeRepublicBrowserService:
                 await self._send_cdp_cmd("Runtime.evaluate", {"expression": phone_script})
                 await asyncio.sleep(3)
 
-                # Step 2: Enter PIN
+                # Step 2: Enter PIN (React-compatible native setter)
                 pin_script = f"""
                 (() => {{
-                    const pinInput = document.querySelector('input[type="password"], input[name="pin"], input[name="password"]');
-                    if (pinInput) {{
-                        pinInput.focus();
-                        pinInput.value = "{pin}";
-                        pinInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                        pinInput.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                        const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"]');
-                        if (btn) btn.click();
+                    const input = document.querySelector('input[type="password"], input[name="pin"], input[name="password"]');
+                    if (input) {{
+                        input.focus();
+                        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+                        nativeInputValueSetter.call(input, "{pin}");
+                        input.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                        input.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                        
+                        setTimeout(() => {{
+                            const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"], button');
+                            if (btn) btn.click();
+                        }}, 200);
                         return true;
                     }}
                     return false;
@@ -224,6 +232,7 @@ class TradeRepublicBrowserService:
                 return {"success": False, "error": str(e)}
 
     async def _poll_for_app_approval(self) -> None:
+
         """Poll for session token in background for 120s after credentials submission."""
         for _ in range(40):
             await asyncio.sleep(3)
