@@ -128,6 +128,8 @@ class TradeRepublicBrowserService:
             }
             async with (
                 asyncio.timeout(5),
+                websockets.connect("wss://api.traderepublic.com", ssl=ssl_ctx, additional_headers=headers) as ws,
+            ):
                 handshake = {
                     "locale": "de",
                     "platformId": "web",
@@ -136,12 +138,11 @@ class TradeRepublicBrowserService:
                     "token": clean_token,
                 }
                 await ws.send("connect 26 " + json.dumps(handshake))
-
-
                 resp = await ws.recv()
                 if resp and "connected" in str(resp):
                     return True
                 return False
+
         except Exception as e:
             _LOGGER.debug("Token validation check error: %s", e)
             return False
