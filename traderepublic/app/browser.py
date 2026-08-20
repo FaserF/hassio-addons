@@ -230,7 +230,6 @@ class TradeRepublicBrowserService:
             except Exception as e:
                 return {"success": False, "error": str(e)}
 
-
     async def refresh_session(self) -> Optional[str]:
         async with self._lock:
             try:
