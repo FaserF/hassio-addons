@@ -236,13 +236,12 @@ class TradeRepublicBrowserService:
                     return false;
                 }})()
                 """
-                pin_res = await self._send_cdp_cmd(
-                    "Runtime.evaluate", {"expression": pin_script, "returnByValue": True}
-                )
-                entered_pin = pin_res and pin_res.get("result", {}).get("value")
+                pin_res = await self._send_cdp_cmd("Runtime.evaluate", {"expression": pin_script, "returnByValue": True})
+                # Step 3: Direct API Request to Trade Republic Authentication Backend
+                api_feedback_msg = None
+                try:
 
-                # Step 3: Direct Web API Fallback (/api/v2/auth/web/login) if browser DOM PIN wasn't rendered yet
-                if not entered_pin:
+
                     waf_token = await self.get_waf_token()
                     headers = {
                         "Content-Type": "application/json",
@@ -260,23 +259,48 @@ class TradeRepublicBrowserService:
                             timeout=aiohttp.ClientTimeout(total=8),
                         ) as resp,
                     ):
-                        _LOGGER.info("Direct API login request status: %s", resp.status)
+                        resp_text = await resp.text()
+                        _LOGGER.info("Trade Republic Auth API response [HTTP %s]: %s", resp.status, resp_text)
                         if resp.status == 200:
-                            data = await resp.json()
-                            process_id = data.get("processId")
-                            _LOGGER.info("Login process started via API: processId=%s", process_id)
+                            data = json.loads(resp_text)
+                            api_feedback_msg = f"Push notification dispatched (Process ID: {data.get('processId', 'active')}). Please confirm in Trade Republic app."
+                        elif resp.status in (400, 401):
+                            try:
+                                err_data = json.loads(resp_text)
+                                err_title = err_data.get("error") or err_data.get("message") or resp_text
+                                api_feedback_msg = f"Trade Republic Server: {err_title}"
+                            except Exception:
+                                api_feedback_msg = f"Trade Republic Server Error (HTTP {resp.status}): {resp_text}"
+                        elif resp.status == 403:
+                            api_feedback_msg = "Trade Republic WAF Protection: Solving Bot Challenge, please wait..."
+                except Exception as api_err:  # noqa: BLE001
+                    _LOGGER.warning("Direct Auth API attempt info: %s", api_err)
 
-                self.status_message = "Credentials submitted. 2FA (SMS/App approval) required."
+                # Check if Trade Republic page displays any inline error messages
+                dom_error_script = """
+                (() => {
+                    const errEl = document.querySelector('[role="alert"], [data-testid="error-message"], .error, .alert');
+                    if (errEl && errEl.textContent) return errEl.textContent.trim();
+                    return null;
+                })()
+                """
+                dom_err = await self._send_cdp_cmd("Runtime.evaluate", {"expression": dom_error_script, "returnByValue": True})
+                dom_err_text = dom_err and dom_err.get("result", {}).get("value")
+
+                final_msg = dom_err_text or api_feedback_msg or "Credentials submitted. Please confirm in your Trade Republic smartphone app."
+                self.status_message = final_msg
                 asyncio.create_task(self._poll_for_app_approval())
 
                 return {
                     "success": True,
                     "step": "2fa_required",
-                    "message": "Please enter the 2FA code or confirm in the Trade Republic app.",
+                    "message": final_msg,
                 }
             except Exception as e:
                 _LOGGER.error("Login init error: %s", e)
-                return {"success": False, "error": str(e)}
+                return {"success": False, "error": f"Internal browser error: {e}"}
+
+
 
     async def _poll_for_app_approval(self) -> None:
         """Poll for session token in background for 120s after credentials submission."""
