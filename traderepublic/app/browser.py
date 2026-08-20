@@ -58,7 +58,10 @@ class TradeRepublicBrowserService:
             ]
             _LOGGER.info("Launching headless Chromium via CDP...")
             self.proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            await asyncio.sleep(2)
+
+            ready = await self.cdp.wait_for_ready(timeout=20.0)
+            if not ready:
+                _LOGGER.warning("Chromium CDP not ready within 20s — proceeding anyway")
 
             await self._load_saved_session()
             self._keepalive_task = asyncio.create_task(self._keepalive_loop())
@@ -263,10 +266,41 @@ class TradeRepublicBrowserService:
             return None
 
     async def _keepalive_loop(self) -> None:
-        """Run periodic keepalive every 5-10 minutes to prevent token expiration."""
+        """Run periodic keepalive every 5 minutes with Chromium watchdog."""
         while True:
             await asyncio.sleep(KEEP_ALIVE_INTERVAL)
             try:
+                # Watchdog: restart Chromium if crashed
+                if self.proc is not None and self.proc.poll() is not None:
+                    _LOGGER.warning("Chromium process died (exit code %s), restarting...", self.proc.poll())
+                    try:
+                        self.proc.wait(timeout=2)
+                    except Exception:  # noqa: BLE001
+                        pass
+                    user_data_dir = os.path.join(DATA_DIR, "chromium_profile")
+                    cmd = [
+                        "/usr/bin/chromium-browser",
+                        "--headless=new",
+                        f"--remote-debugging-port={CDP_PORT}",
+                        f"--user-data-dir={user_data_dir}",
+                        "--no-sandbox",
+                        "--disable-setuid-sandbox",
+                        "--disable-dev-shm-usage",
+                        "--disable-gpu",
+                        "--disable-blink-features=AutomationControlled",
+                        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                        "https://app.traderepublic.com",
+                    ]
+                    self.proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    _LOGGER.info("Chromium restarted, waiting for CDP to become ready...")
+                    ready = await self.cdp.wait_for_ready(timeout=20.0)
+                    if not ready:
+                        _LOGGER.warning("Chromium CDP not ready after restart within 20s")
+                    # Reload session from disk after restart
+                    if self.session_token:
+                        await self._load_saved_session()
+                    return
+
                 _LOGGER.debug("24/7 Keepalive running to refresh session...")
                 new_token = await self.refresh_session()
                 if new_token:

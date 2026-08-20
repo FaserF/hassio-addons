@@ -41,3 +41,28 @@ class CDPClient:
         except Exception as e:
             _LOGGER.debug("CDP command %s failed: %s", method, e)
             return None
+
+    async def wait_for_ready(self, timeout: float = 20.0, interval: float = 0.5) -> bool:
+        """Poll CDP HTTP endpoint until Chromium is ready, up to timeout seconds."""
+        import asyncio
+
+        deadline = time.monotonic() + timeout
+        attempt = 0
+        while time.monotonic() < deadline:
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(
+                        f"http://127.0.0.1:{self.port}/json",
+                        timeout=aiohttp.ClientTimeout(total=2),
+                    ) as resp:
+                        pages = await resp.json()
+                        if pages and pages[0].get("webSocketDebuggerUrl"):
+                            _LOGGER.info("CDP ready after %d probe(s)", attempt + 1)
+                            return True
+            except Exception:  # noqa: BLE001
+                pass
+            attempt += 1
+            await asyncio.sleep(interval)
+        _LOGGER.warning("CDP did not become ready within %.0fs", timeout)
+        return False
+

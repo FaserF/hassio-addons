@@ -57,12 +57,29 @@ async def verify_tr_token(token: str) -> bool:
                 await ws.send("connect 26 " + json.dumps(handshake))
                 resp = await ws.recv()
                 _LOGGER.info("Token validation handshake response: %s", resp)
-                if resp and ("connected" in str(resp) or "26" in str(resp)):
+                if not resp or ("connected" not in str(resp) and "26" not in str(resp)):
+                    return False
+
+                # Test actual data subscription
+                await ws.send('sub 1 {"type":"compactPortfolioByType"}')
+                sub_resp = await ws.recv()
+                _LOGGER.info("Token subscription test response: %s", sub_resp)
+                if sub_resp:
+                    parts = str(sub_resp).split(" ", 2)
+                    if len(parts) >= 2 and parts[1] == "E":
+                        _LOGGER.warning("Token subscription rejected with error: %s", sub_resp)
+                        return False
                     return True
                 return False
         finally:
             await ws.close()
 
     except Exception as e:
-        _LOGGER.warning("Token validation check error: %s", e)
-        return False
+        err_str = str(e).lower()
+        # 401 = definitely invalid token
+        if "401" in err_str or "unauth" in err_str or "rejected" in err_str:
+            _LOGGER.warning("Token validation rejected by Trade Republic: %s", e)
+            return False
+        # Network/timeout errors = inconclusive, assume still valid to avoid false expiry
+        _LOGGER.debug("Token validation network error (assuming still valid): %s", e)
+        return True
