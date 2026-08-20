@@ -147,9 +147,32 @@
     let pollTimer = null;
 
     async function submitLogin() {
-      const phone = document.getElementById('phone').value;
-      const pin = document.getElementById('pin').value;
+      let phone = (document.getElementById('phone').value || '').trim().replace(/[\s\-\/]/g, '');
+      const pin = (document.getElementById('pin').value || '').trim();
       const resEl = document.getElementById('result');
+
+      // Normalize phone number to international E.164
+      if (phone.startsWith('00')) {
+        phone = '+' + phone.substring(2);
+      } else if (phone.startsWith('+')) {
+        // already has international plus
+      } else if (phone.startsWith('0') && phone.length >= 9) {
+        phone = '+49' + phone.substring(1);
+      } else {
+        phone = '+' + phone;
+      }
+
+      if (!/^\+[0-9]{7,15}$/.test(phone)) {
+        resEl.innerHTML = '<span style="color: #ef4444;">Please enter a valid international phone number including country code (e.g. +49..., +33..., +34..., +43..., +41...).</span>';
+        return;
+      }
+
+
+      if (!/^[0-9]{4,6}$/.test(pin)) {
+        resEl.innerHTML = '<span style="color: #ef4444;">PIN must be 4 to 6 digits (numbers only).</span>';
+        return;
+      }
+
       resEl.innerHTML = 'Connecting and solving challenge... Please wait.';
 
       try {
@@ -163,6 +186,7 @@
           document.getElementById('step-login').classList.add('hidden');
           document.getElementById('step-2fa').classList.remove('hidden');
           resEl.innerHTML = '<span style="color: #60a5fa;">' + data.message + '</span>';
+
 
           // Start polling for in-app approval
           if (pollTimer) clearInterval(pollTimer);

@@ -178,12 +178,36 @@ class TradeRepublicBrowserService:
         """Navigate and input credentials via CDP + direct API fallback with AWS WAF token."""
         async with self._lock:
             try:
-                self.phone_number = phone
+                # Normalize phone number to strict international E.164 format (+<country_code><number>)
+                raw_phone = (phone or "").strip().replace(" ", "").replace("-", "").replace("/", "")
+                if raw_phone.startswith("00"):
+                    clean_phone = "+" + raw_phone[2:]
+                elif raw_phone.startswith("+"):
+                    clean_phone = raw_phone
+                elif raw_phone.startswith("0") and len(raw_phone) >= 9:
+                    # National leading zero without country prefix (default to DE/AT/CH +49 or user context)
+                    clean_phone = "+49" + raw_phone[1:]
+                else:
+                    clean_phone = "+" + raw_phone
+
+                # International phone validation check (E.164: + followed by 7 to 15 digits)
+                digits_only = "".join(filter(str.isdigit, clean_phone))
+                if not clean_phone.startswith("+") or not (7 <= len(digits_only) <= 15):
+                    return {"success": False, "error": "Invalid international phone number. Please include your country code (e.g. +49..., +33..., +34..., +43..., +41..., +31...)."}
+
+                clean_pin = (pin or "").strip()
+                # PIN validation check: must be 4-6 digits, only numbers
+                if not clean_pin.isdigit() or not (4 <= len(clean_pin) <= 6):
+                    return {"success": False, "error": "Invalid PIN. PIN must be 4 to 6 digits (numbers only)."}
+
+                self.phone_number = clean_phone
                 self.is_logged_in = False
                 self.session_token = None
+
                 self.status_message = "Navigating to Trade Republic login..."
                 await self._send_cdp_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
                 await asyncio.sleep(4)
+
 
                 # Step 0: Dismiss cookie banners
                 banner_script = """
@@ -204,10 +228,11 @@ class TradeRepublicBrowserService:
                     if (input) {{
                         input.focus();
                         const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                        nativeSetter.call(input, "{phone}");
+                        nativeSetter.call(input, "{clean_phone}");
                         input.dispatchEvent(new Event('input', {{ bubbles: true }}));
                         input.dispatchEvent(new Event('change', {{ bubbles: true }}));
                         input.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
+
                         const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"]');
                         if (btn) btn.click();
                         return true;
@@ -225,7 +250,7 @@ class TradeRepublicBrowserService:
                     if (input) {{
                         input.focus();
                         const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                        nativeSetter.call(input, "{pin}");
+                        nativeSetter.call(input, "{clean_pin}");
                         input.dispatchEvent(new Event('input', {{ bubbles: true }}));
                         input.dispatchEvent(new Event('change', {{ bubbles: true }}));
                         input.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
@@ -242,7 +267,6 @@ class TradeRepublicBrowserService:
                 # Step 3: Direct API Request to Trade Republic Authentication Backend
                 api_feedback_msg = None
                 try:
-
                     waf_token = await self.get_waf_token()
                     headers = {
                         "Content-Type": "application/json",
@@ -255,12 +279,13 @@ class TradeRepublicBrowserService:
                         aiohttp.ClientSession() as session,
                         session.post(
                             "https://api.traderepublic.com/api/v2/auth/web/login",
-                            json={"phoneNumber": phone, "pin": pin},
+                            json={"phoneNumber": clean_phone, "pin": clean_pin},
                             headers=headers,
                             timeout=aiohttp.ClientTimeout(total=8),
                         ) as resp,
                     ):
                         resp_text = await resp.text()
+
                         _LOGGER.info("Trade Republic Auth API response [HTTP %s]: %s", resp.status, resp_text)
                         if resp.status == 200:
                             data = json.loads(resp_text)
