@@ -232,7 +232,6 @@ class TradeRepublicBrowserService:
                 return {"success": False, "error": str(e)}
 
     async def _poll_for_app_approval(self) -> None:
-
         """Poll for session token in background for 120s after credentials submission."""
         for _ in range(40):
             await asyncio.sleep(3)
