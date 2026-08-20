@@ -122,14 +122,17 @@ async def get_index(request: Request):
 
     import json
 
-    default_i18n: dict[str, Any] = {}
-    i18n_path = os.path.join(static_dir, "i18n", "en.json")
-    if os.path.exists(i18n_path):
-        try:
-            with open(i18n_path, "r", encoding="utf-8") as f:
-                default_i18n = json.load(f)
-        except Exception:  # noqa: BLE001
-            pass
+    all_i18n: dict[str, Any] = {}
+    i18n_dir = os.path.join(static_dir, "i18n")
+    if os.path.exists(i18n_dir):
+        for lang_file in os.listdir(i18n_dir):
+            if lang_file.endswith(".json"):
+                lang_code = lang_file[:-5]
+                try:
+                    with open(os.path.join(i18n_dir, lang_file), "r", encoding="utf-8") as f:
+                        all_i18n[lang_code] = json.load(f)
+                except Exception:  # noqa: BLE001
+                    pass
 
     return templates.TemplateResponse(
         request=request,
@@ -142,7 +145,7 @@ async def get_index(request: Request):
             "last_error": browser_service.last_error,
             "requests_count": browser_service.client_requests_count,
             "last_sync_sec": last_sync_sec,
-            "default_i18n": json.dumps(default_i18n),
+            "all_i18n": json.dumps(all_i18n),
         },
     )
 

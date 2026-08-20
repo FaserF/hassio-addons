@@ -188,7 +188,7 @@
 <script>
   // ── i18n ──────────────────────────────────────────────────────────────
   const FALLBACK_LANG = 'en';
-  const EN_FALLBACK = {{ default_i18n | safe }} || {};
+  const BUNDLED_I18N = {{ all_i18n | safe }} || {};
 
   let translations = {};
   let currentLang = FALLBACK_LANG;
@@ -201,18 +201,22 @@
   }
 
   async function loadTranslations(lang) {
+    if (BUNDLED_I18N[lang]) {
+      return BUNDLED_I18N[lang];
+    }
     try {
       const res = await fetch('./static/i18n/' + lang + '.json');
       if (!res.ok) throw new Error('not found');
       return await res.json();
     } catch {
-      return EN_FALLBACK;
+      return BUNDLED_I18N[FALLBACK_LANG] || {};
     }
   }
 
   function t(key) {
     if (translations[key] !== undefined) return translations[key];
-    if (EN_FALLBACK[key] !== undefined) return EN_FALLBACK[key];
+    const fallback = BUNDLED_I18N[FALLBACK_LANG] || {};
+    if (fallback[key] !== undefined) return fallback[key];
     return key;
   }
 
@@ -237,8 +241,10 @@
       syncEl.textContent = formatLastSync(rawSec);
     }
 
-    document.getElementById('lang-en').classList.toggle('active', currentLang === 'en');
-    document.getElementById('lang-de').classList.toggle('active', currentLang === 'de');
+    const langEnBtn = document.getElementById('lang-en');
+    const langDeBtn = document.getElementById('lang-de');
+    if (langEnBtn) langEnBtn.classList.toggle('active', currentLang === 'en');
+    if (langDeBtn) langDeBtn.classList.toggle('active', currentLang === 'de');
     document.documentElement.lang = currentLang;
   }
 
