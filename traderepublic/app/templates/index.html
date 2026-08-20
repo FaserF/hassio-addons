@@ -164,7 +164,7 @@
     <div class="header">
       <h1 class="title">📈 Trade Republic Session Provider</h1>
       <div>
-        {% if is_logged_in %}
+        {% if is_logged_in and not last_error %}
           <span class="badge badge-success">● Connected</span>
         {% else %}
           <span class="badge badge-danger">● Action Required</span>
@@ -173,7 +173,7 @@
     </div>
 
     <!-- Active Session Overview Card -->
-    {% if is_logged_in %}
+    {% if is_logged_in and not last_error %}
       <div class="status-card">
         <div style="display: flex; align-items: center; justify-content: space-between;">
           <div style="font-weight: 600; font-size: 1rem; color: #4ade80;">✓ Integration Ready</div>
@@ -198,29 +198,32 @@
           </div>
           <div class="status-item">
             <div class="status-label">Integration Health</div>
-            <div class="status-value" style="color: {% if last_error %}#ef4444{% else %}#4ade80{% endif %};">
-              {% if last_error %}⚠️ {{ last_error }}{% else %}✓ Healthy & Operational{% endif %}
-            </div>
+            <div class="status-value" style="color: #4ade80;">✓ Healthy & Operational</div>
           </div>
         </div>
       </div>
-
-      {% if last_error %}
-        <div class="alert" style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5;">
-          <b>⚠️ Recent Interaction Issue:</b> {{ last_error }}
-        </div>
-      {% endif %}
 
       <div class="info-banner">
         💡 <b>Everything is set up!</b> Home Assistant will automatically fetch portfolio and cash values. You only need to interact with this page if you change your credentials or your session expires.
       </div>
 
       <button onclick="toggleRelogin()" class="btn-secondary" id="relogin-toggle-btn">🔄 Re-authenticate / Switch Account</button>
+    {% else %}
+      {% if last_error %}
+        <div class="alert" style="background: rgba(239, 68, 68, 0.18); border: 1px solid #ef4444; color: #fca5a5; margin-bottom: 1.5rem;">
+          <b style="font-size: 1rem;">⚠️ Action Required: Session Expired</b><br>
+          <div style="margin-top: 0.4rem; color: #fecaca;">
+            {{ last_error }}
+          </div>
+          <div style="margin-top: 0.5rem; font-size: 0.85rem; color: #cbd5e1;">
+            Please enter your PIN below and tap <b>Confirm</b> on your Trade Republic smartphone app to renew the session.
+          </div>
+        </div>
+      {% endif %}
     {% endif %}
 
-
-    <!-- Login Form Section (shown if logged out or when user clicks re-authenticate) -->
-    <div id="step-login" class="{% if is_logged_in %}hidden{% endif %}" style="margin-top: 1rem;">
+    <!-- Login Form Section (shown if logged out, expired, or when user clicks re-authenticate) -->
+    <div id="step-login" class="{% if is_logged_in and not last_error %}hidden{% endif %}" style="margin-top: 1rem;">
       <form onsubmit="event.preventDefault(); submitLogin();">
         <div class="form-group">
           <label for="phone">Phone Number (international format, e.g. +491701234567, 0170...)</label>
@@ -233,6 +236,7 @@
         <button type="submit">Start Login & Solve Challenge</button>
       </form>
     </div>
+
 
 
     <!-- 2FA Confirmation Screen -->

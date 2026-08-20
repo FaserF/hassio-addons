@@ -55,7 +55,7 @@ RUN \
 RUN \
     pip3 install --no-cache-dir --break-system-packages \
         fastapi \
-        uvicorn[standard] \
+        "uvicorn[standard]" \
         jinja2 \
         aiohttp \
         websockets \

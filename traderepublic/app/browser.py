@@ -137,11 +137,16 @@ class TradeRepublicBrowserService:
         return bool(self.session_token and len(self.session_token) > 30)
 
     async def save_session(self, token: str, phone: Optional[str] = None) -> None:
-        self.session_token = token
+        if not token:
+            _LOGGER.warning("Attempted to save empty session token")
+            return
+        clean_tok = token.strip().strip('"').strip("'")
+        self.session_token = clean_tok
         if phone:
             self.phone_number = phone
         self.is_logged_in = True
         self.status_message = "Everything is connected and running normally. Re-login is only required if your session expires or if you experience connection issues."
+        self.last_error = None
 
         os.makedirs(DATA_DIR, exist_ok=True)
         try:
@@ -155,8 +160,10 @@ class TradeRepublicBrowserService:
                     f,
                     indent=2,
                 )
+            _LOGGER.info("Session saved successfully (token length: %s)", len(clean_tok))
         except Exception as e:
             _LOGGER.error("Failed to save session: %s", e)
+
 
     async def extract_token_from_cookies(self) -> Optional[str]:
         """Extract valid JWT session token from Chromium via CDP cookies and storage."""
