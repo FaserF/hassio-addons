@@ -30,10 +30,11 @@ app = FastAPI(title="Trade Republic Headless Browser Session Provider", lifespan
 async def ingress_middleware(request: Request, call_next):
     """Handle Home Assistant Ingress dynamic subpath prefix and normalize slashes."""
     import re
+
     path = request.scope.get("path", "/")
     # Normalize double slashes from HA Ingress proxies (e.g. //)
     path = re.sub(r"/+", "/", path)
-    
+
     ingress_path = request.headers.get("x-ingress-path")
     if ingress_path:
         clean_prefix = re.sub(r"/+", "/", ingress_path).rstrip("/")
@@ -79,7 +80,6 @@ async def get_index(request: Request):
             "status_message": browser_service.status_message,
         },
     )
-
 
 
 @app.get("/api/v1/status")
