@@ -30,7 +30,11 @@ async def require_supervisor_auth(
     client_ip = request.client.host if request.client else ""
 
     # 1. Allow local loopback and standard Home Assistant docker internal subnets
-    if client_ip in ("127.0.0.1", "::1", "localhost") or client_ip.startswith("172.30.") or client_ip.startswith("172.17."):
+    if (
+        client_ip in ("127.0.0.1", "::1", "localhost")
+        or client_ip.startswith("172.30.")
+        or client_ip.startswith("172.17.")
+    ):
         return
 
     # 2. Check Bearer Supervisor Token

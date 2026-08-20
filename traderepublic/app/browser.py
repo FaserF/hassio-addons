@@ -253,7 +253,9 @@ class TradeRepublicBrowserService:
                         _LOGGER.warning("Extracted token failed validity check")
                         self.is_logged_in = False
                         self.status_message = "Session token expired. Please re-authenticate."
-                        self.last_error = "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+                        self.last_error = (
+                            "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+                        )
                         return None
                 else:
                     # Fallback to saved session token if browser DOM has not re-rendered cookies yet
