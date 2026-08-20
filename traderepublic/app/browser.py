@@ -30,7 +30,6 @@ class TradeRepublicBrowserService:
         self._keepalive_task: Optional[asyncio.Task] = None
         self._ws_url: Optional[str] = None
 
-
     async def start(self) -> None:
         """Start headless Chromium with remote debugging port."""
         try:

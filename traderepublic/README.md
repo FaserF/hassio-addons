@@ -26,7 +26,7 @@
 This Home Assistant Add-on provides an automated headless browser service powered by Chromium & Playwright. It solves AWS WAF Bot Control challenges and maintains persistent, auto-refreshed sessions for Trade Republic.
 
 ## ✨ Features
- 
+
 - 🛡️ **AWS WAF Solving:** Solves Cloudflare / AWS WAF Bot challenges natively using Alpine Chromium via Chrome DevTools Protocol (CDP).
 - 📲 **In-Integration Setup:** Complete authentication (Credentials + In-App Approval / SMS) directly from the Home Assistant Integration setup flow without touching the App UI.
 - 📱 **Modern Ingress Dashboard:** Clean Web UI with live connection health, Home Assistant query counters, diagnostic error alerts, and 1-click In-App verification.
@@ -44,7 +44,6 @@ This Home Assistant Add-on provides an automated headless browser service powere
    - If already logged in, it connects with 1 click without needing phone or PIN.
    - Otherwise, follow the guided prompt to log in and confirm on your smartphone.
 4. _Optional:_ Open the App's **Web UI** via Ingress to monitor status, review query activity, or re-authenticate.
-
 
 ---
 

@@ -71,6 +71,7 @@ class ManualTokenRequest(BaseModel):
 @app.get("//", response_class=HTMLResponse)
 async def get_index(request: Request):
     import time
+
     last_seen_str = "Never"
     if browser_service.last_sync_time:
         diff_sec = int(time.time() - browser_service.last_sync_time)
@@ -114,6 +115,7 @@ async def get_status():
 @app.get("/api/v1/session")
 async def get_session():
     import time
+
     browser_service.client_requests_count += 1
     browser_service.last_sync_time = time.time()
     if not browser_service.session_token:
@@ -123,7 +125,6 @@ async def get_session():
         "phone_number": browser_service.phone_number,
         "is_logged_in": browser_service.is_logged_in,
     }
-
 
 
 @app.post("/api/v1/session/manual")
