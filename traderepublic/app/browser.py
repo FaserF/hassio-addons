@@ -5,6 +5,7 @@ import os
 import subprocess
 import time
 from typing import Any, Dict, Optional
+
 import aiohttp
 
 _LOGGER = logging.getLogger(__name__)
@@ -13,6 +14,7 @@ DATA_DIR = os.getenv("DATA_DIR", "/data")
 STORAGE_STATE_PATH = os.path.join(DATA_DIR, "browser_cookies.json")
 SESSION_FILE_PATH = os.path.join(DATA_DIR, "session.json")
 CDP_PORT = 9222
+
 
 class TradeRepublicBrowserService:
     def __init__(self) -> None:
@@ -68,6 +70,7 @@ class TradeRepublicBrowserService:
                         return None
 
             import websockets
+
             async with websockets.connect(ws_url) as ws:
                 msg_id = int(time.time() * 1000) % 100000
                 req = {"id": msg_id, "method": method, "params": params or {}}
@@ -104,17 +107,23 @@ class TradeRepublicBrowserService:
         os.makedirs(DATA_DIR, exist_ok=True)
         try:
             with open(SESSION_FILE_PATH, "w", encoding="utf-8") as f:
-                json.dump({
-                    "session_token": self.session_token,
-                    "phone_number": self.phone_number,
-                    "updated_at": time.time(),
-                }, f, indent=2)
+                json.dump(
+                    {
+                        "session_token": self.session_token,
+                        "phone_number": self.phone_number,
+                        "updated_at": time.time(),
+                    },
+                    f,
+                    indent=2,
+                )
         except Exception as e:
             _LOGGER.error("Failed to save session: %s", e)
 
     async def extract_token_from_cookies(self) -> Optional[str]:
         """Extract tr_session cookie from Chromium via CDP."""
-        res = await self._send_cdp_cmd("Network.getCookies", {"urls": ["https://app.traderepublic.com", "https://traderepublic.com"]})
+        res = await self._send_cdp_cmd(
+            "Network.getCookies", {"urls": ["https://app.traderepublic.com", "https://traderepublic.com"]}
+        )
         if res and "cookies" in res:
             for cookie in res["cookies"]:
                 if cookie.get("name") == "tr_session":
@@ -168,7 +177,11 @@ class TradeRepublicBrowserService:
                 await self._send_cdp_cmd("Runtime.evaluate", {"expression": pin_script})
 
                 self.status_message = "Credentials submitted. 2FA (SMS/App approval) required."
-                return {"success": True, "step": "2fa_required", "message": "Please enter the 2FA code or confirm in the Trade Republic app."}
+                return {
+                    "success": True,
+                    "step": "2fa_required",
+                    "message": "Please enter the 2FA code or confirm in the Trade Republic app.",
+                }
             except Exception as e:
                 _LOGGER.error("Login init error: %s", e)
                 return {"success": False, "error": str(e)}
@@ -228,5 +241,6 @@ class TradeRepublicBrowserService:
             self._keepalive_task.cancel()
         if self.proc:
             self.proc.terminate()
+
 
 browser_service = TradeRepublicBrowserService()
