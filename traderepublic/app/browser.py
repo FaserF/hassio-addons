@@ -23,9 +23,13 @@ class TradeRepublicBrowserService:
         self.session_token: Optional[str] = None
         self.phone_number: Optional[str] = None
         self.status_message: str = "App started. Ready for login."
+        self.last_sync_time: Optional[float] = None
+        self.last_error: Optional[str] = None
+        self.client_requests_count: int = 0
         self._lock = asyncio.Lock()
         self._keepalive_task: Optional[asyncio.Task] = None
         self._ws_url: Optional[str] = None
+
 
     async def start(self) -> None:
         """Start headless Chromium with remote debugging port."""

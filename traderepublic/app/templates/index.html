@@ -192,8 +192,24 @@
             <div class="status-label">Session Status</div>
             <div class="status-value" style="color: #4ade80;">Authenticated (24/7 Auto-Renew)</div>
           </div>
+          <div class="status-item">
+            <div class="status-label">Home Assistant Interaction</div>
+            <div class="status-value" style="color: #60a5fa;">{{ last_sync }} ({{ requests_count }} queries)</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">Integration Health</div>
+            <div class="status-value" style="color: {% if last_error %}#ef4444{% else %}#4ade80{% endif %};">
+              {% if last_error %}⚠️ {{ last_error }}{% else %}✓ Healthy & Operational{% endif %}
+            </div>
+          </div>
         </div>
       </div>
+
+      {% if last_error %}
+        <div class="alert" style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5;">
+          <b>⚠️ Recent Interaction Issue:</b> {{ last_error }}
+        </div>
+      {% endif %}
 
       <div class="info-banner">
         💡 <b>Everything is set up!</b> Home Assistant will automatically fetch portfolio and cash values. You only need to interact with this page if you change your credentials or your session expires.
@@ -201,6 +217,7 @@
 
       <button onclick="toggleRelogin()" class="btn-secondary" id="relogin-toggle-btn">🔄 Re-authenticate / Switch Account</button>
     {% endif %}
+
 
     <!-- Login Form Section (shown if logged out or when user clicks re-authenticate) -->
     <div id="step-login" class="{% if is_logged_in %}hidden{% endif %}" style="margin-top: 1rem;">

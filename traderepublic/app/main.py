@@ -70,6 +70,17 @@ class ManualTokenRequest(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 @app.get("//", response_class=HTMLResponse)
 async def get_index(request: Request):
+    import time
+    last_seen_str = "Never"
+    if browser_service.last_sync_time:
+        diff_sec = int(time.time() - browser_service.last_sync_time)
+        if diff_sec < 60:
+            last_seen_str = f"{diff_sec}s ago"
+        elif diff_sec < 3600:
+            last_seen_str = f"{diff_sec // 60}m ago"
+        else:
+            last_seen_str = f"{diff_sec // 3600}h ago"
+
     return templates.TemplateResponse(
         request=request,
         name="index.html",
@@ -78,6 +89,9 @@ async def get_index(request: Request):
             "phone_number": browser_service.phone_number or "Not configured",
             "has_token": bool(browser_service.session_token),
             "status_message": browser_service.status_message,
+            "last_error": browser_service.last_error,
+            "requests_count": browser_service.client_requests_count,
+            "last_sync": last_seen_str,
         },
     )
 
@@ -91,11 +105,17 @@ async def get_status():
         "has_session": bool(browser_service.session_token),
         "phone_number": browser_service.phone_number,
         "message": browser_service.status_message,
+        "last_error": browser_service.last_error,
+        "requests_count": browser_service.client_requests_count,
+        "last_sync_time": browser_service.last_sync_time,
     }
 
 
 @app.get("/api/v1/session")
 async def get_session():
+    import time
+    browser_service.client_requests_count += 1
+    browser_service.last_sync_time = time.time()
     if not browser_service.session_token:
         return JSONResponse(status_code=404, content={"error": "No active session token available"})
     return {
@@ -103,6 +123,7 @@ async def get_session():
         "phone_number": browser_service.phone_number,
         "is_logged_in": browser_service.is_logged_in,
     }
+
 
 
 @app.post("/api/v1/session/manual")
