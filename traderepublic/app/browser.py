@@ -123,7 +123,16 @@ class TradeRepublicBrowserService:
         """Extract valid JWT session token from Chromium via CDP cookies and storage."""
         # 1. Check CDP Network Cookies across all URLs / domains
         for cdp_method, params in [
-            ("Network.getCookies", {"urls": ["https://app.traderepublic.com", "https://traderepublic.com", "https://api.traderepublic.com"]}),
+            (
+                "Network.getCookies",
+                {
+                    "urls": [
+                        "https://app.traderepublic.com",
+                        "https://traderepublic.com",
+                        "https://api.traderepublic.com",
+                    ]
+                },
+            ),
             ("Storage.getCookies", {}),
         ]:
             res = await self._send_cdp_cmd(cdp_method, params)
@@ -226,7 +235,6 @@ class TradeRepublicBrowserService:
                 break
 
     async def submit_2fa(self, code: str) -> Dict[str, Any]:
-
         """Submit 2FA code or check In-App approval via CDP."""
         async with self._lock:
             try:
@@ -254,14 +262,20 @@ class TradeRepublicBrowserService:
                     await asyncio.sleep(1.5)
                     token = await self.extract_token_from_cookies()
                     if token:
-                        return {"success": True, "session_token": token, "message": "Login successful! Session token active."}
+                        return {
+                            "success": True,
+                            "session_token": token,
+                            "message": "Login successful! Session token active.",
+                        }
 
                 if clean_code:
                     return {"success": False, "error": "2FA code submitted. Verification in progress or invalid code."}
-                return {"success": False, "error": "In-App approval not yet confirmed. Please tap Confirm in your Trade Republic smartphone app and retry."}
+                return {
+                    "success": False,
+                    "error": "In-App approval not yet confirmed. Please tap Confirm in your Trade Republic smartphone app and retry.",
+                }
             except Exception as e:
                 return {"success": False, "error": str(e)}
-
 
     async def refresh_session(self) -> Optional[str]:
         async with self._lock:
