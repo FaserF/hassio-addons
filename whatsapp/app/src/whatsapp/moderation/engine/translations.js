@@ -1,5 +1,8 @@
 import { loadModerationStore, getGroupModerationConfig } from '../store.js';
-import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
+import {
+  translateTextGatewayWithReason,
+  stripTranslationHeaders,
+} from '../../../utils/gatewayTranslator.js';
 import { logger } from '../../../logger.js';
 import { t } from '../../../locales/loader.js';
 import { reply } from '../../actions.js';
@@ -102,14 +105,7 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
   }
 
   // Strip existing translation headers if text contains them
-  let cleanText = newText
-    .replace(/^🌐\s*\*[^*]*[→\->][^*]*\*\s*:?\s*/i, '')
-    .replace(/^_\s*🌐\s*\[[^\]]*\]\s*_\s*/i, '')
-    .replace(/^🌐\s*\[[^\]]*\]\s*/i, '')
-    .trim();
-  if (cleanText.startsWith('"') && cleanText.endsWith('"') && cleanText.length > 2) {
-    cleanText = cleanText.slice(1, -1).trim();
-  }
+  let cleanText = stripTranslationHeaders(newText);
   if (!cleanText || cleanText.length < 2) return;
 
   const cleanSourceId = String(sourceWaId).trim();

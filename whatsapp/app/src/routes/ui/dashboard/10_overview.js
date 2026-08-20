@@ -252,11 +252,19 @@ async function updateDashboard() {
     const whStatus = document.getElementById('webhook-status');
     if (whStatus) {
       whStatus.textContent = data.webhookEnabled
-        ? t('dashboard.webhook_enabled')
-        : t('dashboard.webhook_disabled');
+        ? window.t
+          ? window.t('dashboard.webhook_enabled')
+          : 'Enabled'
+        : window.t
+          ? window.t('dashboard.webhook_disabled')
+          : 'Disabled';
       whStatus.style.color = data.webhookEnabled ? 'var(--primary)' : 'var(--danger)';
     }
-    setElText('webhook-url', data.webhookUrl || t('dashboard.not_configured'));
+    setElText(
+      'webhook-url',
+      data.webhookUrl ||
+        (window.t ? window.t('dashboard.not_configured') : 'Not Configured')
+    );
 
     // Connected account fields
     const hasDevice = data.isConnected && data.deviceInfo && data.deviceInfo.number;
@@ -336,6 +344,7 @@ async function updateDashboard() {
     setElText('val-uptime', uptimeStr);
 
     const sessionReconnects = stats.totalReconnects ?? data.reconnectAttempts ?? 0;
+    const sinceRestartText = window.t ? window.t('dashboard.since_restart') : 'since restart';
     setElText(
       'val-reconnects',
       lifetimeReconnects > sessionReconnects

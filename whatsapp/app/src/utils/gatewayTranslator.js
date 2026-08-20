@@ -622,3 +622,37 @@ export function getTranslationDiagnostics(groupConfig = {}, store = {}) {
     recent_errors: recentErrors.slice(0, 10),
   };
 }
+
+/**
+ * Checks if the text begins with or contains automated translation banners/headers.
+ * @param {string} text
+ * @returns {boolean}
+ */
+export function isTranslationHeaderText(text) {
+  if (!text || typeof text !== 'string') return false;
+  return (
+    /🌐\s*\*[^*→\->]*[→\->][^*]*\*\s*:?/i.test(text) ||
+    /_\s*🌐\s*\[[^\]]*\]\s*_/i.test(text) ||
+    text.includes('🌐 [')
+  );
+}
+
+/**
+ * Strips existing translation banners/headers from text before re-translating.
+ * @param {string} text
+ * @returns {string}
+ */
+export function stripTranslationHeaders(text) {
+  if (!text || typeof text !== 'string') return '';
+  let clean = text
+    .replace(/^🌐\s*\*[^*→\->]*[→\->][^*]*\*\s*:?\s*/i, '')
+    .replace(/^_\s*🌐\s*\[[^\]]*\]\s*_\s*/i, '')
+    .replace(/^🌐\s*\[[^\]]*\]\s*/i, '')
+    .trim();
+
+  if (clean.startsWith('"') && clean.endsWith('"') && clean.length > 2) {
+    clean = clean.slice(1, -1).trim();
+  }
+  return clean;
+}
+

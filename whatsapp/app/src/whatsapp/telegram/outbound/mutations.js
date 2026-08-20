@@ -1,6 +1,11 @@
 import { loadTelegramStore } from '../store.js';
 import { getTelegramBotClient } from '../bot.js';
-import { recordMessageMap, resolveWaMsgFromTg, resolveTgMsgFromWa } from '../message_map.js';
+import {
+  recordMessageMap,
+  resolveWaMsgFromTg,
+  resolveTgMsgFromWa,
+  removeMessageMap,
+} from '../message_map.js';
 import { waToTelegramHtml } from '../format.js';
 import { applyRegexReplacements } from '../regex.js';
 import { formatHeader } from '../headers.js';
@@ -8,8 +13,11 @@ import { getSession, sessions } from '../../../session.js';
 import { logger } from '../../../logger.js';
 import { t } from '../../../locales/loader.js';
 import { getGroupModerationConfig } from '../../moderation/store.js';
-import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 import { registry } from '../../moderation/commands.js';
+import {
+  translateTextGatewayWithReason,
+  stripTranslationHeaders,
+} from '../../../utils/gatewayTranslator.js';
 
 export const recentWaEditEvents = new Map();
 export const ignoreWaEditEchoes = new Set();
@@ -358,11 +366,7 @@ export async function syncWhatsAppEditToTelegram(
         );
 
     // Strip existing translation header if text contains it before re-translating
-    let cleanSourceText = newText
-      .replace(/^🌐\s*\*[^*]*[→\->][^*]*\*\s*:?\s*/i, '')
-      .replace(/^_\s*🌐\s*\[[^\]]*\]\s*_\s*/i, '')
-      .replace(/^🌐\s*\[[^\]]*\]\s*/i, '')
-      .trim();
+    let cleanSourceText = stripTranslationHeaders(newText);
 
     let effectiveText = cleanSourceText || newText;
     const groupModCfg = getGroupModerationConfig(targetWaJid);

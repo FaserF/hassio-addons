@@ -1,6 +1,9 @@
 import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from '../store.js';
 import { processAiModeration } from '../ai.js';
-import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
+import {
+  translateTextGatewayWithReason,
+  isTranslationHeaderText,
+} from '../../../utils/gatewayTranslator.js';
 import { reply } from '../../actions.js';
 import { logger } from '../../../logger.js';
 import { checkSuspiciousName } from '../securityScanner.js';
@@ -355,11 +358,7 @@ export async function handleModerationMessage(session, event) {
   }
 
   // 0. Non-destructive Auto-Translation Engine (never translate bot's own messages or existing translations)
-  const isTranslationHeader =
-    text &&
-    (/🌐\s*\*[^*]*[→\->][^*]*\*\s*:?/i.test(text) ||
-      /_\s*🌐\s*\[[^\]]*\]\s*_/i.test(text) ||
-      text.includes('🌐 ['));
+  const isTranslationHeader = isTranslationHeaderText(text);
 
   const isSyntheticMessage =
     rawMsg?.key?.fromMe ||
