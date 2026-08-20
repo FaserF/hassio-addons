@@ -60,17 +60,24 @@ async def verify_tr_token(token: str) -> bool:
                 if not resp or ("connected" not in str(resp) and "26" not in str(resp)):
                     return False
 
-                # Test actual data subscription
+                # Test actual data subscription with response loop
                 await ws.send('sub 1 {"type":"compactPortfolioByType"}')
-                sub_resp = await ws.recv()
-                _LOGGER.info("Token subscription test response: %s", sub_resp)
-                if sub_resp:
+                start_t = asyncio.get_event_loop().time()
+                while asyncio.get_event_loop().time() - start_t < 4.0:
+                    sub_resp = await ws.recv()
+                    if not sub_resp:
+                        continue
+                    _LOGGER.info("Token subscription test response: %s", sub_resp)
                     parts = str(sub_resp).split(" ", 2)
-                    if len(parts) >= 2 and parts[1] == "E":
-                        _LOGGER.warning("Token subscription rejected with error: %s", sub_resp)
-                        return False
-                    return True
-                return False
+                    if len(parts) >= 2:
+                        sub_id_str, status = parts[0], parts[1]
+                        if sub_id_str == "1":
+                            if status == "A":
+                                return True
+                            if status == "E":
+                                _LOGGER.warning("Token subscription rejected with error: %s", sub_resp)
+                                return False
+                return True
         finally:
             await ws.close()
 
