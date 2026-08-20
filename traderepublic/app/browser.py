@@ -181,7 +181,9 @@ class TradeRepublicBrowserService:
             return null;
         })()
         """
-        storage_res = await self._send_cdp_cmd("Runtime.evaluate", {"expression": storage_script, "returnByValue": True})
+        storage_res = await self._send_cdp_cmd(
+            "Runtime.evaluate", {"expression": storage_script, "returnByValue": True}
+        )
         if storage_res and isinstance(storage_res, dict):
             val = storage_res.get("result", {}).get("value")
             if val and isinstance(val, str) and (val.startswith("eyJ") or len(val) > 30):
@@ -206,7 +208,6 @@ class TradeRepublicBrowserService:
                 return clean_val
 
         return None
-
 
     async def get_waf_token(self) -> Optional[str]:
         """Extract AWS WAF token from browser cookies if solved."""
