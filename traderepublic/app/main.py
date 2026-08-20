@@ -64,7 +64,6 @@ async def register_supervisor_discovery() -> None:
             _LOGGER.debug("Could not notify Supervisor discovery (attempt %s): %s", attempt + 1, exc)
 
 
-
 app = FastAPI(title="Trade Republic Headless Browser Session Provider", lifespan=lifespan)
 
 
