@@ -42,8 +42,7 @@ This Home Assistant Add-on provides an automated headless browser service powere
    - The Trade Republic integration will automatically discover the App!
    - Follow the prompt to log in with your Phone Number & PIN.
    - Confirm the prompt on your Trade Republic smartphone app.
-4. *Optional:* You can also open the App's **Web UI** via Ingress to monitor status or log in manually.
-
+4. _Optional:_ You can also open the App's **Web UI** via Ingress to monitor status or log in manually.
 
 ---
 

@@ -164,7 +164,6 @@ class TradeRepublicBrowserService:
 
         return None
 
-
     async def start_login(self, phone: str, pin: str) -> Dict[str, Any]:
         """Navigate and input credentials via CDP Runtime evaluation."""
         async with self._lock:
