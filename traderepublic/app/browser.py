@@ -148,22 +148,65 @@ class TradeRepublicBrowserService:
                             await self.save_session(token)
                             return token
 
-        # 2. Check document.cookie via Runtime evaluation
+        # 2. Check localStorage & sessionStorage across window & frames
+        storage_script = """
+        (() => {
+            try {
+                // Check all keys in localStorage
+                for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    const v = localStorage.getItem(k);
+                    if (v && typeof v === 'string') {
+                        if (k === 'sessionToken' || k === 'tr_session' || k.includes('session') || k.includes('auth')) {
+                            // Check if raw token or JSON stringified
+                            try {
+                                const parsed = JSON.parse(v);
+                                if (typeof parsed === 'string' && (parsed.startsWith('eyJ') || parsed.length > 30)) return parsed;
+                                if (parsed && typeof parsed === 'object') {
+                                    if (parsed.sessionToken) return parsed.sessionToken;
+                                    if (parsed.token) return parsed.token;
+                                }
+                            } catch(e) {}
+                            if (v.startsWith('eyJ') || v.length > 30) return v;
+                        }
+                    }
+                }
+                // Check sessionStorage
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    const k = sessionStorage.key(i);
+                    const v = sessionStorage.getItem(k);
+                    if (v && typeof v === 'string' && (v.startsWith('eyJ') || v.length > 30)) return v;
+                }
+            } catch(e) {}
+            return null;
+        })()
+        """
+        storage_res = await self._send_cdp_cmd("Runtime.evaluate", {"expression": storage_script, "returnByValue": True})
+        if storage_res and isinstance(storage_res, dict):
+            val = storage_res.get("result", {}).get("value")
+            if val and isinstance(val, str) and (val.startswith("eyJ") or len(val) > 30):
+                clean_val = val.strip().strip('"').strip("'")
+                await self.save_session(clean_val)
+                return clean_val
+
+        # 3. Check document.cookie via Runtime evaluation
         eval_script = """
         (() => {
             const match = document.cookie.match(/(?:tr_session|sessionToken)=([^;]+)/);
-            if (match && match[1] && (match[1].startsWith('eyJ') || match[1].length > 40)) return match[1];
+            if (match && match[1] && (match[1].startsWith('eyJ') || match[1].length > 30)) return match[1];
             return null;
         })()
         """
         eval_res = await self._send_cdp_cmd("Runtime.evaluate", {"expression": eval_script, "returnByValue": True})
         if eval_res and isinstance(eval_res, dict):
             val = eval_res.get("result", {}).get("value")
-            if val and isinstance(val, str) and (val.startswith("eyJ") or len(val) > 40):
-                await self.save_session(val)
-                return val
+            if val and isinstance(val, str) and (val.startswith("eyJ") or len(val) > 30):
+                clean_val = val.strip().strip('"').strip("'")
+                await self.save_session(clean_val)
+                return clean_val
 
         return None
+
 
     async def get_waf_token(self) -> Optional[str]:
         """Extract AWS WAF token from browser cookies if solved."""
