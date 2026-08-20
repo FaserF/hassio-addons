@@ -93,7 +93,9 @@ class TradeRepublicBrowserService:
                     self.last_error = None
                 else:
                     self.status_message = "Stored session token is expired. Please re-authenticate."
-                    self.last_error = "Session expired or rejected by Trade Republic (HTTP 401). Please click Re-authenticate."
+                    self.last_error = (
+                        "Session expired or rejected by Trade Republic (HTTP 401). Please click Re-authenticate."
+                    )
 
     async def save_session(self, token: str, phone: Optional[str] = None) -> None:
         if not token:

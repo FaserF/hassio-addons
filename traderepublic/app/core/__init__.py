@@ -1,4 +1,10 @@
-from .constants import CDP_PORT, DATA_DIR, KEEP_ALIVE_INTERVAL, SESSION_FILE_PATH, STORAGE_STATE_PATH
+from .constants import (
+    CDP_PORT,
+    DATA_DIR,
+    KEEP_ALIVE_INTERVAL,
+    SESSION_FILE_PATH,
+    STORAGE_STATE_PATH,
+)
 
 __all__ = [
     "CDP_PORT",

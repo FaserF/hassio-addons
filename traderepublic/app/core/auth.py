@@ -83,9 +83,7 @@ class AuthHelper:
             return null;
         })()
         """
-        storage_res = await self.cdp.send_cmd(
-            "Runtime.evaluate", {"expression": storage_script, "returnByValue": True}
-        )
+        storage_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": storage_script, "returnByValue": True})
         if storage_res and isinstance(storage_res, dict):
             val = storage_res.get("result", {}).get("value")
             if val and isinstance(val, str) and (val.startswith("eyJ") or len(val) > 30):
@@ -193,7 +191,11 @@ class AuthHelper:
                 elif resp.status in (400, 401):
                     try:
                         err_data = json.loads(resp_text)
-                        if "errors" in err_data and isinstance(err_data["errors"], list) and len(err_data["errors"]) > 0:
+                        if (
+                            "errors" in err_data
+                            and isinstance(err_data["errors"], list)
+                            and len(err_data["errors"]) > 0
+                        ):
                             first_err = err_data["errors"][0]
                             err_code = first_err.get("errorCode", "")
                             err_msg = first_err.get("errorMessage", "")
@@ -220,14 +222,14 @@ class AuthHelper:
             return null;
         })()
         """
-        dom_err = await self.cdp.send_cmd(
-            "Runtime.evaluate", {"expression": dom_error_script, "returnByValue": True}
-        )
+        dom_err = await self.cdp.send_cmd("Runtime.evaluate", {"expression": dom_error_script, "returnByValue": True})
         dom_err_text = dom_err and dom_err.get("result", {}).get("value")
 
         return {
             "success": True,
-            "message": dom_err_text or api_feedback_msg or "Credentials submitted. Please confirm in your Trade Republic smartphone app.",
+            "message": dom_err_text
+            or api_feedback_msg
+            or "Credentials submitted. Please confirm in your Trade Republic smartphone app.",
         }
 
     async def submit_2fa_code(self, clean_code: str) -> None:

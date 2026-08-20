@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-08-20T13:01:26.842572",
+  "timestamp": "2026-08-20T14:01:12.970182",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -15,7 +15,10 @@
       "name": "AegisBot",
       "version": "0.6.2",
       "description": "Professional Telegram Group Defender — Advanced Security, Automated Moderation, and Community Management.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-aegisbot-{arch}",
       "has_dockerfile": true,
       "has_run_sh": true,
@@ -30,7 +33,10 @@
       "name": "EntraMirror",
       "version": "0.1.0",
       "description": "Microsoft Entra ID Tenant Backup, Restore, Synchronization & Cloning for Home Assistant.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-entramirror-{arch}",
       "has_dockerfile": true,
       "has_run_sh": true,
@@ -45,7 +51,10 @@
       "name": "ShieldDNS",
       "version": "2.5.2",
       "description": "High-performance DoT proxy for AdGuard Home",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-shielddns-{arch}",
       "has_dockerfile": true,
       "has_run_sh": true,
@@ -60,7 +69,10 @@
       "name": "ShieldFile",
       "version": "2.4.3",
       "description": "Secure, Web-based File Manager (SFTP over HTTPS)",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-shieldfile-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -75,7 +87,10 @@
       "name": "Antigravity",
       "version": "1.0.1",
       "description": "Google Antigravity Quota Monitor, Multi-Account Dashboard, and Dynamic Polling Gateway for Home Assistant.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-antigravity-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -90,7 +105,10 @@
       "name": "Apache2",
       "version": "3.4.5",
       "description": "Open Source Webserver with PHP and MariaDB.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-apache2-{arch}",
       "has_dockerfile": true,
       "has_run_sh": true,
@@ -105,7 +123,10 @@
       "name": "Apache2 Minimal",
       "version": "3.4.5",
       "description": "Open Source Webserver without PHP and minimal extra modules.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-apache2-minimal-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -120,7 +141,10 @@
       "name": "Apache2 Minimal with MariaDB Client",
       "version": "3.4.5",
       "description": "Open Source Webserver with MariaDB Client and some PHP Modules.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-apache2-minimal-mariadb-{arch}",
       "has_dockerfile": true,
       "has_run_sh": true,
@@ -135,7 +159,10 @@
       "name": "Bash Script Executer",
       "version": "2.5.2",
       "description": ">-",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-bashscriptexecuter-{arch}",
       "has_dockerfile": true,
       "has_run_sh": true,
@@ -150,7 +177,10 @@
       "name": "BentoPDF",
       "version": "1.3.2",
       "description": "Self-hosted, privacy-first PDF toolkit",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-bentopdf-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -165,7 +195,10 @@
       "name": "DBF (DB-Infoscreen)",
       "version": "1.1.2",
       "description": "Railway departure display (formerly db-fakescreen) as a Home Assistant App.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-dbf-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -180,7 +213,10 @@
       "name": "ER-Startseite (Dashboard)",
       "version": "1.4.7",
       "description": "A modern, highly customizable dashboard with a neon aesthetic.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-er-dashboard-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -195,7 +231,10 @@
       "name": "Imapsync",
       "version": "0.4.2",
       "description": "Sync IMAP accounts easily and reliably.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-imapsync-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -210,7 +249,9 @@
       "name": "Komodo",
       "version": "0.2.5",
       "description": "A tool to build and deploy software on many servers",
-      "arch": ["amd64"],
+      "arch": [
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-komodo-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -225,7 +266,10 @@
       "name": "Netboot.xyz",
       "version": "2.4.2",
       "description": "PXE-Server to deploy a OS inside your local network",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-netboot-xyz-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -240,7 +284,10 @@
       "name": "NGINX",
       "version": "0.4.4",
       "description": "Open Source Webserver with PHP and MariaDB.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-nginx-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -255,7 +302,10 @@
       "name": "OpenSSL",
       "version": "2.4.2",
       "description": "Generate self-signed certificates",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-openssl-{arch}",
       "has_dockerfile": true,
       "has_run_sh": true,
@@ -270,7 +320,10 @@
       "name": "Planka",
       "version": "1.4.2",
       "description": "The elegant open source project tracking tool",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-planka-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -285,7 +338,10 @@
       "name": "pterodactyl Panel Gameserver",
       "version": "1.3.2",
       "description": "Open-Source Gameserver Management Panel",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-pterodactyl_panel-{arch}",
       "has_dockerfile": true,
       "has_run_sh": true,
@@ -300,7 +356,10 @@
       "name": "pterodactyl Wings Gameserver",
       "version": "2.4.5",
       "description": "Open Source Gameserver",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-pterodactyl_wings-{arch}",
       "has_dockerfile": true,
       "has_run_sh": true,
@@ -315,7 +374,10 @@
       "name": "Solumati",
       "version": "2.4.0",
       "description": "The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-solumati-{arch}",
       "has_dockerfile": true,
       "has_run_sh": true,
@@ -330,7 +392,9 @@
       "name": "Switch LAN Play Client",
       "version": "2.4.2",
       "description": "Nintendo Switch Lan Play -Client",
-      "arch": ["amd64"],
+      "arch": [
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-switch-lan-play-{arch}",
       "has_dockerfile": true,
       "has_run_sh": true,
@@ -345,7 +409,9 @@
       "name": "Switch LAN Play Server",
       "version": "2.4.2",
       "description": "Nintendo Switch Lan Play -Server",
-      "arch": ["amd64"],
+      "arch": [
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-switch-lan-play-server-{arch}",
       "has_dockerfile": true,
       "has_run_sh": true,
@@ -360,7 +426,10 @@
       "name": "SwitchCraft",
       "version": "0.3.1",
       "description": "SwitchCraft is your powerful, cross-platform tool designed to be a comprehensive packaging assistant for IT Professionals.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-switchcraft-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -375,7 +444,10 @@
       "name": "Tado Auto Assist",
       "version": "2.4.0",
       "description": "Tado Auto-Assist for Geofencing and open Window detection",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-tado_aa-{arch}",
       "has_dockerfile": true,
       "has_run_sh": true,
@@ -390,7 +462,10 @@
       "name": "Trade Republic Headless Browser",
       "version": "0.1.0",
       "description": "Trade Republic Headless Browser & Session Provider (WAF Solver & Keep-Alive).",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-traderepublic-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -405,7 +480,10 @@
       "name": "Tiny Tiny RSS",
       "version": "1.3.2",
       "description": "A web-based news feed (RSS/Atom) reader and aggregator",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-tt-rss-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -420,7 +498,10 @@
       "name": "WhatsApp Gateway",
       "version": "2.1.1",
       "description": "Home Assistant WhatsApp App (Baileys/Node.js).",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-whatsapp-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -435,7 +516,9 @@
       "name": "Wiki.JS",
       "version": "3.5.2",
       "description": "The most powerful and extensible open source Wiki software",
-      "arch": ["amd64"],
+      "arch": [
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-wiki-{arch}",
       "has_dockerfile": true,
       "has_run_sh": true,
@@ -465,7 +548,10 @@
       "name": "Wordpress",
       "version": "0.4.2",
       "description": "The most popular publication platform on the Web.",
-      "arch": ["aarch64", "amd64"],
+      "arch": [
+        "aarch64",
+        "amd64"
+      ],
       "image": "ghcr.io/faserf/hassio-addons-wordpress-{arch}",
       "has_dockerfile": true,
       "has_run_sh": false,
@@ -529,10 +615,19 @@
       "config.yaml",
       "run.sh"
     ],
-    "ShieldDNS/translations": ["de.yaml", "en.yaml"],
-    "ShieldDNS/rootfs/usr/bin": ["shielddns_integration.sh"],
-    "ShieldDNS/rootfs/usr/lib/bashio": ["banner.sh"],
-    "ShieldDNS/www": ["index.html"],
+    "ShieldDNS/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "ShieldDNS/rootfs/usr/bin": [
+      "shielddns_integration.sh"
+    ],
+    "ShieldDNS/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "ShieldDNS/www": [
+      "index.html"
+    ],
     "openssl": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -542,8 +637,13 @@
       "config.yaml",
       "run.sh"
     ],
-    "openssl/translations": ["de.yaml", "en.yaml"],
-    "openssl/rootfs/usr/lib/bashio": ["banner.sh"],
+    "openssl/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "openssl/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
     "apache2-minimal-mariadb": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -554,10 +654,19 @@
       "index.html",
       "run.sh"
     ],
-    "apache2-minimal-mariadb/translations": ["de.yaml", "en.yaml"],
-    "apache2-minimal-mariadb/rootfs/etc/cont-init.d": ["apache2.sh"],
-    "apache2-minimal-mariadb/rootfs/usr/bin": ["webserver_app_integration.sh"],
-    "apache2-minimal-mariadb/rootfs/usr/lib/bashio": ["banner.sh"],
+    "apache2-minimal-mariadb/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "apache2-minimal-mariadb/rootfs/etc/cont-init.d": [
+      "apache2.sh"
+    ],
+    "apache2-minimal-mariadb/rootfs/usr/bin": [
+      "webserver_app_integration.sh"
+    ],
+    "apache2-minimal-mariadb/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
     "pterodactyl-panel": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -567,15 +676,42 @@
       "config.yaml",
       "run.sh"
     ],
-    "pterodactyl-panel/translations": ["de.yaml", "en.yaml"],
-    "pterodactyl-panel/root/etc/php83": ["php-fpm.conf"],
-    "pterodactyl-panel/root/etc/php83/php-fpm.d": ["www.conf"],
-    "pterodactyl-panel/root/etc/nginx": ["nginx.conf"],
-    "pterodactyl-panel/root/etc/nginx/templates": ["http.conf", "https.conf"],
-    "pterodactyl-panel/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
-    "planka": ["CHANGELOG.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
-    "planka/translations": ["de.yaml", "en.yaml"],
-    "planka/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
+    "pterodactyl-panel/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "pterodactyl-panel/root/etc/php83": [
+      "php-fpm.conf"
+    ],
+    "pterodactyl-panel/root/etc/php83/php-fpm.d": [
+      "www.conf"
+    ],
+    "pterodactyl-panel/root/etc/nginx": [
+      "nginx.conf"
+    ],
+    "pterodactyl-panel/root/etc/nginx/templates": [
+      "http.conf",
+      "https.conf"
+    ],
+    "pterodactyl-panel/rootfs/usr/lib/bashio": [
+      "app.sh",
+      "banner.sh"
+    ],
+    "planka": [
+      "CHANGELOG.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "planka/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "planka/rootfs/usr/lib/bashio": [
+      "app.sh",
+      "banner.sh"
+    ],
     "ShieldFile": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -584,8 +720,13 @@
       "build.yaml",
       "config.yaml"
     ],
-    "ShieldFile/translations": ["de.yaml", "en.yaml"],
-    "ShieldFile/rootfs/usr/lib/bashio": ["banner.sh"],
+    "ShieldFile/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "ShieldFile/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
     "switch_lan_play_server": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -595,8 +736,13 @@
       "config.yaml",
       "run.sh"
     ],
-    "switch_lan_play_server/translations": ["de.yaml", "en.yaml"],
-    "switch_lan_play_server/rootfs/usr/lib/bashio": ["banner.sh"],
+    "switch_lan_play_server/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "switch_lan_play_server/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
     "er-dashboard": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -605,9 +751,17 @@
       "build.yaml",
       "config.yaml"
     ],
-    "er-dashboard/translations": ["de.yaml", "en.yaml"],
-    "er-dashboard/rootfs/etc/nginx/http.d": ["ingress.conf"],
-    "er-dashboard/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
+    "er-dashboard/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "er-dashboard/rootfs/etc/nginx/http.d": [
+      "ingress.conf"
+    ],
+    "er-dashboard/rootfs/usr/lib/bashio": [
+      "app.sh",
+      "banner.sh"
+    ],
     "wiki.js": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -617,14 +771,38 @@
       "config.yaml",
       "run.sh"
     ],
-    "wiki.js/translations": ["de.yaml", "en.yaml"],
-    "wiki.js/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
-    "tt-rss": ["CHANGELOG.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
-    "tt-rss/translations": ["de.yaml", "en.yaml"],
-    "tt-rss/rootfs/etc/nginx": ["nginx.conf"],
-    "tt-rss/rootfs/etc/nginx/servers": ["ingress.conf"],
-    "tt-rss/rootfs/etc/php/php-fpm.d": ["www.conf"],
-    "tt-rss/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
+    "wiki.js/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "wiki.js/rootfs/usr/lib/bashio": [
+      "app.sh",
+      "banner.sh"
+    ],
+    "tt-rss": [
+      "CHANGELOG.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "tt-rss/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "tt-rss/rootfs/etc/nginx": [
+      "nginx.conf"
+    ],
+    "tt-rss/rootfs/etc/nginx/servers": [
+      "ingress.conf"
+    ],
+    "tt-rss/rootfs/etc/php/php-fpm.d": [
+      "www.conf"
+    ],
+    "tt-rss/rootfs/usr/lib/bashio": [
+      "app.sh",
+      "banner.sh"
+    ],
     "apache2-minimal": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -634,15 +812,40 @@
       "config.yaml",
       "index.html"
     ],
-    "apache2-minimal/translations": ["de.yaml", "en.yaml"],
-    "apache2-minimal/rootfs": ["run.sh"],
-    "apache2-minimal/rootfs/etc/cont-init.d": ["apache2.sh"],
-    "apache2-minimal/rootfs/usr/bin": ["webserver_app_integration.sh"],
-    "apache2-minimal/rootfs/usr/lib/bashio": ["banner.sh"],
-    "bentopdf": ["CHANGELOG.md", "DOCS.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
-    "bentopdf/translations": ["de.yaml", "en.yaml"],
-    "bentopdf/rootfs/etc/nginx": ["nginx.conf"],
-    "bentopdf/rootfs/usr/lib/bashio": ["banner.sh"],
+    "apache2-minimal/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "apache2-minimal/rootfs": [
+      "run.sh"
+    ],
+    "apache2-minimal/rootfs/etc/cont-init.d": [
+      "apache2.sh"
+    ],
+    "apache2-minimal/rootfs/usr/bin": [
+      "webserver_app_integration.sh"
+    ],
+    "apache2-minimal/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "bentopdf": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "bentopdf/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "bentopdf/rootfs/etc/nginx": [
+      "nginx.conf"
+    ],
+    "bentopdf/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
     "apache2": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -653,10 +856,19 @@
       "index.html",
       "run.sh"
     ],
-    "apache2/translations": ["de.yaml", "en.yaml"],
-    "apache2/rootfs/etc/cont-init.d": ["apache2.sh"],
-    "apache2/rootfs/usr/bin": ["webserver_app_integration.sh"],
-    "apache2/rootfs/usr/lib/bashio": ["banner.sh"],
+    "apache2/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "apache2/rootfs/etc/cont-init.d": [
+      "apache2.sh"
+    ],
+    "apache2/rootfs/usr/bin": [
+      "webserver_app_integration.sh"
+    ],
+    "apache2/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
     "AegisBot": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -668,9 +880,17 @@
       "requirements.txt",
       "run.sh"
     ],
-    "AegisBot/translations": ["de.yaml", "en.yaml"],
-    "AegisBot/rootfs/usr/bin": ["aegisbot_integration.sh"],
-    "AegisBot/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
+    "AegisBot/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "AegisBot/rootfs/usr/bin": [
+      "aegisbot_integration.sh"
+    ],
+    "AegisBot/rootfs/usr/lib/bashio": [
+      "app.sh",
+      "banner.sh"
+    ],
     "imapsync": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -680,14 +900,42 @@
       "build.yaml",
       "config.yaml"
     ],
-    "imapsync/translations": ["de.yaml", "en.yaml"],
-    "imapsync/rootfs/usr/lib/bashio": ["banner.sh"],
-    "dbf": ["CHANGELOG.md", "DOCS.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
-    "dbf/translations": ["de.yaml", "en.yaml"],
-    "dbf/rootfs/usr/lib/bashio": ["banner.sh"],
-    "komodo": ["CHANGELOG.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
-    "komodo/translations": ["de.yaml", "en.yaml"],
-    "komodo/rootfs/usr/lib/bashio": ["banner.sh"],
+    "imapsync/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "imapsync/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "dbf": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "dbf/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "dbf/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "komodo": [
+      "CHANGELOG.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "komodo/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "komodo/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
     "netboot-xyz": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -696,13 +944,31 @@
       "build.yaml",
       "config.yaml"
     ],
-    "netboot-xyz/translations": ["de.yaml", "en.yaml"],
-    "netboot-xyz/root": ["donate.txt"],
-    "netboot-xyz/root/defaults": ["dnsmasq.conf", "nginx.conf"],
-    "netboot-xyz/root/etc/cont-init.d": ["10-prerequisite.sh"],
-    "netboot-xyz/root/usr/lib/bashio": ["banner.sh"],
-    "docs": ["index.html", "requests.html", "support.html"],
-    "docs/css": ["style.css"],
+    "netboot-xyz/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "netboot-xyz/root": [
+      "donate.txt"
+    ],
+    "netboot-xyz/root/defaults": [
+      "dnsmasq.conf",
+      "nginx.conf"
+    ],
+    "netboot-xyz/root/etc/cont-init.d": [
+      "10-prerequisite.sh"
+    ],
+    "netboot-xyz/root/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "docs": [
+      "index.html",
+      "requests.html",
+      "support.html"
+    ],
+    "docs/css": [
+      "style.css"
+    ],
     "pterodactyl-wings": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -712,9 +978,17 @@
       "config.yaml",
       "run.sh"
     ],
-    "pterodactyl-wings/examples": ["addon_config.yaml", "wings_config.yml"],
-    "pterodactyl-wings/translations": ["de.yaml", "en.yaml"],
-    "pterodactyl-wings/rootfs/usr/lib/bashio": ["banner.sh"],
+    "pterodactyl-wings/examples": [
+      "addon_config.yaml",
+      "wings_config.yml"
+    ],
+    "pterodactyl-wings/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "pterodactyl-wings/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
     "nginx": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -724,10 +998,19 @@
       "config.yaml",
       "index.html"
     ],
-    "nginx/translations": ["de.yaml", "en.yaml"],
-    "nginx/rootfs/etc/cont-init.d": ["nginx.sh"],
-    "nginx/rootfs/usr/bin": ["webserver_app_integration.sh"],
-    "nginx/rootfs/usr/lib/bashio": ["banner.sh"],
+    "nginx/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "nginx/rootfs/etc/cont-init.d": [
+      "nginx.sh"
+    ],
+    "nginx/rootfs/usr/bin": [
+      "webserver_app_integration.sh"
+    ],
+    "nginx/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
     "bash_script_executer": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -737,19 +1020,64 @@
       "config.yaml",
       "run.sh"
     ],
-    "bash_script_executer/translations": ["de.yaml", "en.yaml"],
-    "bash_script_executer/integration": ["__init__.py", "button.py", "manifest.json"],
-    "bash_script_executer/rootfs/usr/lib/bashio": ["banner.sh"],
-    "wordpress": ["CHANGELOG.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
-    "wordpress/translations": ["de.yaml", "en.yaml"],
-    "wordpress/rootfs/etc/php84/php-fpm.d": ["www.conf"],
-    "wordpress/rootfs/etc/nginx": ["nginx.conf"],
-    "wordpress/rootfs/etc/nginx/http.d": ["ingress.conf"],
-    "wordpress/rootfs/etc/nginx/templates": ["http.conf", "https.conf"],
-    "wordpress/rootfs/etc/nginx/includes": ["php.conf", "server_params.conf"],
-    "wordpress/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
-    "whatsapp": ["API.md", "CHANGELOG.md", "DOCS.md", "Dockerfile", "README.md", "config.yaml"],
-    "whatsapp/app": ["eslint.config.js", "index.js", "package.json", "requirements.txt"],
+    "bash_script_executer/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "bash_script_executer/integration": [
+      "__init__.py",
+      "button.py",
+      "manifest.json"
+    ],
+    "bash_script_executer/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "wordpress": [
+      "CHANGELOG.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "wordpress/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "wordpress/rootfs/etc/php84/php-fpm.d": [
+      "www.conf"
+    ],
+    "wordpress/rootfs/etc/nginx": [
+      "nginx.conf"
+    ],
+    "wordpress/rootfs/etc/nginx/http.d": [
+      "ingress.conf"
+    ],
+    "wordpress/rootfs/etc/nginx/templates": [
+      "http.conf",
+      "https.conf"
+    ],
+    "wordpress/rootfs/etc/nginx/includes": [
+      "php.conf",
+      "server_params.conf"
+    ],
+    "wordpress/rootfs/usr/lib/bashio": [
+      "app.sh",
+      "banner.sh"
+    ],
+    "whatsapp": [
+      "API.md",
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "config.yaml"
+    ],
+    "whatsapp/app": [
+      "eslint.config.js",
+      "index.js",
+      "package.json",
+      "requirements.txt"
+    ],
     "whatsapp/app/src": [
       "config.js",
       "ha.js",
@@ -768,9 +1096,19 @@
       "security.js",
       "versionCheck.js"
     ],
-    "whatsapp/app/src/whatsapp": ["actions.js", "connection.js", "export.js", "sttHandler.js"],
-    "whatsapp/app/src/whatsapp/startup": ["missedMessages.js"],
-    "whatsapp/app/src/whatsapp/autoresponder": ["engine.js", "store.js"],
+    "whatsapp/app/src/whatsapp": [
+      "actions.js",
+      "connection.js",
+      "export.js",
+      "sttHandler.js"
+    ],
+    "whatsapp/app/src/whatsapp/startup": [
+      "missedMessages.js"
+    ],
+    "whatsapp/app/src/whatsapp/autoresponder": [
+      "engine.js",
+      "store.js"
+    ],
     "whatsapp/app/src/whatsapp/events": [
       "ack.js",
       "index.js",
@@ -826,9 +1164,18 @@
       "store.js",
       "transcribe.js"
     ],
-    "whatsapp/app/src/whatsapp/telegram/outbound": ["events.js", "messages.js", "mutations.js"],
-    "whatsapp/app/src/whatsapp/telegram/inbound": ["polling.js", "processor.js"],
-    "whatsapp/app/src/routes": ["index.js"],
+    "whatsapp/app/src/whatsapp/telegram/outbound": [
+      "events.js",
+      "messages.js",
+      "mutations.js"
+    ],
+    "whatsapp/app/src/whatsapp/telegram/inbound": [
+      "polling.js",
+      "processor.js"
+    ],
+    "whatsapp/app/src/routes": [
+      "index.js"
+    ],
     "whatsapp/app/src/routes/ui": [
       "chat.js",
       "dashboard.js",
@@ -837,7 +1184,9 @@
       "styles.css",
       "sw.js"
     ],
-    "whatsapp/app/src/routes/ui/styles": ["moderation.css"],
+    "whatsapp/app/src/routes/ui/styles": [
+      "moderation.css"
+    ],
     "whatsapp/app/src/routes/ui/views": [
       "chats.html.js",
       "dashboard.html.js",
@@ -872,7 +1221,11 @@
       "telegram.js",
       "ui_api.js"
     ],
-    "whatsapp/app/src/locales": ["de.json", "en.json", "loader.js"],
+    "whatsapp/app/src/locales": [
+      "de.json",
+      "en.json",
+      "loader.js"
+    ],
     "whatsapp/app/tests": [
       "run-all-tests.js",
       "test-aegisbot-stt.js",
@@ -888,19 +1241,46 @@
       "test-ui-render.js",
       "validate-ui-scope.js"
     ],
-    "whatsapp/app/scripts": ["generate-icons.js", "generate-icons.py"],
-    "whatsapp/translations": ["de.yaml", "en.yaml"],
+    "whatsapp/app/scripts": [
+      "generate-icons.js",
+      "generate-icons.py"
+    ],
+    "whatsapp/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
     "whatsapp/rootfs/etc/s6-overlay/s6-rc.d/whatsapp/scripts": [
       "00-env.sh",
       "10-integration.sh",
       "20-diagnostics.sh"
     ],
-    "whatsapp/rootfs/usr/lib/bashio": ["banner.sh"],
-    "whatsapp/rocketchat-app": ["app.json"],
-    "wiki.js3": ["CHANGELOG.md", "DOCS.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
-    "wiki.js3/translations": ["de.yaml", "en.yaml"],
-    "wiki.js3/rootfs/etc/cont-init.d": ["00-banner.sh", "01-config.sh", "02-git.sh"],
-    "wiki.js3/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
+    "whatsapp/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
+    "whatsapp/rocketchat-app": [
+      "app.json"
+    ],
+    "wiki.js3": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "wiki.js3/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "wiki.js3/rootfs/etc/cont-init.d": [
+      "00-banner.sh",
+      "01-config.sh",
+      "02-git.sh"
+    ],
+    "wiki.js3/rootfs/usr/lib/bashio": [
+      "app.sh",
+      "banner.sh"
+    ],
     "EntraMirror": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -912,8 +1292,14 @@
       "requirements.txt",
       "run.sh"
     ],
-    "EntraMirror/translations": ["de.yaml", "en.yaml"],
-    "EntraMirror/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
+    "EntraMirror/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "EntraMirror/rootfs/usr/lib/bashio": [
+      "app.sh",
+      "banner.sh"
+    ],
     "solumati": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -924,8 +1310,13 @@
       "nginx.conf",
       "run.sh"
     ],
-    "solumati/translations": ["de.yaml", "en.yaml"],
-    "solumati/rootfs/usr/lib/bashio": ["banner.sh"],
+    "solumati/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "solumati/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
     "tado_aa": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -937,8 +1328,13 @@
       "patch.py",
       "run.sh"
     ],
-    "tado_aa/translations": ["de.yaml", "en.yaml"],
-    "tado_aa/rootfs/usr/lib/bashio": ["banner.sh"],
+    "tado_aa/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "tado_aa/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
     "switch_lan_play": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -948,8 +1344,13 @@
       "config.yaml",
       "run.sh"
     ],
-    "switch_lan_play/translations": ["de.yaml", "en.yaml"],
-    "switch_lan_play/rootfs/usr/lib/bashio": ["banner.sh"],
+    "switch_lan_play/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "switch_lan_play/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
     "switchcraft": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -958,9 +1359,16 @@
       "build.yaml",
       "config.yaml"
     ],
-    "switchcraft/translations": ["de.yaml", "en.yaml"],
-    "switchcraft/rootfs/usr/local/bin": ["patch_switchcraft.py"],
-    "switchcraft/rootfs/usr/lib/bashio": ["banner.sh"],
+    "switchcraft/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
+    "switchcraft/rootfs/usr/local/bin": [
+      "patch_switchcraft.py"
+    ],
+    "switchcraft/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
     "antigravity": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -970,7 +1378,10 @@
       "config.yaml",
       "requirements.txt"
     ],
-    "antigravity/translations": ["de.yaml", "en.yaml"],
+    "antigravity/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
     "antigravity/tests": [
       "test_fetcher.py",
       "test_models.py",
@@ -985,8 +1396,14 @@
       "router.py",
       "scheduler.py"
     ],
-    "antigravity/rootfs/usr/share/antigravity/ui": ["app.js", "index.html", "style.css"],
-    "antigravity/rootfs/usr/lib/bashio": ["banner.sh"],
+    "antigravity/rootfs/usr/share/antigravity/ui": [
+      "app.js",
+      "index.html",
+      "style.css"
+    ],
+    "antigravity/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ],
     "traderepublic": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -995,14 +1412,35 @@
       "build.yaml",
       "config.yaml"
     ],
-    "traderepublic/app": ["browser.py", "main.py"],
-    "traderepublic/app/templates": ["index.html"],
-    "traderepublic/app/static/i18n": ["de.json", "en.json"],
-    "traderepublic/translations": ["de.yaml", "en.yaml"],
+    "traderepublic/app": [
+      "browser.py",
+      "main.py"
+    ],
+    "traderepublic/app/templates": [
+      "index.html"
+    ],
+    "traderepublic/app/core": [
+      "__init__.py",
+      "auth.py",
+      "cdp.py",
+      "constants.py",
+      "session_manager.py",
+      "verifier.py"
+    ],
+    "traderepublic/app/static/i18n": [
+      "de.json",
+      "en.json"
+    ],
+    "traderepublic/translations": [
+      "de.yaml",
+      "en.yaml"
+    ],
     "traderepublic/rootfs/etc/s6-overlay/s6-rc.d/traderepublic/scripts": [
       "00-env.sh",
       "10-integration.sh"
     ],
-    "traderepublic/rootfs/usr/lib/bashio": ["banner.sh"]
+    "traderepublic/rootfs/usr/lib/bashio": [
+      "banner.sh"
+    ]
   }
 }
