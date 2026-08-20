@@ -119,19 +119,20 @@
 
     <div id="step-2fa" class="hidden">
       <div class="alert alert-info">
-        <b>Bestätigung erforderlich:</b><br>
-        1. Öffne die Trade Republic App auf deinem Smartphone und tippe auf <b>Bestätigen</b>.<br>
-        2. Falls du stattdessen eine SMS mit einem Code erhalten hast, trage ihn unten ein.<br>
-        3. Klicke auf <b>App-Freigabe prüfen</b> oder gib den Code ein.
+        <b data-i18n="auth_required">Approval Required:</b><br>
+        <span data-i18n="auth_step1">1. Open the Trade Republic app on your phone and tap <b>Confirm</b>.</span><br>
+        <span data-i18n="auth_step2">2. If you received an SMS code instead, enter it below.</span><br>
+        <span data-i18n="auth_step3">3. Click <b>Check App Approval / Submit Code</b>.</span>
       </div>
       <div class="form-group">
-        <label for="code">2FA Verifizierungscode (optional bei In-App Freigabe)</label>
-        <input type="text" id="code" placeholder="1234 (leer lassen bei In-App Bestätigung)" />
+        <label for="code" data-i18n="code_label">2FA Verification Code (optional for in-app approval)</label>
+        <input type="text" id="code" placeholder="1234 (leave empty for in-app approval)" />
       </div>
       <div style="display: flex; gap: 0.75rem; flex-direction: column;">
-        <button onclick="submit2FA()" style="background: #22c55e;">✓ In-App Freigabe prüfen / Code absenden</button>
+        <button onclick="submit2FA()" style="background: #22c55e;" data-i18n="btn_check_approval">✓ Check App Approval / Submit Code</button>
       </div>
     </div>
+
 
 
     <div id="result" style="margin-top: 1.5rem;"></div>

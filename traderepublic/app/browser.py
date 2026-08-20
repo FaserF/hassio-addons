@@ -120,7 +120,7 @@ class TradeRepublicBrowserService:
             _LOGGER.error("Failed to save session: %s", e)
 
     async def extract_token_from_cookies(self) -> Optional[str]:
-        """Extract session token from Chromium via CDP cookies and storage."""
+        """Extract valid JWT session token from Chromium via CDP cookies and storage."""
         # 1. Check CDP Network Cookies
         res = await self._send_cdp_cmd(
             "Network.getCookies", {"urls": ["https://app.traderepublic.com", "https://traderepublic.com"]}
@@ -128,77 +128,70 @@ class TradeRepublicBrowserService:
         if res and "cookies" in res:
             for cookie in res["cookies"]:
                 cname = cookie.get("name", "")
-                if cname in ("tr_session", "sessionToken", "tr_session_id", "auth_token"):
+                if cname in ("tr_session", "sessionToken"):
                     token = cookie.get("value")
-                    if token and len(token) > 10:
+                    # Trade Republic session tokens are JWTs starting with eyJ...
+                    if token and token.startswith("eyJ") and len(token) > 50:
                         await self.save_session(token)
                         return token
 
-        # 2. Check document.cookie & localStorage / sessionStorage via Runtime evaluation
+        # 2. Check document.cookie via Runtime evaluation
         eval_script = """
         (() => {
-            let token = null;
-            // Check document.cookie
-            const match = document.cookie.match(/(?:tr_session|sessionToken|tr_session_id)=([^;]+)/);
-            if (match) token = match[1];
-
-            // Check localStorage
-            if (!token) {
-                for (let i = 0; i < localStorage.length; i++) {
-                    const k = localStorage.key(i);
-                    if (k && (k.includes('token') || k.includes('session') || k.includes('auth'))) {
-                        const v = localStorage.getItem(k);
-                        if (v && v.length > 20) { token = v.replace(/^"|"$/g, ''); break; }
-                    }
-                }
-            }
-            return token;
+            const match = document.cookie.match(/(?:tr_session|sessionToken)=([^;]+)/);
+            if (match && match[1] && match[1].startsWith('eyJ')) return match[1];
+            return null;
         })()
         """
         eval_res = await self._send_cdp_cmd("Runtime.evaluate", {"expression": eval_script, "returnByValue": True})
         if eval_res and isinstance(eval_res, dict):
             val = eval_res.get("result", {}).get("value")
-            if val and isinstance(val, str) and len(val) > 10:
+            if val and isinstance(val, str) and val.startswith("eyJ") and len(val) > 50:
                 await self.save_session(val)
                 return val
 
         return None
 
     async def start_login(self, phone: str, pin: str) -> Dict[str, Any]:
-        """Navigate and input credentials via CDP Runtime evaluation."""
+        """Navigate and input credentials via CDP step-by-step."""
         async with self._lock:
             try:
                 self.phone_number = phone
+                self.is_logged_in = False
+                self.session_token = None
                 self.status_message = "Navigating to Trade Republic login..."
                 await self._send_cdp_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
-                await asyncio.sleep(3)
+                await asyncio.sleep(4)
 
-                # Solve & evaluate input in browser
-                js_script = f"""
+                # Step 1: Enter Phone Number
+                phone_script = f"""
                 (() => {{
-                    const phoneInput = document.querySelector('input[name="phoneNumber"], input[type="tel"]');
+                    const phoneInput = document.querySelector('input[name="phoneNumber"], input[type="tel"], input[autocomplete="tel"]');
                     if (phoneInput) {{
+                        phoneInput.focus();
                         phoneInput.value = "{phone}";
                         phoneInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
                         phoneInput.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                        const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"]');
+                        if (btn) btn.click();
+                        return true;
                     }}
-                    const btn = document.querySelector('button[type="submit"]');
-                    if (btn) btn.click();
-                    return !!phoneInput;
+                    return false;
                 }})()
                 """
-                await self._send_cdp_cmd("Runtime.evaluate", {"expression": js_script})
-                await asyncio.sleep(2)
+                await self._send_cdp_cmd("Runtime.evaluate", {"expression": phone_script})
+                await asyncio.sleep(3)
 
-                # Enter PIN if available
+                # Step 2: Enter PIN
                 pin_script = f"""
                 (() => {{
-                    const pinInput = document.querySelector('input[type="password"], input[name="pin"]');
+                    const pinInput = document.querySelector('input[type="password"], input[name="pin"], input[name="password"]');
                     if (pinInput) {{
+                        pinInput.focus();
                         pinInput.value = "{pin}";
                         pinInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
                         pinInput.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                        const btn = document.querySelector('button[type="submit"]');
+                        const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"]');
                         if (btn) btn.click();
                         return true;
                     }}
@@ -206,6 +199,7 @@ class TradeRepublicBrowserService:
                 }})()
                 """
                 await self._send_cdp_cmd("Runtime.evaluate", {"expression": pin_script})
+                await asyncio.sleep(2)
 
                 self.status_message = "Credentials submitted. 2FA (SMS/App approval) required."
                 # Launch background task to poll for cookie when user clicks confirm in the TR app
@@ -221,8 +215,8 @@ class TradeRepublicBrowserService:
                 return {"success": False, "error": str(e)}
 
     async def _poll_for_app_approval(self) -> None:
-        """Poll for session token in background for 90s after credentials submission."""
-        for _ in range(30):
+        """Poll for session token in background for 120s after credentials submission."""
+        for _ in range(40):
             await asyncio.sleep(3)
             if self.is_logged_in:
                 break
@@ -230,6 +224,7 @@ class TradeRepublicBrowserService:
             if token:
                 _LOGGER.info("App approval detected! Session saved successfully.")
                 break
+
 
     async def submit_2fa(self, code: str) -> Dict[str, Any]:
         """Submit 2FA code via CDP."""
