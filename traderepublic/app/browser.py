@@ -225,7 +225,6 @@ class TradeRepublicBrowserService:
                 _LOGGER.info("App approval detected! Session saved successfully.")
                 break
 
-
     async def submit_2fa(self, code: str) -> Dict[str, Any]:
         """Submit 2FA code via CDP."""
         async with self._lock:
