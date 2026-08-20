@@ -119,7 +119,6 @@ class TradeRepublicBrowserService:
         except Exception as e:
             _LOGGER.error("Failed to save session: %s", e)
 
-
     async def extract_token_from_cookies(self) -> Optional[str]:
         """Extract valid JWT session token from Chromium via CDP cookies and storage."""
         # 1. Check CDP Network Cookies across all URLs / domains
@@ -296,7 +295,11 @@ class TradeRepublicBrowserService:
                         elif resp.status in (400, 401):
                             try:
                                 err_data = json.loads(resp_text)
-                                if "errors" in err_data and isinstance(err_data["errors"], list) and len(err_data["errors"]) > 0:
+                                if (
+                                    "errors" in err_data
+                                    and isinstance(err_data["errors"], list)
+                                    and len(err_data["errors"]) > 0
+                                ):
                                     first_err = err_data["errors"][0]
                                     err_code = first_err.get("errorCode", "")
                                     err_msg = first_err.get("errorMessage", "")
