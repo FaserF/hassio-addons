@@ -121,32 +121,33 @@ class TradeRepublicBrowserService:
 
     async def extract_token_from_cookies(self) -> Optional[str]:
         """Extract valid JWT session token from Chromium via CDP cookies and storage."""
-        # 1. Check CDP Network Cookies
-        res = await self._send_cdp_cmd(
-            "Network.getCookies", {"urls": ["https://app.traderepublic.com", "https://traderepublic.com"]}
-        )
-        if res and "cookies" in res:
-            for cookie in res["cookies"]:
-                cname = cookie.get("name", "")
-                if cname in ("tr_session", "sessionToken"):
-                    token = cookie.get("value")
-                    # Trade Republic session tokens are JWTs starting with eyJ...
-                    if token and token.startswith("eyJ") and len(token) > 50:
-                        await self.save_session(token)
-                        return token
+        # 1. Check CDP Network Cookies across all URLs / domains
+        for cdp_method, params in [
+            ("Network.getCookies", {"urls": ["https://app.traderepublic.com", "https://traderepublic.com", "https://api.traderepublic.com"]}),
+            ("Storage.getCookies", {}),
+        ]:
+            res = await self._send_cdp_cmd(cdp_method, params)
+            if res and "cookies" in res:
+                for cookie in res["cookies"]:
+                    cname = cookie.get("name", "")
+                    if cname in ("tr_session", "sessionToken", "tr_session_id", "auth_token"):
+                        token = cookie.get("value")
+                        if token and (token.startswith("eyJ") or len(token) > 40):
+                            await self.save_session(token)
+                            return token
 
         # 2. Check document.cookie via Runtime evaluation
         eval_script = """
         (() => {
             const match = document.cookie.match(/(?:tr_session|sessionToken)=([^;]+)/);
-            if (match && match[1] && match[1].startsWith('eyJ')) return match[1];
+            if (match && match[1] && (match[1].startsWith('eyJ') || match[1].length > 40)) return match[1];
             return null;
         })()
         """
         eval_res = await self._send_cdp_cmd("Runtime.evaluate", {"expression": eval_script, "returnByValue": True})
         if eval_res and isinstance(eval_res, dict):
             val = eval_res.get("result", {}).get("value")
-            if val and isinstance(val, str) and val.startswith("eyJ") and len(val) > 50:
+            if val and isinstance(val, str) and (val.startswith("eyJ") or len(val) > 40):
                 await self.save_session(val)
                 return val
 
@@ -202,7 +203,6 @@ class TradeRepublicBrowserService:
                 await asyncio.sleep(2)
 
                 self.status_message = "Credentials submitted. 2FA (SMS/App approval) required."
-                # Launch background task to poll for cookie when user clicks confirm in the TR app
                 asyncio.create_task(self._poll_for_app_approval())
 
                 return {
@@ -226,34 +226,42 @@ class TradeRepublicBrowserService:
                 break
 
     async def submit_2fa(self, code: str) -> Dict[str, Any]:
-        """Submit 2FA code via CDP."""
+
+        """Submit 2FA code or check In-App approval via CDP."""
         async with self._lock:
             try:
-                code_script = f"""
-                (() => {{
-                    const otp = document.querySelector('input[name="code"], input[type="number"], input[autocomplete="one-time-code"]');
-                    if (otp) {{
-                        otp.value = "{code}";
-                        otp.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                        otp.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                        const btn = document.querySelector('button[type="submit"]');
-                        if (btn) btn.click();
-                        return true;
-                    }}
-                    return false;
-                }})()
-                """
-                await self._send_cdp_cmd("Runtime.evaluate", {"expression": code_script})
+                clean_code = (code or "").strip()
+                if clean_code:
+                    code_script = f"""
+                    (() => {{
+                        const otp = document.querySelector('input[name="code"], input[type="number"], input[autocomplete="one-time-code"], input[data-testid="otp-input"]');
+                        if (otp) {{
+                            otp.focus();
+                            otp.value = "{clean_code}";
+                            otp.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                            otp.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                            const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"]');
+                            if (btn) btn.click();
+                            return true;
+                        }}
+                        return false;
+                    }})()
+                    """
+                    await self._send_cdp_cmd("Runtime.evaluate", {"expression": code_script})
 
-                for _ in range(8):
-                    await asyncio.sleep(2)
+                # Check for session token (whether from code or smartphone app approval)
+                for _ in range(6):
+                    await asyncio.sleep(1.5)
                     token = await self.extract_token_from_cookies()
                     if token:
-                        return {"success": True, "session_token": token, "message": "Login successful!"}
+                        return {"success": True, "session_token": token, "message": "Login successful! Session token active."}
 
-                return {"success": False, "error": "2FA code submitted. Check Trade Republic app approval if required."}
+                if clean_code:
+                    return {"success": False, "error": "2FA code submitted. Verification in progress or invalid code."}
+                return {"success": False, "error": "In-App approval not yet confirmed. Please tap Confirm in your Trade Republic smartphone app and retry."}
             except Exception as e:
                 return {"success": False, "error": str(e)}
+
 
     async def refresh_session(self) -> Optional[str]:
         async with self._lock:

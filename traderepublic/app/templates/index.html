@@ -182,9 +182,13 @@
     }
 
     async function submit2FA() {
-      const code = document.getElementById('code').value;
+      const code = (document.getElementById('code').value || '').trim();
       const resEl = document.getElementById('result');
-      resEl.innerHTML = 'Verifying code...';
+      if (code) {
+        resEl.innerHTML = 'Verifying code... Please wait.';
+      } else {
+        resEl.innerHTML = 'Checking Trade Republic app approval... Please make sure you tapped Confirm on your phone.';
+      }
 
       try {
         const res = await fetch('./api/v1/login/verify', {
@@ -192,6 +196,7 @@
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({code: code})
         });
+
         const data = await res.json();
         if (data.success) {
           if (pollTimer) clearInterval(pollTimer);
