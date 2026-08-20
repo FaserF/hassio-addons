@@ -210,7 +210,12 @@ async def post_login_init(req: LoginInitRequest):
 
 @app.post("/api/v1/login/verify")
 async def post_login_verify(req: VerifyRequest):
+    import time
+
     result = await browser_service.submit_2fa(req.code)
+    if result.get("success"):
+        browser_service.client_requests_count += 1
+        browser_service.last_sync_time = time.time()
     return result
 
 
