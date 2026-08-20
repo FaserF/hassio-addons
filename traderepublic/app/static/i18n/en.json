@@ -34,6 +34,7 @@
   "twofa_step3": "3. Click Check App Approval / Submit Code.",
   "lbl_2fa_code": "2FA Verification Code (optional for in-app approval)",
   "code_placeholder": "1234 (leave empty for in-app approval)",
+  "twofa_timer": "Time remaining to confirm:",
   "btn_check_2fa": "✓ Check App Approval / Submit Code",
   "js_connecting": "Connecting and solving security challenge... Please wait.",
   "js_phone_invalid": "Please enter a valid international phone number including country code (e.g. +49..., +33..., +34..., +43..., +41...).",
@@ -43,6 +44,7 @@
   "js_verifying": "Verifying code... Please wait.",
   "js_checking_app": "Checking Trade Republic app approval... Please make sure you tapped Confirm on your phone.",
   "js_verify_failed": "Verification failed",
+  "js_timeout_expired": "⚠️ The login challenge timed out (2 minutes exceeded). You took too long to confirm. Please start a new login.",
   "js_page_reload": "Page will reload in 1s...",
   "js_req_error": "Request error: "
 }

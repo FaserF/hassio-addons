@@ -34,6 +34,7 @@
   "twofa_step3": "3. Klicke auf App-Bestätigung prüfen / Code einreichen.",
   "lbl_2fa_code": "2FA-Verifizierungscode (optional bei In-App-Bestätigung)",
   "code_placeholder": "1234 (leer lassen bei App-Bestätigung)",
+  "twofa_timer": "Verbleibende Zeit zur Bestätigung:",
   "btn_check_2fa": "✓ App-Bestätigung prüfen / Code einreichen",
   "js_connecting": "Verbindung wird hergestellt und Sicherheits-Challenge gelöst... Bitte warten.",
   "js_phone_invalid": "Bitte gib eine gültige internationale Telefonnummer mit Ländervorwahl ein (z. B. +49..., +33..., +34..., +43..., +41...).",
@@ -43,6 +44,7 @@
   "js_verifying": "Code wird überprüft... Bitte warten.",
   "js_checking_app": "App-Bestätigung von Trade Republic wird geprüft... Bitte stelle sicher, dass du auf Bestätigen getippt hast.",
   "js_verify_failed": "Verifizierung fehlgeschlagen",
+  "js_timeout_expired": "⚠️ Die Anmeldeaufforderung ist abgelaufen (2 Minuten überschritten). Du warst zu langsam mit der Bestätigung. Bitte starte eine neue Anmeldung.",
   "js_page_reload": "Seite wird in 1 s neu geladen...",
   "js_req_error": "Anfragefehler: "
 }

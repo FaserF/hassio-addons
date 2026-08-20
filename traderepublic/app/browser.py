@@ -34,6 +34,7 @@ class TradeRepublicBrowserService:
 
         self._lock = asyncio.Lock()
         self._keepalive_task: Optional[asyncio.Task] = None
+        self.login_started_at: Optional[float] = None
 
     async def start(self) -> None:
         """Start headless Chromium with remote debugging port."""
@@ -138,6 +139,7 @@ class TradeRepublicBrowserService:
                 self.phone_number = clean_phone
                 self.is_logged_in = False
                 self.session_token = None
+                self.login_started_at = time.time()
 
                 self.status_message = "Navigating to Trade Republic login..."
                 login_res = await self.auth_helper.execute_login(clean_phone, clean_pin)
@@ -160,6 +162,11 @@ class TradeRepublicBrowserService:
             await asyncio.sleep(3)
             if self.is_logged_in:
                 break
+            if self.login_started_at and time.time() - self.login_started_at > 120:
+                _LOGGER.warning("2FA login challenge timed out after 2 minutes")
+                self.status_message = "Login challenge timed out (2 minutes expired). Please start a new login."
+                self.last_error = "Authentication timed out. The 2FA confirmation window has expired."
+                break
             token = await self.auth_helper.extract_token_from_cookies()
             if token:
                 is_valid = await self.verify_token_validity(token)
@@ -172,6 +179,15 @@ class TradeRepublicBrowserService:
         """Submit 2FA code or check In-App approval via CDP."""
         async with self._lock:
             try:
+                # Check if 120s timeout passed
+                if self.login_started_at and (time.time() - self.login_started_at > 120):
+                    self.status_message = "Login challenge timed out (2 minutes expired). Please start a new login."
+                    self.last_error = "Authentication timed out. The 2FA confirmation window has expired."
+                    return {
+                        "success": False,
+                        "error": "Authentication request expired (2 minutes exceeded). Please start a new login.",
+                    }
+
                 clean_code = (code or "").strip()
                 if clean_code:
                     await self.auth_helper.submit_2fa_code(clean_code)

@@ -163,13 +163,15 @@ class AuthHelper:
         """
         await self.cdp.send_cmd("Runtime.evaluate", {"expression": pin_script, "returnByValue": True})
 
-        # Direct API Request
+        # Direct API Request (optional supplementary trigger)
         api_feedback_msg = None
         try:
             waf_token = await self.get_waf_token()
             headers = {
                 "Content-Type": "application/json",
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                "Origin": "https://app.traderepublic.com",
+                "Referer": "https://app.traderepublic.com/login",
             }
             if waf_token:
                 headers["X-aws-waf-token"] = waf_token
@@ -180,7 +182,7 @@ class AuthHelper:
                     "https://api.traderepublic.com/api/v2/auth/web/login",
                     json={"phoneNumber": clean_phone, "pin": clean_pin},
                     headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=8),
+                    timeout=aiohttp.ClientTimeout(total=5),
                 ) as resp,
             ):
                 resp_text = await resp.text()
@@ -203,17 +205,12 @@ class AuthHelper:
                                 api_feedback_msg = "Invalid phone number or country code format."
                             elif err_code == "PIN_INVALID":
                                 api_feedback_msg = "Invalid PIN. Please check your PIN."
-                            else:
+                            elif err_code not in ("MISSING_REQUIRED_HEADER", "BAD_REQUEST"):
                                 api_feedback_msg = f"{err_code}: {err_msg}" if err_msg else err_code
-                        else:
-                            err_title = err_data.get("error") or err_data.get("message") or resp_text
-                            api_feedback_msg = f"Trade Republic Server: {err_title}"
                     except Exception:
-                        api_feedback_msg = f"Trade Republic Server Error (HTTP {resp.status})"
-                elif resp.status == 403:
-                    api_feedback_msg = "Trade Republic WAF Protection: Solving Bot Challenge, please wait..."
+                        pass
         except Exception as api_err:  # noqa: BLE001
-            _LOGGER.warning("Direct Auth API attempt info: %s", api_err)
+            _LOGGER.debug("Direct Auth API attempt info: %s", api_err)
 
         dom_error_script = """
         (() => {

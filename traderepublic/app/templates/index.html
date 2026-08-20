@@ -169,6 +169,10 @@
         <span data-i18n="twofa_step1">1. Open the Trade Republic app on your phone and tap Confirm.</span><br>
         <span data-i18n="twofa_step2">2. If you received an SMS code instead, enter it below.</span><br>
         <span data-i18n="twofa_step3">3. Click Check App Approval / Submit Code.</span>
+        <div style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
+          <span data-i18n="twofa_timer" style="font-size:0.85rem;color:#cbd5e1;">Time remaining to confirm:</span>
+          <span id="twofa-countdown" style="font-family:monospace;font-weight:700;font-size:1.1rem;color:#fbbf24;">02:00</span>
+        </div>
       </div>
       <div class="form-group">
         <label for="code" data-i18n="lbl_2fa_code">2FA Verification Code (optional for in-app approval)</label>
@@ -299,17 +303,38 @@
         document.getElementById('step-login').classList.add('hidden');
         document.getElementById('step-2fa').classList.remove('hidden');
         resEl.innerHTML = '<span style="color:#60a5fa;">' + data.message + '</span>';
+        let totalSeconds = 120;
+        const countdownEl = document.getElementById('twofa-countdown');
+        if (countdownEl) countdownEl.textContent = '02:00';
+
         if (pollTimer) clearInterval(pollTimer);
         pollTimer = setInterval(async () => {
           try {
-            const s = await (await fetch('./api/v1/status')).json();
-            if (s.is_logged_in) {
+            totalSeconds -= 1;
+            if (countdownEl) {
+              const m = String(Math.floor(Math.max(0, totalSeconds) / 60)).padStart(2, '0');
+              const s = String(Math.max(0, totalSeconds) % 60).padStart(2, '0');
+              countdownEl.textContent = m + ':' + s;
+            }
+
+            if (totalSeconds <= 0) {
               clearInterval(pollTimer);
-              resEl.innerHTML = '<span style="color:#22c55e;">' + t('js_inapp_detected') + '</span>';
-              setTimeout(() => window.location.reload(), 1200);
+              resEl.innerHTML = '<span style="color:#ef4444;">' + t('js_timeout_expired') + '</span>';
+              document.getElementById('step-2fa').classList.add('hidden');
+              document.getElementById('step-login').classList.remove('hidden');
+              return;
+            }
+
+            if (totalSeconds % 2 === 0) {
+              const st = await (await fetch('./api/v1/status')).json();
+              if (st.is_logged_in) {
+                clearInterval(pollTimer);
+                resEl.innerHTML = '<span style="color:#22c55e;">' + t('js_inapp_detected') + '</span>';
+                setTimeout(() => window.location.reload(), 1200);
+              }
             }
           } catch {}
-        }, 2000);
+        }, 1000);
       } else {
         resEl.innerHTML = '<span style="color:#ef4444;">' + (data.error || t('js_login_failed')) + '</span>';
       }
@@ -333,6 +358,16 @@
         if (pollTimer) clearInterval(pollTimer);
         resEl.innerHTML = '<span style="color:#22c55e;">' + data.message + ' ' + t('js_page_reload') + '</span>';
         setTimeout(() => window.location.reload(), 1200);
+      } else {
+        const err = data.error || '';
+        if (err.toLowerCase().includes('expired') || err.toLowerCase().includes('timeout') || err.toLowerCase().includes('2 minutes')) {
+          if (pollTimer) clearInterval(pollTimer);
+          resEl.innerHTML = '<span style="color:#ef4444;">' + t('js_timeout_expired') + '</span>';
+          document.getElementById('step-2fa').classList.add('hidden');
+          document.getElementById('step-login').classList.remove('hidden');
+        } else {
+          resEl.innerHTML = '<span style="color:#ef4444;">' + (err || t('js_verify_failed')) + '</span>';
+        }
       }
     } catch (e) {
       resEl.innerHTML = '<span style="color:#ef4444;">' + t('js_req_error') + e + '</span>';
