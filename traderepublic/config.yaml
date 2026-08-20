@@ -9,7 +9,6 @@ arch:
   - aarch64
   - amd64
 init: false
-host_network: true
 startup: services
 discovery:
   - traderepublic
@@ -30,9 +29,12 @@ schema:
   github_token: str?
 
 ports:
-  8095/tcp: 8095
+  8095/tcp: null
+ports_description:
+  8095/tcp: "Direct Web/API Access (Optional, use Ingress for secure access)"
 hassio_api: true
 ingress: true
 ingress_port: 8095
 ingress_entry: /
 stage: experimental
+

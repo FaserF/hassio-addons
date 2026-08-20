@@ -25,9 +25,25 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Trade Republic Headless Browser Session Provider", lifespan=lifespan)
 
+
+@app.middleware("http")
+async def ingress_middleware(request: Request, call_next):
+    """Handle Home Assistant Ingress dynamic subpath prefix."""
+    ingress_path = request.headers.get("x-ingress-path")
+    if ingress_path:
+        path = request.scope.get("path", "/")
+        clean_prefix = ingress_path.rstrip("/")
+        if path.startswith(clean_prefix):
+            path = path[len(clean_prefix) :] or "/"
+            request.scope["path"] = path
+    response = await call_next(request)
+    return response
+
+
 templates = Jinja2Templates(directory="templates" if os.path.exists("templates") else "/opt/traderepublic/templates")
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 
 class LoginInitRequest(BaseModel):
