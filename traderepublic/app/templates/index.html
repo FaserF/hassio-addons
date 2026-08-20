@@ -131,7 +131,10 @@
       💡 <b data-i18n="all_set_title">Everything is set up!</b>
       <span data-i18n="all_set_body">Home Assistant will automatically fetch portfolio and cash values. You only need to interact with this page if you change your credentials or your session expires.</span>
     </div>
-    <button onclick="toggleRelogin()" class="btn-secondary" id="relogin-toggle-btn" data-i18n="btn_reauth">🔄 Re-authenticate / Switch Account</button>
+    <div style="display:flex;gap:0.75rem;margin-top:0.75rem;">
+      <button onclick="checkSession()" class="btn-secondary" id="check-session-btn" style="margin-top:0;" data-i18n="btn_check_session">🔍 Check Session Status</button>
+      <button onclick="toggleRelogin()" class="btn-secondary" id="relogin-toggle-btn" style="margin-top:0;" data-i18n="btn_reauth">🔄 Re-authenticate / Switch Account</button>
+    </div>
   {% else %}
     {% if last_error %}
       <div class="alert" style="background:rgba(239,68,68,0.18);border:1px solid #ef4444;color:#fca5a5;margin-bottom:1.5rem;">
@@ -311,8 +314,23 @@
         if (pollTimer) clearInterval(pollTimer);
         resEl.innerHTML = '<span style="color:#22c55e;">' + data.message + ' ' + t('js_page_reload') + '</span>';
         setTimeout(() => window.location.reload(), 1200);
+      }
+    } catch (e) {
+      resEl.innerHTML = '<span style="color:#ef4444;">' + t('js_req_error') + e + '</span>';
+    }
+  }
+
+  async function checkSession() {
+    const resEl = document.getElementById('result');
+    resEl.innerHTML = '<span style="color:#60a5fa;">' + t('js_verifying') + '</span>';
+    try {
+      const res = await fetch('./api/v1/session/check', { method: 'POST' });
+      const data = await res.json();
+      if (data.valid) {
+        resEl.innerHTML = '<span style="color:#22c55e;">✓ ' + data.message + '</span>';
       } else {
-        resEl.innerHTML = '<span style="color:#ef4444;">' + (data.error || t('js_verify_failed')) + '</span>';
+        resEl.innerHTML = '<span style="color:#ef4444;">⚠️ ' + data.message + '</span>';
+        setTimeout(() => window.location.reload(), 1500);
       }
     } catch (e) {
       resEl.innerHTML = '<span style="color:#ef4444;">' + t('js_req_error') + e + '</span>';

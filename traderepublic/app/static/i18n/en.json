@@ -14,6 +14,7 @@
   "all_set_title": "Everything is set up!",
   "all_set_body": "Home Assistant will automatically fetch portfolio and cash values. You only need to interact with this page if you change your credentials or your session expires.",
   "btn_reauth": "🔄 Re-authenticate / Switch Account",
+  "btn_check_session": "🔍 Check Session Status",
   "btn_cancel_reauth": "✖ Cancel Re-login",
   "session_expired_title": "⚠️ Action Required: Session Expired",
   "session_expired_hint": "Please enter your PIN below and tap Confirm on your Trade Republic smartphone app to renew the session.",

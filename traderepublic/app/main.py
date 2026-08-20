@@ -196,6 +196,22 @@ async def post_refresh():
     return {"success": bool(token), "session_token": token}
 
 
+@app.post("/api/v1/session/check")
+async def post_check_session():
+    if not browser_service.session_token:
+        return {"success": False, "valid": False, "message": "No active session token available."}
+    is_valid = await browser_service.verify_token_validity(browser_service.session_token)
+    browser_service.is_logged_in = is_valid
+    if is_valid:
+        browser_service.status_message = "Everything is connected and running normally."
+        browser_service.last_error = None
+        return {"success": True, "valid": True, "message": "Session token is valid and active!"}
+    browser_service.status_message = "Session token expired. Please re-authenticate."
+    browser_service.last_error = "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+    return {"success": True, "valid": False, "message": "Session token has expired or is invalid."}
+
+
+
 if __name__ == "__main__":
     import uvicorn
 

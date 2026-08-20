@@ -14,6 +14,7 @@
   "all_set_title": "Alles eingerichtet!",
   "all_set_body": "Home Assistant ruft automatisch deine Portfolio- und Kontowerte ab. Du musst diese Seite nur aufrufen, wenn du deine Zugangsdaten änderst oder deine Session abläuft.",
   "btn_reauth": "🔄 Erneut anmelden / Konto wechseln",
+  "btn_check_session": "🔍 Anmeldesitzung prüfen",
   "btn_cancel_reauth": "✖ Erneute Anmeldung abbrechen",
   "session_expired_title": "⚠️ Aktion erforderlich: Session abgelaufen",
   "session_expired_hint": "Gib unten deine PIN ein und bestätige die Anmeldung in der Trade Republic App auf deinem Smartphone, um die Session zu erneuern.",
