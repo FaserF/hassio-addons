@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-08-20T07:57:02.330731",
+  "timestamp": "2026-08-20T08:06:11.963767",
   "connections": {
     "AegisBot": {
       "name": "AegisBot",
@@ -786,7 +786,6 @@
         "core": [
           "whatsapp/config.yaml",
           "whatsapp/Dockerfile",
-          "whatsapp/build.yaml",
           "whatsapp/CHANGELOG.md",
           "whatsapp/README.md",
           "whatsapp/DOCS.md"

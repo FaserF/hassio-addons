@@ -89,7 +89,7 @@ def check_addon(addon_path):
         for line in content.splitlines():
             clean_l = line.strip()
             if clean_l.startswith("ARG BUILD_FROM="):
-                arg_build_from = clean_l.split("=", 1)[1].strip().strip('"\'')
+                arg_build_from = clean_l.split("=", 1)[1].strip().strip("\"'")
             elif clean_l.startswith("FROM"):
                 parts = clean_l.split()
                 if len(parts) > 1:
