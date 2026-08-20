@@ -102,7 +102,7 @@ class TradeRepublicBrowserService:
         if phone:
             self.phone_number = phone
         self.is_logged_in = True
-        self.status_message = "Logged in and session active."
+        self.status_message = "Everything is connected and running normally. Re-login is only required if your session expires or if you experience connection issues."
 
         os.makedirs(DATA_DIR, exist_ok=True)
         try:
@@ -118,6 +118,7 @@ class TradeRepublicBrowserService:
                 )
         except Exception as e:
             _LOGGER.error("Failed to save session: %s", e)
+
 
     async def extract_token_from_cookies(self) -> Optional[str]:
         """Extract valid JWT session token from Chromium via CDP cookies and storage."""
@@ -295,10 +296,22 @@ class TradeRepublicBrowserService:
                         elif resp.status in (400, 401):
                             try:
                                 err_data = json.loads(resp_text)
-                                err_title = err_data.get("error") or err_data.get("message") or resp_text
-                                api_feedback_msg = f"Trade Republic Server: {err_title}"
+                                if "errors" in err_data and isinstance(err_data["errors"], list) and len(err_data["errors"]) > 0:
+                                    first_err = err_data["errors"][0]
+                                    err_code = first_err.get("errorCode", "")
+                                    err_msg = first_err.get("errorMessage", "")
+                                    if err_code == "NUMBER_INVALID":
+                                        api_feedback_msg = "Invalid phone number or country code format."
+                                    elif err_code == "PIN_INVALID":
+                                        api_feedback_msg = "Invalid PIN. Please check your PIN."
+                                    else:
+                                        api_feedback_msg = f"{err_code}: {err_msg}" if err_msg else err_code
+                                else:
+                                    err_title = err_data.get("error") or err_data.get("message") or resp_text
+                                    api_feedback_msg = f"Trade Republic Server: {err_title}"
                             except Exception:
-                                api_feedback_msg = f"Trade Republic Server Error (HTTP {resp.status}): {resp_text}"
+                                api_feedback_msg = f"Trade Republic Server Error (HTTP {resp.status})"
+
                         elif resp.status == 403:
                             api_feedback_msg = "Trade Republic WAF Protection: Solving Bot Challenge, please wait..."
                 except Exception as api_err:  # noqa: BLE001
