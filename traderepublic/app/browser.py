@@ -136,7 +136,6 @@ class TradeRepublicBrowserService:
             pass
         return bool(self.session_token and len(self.session_token) > 30)
 
-
     async def save_session(self, token: str, phone: Optional[str] = None) -> None:
         self.session_token = token
         if phone:
