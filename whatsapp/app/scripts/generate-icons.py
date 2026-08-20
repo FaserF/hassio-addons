@@ -4,7 +4,6 @@ Usage:
     python scripts/generate-icons.py
 """
 
-import os
 from pathlib import Path
 
 from PIL import Image
