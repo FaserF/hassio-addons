@@ -18,9 +18,51 @@ _LOGGER = logging.getLogger("traderepublic-addon")
 async def lifespan(app: FastAPI):
     _LOGGER.info("Starting Trade Republic Browser Engine...")
     await browser_service.start()
+    asyncio.create_task(register_supervisor_discovery())
     yield
     _LOGGER.info("Stopping Trade Republic Browser Engine...")
     await browser_service.close()
+
+
+async def register_supervisor_discovery() -> None:
+    """Register service with Home Assistant Supervisor discovery endpoint if running as Add-on."""
+    supervisor_token = os.getenv("SUPERVISOR_TOKEN")
+    if not supervisor_token:
+        _LOGGER.debug("No SUPERVISOR_TOKEN found, running outside Supervisor")
+        return
+
+    port = int(os.getenv("PORT", "8095"))
+    headers = {
+        "Authorization": f"Bearer {supervisor_token}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "service": "traderepublic",
+        "config": {
+            "host": "traderepublic",
+            "port": port,
+        },
+    }
+    for attempt in range(10):
+        await asyncio.sleep(5)
+        try:
+            async with (
+                aiohttp.ClientSession() as session,
+                session.post(
+                    "http://supervisor/discovery",
+                    json=payload,
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=5),
+                ) as resp,
+            ):
+                if resp.status in (200, 201):
+                    _LOGGER.info("Successfully registered Trade Republic discovery with Supervisor")
+                    break
+                resp_txt = await resp.text()
+                _LOGGER.debug("Supervisor discovery response (attempt %s) [%s]: %s", attempt + 1, resp.status, resp_txt)
+        except Exception as exc:
+            _LOGGER.debug("Could not notify Supervisor discovery (attempt %s): %s", attempt + 1, exc)
+
 
 
 app = FastAPI(title="Trade Republic Headless Browser Session Provider", lifespan=lifespan)
