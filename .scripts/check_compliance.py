@@ -84,11 +84,19 @@ def check_addon(addon_path):
             errors.append(f"Failed to parse build.yaml: {e}")
 
     if not detected_base:
-        # Fallback to Dockerfile FROM check
+        # Fallback to Dockerfile FROM / ARG BUILD_FROM check
+        arg_build_from = None
         for line in content.splitlines():
-            if line.startswith("FROM"):
-                image = line.split()[1]
-                validate_base_image(image, "Dockerfile")
+            clean_l = line.strip()
+            if clean_l.startswith("ARG BUILD_FROM="):
+                arg_build_from = clean_l.split("=", 1)[1].strip().strip('"\'')
+            elif clean_l.startswith("FROM"):
+                parts = clean_l.split()
+                if len(parts) > 1:
+                    img = parts[1]
+                    if img in ("$BUILD_FROM", "${BUILD_FROM}") and arg_build_from:
+                        img = arg_build_from
+                    validate_base_image(img, "Dockerfile")
 
     # Check 5: Translations
     if not os.path.exists(os.path.join(translations_dir, "en.yaml")):

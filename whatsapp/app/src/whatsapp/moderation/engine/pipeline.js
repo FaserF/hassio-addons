@@ -357,8 +357,8 @@ export async function handleModerationMessage(session, event) {
   // 0. Non-destructive Auto-Translation Engine (never translate bot's own messages or existing translations)
   const isTranslationHeader =
     text &&
-    (/🌐\s*\*.*[→\->].*\*\s*:?/i.test(text) ||
-      /_\s*🌐\s*\[.*\]\s*_/i.test(text) ||
+    (/🌐\s*\*[^*]*[→\->][^*]*\*\s*:?/i.test(text) ||
+      /_\s*🌐\s*\[[^\]]*\]\s*_/i.test(text) ||
       text.includes('🌐 ['));
 
   const isSyntheticMessage =

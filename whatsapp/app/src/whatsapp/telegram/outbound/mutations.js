@@ -359,9 +359,9 @@ export async function syncWhatsAppEditToTelegram(
 
     // Strip existing translation header if text contains it before re-translating
     let cleanSourceText = newText
-      .replace(/^🌐\s*\*.*[→\->].*\*\s*:?\s*/i, '')
-      .replace(/^_\s*🌐\s*\[.*\]\s*_\s*/i, '')
-      .replace(/^🌐\s*\[.*\]\s*/i, '')
+      .replace(/^🌐\s*\*[^*]*[→\->][^*]*\*\s*:?\s*/i, '')
+      .replace(/^_\s*🌐\s*\[[^\]]*\]\s*_\s*/i, '')
+      .replace(/^🌐\s*\[[^\]]*\]\s*/i, '')
       .trim();
 
     let effectiveText = cleanSourceText || newText;

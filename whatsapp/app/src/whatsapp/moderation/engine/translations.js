@@ -103,9 +103,9 @@ export async function updateTranslationIfExists(session, groupId, sourceWaId, ne
 
   // Strip existing translation headers if text contains them
   let cleanText = newText
-    .replace(/^🌐\s*\*.*[→\->].*\*\s*:?\s*/i, '')
-    .replace(/^_\s*🌐\s*\[.*\]\s*_\s*/i, '')
-    .replace(/^🌐\s*\[.*\]\s*/i, '')
+    .replace(/^🌐\s*\*[^*]*[→\->][^*]*\*\s*:?\s*/i, '')
+    .replace(/^_\s*🌐\s*\[[^\]]*\]\s*_\s*/i, '')
+    .replace(/^🌐\s*\[[^\]]*\]\s*/i, '')
     .trim();
   if (cleanText.startsWith('"') && cleanText.endsWith('"') && cleanText.length > 2) {
     cleanText = cleanText.slice(1, -1).trim();
