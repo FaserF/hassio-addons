@@ -26,7 +26,6 @@ INTEGRATION_DIR="${INTEGRATION_DIR:-${HA_CONFIG_ROOT}/custom_components/traderep
 AUTO_INSTALL_INTEGRATION="${AUTO_INSTALL_INTEGRATION:-true}"
 GITHUB_TOKEN="${GITHUB_TOKEN:-}"
 
-
 install_integration() {
 	local TAG_NAME=$1
 	local IS_UPDATE=$2
@@ -78,7 +77,6 @@ install_integration() {
 			fi
 		fi
 	fi
-
 
 	if [ "$SUCCESS" = "true" ] && [ -d "/tmp/ha-traderepublic_install/custom_components/traderepublic" ]; then
 		if [ -d "$INTEGRATION_DIR" ]; then
