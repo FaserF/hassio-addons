@@ -193,7 +193,10 @@ class TradeRepublicBrowserService:
                 # International phone validation check (E.164: + followed by 7 to 15 digits)
                 digits_only = "".join(filter(str.isdigit, clean_phone))
                 if not clean_phone.startswith("+") or not (7 <= len(digits_only) <= 15):
-                    return {"success": False, "error": "Invalid international phone number. Please include your country code (e.g. +49..., +33..., +34..., +43..., +41..., +31...)."}
+                    return {
+                        "success": False,
+                        "error": "Invalid international phone number. Please include your country code (e.g. +49..., +33..., +34..., +43..., +41..., +31...).",
+                    }
 
                 clean_pin = (pin or "").strip()
                 # PIN validation check: must be 4-6 digits, only numbers
@@ -207,7 +210,6 @@ class TradeRepublicBrowserService:
                 self.status_message = "Navigating to Trade Republic login..."
                 await self._send_cdp_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
                 await asyncio.sleep(4)
-
 
                 # Step 0: Dismiss cookie banners
                 banner_script = """

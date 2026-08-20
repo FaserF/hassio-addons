@@ -655,4 +655,3 @@ export function stripTranslationHeaders(text) {
   }
   return clean;
 }
-

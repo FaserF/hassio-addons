@@ -262,8 +262,7 @@ async function updateDashboard() {
     }
     setElText(
       'webhook-url',
-      data.webhookUrl ||
-        (window.t ? window.t('dashboard.not_configured') : 'Not Configured')
+      data.webhookUrl || (window.t ? window.t('dashboard.not_configured') : 'Not Configured')
     );
 
     // Connected account fields
