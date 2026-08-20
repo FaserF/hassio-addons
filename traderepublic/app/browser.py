@@ -100,7 +100,9 @@ class TradeRepublicBrowserService:
                         is_valid = await self.verify_token_validity(self.session_token)
                         if not is_valid:
                             # If token from file was rejected, check if Chromium has a newer/refreshed token
-                            _LOGGER.info("Saved token from file invalid, attempting extraction from browser cookies/storage...")
+                            _LOGGER.info(
+                                "Saved token from file invalid, attempting extraction from browser cookies/storage..."
+                            )
                             browser_token = await self.extract_token_from_cookies()
                             if browser_token:
                                 is_valid = await self.verify_token_validity(browser_token)
