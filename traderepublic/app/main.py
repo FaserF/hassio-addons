@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
-from typing import Optional
+from typing import Any, Optional
 
 import aiohttp
 from browser import browser_service
@@ -91,8 +91,10 @@ async def ingress_middleware(request: Request, call_next):
 
 
 templates = Jinja2Templates(directory="templates" if os.path.exists("templates") else "/opt/traderepublic/templates")
-if os.path.exists("static"):
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+static_dir = "static" if os.path.exists("static") else "/opt/traderepublic/static"
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
 
 
 class LoginInitRequest(BaseModel):
@@ -125,6 +127,17 @@ async def get_index(request: Request):
         else:
             last_seen_str = f"{diff_sec // 3600}h ago"
 
+    import json
+
+    default_i18n: dict[str, Any] = {}
+    i18n_path = os.path.join(static_dir, "i18n", "en.json")
+    if os.path.exists(i18n_path):
+        try:
+            with open(i18n_path, "r", encoding="utf-8") as f:
+                default_i18n = json.load(f)
+        except Exception:  # noqa: BLE001
+            pass
+
     return templates.TemplateResponse(
         request=request,
         name="index.html",
@@ -136,6 +149,7 @@ async def get_index(request: Request):
             "last_error": browser_service.last_error,
             "requests_count": browser_service.client_requests_count,
             "last_sync": last_seen_str,
+            "default_i18n": json.dumps(default_i18n),
         },
     )
 

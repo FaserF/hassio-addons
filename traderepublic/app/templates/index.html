@@ -182,6 +182,8 @@
 <script>
   // ── i18n ──────────────────────────────────────────────────────────────
   const FALLBACK_LANG = 'en';
+  const EN_FALLBACK = {{ default_i18n | safe }} || {};
+
   let translations = {};
   let currentLang = FALLBACK_LANG;
 
@@ -198,13 +200,14 @@
       if (!res.ok) throw new Error('not found');
       return await res.json();
     } catch {
-      if (lang !== FALLBACK_LANG) return loadTranslations(FALLBACK_LANG);
-      return {};
+      return EN_FALLBACK;
     }
   }
 
   function t(key) {
-    return translations[key] !== undefined ? translations[key] : key;
+    if (translations[key] !== undefined) return translations[key];
+    if (EN_FALLBACK[key] !== undefined) return EN_FALLBACK[key];
+    return key;
   }
 
   function applyTranslations() {
