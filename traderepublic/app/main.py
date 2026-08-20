@@ -32,7 +32,6 @@ async def require_supervisor_auth(authorization: Optional[str] = Security(_api_k
         raise HTTPException(status_code=403, detail="Forbidden: valid Supervisor token required")
 
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     _LOGGER.info("Starting Trade Republic Browser Engine...")
@@ -136,7 +135,6 @@ async def get_index(request: Request):
     last_sync_sec = None
     if browser_service.last_sync_time:
         last_sync_sec = int(time.time() - browser_service.last_sync_time)
-
 
     all_i18n: dict[str, Any] = {}
     i18n_dir = os.path.join(static_dir, "i18n")

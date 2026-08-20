@@ -65,4 +65,3 @@ class CDPClient:
             await asyncio.sleep(interval)
         _LOGGER.warning("CDP did not become ready within %.0fs", timeout)
         return False
-
