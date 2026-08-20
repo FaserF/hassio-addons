@@ -162,8 +162,20 @@ class TradeRepublicBrowserService:
 
         return None
 
+    async def get_waf_token(self) -> Optional[str]:
+        """Extract AWS WAF token from browser cookies if solved."""
+        res = await self._send_cdp_cmd(
+            "Network.getCookies",
+            {"urls": ["https://app.traderepublic.com", "https://traderepublic.com", "https://api.traderepublic.com"]},
+        )
+        if res and "cookies" in res:
+            for cookie in res["cookies"]:
+                if "aws-waf" in cookie.get("name", "").lower():
+                    return cookie.get("value")
+        return None
+
     async def start_login(self, phone: str, pin: str) -> Dict[str, Any]:
-        """Navigate and input credentials via CDP step-by-step with React controlled input support."""
+        """Navigate and input credentials via CDP + direct API fallback with AWS WAF token."""
         async with self._lock:
             try:
                 self.phone_number = phone
@@ -173,21 +185,31 @@ class TradeRepublicBrowserService:
                 await self._send_cdp_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
                 await asyncio.sleep(4)
 
-                # Step 1: Enter Phone Number (React-compatible native setter)
+                # Step 0: Dismiss cookie banners
+                banner_script = """
+                (() => {
+                    const btns = Array.from(document.querySelectorAll('button'));
+                    const acceptBtn = btns.find(b => b.textContent && (b.textContent.includes('Accept') || b.textContent.includes('Akzeptieren') || b.textContent.includes('Allow')));
+                    if (acceptBtn) { acceptBtn.click(); return true; }
+                    return false;
+                })()
+                """
+                await self._send_cdp_cmd("Runtime.evaluate", {"expression": banner_script})
+                await asyncio.sleep(1)
+
+                # Step 1: React Native Setter & Dispatch for Phone Number
                 phone_script = f"""
                 (() => {{
                     const input = document.querySelector('input[name="phoneNumber"], input[type="tel"], input[autocomplete="tel"], input');
                     if (input) {{
                         input.focus();
-                        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                        nativeInputValueSetter.call(input, "{phone}");
+                        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+                        nativeSetter.call(input, "{phone}");
                         input.dispatchEvent(new Event('input', {{ bubbles: true }}));
                         input.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                        
-                        setTimeout(() => {{
-                            const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"], button');
-                            if (btn) btn.click();
-                        }}, 200);
+                        input.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
+                        const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"]');
+                        if (btn) btn.click();
                         return true;
                     }}
                     return false;
@@ -196,28 +218,51 @@ class TradeRepublicBrowserService:
                 await self._send_cdp_cmd("Runtime.evaluate", {"expression": phone_script})
                 await asyncio.sleep(3)
 
-                # Step 2: Enter PIN (React-compatible native setter)
+                # Step 2: React Native Setter & Dispatch for PIN
                 pin_script = f"""
                 (() => {{
                     const input = document.querySelector('input[type="password"], input[name="pin"], input[name="password"]');
                     if (input) {{
                         input.focus();
-                        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                        nativeInputValueSetter.call(input, "{pin}");
+                        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+                        nativeSetter.call(input, "{pin}");
                         input.dispatchEvent(new Event('input', {{ bubbles: true }}));
                         input.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                        
-                        setTimeout(() => {{
-                            const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"], button');
-                            if (btn) btn.click();
-                        }}, 200);
+                        input.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
+                        const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"]');
+                        if (btn) btn.click();
                         return true;
                     }}
                     return false;
                 }})()
                 """
-                await self._send_cdp_cmd("Runtime.evaluate", {"expression": pin_script})
-                await asyncio.sleep(2)
+                pin_res = await self._send_cdp_cmd("Runtime.evaluate", {"expression": pin_script, "returnByValue": True})
+                entered_pin = pin_res and pin_res.get("result", {}).get("value")
+
+                # Step 3: Direct Web API Fallback (/api/v2/auth/web/login) if browser DOM PIN wasn't rendered yet
+                if not entered_pin:
+                    waf_token = await self.get_waf_token()
+                    headers = {
+                        "Content-Type": "application/json",
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                    }
+                    if waf_token:
+                        headers["X-aws-waf-token"] = waf_token
+
+                    async with (
+                        aiohttp.ClientSession() as session,
+                        session.post(
+                            "https://api.traderepublic.com/api/v2/auth/web/login",
+                            json={"phoneNumber": phone, "pin": pin},
+                            headers=headers,
+                            timeout=aiohttp.ClientTimeout(total=8),
+                        ) as resp,
+                    ):
+                        _LOGGER.info("Direct API login request status: %s", resp.status)
+                        if resp.status == 200:
+                            data = await resp.json()
+                            process_id = data.get("processId")
+                            _LOGGER.info("Login process started via API: processId=%s", process_id)
 
                 self.status_message = "Credentials submitted. 2FA (SMS/App approval) required."
                 asyncio.create_task(self._poll_for_app_approval())
@@ -230,6 +275,8 @@ class TradeRepublicBrowserService:
             except Exception as e:
                 _LOGGER.error("Login init error: %s", e)
                 return {"success": False, "error": str(e)}
+
+
 
     async def _poll_for_app_approval(self) -> None:
         """Poll for session token in background for 120s after credentials submission."""
