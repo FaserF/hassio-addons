@@ -28,6 +28,44 @@ class AuthHelper:
                     return cookie.get("value")
         return None
 
+    async def inject_session_cookies(self, token: str) -> None:
+        """Inject saved session token into Chromium cookies and localStorage to persist authenticated state."""
+        if not token:
+            return
+        clean_tok = token.strip().strip('"').strip("'")
+        try:
+            # 1. Set CDP Network Cookies
+            for domain in [".traderepublic.com", "app.traderepublic.com", "api.traderepublic.com"]:
+                for name in ["tr_session", "sessionToken", "tr_session_id"]:
+                    await self.cdp.send_cmd(
+                        "Network.setCookie",
+                        {
+                            "name": name,
+                            "value": clean_tok,
+                            "domain": domain,
+                            "path": "/",
+                            "secure": True,
+                            "httpOnly": False,
+                            "sameSite": "None",
+                        },
+                    )
+
+            # 2. Set localStorage in browser context
+            set_storage_script = f"""
+            (() => {{
+                try {{
+                    localStorage.setItem('sessionToken', JSON.stringify('{clean_tok}'));
+                    localStorage.setItem('tr_session', '{clean_tok}');
+                    document.cookie = 'tr_session={clean_tok}; path=/; domain=.traderepublic.com; secure; SameSite=None';
+                    document.cookie = 'sessionToken={clean_tok}; path=/; domain=.traderepublic.com; secure; SameSite=None';
+                }} catch(e) {{}}
+            }})()
+            """
+            await self.cdp.send_cmd("Runtime.evaluate", {"expression": set_storage_script})
+            _LOGGER.debug("Injected session token into Chromium cookies and storage")
+        except Exception as e:
+            _LOGGER.debug("Failed to inject cookies into Chromium: %s", e)
+
     async def extract_token_from_cookies(self) -> Optional[str]:
         """Extract valid JWT session token from Chromium via CDP cookies and storage."""
         # 1. Check CDP Network Cookies

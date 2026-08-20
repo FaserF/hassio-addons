@@ -95,6 +95,8 @@ class TradeRepublicBrowserService:
                 if is_valid:
                     self.status_message = "Everything is connected and running normally."
                     self.last_error = None
+                    if self.session_token:
+                        await self.auth_helper.inject_session_cookies(self.session_token)
                 else:
                     self.status_message = "Stored session token is expired. Please re-authenticate."
                     self.last_error = (
@@ -113,6 +115,7 @@ class TradeRepublicBrowserService:
         self.status_message = "Everything is connected and running normally. Re-login is only required if your session expires or if you experience connection issues."
         self.last_error = None
         self.session_manager.save(clean_tok, self.phone_number)
+        await self.auth_helper.inject_session_cookies(clean_tok)
 
     async def start_login(self, phone: str, pin: str) -> Dict[str, Any]:
         """Navigate and input credentials via CDP + direct API fallback with AWS WAF token."""
