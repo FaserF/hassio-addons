@@ -236,7 +236,9 @@ class TradeRepublicBrowserService:
                     return false;
                 }})()
                 """
-                pin_res = await self._send_cdp_cmd("Runtime.evaluate", {"expression": pin_script, "returnByValue": True})
+                pin_res = await self._send_cdp_cmd(
+                    "Runtime.evaluate", {"expression": pin_script, "returnByValue": True}
+                )
                 entered_pin = pin_res and pin_res.get("result", {}).get("value")
 
                 # Step 3: Direct Web API Fallback (/api/v2/auth/web/login) if browser DOM PIN wasn't rendered yet
@@ -275,8 +277,6 @@ class TradeRepublicBrowserService:
             except Exception as e:
                 _LOGGER.error("Login init error: %s", e)
                 return {"success": False, "error": str(e)}
-
-
 
     async def _poll_for_app_approval(self) -> None:
         """Poll for session token in background for 120s after credentials submission."""
