@@ -288,7 +288,7 @@ class TRWebSocketKeeper:
             try:
                 net_size = float(pos.get("netSize", 0.0))
                 average_buy_in = float(pos.get("averageBuyIn", 0.0))
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 continue
 
             pos_invested = net_size * average_buy_in
@@ -341,7 +341,7 @@ class TRWebSocketKeeper:
         try:
             sub_id = int(sub_id_str)
             payload = json.loads(payload_str)
-        except (ValueError, json.JSONDecodeError, TypeError):
+        except ValueError, json.JSONDecodeError, TypeError:
             return
 
         # Check main subscriptions
@@ -376,7 +376,7 @@ class TRWebSocketKeeper:
                 if api_rate is not None:
                     try:
                         self.latest_data["api_interest_rate"] = float(api_rate)
-                    except (ValueError, TypeError):
+                    except ValueError, TypeError:
                         pass
                 self._recalculate_portfolio()
 
@@ -427,7 +427,7 @@ class TRWebSocketKeeper:
                         if p is not None:
                             try:
                                 return float(p)
-                            except (ValueError, TypeError):
+                            except ValueError, TypeError:
                                 pass
                     return None
 
