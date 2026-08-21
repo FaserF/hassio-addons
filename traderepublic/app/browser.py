@@ -91,9 +91,7 @@ class TradeRepublicBrowserService:
                 _LOGGER.warning("Startup validation: saved session token rejected by TR (401) — marking expired")
                 self.is_logged_in = False
                 self.status_message = "Stored session token is expired. Please re-authenticate."
-                self.last_error = (
-                    "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
-                )
+                self.last_error = "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
 
     async def verify_token_validity(self, token: str) -> bool:
         """Check token validity via the keeper's persistent connection state.
