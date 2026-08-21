@@ -115,7 +115,7 @@ export async function checkBotOutboundSpamGuard(session, jid, options = {}) {
     );
 
     return {
-      allowed: true,
+      allowed: false,
       triggerWarning: true,
       muteSeconds,
       msgCount,
@@ -142,25 +142,25 @@ export async function reply(session, jid, content, quotedMsg = null, options = {
   if (!options?.skipSpamGuard && !options?.isTelegramRelay) {
     const spamCheck = await checkBotOutboundSpamGuard(session, jid, options);
     if (!spamCheck.allowed) {
+      if (spamCheck.triggerWarning) {
+        const groupCfg = jid.endsWith('@g.us') ? getGroupModerationConfig(jid) : null;
+        const lang = groupCfg?.language || 'en';
+        const warningText = t(lang, 'bot_replies.outbound_spam_warning', {
+          msgCount: spamCheck.msgCount,
+          muteSeconds: spamCheck.muteSeconds,
+          memberCount: spamCheck.memberCount,
+        });
+        try {
+          await enqueue(session, () =>
+            session.sock.sendMessage(
+              jid,
+              { text: warningText },
+              quotedMsg ? { quoted: quotedMsg } : {}
+            )
+          );
+        } catch (_e) {}
+      }
       return null;
-    }
-    if (spamCheck.triggerWarning) {
-      const groupCfg = jid.endsWith('@g.us') ? getGroupModerationConfig(jid) : null;
-      const lang = groupCfg?.language || 'en';
-      const warningText = t(lang, 'bot_replies.outbound_spam_warning', {
-        msgCount: spamCheck.msgCount,
-        muteSeconds: spamCheck.muteSeconds,
-        memberCount: spamCheck.memberCount,
-      });
-      try {
-        await enqueue(session, () =>
-          session.sock.sendMessage(
-            jid,
-            { text: warningText },
-            quotedMsg ? { quoted: quotedMsg } : {}
-          )
-        );
-      } catch (_e) {}
     }
   }
 

@@ -719,6 +719,8 @@ export function handleIncomingMessages(session) {
         }
 
         const isGroup = senderJid.endsWith('@g.us');
+        const groupCfg = isGroup ? getGroupModerationConfig(senderJid) : null;
+        const lang = groupCfg?.language || 'en';
         const messageType = getContentType(realMsgObj);
         let mediaUrl = null,
           mediaPath = null,
@@ -727,6 +729,10 @@ export function handleIncomingMessages(session) {
           caption = null,
           eventType = 'message',
           vote = [];
+
+        if (realMsgObj?.reactionMessage) {
+          return;
+        }
 
         if (messageType === 'pollUpdateMessage') {
           eventType = 'poll_update';
@@ -740,8 +746,6 @@ export function handleIncomingMessages(session) {
           const originalPollName = pollObj?.name || '';
           const pollResult = await resolvePollVotes(msg, originalPoll, session);
           vote = pollResult.vote;
-          const groupCfg = getGroupModerationConfig(senderJid);
-          const lang = groupCfg?.language || 'en';
           const qTitle = originalPollName ? `: ${originalPollName}` : '';
           if (pollResult.error) {
             text = t(lang, 'bot_replies.bridge_poll_vote_update_simple', {
@@ -759,13 +763,40 @@ export function handleIncomingMessages(session) {
               vote: t(lang, 'bot_replies.bridge_poll_vote_retracted'),
             });
           }
+        } else if (messageType === 'conversation') {
+          text = realMsgObj.conversation;
+        } else if (messageType === 'extendedTextMessage') {
+          text = realMsgObj.extendedTextMessage.text || text;
+          if (realMsgObj.extendedTextMessage.matchedText) {
+            const mText = realMsgObj.extendedTextMessage.matchedText;
+            if (!text.includes(mText)) text = `${text} ${mText}`;
+          }
+          if (realMsgObj.extendedTextMessage.description) {
+            const dText = realMsgObj.extendedTextMessage.description;
+            if (!text.includes(dText)) text = `${text} ${dText}`;
+          }
+          if (realMsgObj.extendedTextMessage.title) {
+            const tText = realMsgObj.extendedTextMessage.title;
+            if (!text.includes(tText)) text = `${text} ${tText}`;
+          }
+        } else if (messageType === 'protocolMessage') {
+          return;
+        } else if (messageType === 'eventResponseMessage') {
+          eventType = 'event_response';
+          const evResp = msg.message.eventResponseMessage;
+          const respType = evResp?.response || 'GOING';
+          text = `📅 [Event Response: ${respType}]`;
+          if (evResp?.eventCreationMesssageKey?.id) {
+            session.eventCache?.set(evResp.eventCreationMesssageKey.id, {
+              lastResponse: respType,
+              timestamp: Date.now(),
+            });
+          }
         } else if (messageType === 'eventMessage') {
           eventType = 'event';
           const evData = msg.message.eventMessage;
           const evName = evData?.name || 'Untitled Event';
           const evDesc = evData?.description || '';
-          const groupCfg = getGroupModerationConfig(senderJid);
-          const lang = groupCfg?.language || 'en';
           const localeCode = lang.startsWith('de') ? 'de-DE' : 'en-US';
           const evStart = evData?.startTime
             ? new Date(Number(evData.startTime) * 1000).toLocaleString(localeCode, {
@@ -776,11 +807,9 @@ export function handleIncomingMessages(session) {
           const evLoc = evData?.location?.name || '';
           const evLink = evData?.joinLink || '';
           const evCanceled = evData?.isCanceled
-            ? lang === 'de'
-              ? ' ❌ ABGESAGT'
-              : ' ❌ CANCELED'
+            ? ` ${t(lang, 'events.event_canceled')}`
             : '';
-          const lines = [`📅 *[Event${evCanceled}]: ${evName}*`];
+          const lines = [`📅 *[${t(lang, 'events.event_label')}${evCanceled}]: ${evName}*`];
           if (evStart) lines.push(`🕐 ${evStart}`);
           if (evDesc) lines.push(`📝 ${evDesc}`);
           if (evLoc) lines.push(`📍 ${evLoc}`);
@@ -792,18 +821,18 @@ export function handleIncomingMessages(session) {
           const displayName =
             contactObj?.displayName ||
             (contactObj?.vcard ? contactObj.vcard.match(/FN:(.*)/)?.[1]?.trim() : null) ||
-            'Contact Card';
+            t(lang, 'events.contact_card');
           const phoneMatch = contactObj?.vcard
             ? contactObj.vcard.match(/TEL.*:(.*)/)?.[1]?.trim()
             : '';
           const phoneInfo = phoneMatch ? ` (${phoneMatch})` : '';
-          text = `👤 [Contact: ${displayName}${phoneInfo}]`;
+          text = `👤 [${t(lang, 'events.contact_label')}: ${displayName}${phoneInfo}]`;
         } else if (messageType === 'locationMessage' || messageType === 'liveLocationMessage') {
           mediaType = 'location';
           const locObj = msg.message?.locationMessage || msg.message?.liveLocationMessage;
           const locName = locObj?.name || locObj?.address || '';
           const locDetails = locName ? `: ${locName}` : '';
-          text = `📍 [Location Share${locDetails}]`;
+          text = `📍 [${t(lang, 'events.location_share')}${locDetails}]`;
         } else if (messageType && messageType.startsWith('pollCreation')) {
           mediaType = 'poll';
           eventType = 'poll';
@@ -811,35 +840,35 @@ export function handleIncomingMessages(session) {
             msg.message?.pollCreationMessage ||
             msg.message?.pollCreationMessageV2 ||
             msg.message?.pollCreationMessageV3;
-          const question = pollObj?.name || 'Untitled';
+          const question = pollObj?.name || t(lang, 'events.untitled_poll');
           const options = pollObj?.options?.map((o) => o.optionName).filter(Boolean) || [];
           const optStr =
             options.length > 0
-              ? `\nOptions:\n${options.map((o, i) => `  ${i + 1}️⃣ ${o}`).join('\n')}`
+              ? `\n${t(lang, 'events.poll_options_label')}:\n${options.map((o, i) => `  ${i + 1}️⃣ ${o}`).join('\n')}`
               : '';
-          text = `📊 [Poll: ${question}]${optStr}`;
+          text = `📊 [${t(lang, 'events.poll_label')}: ${question}]${optStr}`;
         } else if (messageType === 'buttonsMessage' || messageType === 'templateMessage') {
           mediaType = 'buttons';
           const btnObj =
             msg.message?.buttonsMessage || msg.message?.templateMessage?.hydratedTemplate;
-          const bodyText = btnObj?.contentText || btnObj?.hydratedContentText || 'Buttons';
+          const bodyText = btnObj?.contentText || btnObj?.hydratedContentText || t(lang, 'events.buttons_label');
           const footer = btnObj?.footerText || btnObj?.hydratedFooterText || '';
           const buttonsList = (btnObj?.buttons || btnObj?.hydratedButtons || []).map((b, i) => {
             const label =
               b.buttonText?.displayText ||
               b.quickReplyButton?.displayText ||
               b.displayText ||
-              `Option ${i + 1}`;
+              `${t(lang, 'events.option_label')} ${i + 1}`;
             const id = b.buttonId || b.quickReplyButton?.id || b.id || `btn_${i + 1}`;
             return { id, label };
           });
           const optStr =
             buttonsList.length > 0 ? `\n${buttonsList.map((b) => `🔘 ${b.label}`).join('\n')}` : '';
-          text = `🔘 [Buttons: ${bodyText}]${footer ? `\n_${footer}_` : ''}${optStr}`;
+          text = `🔘 [${t(lang, 'events.buttons_label')}: ${bodyText}]${footer ? `\n_${footer}_` : ''}${optStr}`;
         } else if (messageType === 'listMessage') {
           mediaType = 'list';
           const listObj = msg.message?.listMessage;
-          const title = listObj?.title || 'List';
+          const title = listObj?.title || t(lang, 'events.list_label');
           const description = listObj?.description || '';
           const sections = listObj?.sections || [];
           const rowsFormatted = [];
@@ -847,16 +876,16 @@ export function handleIncomingMessages(session) {
             if (s.title) rowsFormatted.push(`*${s.title}*`);
             for (const r of s.rows || []) {
               rowsFormatted.push(
-                `  • ${r.title || 'Item'}${r.description ? ` (${r.description})` : ''}`
+                `  • ${r.title || t(lang, 'events.item_label')}${r.description ? ` (${r.description})` : ''}`
               );
             }
           }
-          text = `📋 [List: ${title}]${description ? `\n${description}` : ''}${rowsFormatted.length > 0 ? `\n${rowsFormatted.join('\n')}` : ''}`;
+          text = `📋 [${t(lang, 'events.list_label')}: ${title}]${description ? `\n${description}` : ''}${rowsFormatted.length > 0 ? `\n${rowsFormatted.join('\n')}` : ''}`;
         } else if (messageType === 'interactiveMessage') {
           mediaType = 'interactive';
           const intObj = msg.message?.interactiveMessage;
-          const body = intObj?.body?.text || intObj?.header?.title || 'Interactive Message';
-          text = `🔘 [Interactive: ${body}]`;
+          const body = intObj?.body?.text || intObj?.header?.title || t(lang, 'events.interactive_label');
+          text = `🔘 [${t(lang, 'events.interactive_label')}: ${body}]`;
         }
 
         const innerMsgObj = msg.message?.[messageType];
@@ -1081,7 +1110,6 @@ export function handleIncomingMessages(session) {
 
         triggerWebhook(event);
         handleFirstContact(session, event);
-        handleAutoResponder(session, event);
         const resolvedGroupName = isGroup
           ? session.groupCache?.get(senderJid) ||
             session.chatCache?.get(senderJid)?.name ||
@@ -1115,7 +1143,17 @@ export function handleIncomingMessages(session) {
           return;
         }
 
-        // 1. Process as command (requiring actual admin status for admin commands)
+        // 1. Process via Moderation Engine first (enforces Captcha verification, content locks, anti-spam, blacklist)
+        const consumedByModeration = await handleModerationMessage(session, event);
+        if (consumedByModeration) {
+          logger.debug({ senderJid }, 'Message consumed by Moderation Engine (captcha/lock/penalty)');
+          return event;
+        }
+
+        // 2. Trigger Auto-Responder if not consumed by moderation
+        handleAutoResponder(session, event);
+
+        // 3. Process as command (requiring actual admin status for admin commands)
         let handledAsCommand = false;
         if (text) {
           handledAsCommand = await processCommand(
@@ -1128,12 +1166,8 @@ export function handleIncomingMessages(session) {
           );
         }
 
-        // 2. Process via Moderation Engine if not a handled command
-        if (!handledAsCommand) {
-          if (messageType === 'audioMessage') {
-            await handleWhatsAppVoiceSTT(session, senderJid, msg);
-          }
-          await handleModerationMessage(session, event);
+        if (!handledAsCommand && messageType === 'audioMessage') {
+          await handleWhatsAppVoiceSTT(session, senderJid, msg);
         }
 
         if (text && typeof text === 'string') {
@@ -1142,6 +1176,10 @@ export function handleIncomingMessages(session) {
             .replace(/^['"`\s]+|['"`\s]+$/g, '')
             .toLowerCase();
           if (body.startsWith('ha-app-')) {
+            // Guard: in groups, only group admins can execute ha-app control commands
+            if (isGroup && !isGroupAdmin && !msg?.key?.fromMe) {
+              return event;
+            }
             if (body === 'ha-app-ping') {
               await reply(session, senderJid, { text: 'Pong! 🏓' });
             } else if (body === 'ha-app-getid') {

@@ -191,7 +191,7 @@ export async function handleModerationParticipantUpdate(session, update) {
           }
         }
 
-        const botWelcomeText = generateBotWelcomeMessage(isBotAdmin);
+        const botWelcomeText = generateBotWelcomeMessage(isBotAdmin, config);
         await reply(session, groupId, { text: botWelcomeText }, rawMsg, { skipSpamGuard: true });
         continue;
       }
@@ -366,7 +366,7 @@ export async function handleModerationParticipantUpdate(session, update) {
           let welcomeMsg =
             config.greetings.welcome_text ||
             config.greetings.welcome_message ||
-            'Welcome {mention} to {group}!';
+            gt(config, 'bot_replies.welcome_template_default');
           welcomeMsg = formatMessageTemplate(welcomeMsg, {
             userId,
             participantJid,
@@ -377,12 +377,12 @@ export async function handleModerationParticipantUpdate(session, update) {
           });
           messageParts.push(welcomeMsg);
         } else if (isRulesOnJoin || isCaptchaEnabled) {
-          messageParts.push(`👋 Welcome @${userId}!`);
+          messageParts.push(gt(config, 'bot_replies.welcome_short_greeting', { user: userId }));
         }
 
         // 2. Inline Group Rules (Appended if show_on_join is active)
         if (isRulesOnJoin) {
-          messageParts.push(`📜 *Group Rules:*\n${config.rules.text}`);
+          messageParts.push(`📜 *${gt(config, 'bot_replies.rules_title')}:*\n${config.rules.text}`);
         }
 
         // 3. Inline Captcha Challenge
@@ -396,7 +396,11 @@ export async function handleModerationParticipantUpdate(session, update) {
             const n2 = Math.floor(Math.random() * 12) + 1;
             const op = Math.random() > 0.5 ? '+' : '*';
             answer = op === '+' ? String(n1 + n2) : String(n1 * n2);
-            captchaSection = `🤖 *Captcha Verification*\nSolve the security challenge to verify:\n👉 *${n1} ${op} ${n2} = ?*\n\nReply with the correct number to gain access.`;
+            captchaSection = gt(config, 'bot_replies.captcha_challenge_math', {
+              n1,
+              op,
+              n2,
+            });
           } else if (mode === 'text' || mode === 'code') {
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
             let code = '';
@@ -404,13 +408,13 @@ export async function handleModerationParticipantUpdate(session, update) {
               code += chars.charAt(Math.floor(Math.random() * chars.length));
             }
             answer = code.toLowerCase();
-            captchaSection = `🤖 *Captcha Verification*\nType the following security code to verify:\n👉 *${code}*`;
+            captchaSection = gt(config, 'bot_replies.captcha_challenge_code', { code });
           } else {
             // Default / Button fallback
             const n1 = Math.floor(Math.random() * 9) + 1;
             const n2 = Math.floor(Math.random() * 9) + 1;
             answer = String(n1 + n2);
-            captchaSection = `🤖 *Captcha Verification*\nSolve math problem to verify:\n👉 *${n1} + ${n2} = ?*`;
+            captchaSection = gt(config, 'bot_replies.captcha_challenge_math_simple', { n1, n2 });
           }
 
           messageParts.push(captchaSection);
@@ -637,7 +641,7 @@ export async function handleModerationParticipantUpdate(session, update) {
         // --- Determine departure reason ---
         let departureReason = '';
         if (action === 'leave') {
-          departureReason = '🚶 Left voluntarily';
+          departureReason = gt(config, 'bot_replies.departure_voluntary');
         } else if (action === 'remove') {
           // Check recent kick reason registry (e.g. captcha timeout)
           const canonicalUser = resolveCanonicalUserKey(userId, session);
@@ -661,7 +665,7 @@ export async function handleModerationParticipantUpdate(session, update) {
             const bannedMap = config.banned_users || {};
             const banInfo = bannedMap[userId] || (cleanDigits ? bannedMap[cleanDigits] : null);
             if (banInfo) {
-              departureReason = `🚫 Banned${banInfo.reason ? ` — _${banInfo.reason}_` : ''}`;
+              departureReason = `🚫 ${gt(config, 'bot_replies.departure_banned')}${banInfo.reason ? ` — _${banInfo.reason}_` : ''}`;
             }
           }
 
@@ -675,7 +679,7 @@ export async function handleModerationParticipantUpdate(session, update) {
                 (fed.banned_users?.includes(userId) ||
                   (cleanDigits && fed.banned_users?.includes(cleanDigits)))
               ) {
-                departureReason = '🌐 Banned via Global Security Federation';
+                departureReason = `🌐 ${gt(config, 'bot_replies.departure_fed_banned')}`;
               }
             }
           }
@@ -685,17 +689,19 @@ export async function handleModerationParticipantUpdate(session, update) {
             const warnings = warningsMap[userId] || (cleanDigits ? warningsMap[cleanDigits] : null);
             const warnCount = Array.isArray(warnings) ? warnings.length : warnings ? 1 : 0;
             if (warnCount > 0) {
-              departureReason = `⚠️ Removed after ${warnCount} warning${warnCount !== 1 ? 's' : ''}`;
+              departureReason = `⚠️ ${gt(config, 'bot_replies.departure_warn_limit', { count: warnCount })}`;
             }
           }
 
           if (!departureReason) {
-            departureReason = '🔇 Removed by an admin';
+            departureReason = `🔇 ${gt(config, 'bot_replies.departure_admin_remove')}`;
           }
         }
 
         let goodbyeMsg =
-          config.greetings.goodbye_text || config.greetings.goodbye_message || 'Goodbye {name}!';
+          config.greetings.goodbye_text ||
+          config.greetings.goodbye_message ||
+          gt(config, 'bot_replies.goodbye_template_default');
         goodbyeMsg = formatMessageTemplate(goodbyeMsg, {
           userId,
           participantJid,
@@ -706,7 +712,7 @@ export async function handleModerationParticipantUpdate(session, update) {
         });
 
         if (departureReason) {
-          goodbyeMsg += `\n\n📋 *Reason:* ${departureReason}`;
+          goodbyeMsg += `\n\n📋 *${gt(config, 'bot_replies.reason_label')}:* ${departureReason}`;
         }
 
         const goodbyeTarget = config.greetings.goodbye_target || 'private';

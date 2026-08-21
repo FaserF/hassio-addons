@@ -36,28 +36,28 @@ export function isSelfParticipant(participantJid, session) {
   return false;
 }
 
-export function generateBotWelcomeMessage(isBotAdmin = false) {
+export function generateBotWelcomeMessage(isBotAdmin = false, config = null) {
   let adminNotice = '';
   if (!isBotAdmin) {
-    adminNotice = `⚠️ *Notice:* The bot currently *does not have Admin permissions* in this group.\nWithout Admin rights, the following features *will not* be available:\n• Captcha Verification (Automatic kick on failure/timeout)\n• Moderation Penalties (Kick, Ban, Mute, Temp-Ban)\n• Anti-Raid / Group Lockdown\n• Automatic message deletion on rule violations\n\n👉 *Please grant Admin permissions to the bot to enable full protection!*\n\n`;
+    adminNotice = `${gt(config, 'bot_replies.bot_welcome_missing_admin_notice')}\n\n`;
   }
 
-  return `🤖 *Hello! I am your Moderation & Assistant Bot.*
+  return `🤖 *${gt(config, 'bot_replies.bot_welcome_title')}*
 
-${adminNotice}⚡ *What I can do:*
-• *Welcome & Captcha:* Greet new members, display group rules & intercept spam bots via Captcha
-• *Auto-Responder & FAQ:* Automatic responses to predefined keywords or help hints from FAQ
-• *Content Protection & Moderation:* Word filters, link locks, flood protection, mute & warnings (!warn, !mute, !kick, !ban)
-• *Notes & Commands:* Group rules (!rules), notes (!note / #note) & user reports (!report)
-• *Home Assistant Integration:* Control messages & notifications directly via Home Assistant
+${adminNotice}⚡ *${gt(config, 'bot_replies.bot_welcome_capabilities_header')}:*
+• *${gt(config, 'bot_replies.bot_welcome_cap_welcome')}:* ${gt(config, 'bot_replies.bot_welcome_cap_welcome_desc')}
+• *${gt(config, 'bot_replies.bot_welcome_cap_autoresponder')}:* ${gt(config, 'bot_replies.bot_welcome_cap_autoresponder_desc')}
+• *${gt(config, 'bot_replies.bot_welcome_cap_moderation')}:* ${gt(config, 'bot_replies.bot_welcome_cap_moderation_desc')}
+• *${gt(config, 'bot_replies.bot_welcome_cap_notes')}:* ${gt(config, 'bot_replies.bot_welcome_cap_notes_desc')}
+• *${gt(config, 'bot_replies.bot_welcome_cap_ha')}:* ${gt(config, 'bot_replies.bot_welcome_cap_ha_desc')}
 
-⚙️ *Useful Commands:*
-• Type \`!help\` to see available group commands
-• Type \`!rules\` to view group rules
-• Type \`!admins\` to see group administrators
-• Type \`!report <reason>\` to report bad behavior to group admins
+⚙️ *${gt(config, 'bot_replies.bot_welcome_commands_header')}:*
+• ${gt(config, 'bot_replies.bot_welcome_cmd_help')}
+• ${gt(config, 'bot_replies.bot_welcome_cmd_rules')}
+• ${gt(config, 'bot_replies.bot_welcome_cmd_admins')}
+• ${gt(config, 'bot_replies.bot_welcome_cmd_report')}
 
-📚 *Documentation & Guide:*
+📚 *${gt(config, 'bot_replies.bot_welcome_docs_header')}:*
 https://faserf.github.io/ha-whatsapp/`;
 }
 
@@ -67,24 +67,10 @@ export async function sendMissingAdminWarning(
   attemptedAction = '',
   rawMsg = null
 ) {
-  const text =
-    `⚠️ *Bot Missing Admin Permissions!*\n\n` +
-    `I attempted to execute an action requiring Admin rights (${attemptedAction || 'Moderation/Admin command'}), but I am currently NOT a group administrator.\n\n` +
-    `👉 *How to Fix:*\n` +
-    `1. Open the WhatsApp Group settings.\n` +
-    `2. Go to *Group Info* -> *Group Members*.\n` +
-    `3. Select the Bot account and tap *Make Group Admin* (Promote).\n\n` +
-    `⛔ *Limitations without Admin Rights:*\n` +
-    `• Cannot delete rule-violating or muted messages (` +
-    '`!del` / `!mute` / content locks' +
-    `)\n` +
-    `• Cannot kick or ban members (` +
-    '`!kick` / `!ban` / anti-raid / flood penalty' +
-    `)\n` +
-    `• Cannot promote or demote other users (` +
-    '`!promote` / `!demote` / `!approve` / `!unapprove`' +
-    `)\n` +
-    `• Cannot change group settings or enforce lock restrictions`;
+  const config = getGroupModerationConfig(groupId);
+  const text = gt(config, 'bot_replies.bot_missing_admin_warning_full', {
+    action: attemptedAction || gt(config, 'bot_replies.admin_action_generic'),
+  });
 
   try {
     await reply(session, groupId, { text }, rawMsg);

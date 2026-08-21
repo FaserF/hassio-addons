@@ -3,6 +3,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { logger } from './logger.js';
 import { DATA_DIR, UI_AUTH_PASSWORD, UI_AUTH_ENABLED } from './config.js';
+import { t } from './locales/loader.js';
 
 const RBAC_FILE = path.join(DATA_DIR, 'rbac.json');
 
@@ -170,10 +171,10 @@ export function destroySessionToken(token) {
 
 // --- OTP & Anti-Spam Logic ---
 
-export function requestOtpCode(phone) {
+export function requestOtpCode(phone, lang = 'en') {
   const cleanPhone = normalizePhoneNumber(phone);
   if (!cleanPhone || cleanPhone.length < 7) {
-    return { success: false, error: 'invalid_phone', message: 'Ungültige Telefonnummer.' };
+    return { success: false, error: 'invalid_phone', message: t(lang, 'rbac.invalid_phone') };
   }
 
   const rbacConfig = loadRbacConfig();
@@ -183,7 +184,7 @@ export function requestOtpCode(phone) {
     return {
       success: false,
       error: 'blocked',
-      message: 'Diese Telefonnummer ist für Login-Benachrichtigungen gesperrt.',
+      message: t(lang, 'rbac.phone_blocked'),
     };
   }
 
@@ -196,7 +197,7 @@ export function requestOtpCode(phone) {
     return {
       success: false,
       error: 'rate_limited',
-      message: `Bitte warte ${waitSeconds} Sekunden vor der nächsten Code-Anforderung.`,
+      message: t(lang, 'rbac.rate_limited', { waitSeconds }),
       waitSeconds,
     };
   }
@@ -219,20 +220,17 @@ export function requestOtpCode(phone) {
     phone: cleanPhone,
     code,
     isSuperAdmin,
-    messageText:
-      `🔐 Dein WhatsApp Gateway Anmeldecode: *${code}*\n\n` +
-      `Dieser Code ist 5 Minuten gültig.\n\n` +
-      `⚠️ *Sicherheitshinweis:* Falls du diesen Code nicht angefordert hast, antworte direkt auf diese Nachricht mit */stoplogin*, um weitere Benachrichtigungen sofort zu sperren.`,
+    messageText: t(lang, 'rbac.otp_message_text', { code }),
   };
 }
 
-export function verifyOtpCode(phone, code) {
+export function verifyOtpCode(phone, code, lang = 'en') {
   const cleanPhone = normalizePhoneNumber(phone);
   if (!cleanPhone || !code) {
     return {
       success: false,
       error: 'invalid_input',
-      message: 'Telefonnummer und Code erforderlich.',
+      message: t(lang, 'rbac.invalid_input'),
     };
   }
 
@@ -241,7 +239,7 @@ export function verifyOtpCode(phone, code) {
     return {
       success: false,
       error: 'no_otp',
-      message: 'Kein aktiver Anmeldecode für diese Nummer gefunden.',
+      message: t(lang, 'rbac.no_otp'),
     };
   }
 
@@ -250,7 +248,7 @@ export function verifyOtpCode(phone, code) {
     return {
       success: false,
       error: 'expired',
-      message: 'Der Anmeldecode ist abgelaufen. Bitte erstelle einen neuen Code.',
+      message: t(lang, 'rbac.otp_expired'),
     };
   }
 
@@ -260,7 +258,7 @@ export function verifyOtpCode(phone, code) {
     return {
       success: false,
       error: 'too_many_attempts',
-      message: 'Zu viele fehlerhafte Versuche. Bitte fordere einen neuen Code an.',
+      message: t(lang, 'rbac.too_many_attempts'),
     };
   }
 
@@ -268,7 +266,7 @@ export function verifyOtpCode(phone, code) {
     return {
       success: false,
       error: 'invalid_code',
-      message: 'Ungültiger Anmeldecode. Bitte überprüfe deine Eingabe.',
+      message: t(lang, 'rbac.invalid_code'),
     };
   }
 

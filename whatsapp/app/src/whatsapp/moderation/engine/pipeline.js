@@ -162,138 +162,6 @@ export async function handleModerationMessage(session, event) {
     }
   }
 
-  // 0. Auto-Responder / Custom Filters & FAQ triggers check (runs for everyone including admins)
-  const allFilters = [
-    ...(Array.isArray(config.filters) ? config.filters : []),
-    ...(Array.isArray(config.autoresponder?.rules) ? config.autoresponder.rules : []),
-    ...(Array.isArray(config.faq?.rules) ? config.faq.rules : []),
-  ];
-
-  if (text && allFilters.length > 0) {
-    for (const filter of allFilters) {
-      if (!filter.trigger) continue;
-      let isMatch = false;
-      if (filter.is_regex) {
-        try {
-          isMatch = new RegExp(filter.trigger, 'i').test(text);
-        } catch (e) {}
-      } else {
-        const cleanTrigger = filter.trigger.toLowerCase().trim();
-        const lowerText = text.toLowerCase().trim();
-        if (lowerText === cleanTrigger || lowerText.includes(cleanTrigger)) {
-          isMatch = true;
-        }
-      }
-
-      if (isMatch) {
-        // Cooldown guard: if this exact trigger already fired in this group within
-        // TRIGGER_COOLDOWN_MS, skip it. Prevents any loop where a bot response
-        // contains the trigger substring and somehow bypasses the fromMe guard.
-        const cooldownKey = `${groupId}:${filter.trigger}`;
-        const lastFired = _triggerCooldowns.get(cooldownKey) ?? 0;
-        if (Date.now() - lastFired < TRIGGER_COOLDOWN_MS) {
-          logger.debug(
-            { groupId, trigger: filter.trigger },
-            'Trigger cooldown active — skipping to prevent loop'
-          );
-          continue;
-        }
-        _triggerCooldowns.set(cooldownKey, Date.now());
-
-        // 1. Dispatch Emoji Reaction directly to the triggering message
-        if (filter.reaction_emoji && rawMsg?.key?.id) {
-          try {
-            await session.sock.sendMessage(groupId, {
-              react: { text: filter.reaction_emoji, key: rawMsg.key },
-            });
-          } catch (e) {
-            logger.debug({ error: e.message }, 'Failed to send filter emoji reaction');
-          }
-        }
-
-        // 2. Dispatch Media Response (Sticker / GIF)
-        if (filter.media_type === 'sticker' && filter.media_url) {
-          try {
-            await session.sock.sendMessage(groupId, {
-              sticker: { url: filter.media_url },
-            });
-          } catch (e) {
-            logger.warn({ error: e.message }, 'Failed to send filter sticker');
-          }
-        } else if (filter.media_type === 'gif' && filter.media_url) {
-          try {
-            await session.sock.sendMessage(groupId, {
-              video: { url: filter.media_url },
-              caption: filter.response || '',
-              gifPlayback: true,
-            });
-          } catch (e) {
-            logger.warn({ error: e.message }, 'Failed to send filter GIF');
-          }
-        } else if (filter.response) {
-          // 3. Dispatch Text Reply / FAQ Hint
-          const isFaq = filter.type === 'faq';
-          const replyText = isFaq
-            ? gt(config, 'bot_replies.faq_hint', { response: filter.response })
-            : filter.response;
-
-          await reply(session, groupId, { text: replyText }, rawMsg);
-        }
-
-        // 4. Dispatch Document / File Attachment
-        if (filter.file_url && filter.media_type !== 'sticker' && filter.media_type !== 'gif') {
-          try {
-            await session.sock.sendMessage(groupId, {
-              document: { url: filter.file_url },
-              fileName: filter.file_name || 'Document.pdf',
-              mimetype: 'application/octet-stream',
-            });
-          } catch (e) {
-            logger.warn({ error: e.message }, 'Failed to send filter document attachment');
-          }
-        }
-
-        // 5. Dispatch Interactive Poll
-        if (
-          filter.poll_options &&
-          Array.isArray(filter.poll_options) &&
-          filter.poll_options.length >= 2
-        ) {
-          try {
-            await session.sock.sendMessage(groupId, {
-              poll: {
-                name: filter.poll_question || 'FAQ Poll',
-                values: filter.poll_options,
-                selectableCount: 1,
-              },
-            });
-          } catch (e) {
-            logger.warn({ error: e.message }, 'Failed to send filter poll');
-          }
-        }
-
-        if (filter.action && filter.action !== 'reply' && !isGroupAdminUser) {
-          if (rawMsg?.key?.id) {
-            try {
-              await session.sock.sendMessage(groupId, { delete: rawMsg.key });
-            } catch (e) {}
-          }
-          if (filter.action !== 'delete') {
-            await executePenalty(
-              session,
-              groupId,
-              userId,
-              filter.action,
-              `Filter match: "${filter.trigger}"`,
-              rawMsg
-            );
-          }
-        }
-        return true;
-      }
-    }
-  }
-
   if (isGroupAdminUser) {
     logger.debug({ groupId, userId }, 'Skipping destructive content moderation for admin/bot user');
     if (config.antispam?.notify_bypassed_actions && text && !rawMsg?.key?.fromMe) {
@@ -595,7 +463,7 @@ export async function handleModerationMessage(session, event) {
           // Send confirmation — DM if captcha was sent via DM, otherwise group
           const captchaTargetMode = config.greetings?.captcha_target || 'private';
           const userPhoneJid = `${userId.replace(/\D/g, '')}@s.whatsapp.net`;
-          const confirmText = `✅ *Captcha Verified!*\n\nYou have been successfully verified in *${groupName}*. You can now participate in the group.`;
+          const confirmText = gt(config, 'bot_replies.captcha_verified_full', { group: groupName });
 
           if (captchaTargetMode === 'private') {
             // Try DM first
@@ -653,8 +521,8 @@ export async function handleModerationMessage(session, event) {
 
       logger.info({ groupId, userId, text }, 'Blocked message from unverified user');
       const reminderText = expectedUpper
-        ? `🔒 *Message Deleted: Captcha Verification Pending*\n\n@${userId}, your message was deleted because you have not completed captcha verification yet.\n👉 Please reply with the exact security code: *${expectedUpper}*`
-        : `🔒 *Message Deleted: Captcha Verification Required*\n\n@${userId}, your message was deleted because you must complete captcha verification before posting.`;
+        ? gt(config, 'bot_replies.captcha_reminder_pending', { user: userId, code: expectedUpper })
+        : gt(config, 'bot_replies.captcha_reminder_required', { user: userId });
 
       await reply(
         session,
@@ -667,6 +535,135 @@ export async function handleModerationMessage(session, event) {
       );
 
       return true; // Consume message completely so no command or auto-responder executes
+    }
+  }
+
+  // Auto-Responder / Custom Filters & FAQ triggers check (runs after verification)
+  const allFilters = [
+    ...(Array.isArray(config.filters) ? config.filters : []),
+    ...(Array.isArray(config.autoresponder?.rules) ? config.autoresponder.rules : []),
+    ...(Array.isArray(config.faq?.rules) ? config.faq.rules : []),
+  ];
+
+  if (text && allFilters.length > 0) {
+    for (const filter of allFilters) {
+      if (!filter.trigger) continue;
+      let isMatch = false;
+      if (filter.is_regex) {
+        try {
+          isMatch = new RegExp(filter.trigger, 'i').test(text);
+        } catch (e) {}
+      } else {
+        const cleanTrigger = filter.trigger.toLowerCase().trim();
+        const lowerText = text.toLowerCase().trim();
+        if (lowerText === cleanTrigger || lowerText.includes(cleanTrigger)) {
+          isMatch = true;
+        }
+      }
+
+      if (isMatch) {
+        const cooldownKey = `${groupId}:${filter.trigger}`;
+        const lastFired = _triggerCooldowns.get(cooldownKey) ?? 0;
+        if (Date.now() - lastFired < TRIGGER_COOLDOWN_MS) {
+          logger.debug(
+            { groupId, trigger: filter.trigger },
+            'Trigger cooldown active — skipping to prevent loop'
+          );
+          continue;
+        }
+        _triggerCooldowns.set(cooldownKey, Date.now());
+
+        // 1. Dispatch Emoji Reaction directly to the triggering message
+        if (filter.reaction_emoji && rawMsg?.key?.id) {
+          try {
+            await session.sock.sendMessage(groupId, {
+              react: { text: filter.reaction_emoji, key: rawMsg.key },
+            });
+          } catch (e) {
+            logger.debug({ error: e.message }, 'Failed to send filter emoji reaction');
+          }
+        }
+
+        // 2. Dispatch Media Response (Sticker / GIF)
+        if (filter.media_type === 'sticker' && filter.media_url) {
+          try {
+            await session.sock.sendMessage(groupId, {
+              sticker: { url: filter.media_url },
+            });
+          } catch (e) {
+            logger.warn({ error: e.message }, 'Failed to send filter sticker');
+          }
+        } else if (filter.media_type === 'gif' && filter.media_url) {
+          try {
+            await session.sock.sendMessage(groupId, {
+              video: { url: filter.media_url },
+              caption: filter.response || '',
+              gifPlayback: true,
+            });
+          } catch (e) {
+            logger.warn({ error: e.message }, 'Failed to send filter GIF');
+          }
+        } else if (filter.response) {
+          // 3. Dispatch Text Reply / FAQ Hint
+          const isFaq = filter.type === 'faq';
+          const replyText = isFaq
+            ? gt(config, 'bot_replies.faq_hint', { response: filter.response })
+            : filter.response;
+
+          await reply(session, groupId, { text: replyText }, rawMsg);
+        }
+
+        // 4. Dispatch Document / File Attachment
+        if (filter.file_url && filter.media_type !== 'sticker' && filter.media_type !== 'gif') {
+          try {
+            await session.sock.sendMessage(groupId, {
+              document: { url: filter.file_url },
+              fileName: filter.file_name || 'Document.pdf',
+              mimetype: 'application/octet-stream',
+            });
+          } catch (e) {
+            logger.warn({ error: e.message }, 'Failed to send filter document attachment');
+          }
+        }
+
+        // 5. Dispatch Interactive Poll
+        if (
+          filter.poll_options &&
+          Array.isArray(filter.poll_options) &&
+          filter.poll_options.length >= 2
+        ) {
+          try {
+            await session.sock.sendMessage(groupId, {
+              poll: {
+                name: filter.poll_question || 'FAQ Poll',
+                values: filter.poll_options,
+                selectableCount: 1,
+              },
+            });
+          } catch (e) {
+            logger.warn({ error: e.message }, 'Failed to send filter poll');
+          }
+        }
+
+        if (filter.action && filter.action !== 'reply' && !isGroupAdminUser) {
+          if (rawMsg?.key?.id) {
+            try {
+              await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+            } catch (e) {}
+          }
+          if (filter.action !== 'delete') {
+            await executePenalty(
+              session,
+              groupId,
+              userId,
+              filter.action,
+              `Filter match: "${filter.trigger}"`,
+              rawMsg
+            );
+          }
+        }
+        return true;
+      }
     }
   }
 

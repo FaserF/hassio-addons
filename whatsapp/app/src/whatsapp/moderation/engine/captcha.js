@@ -208,22 +208,29 @@ export async function getGroupCaptchaUsers(groupId, session = null) {
     if (cleanDigits) processedUserIds.add(cleanDigits);
     if (canonicalKey) processedUserIds.add(canonicalKey);
 
-    const pending = findPendingCaptcha(groupId, pUser, session);
+    const isCaptchaEnabled = Boolean(config.greetings?.captcha_enabled);
     const verRecord =
       verifiedMap[pUser] ||
       (cleanDigits ? verifiedMap[cleanDigits] : null) ||
       (canonicalKey ? verifiedMap[canonicalKey] : null);
 
-    const isVerified = verRecord ? Boolean(verRecord.verified) : !pending;
+    const pendingResult = findPendingCaptcha(groupId, pUser, session);
+    const pendingObj = pendingResult?.captchaObj || null;
+
+    const isVerified = verRecord
+      ? Boolean(verRecord.verified)
+      : isCaptchaEnabled
+        ? false
+        : !pendingObj;
 
     result.push({
       userId: pUser,
       jid: pJid,
       name: resolveUserDisplayName(pUser, session) || pUser,
       verified: isVerified,
-      pending: Boolean(pending),
-      timestamp: verRecord?.timestamp || pending?.captchaObj?.timestamp || null,
-      mode: verRecord?.mode || (pending ? 'pending' : 'auto'),
+      pending: Boolean(pendingObj),
+      timestamp: verRecord?.timestamp || pendingObj?.timestamp || null,
+      mode: verRecord?.mode || (pendingObj ? 'pending' : 'auto'),
       isAdmin: p.admin === 'admin' || p.admin === 'superadmin',
     });
   }

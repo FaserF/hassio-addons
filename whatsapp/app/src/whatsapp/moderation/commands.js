@@ -2,6 +2,7 @@ import { loadModerationStore, getGroupModerationConfig } from './store.js';
 import { reply } from '../actions.js';
 import { logger } from '../../logger.js';
 import { gt } from './engine/translations.js';
+import { isUserVerified } from './engine/captcha.js';
 import { findCommandSuggestions, levenshteinDistance } from './commands/suggestions.js';
 import {
   registerAdminCommands,
@@ -11,6 +12,11 @@ import {
 } from './commands/admin.js';
 import { registerInfoCommands, LOCK_TYPES } from './commands/info.js';
 import { registerConfigCommands } from './commands/config.js';
+
+// Cooldown map: key `${groupId}:${userId}` -> lastCommandTimestamp
+const userCommandCooldowns = new Map();
+// Window rate limit map: key `${groupId}:${userId}` -> Array<timestamps>
+const userCommandWindows = new Map();
 
 export class CommandRegistry {
   constructor() {
@@ -71,6 +77,18 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
   const isPrivateChat = !groupId || !groupId.endsWith('@g.us');
   const config = getGroupModerationConfig(groupId) || {};
   if (!isPrivateChat && (!config.enabled || !config.commands?.enabled)) return false;
+
+  // Verification guard: in group chats, non-admin unverified users cannot execute commands
+  if (!isPrivateChat && !isAdminUser && config.greetings?.captcha_enabled) {
+    const rawUserId = senderJid ? senderJid.split('@')[0].replace(/\D/g, '') : '';
+    if (rawUserId && !isUserVerified(groupId, rawUserId, session, msg)) {
+      logger.debug(
+        { groupId, userId: rawUserId },
+        'Command skipped: user is not yet verified by captcha'
+      );
+      return false;
+    }
+  }
 
   const prefix = config.commands?.prefix || '!';
 
@@ -165,6 +183,35 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
 
   if (validCommandLines.length === 0) return false;
 
+  // Rate Limiting & Cooldown Protection for non-admin users
+  if (!isAdminUser && !msg?.key?.fromMe) {
+    const userKey = `${groupId || 'dm'}:${senderJid}`;
+    const now = Date.now();
+    const windowMs = 5000;
+    let windowHits = userCommandWindows.get(userKey) || [];
+    windowHits = windowHits.filter((t) => now - t < windowMs);
+    windowHits.push(now);
+    userCommandWindows.set(userKey, windowHits);
+
+    // Max 3 commands per 5 seconds
+    if (windowHits.length > 3) {
+      logger.warn({ userKey }, '⏳ User exceeded command rate limit (cooldown active)');
+      const lastWarning = userCommandCooldowns.get(userKey) || 0;
+      if (now - lastWarning > 10000) {
+        userCommandCooldowns.set(userKey, now);
+        await reply(
+          session,
+          groupId,
+          {
+            text: gt(config, 'bot_replies.command_cooldown_warning'),
+          },
+          msg
+        );
+      }
+      return true;
+    }
+  }
+
   const multiCmdEnabled = Boolean(config.commands?.multi_command_enabled);
   const linesToProcess = multiCmdEnabled ? validCommandLines : [validCommandLines[0]];
 
@@ -218,7 +265,9 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
       session,
       groupId,
       {
-        text: `⚠️ *Batch Command Safety Alert:*\nThe following destructive/conflicting commands were skipped from the batch for security reasons and must be sent individually:\n${detectedConflicts.map((c) => `• ${c}`).join('\n')}`,
+        text: gt(config, 'bot_replies.batch_command_conflict_warning', {
+          conflicts: detectedConflicts.map((c) => `• ${c}`).join('\n'),
+        }),
       },
       msg
     );
@@ -286,7 +335,9 @@ async function executeSingleCommandLine(
           session,
           groupId,
           {
-            text: `⚠️ *Permission Denied:*\nYou must be a group admin to use \`${prefix}${cmdStr}\`.`,
+            text: gt(config, 'bot_replies.permission_denied_admin_only', {
+              cmd: `${prefix}${cmdStr}`,
+            }),
           },
           msg
         );
@@ -384,7 +435,7 @@ async function executeSingleCommandLine(
       session,
       groupId,
       {
-        text: `⚠️ *Command Disabled:*\nThe command \`${prefix}${cmdStr}\` is disabled in this group and will be ignored.`,
+        text: gt(config, 'bot_replies.command_disabled', { cmd: `${prefix}${cmdStr}` }),
       },
       msg
     );
@@ -398,7 +449,9 @@ async function executeSingleCommandLine(
       session,
       groupId,
       {
-        text: `⚠️ *Permission Denied:*\nYou must be a group admin to use \`${prefix}${cmdStr}\`.`,
+        text: gt(config, 'bot_replies.permission_denied_admin_only', {
+          cmd: `${prefix}${cmdStr}`,
+        }),
       },
       msg
     );
@@ -414,7 +467,7 @@ async function executeSingleCommandLine(
     await reply(
       session,
       groupId,
-      { text: `❌ An error occurred while executing the command.` },
+      { text: gt(config, 'bot_replies.command_execution_error') },
       msg
     );
   }

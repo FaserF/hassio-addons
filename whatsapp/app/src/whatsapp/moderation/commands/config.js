@@ -19,7 +19,7 @@ export function registerConfigCommands(registry) {
           session,
           groupId,
           {
-            text: `⚠️ Usage: \`${config.commands.prefix}setwelcome <text>\`\nPlaceholders: {mention}, {name}, {pushname}, {group}, {count}, {rules}, {date}, {time}`,
+            text: gt(config, 'bot_replies.cmd_setwelcome_usage', { prefix: config.commands.prefix }),
           },
           rawMsg
         );
@@ -32,7 +32,7 @@ export function registerConfigCommands(registry) {
       c.greetings.welcome_message = text;
       c.greetings.welcome_enabled = true;
       saveModerationStore(store);
-      await reply(session, groupId, { text: '✅ Welcome message updated and enabled.' }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.welcome_updated_success') }, rawMsg);
     },
     { adminOnly: true, help: 'Set the welcome message' }
   );
@@ -43,8 +43,8 @@ export function registerConfigCommands(registry) {
       const text =
         config.greetings?.welcome_text ||
         config.greetings?.welcome_message ||
-        'Welcome {user} to {group}!';
-      await reply(session, groupId, { text: `Current welcome message:\n\n${text}` }, rawMsg);
+        gt(config, 'bot_replies.welcome_template_default');
+      await reply(session, groupId, { text: gt(config, 'bot_replies.current_welcome_msg', { text }) }, rawMsg);
     },
     { adminOnly: true, help: 'View the welcome message' }
   );
@@ -58,7 +58,7 @@ export function registerConfigCommands(registry) {
           session,
           groupId,
           {
-            text: `⚠️ Usage: \`${config.commands.prefix}setgoodbye <text>\`\nPlaceholders: {mention}, {name}, {pushname}, {group}, {count}, {rules}, {date}, {time}`,
+            text: gt(config, 'bot_replies.cmd_setgoodbye_usage', { prefix: config.commands.prefix }),
           },
           rawMsg
         );
@@ -71,7 +71,7 @@ export function registerConfigCommands(registry) {
       c.greetings.goodbye_message = text;
       c.greetings.goodbye_enabled = true;
       saveModerationStore(store);
-      await reply(session, groupId, { text: '✅ Goodbye message updated and enabled.' }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.goodbye_updated_success') }, rawMsg);
     },
     { adminOnly: true, help: 'Set the goodbye message' }
   );
@@ -80,8 +80,8 @@ export function registerConfigCommands(registry) {
     'goodbye',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
       const text =
-        config.greetings?.goodbye_text || config.greetings?.goodbye_message || 'Goodbye {name}!';
-      await reply(session, groupId, { text: `Current goodbye message:\n\n${text}` }, rawMsg);
+        config.greetings?.goodbye_text || config.greetings?.goodbye_message || gt(config, 'bot_replies.goodbye_template_default');
+      await reply(session, groupId, { text: gt(config, 'bot_replies.current_goodbye_msg', { text }) }, rawMsg);
     },
     { adminOnly: true, help: 'View the goodbye message' }
   );
@@ -93,7 +93,7 @@ export function registerConfigCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Usage: \`${config.commands.prefix}save <name> <content>\`` },
+          { text: gt(config, 'bot_replies.cmd_save_usage', { prefix: config.commands.prefix }) },
           rawMsg
         );
         return;
@@ -105,7 +105,7 @@ export function registerConfigCommands(registry) {
       if (!c.notes) c.notes = {};
       c.notes[name] = content;
       saveModerationStore(store);
-      await reply(session, groupId, { text: `✅ Saved note *#${name}*.` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.note_saved_success', { name }) }, rawMsg);
     },
     { adminOnly: true, aliases: ['safe'], help: 'Save a note (#name content)' }
   );
@@ -117,7 +117,7 @@ export function registerConfigCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Usage: \`${config.commands.prefix}get <name>\`` },
+          { text: gt(config, 'bot_replies.cmd_get_usage', { prefix: config.commands.prefix }) },
           rawMsg
         );
         return;
@@ -128,7 +128,7 @@ export function registerConfigCommands(registry) {
       if (c.notes && c.notes[name]) {
         await reply(session, groupId, { text: c.notes[name] }, rawMsg);
       } else {
-        await reply(session, groupId, { text: `❌ Note *#${name}* not found.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.note_not_found', { name }) }, rawMsg);
       }
     },
     { help: 'Retrieve a note' }
@@ -141,12 +141,12 @@ export function registerConfigCommands(registry) {
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       const noteKeys = Object.keys(c.notes || {});
       if (noteKeys.length === 0) {
-        await reply(session, groupId, { text: '📝 No notes saved for this group.' }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.notes_none_saved') }, rawMsg);
       } else {
         await reply(
           session,
           groupId,
-          { text: `📝 *Saved Notes:*\n${noteKeys.map((k) => `• #${k}`).join('\n')}` },
+          { text: gt(config, 'bot_replies.notes_list_header', { notes: noteKeys.map((k) => `• #${k}`).join('\n') }) },
           rawMsg
         );
       }
