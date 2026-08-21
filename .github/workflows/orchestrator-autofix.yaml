@@ -149,7 +149,19 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # 3. Node.js Tools (Prettier, Markdownlint)
+      # 3. Project Manifest & Connection Map (Generate before formatting/linters)
+      - name: 📋 Update Project Manifest
+        id: manifest
+        continue-on-error: true
+        run: |
+          python .scripts/generate_manifest.py
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # 4. Node.js Tools (Prettier, Markdownlint)
       - name: 📦 Set up Node.js
         uses: actions/setup-node@v7
         with:
@@ -170,11 +182,11 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # 4. Standardize (READMEs, Beta Labels, Configs)
+      # 5. Standardize (READMEs, Beta Labels, Configs)
       - name: 📄 Standardize READMEs
         run: python3 .scripts/standardize_readmes.py
 
-      # 5. Markdown Fixes (markdownlint)
+      # 6. Markdown Fixes (markdownlint)
       - name: 📝 Fix Markdown
         id: markdownlint
         continue-on-error: true
@@ -187,31 +199,19 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # 6. Remove Trailing Spaces
+      # 7. Remove Trailing Spaces
       - name: 🧹 Remove Trailing Spaces
         run: |
           find .github/workflows -name "*.yaml" -type f -exec sed -i 's/[[:space:]]*$//' {} +
 
-      # 7. Clean Excessive Blank Lines
+      # 8. Clean Excessive Blank Lines
       - name: 🧹 Clean Excessive Blank Lines
         run: |
           python3 .scripts/clean_blank_lines.py
-      # 8. Bump Test Script Version
+      # 9. Bump Test Script Version
       - name: 🆙 Bump Test Script Version
         continue-on-error: true
         run: python3 .scripts/bump_script_version.py
-
-      # 9. Project Manifest & Connection Map
-      - name: 📋 Update Project Manifest
-        id: manifest
-        continue-on-error: true
-        run: |
-          python .scripts/generate_manifest.py
-          if git diff --quiet; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
 
       # Build dynamic commit message
       - name: 📝 Build Commit Message
