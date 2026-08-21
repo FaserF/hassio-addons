@@ -213,7 +213,9 @@ class TRWebSocketKeeper:
                 except Exception:
                     _LOGGER.warning("WS Keeper: TR rejected token (HTTP 401) — stopping until new token")
                     self.is_authenticated = False
-                    self.last_error = "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+                    self.last_error = (
+                        "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+                    )
                     return False
             else:
                 _LOGGER.debug("WS Keeper: connection error: %s", first_exc)
