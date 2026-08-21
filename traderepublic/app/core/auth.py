@@ -30,9 +30,28 @@ class AuthHelper:
 
     async def inject_session_cookies(self, token: str) -> None:
         """Inject saved session token into Chromium cookies and localStorage to persist authenticated state."""
+        import base64
+        import time
+
         if not token:
             return
         clean_tok = token.strip().strip('"').strip("'")
+
+        # Calculate expiration dynamically (from JWT exp claim if present, else 1 year from now)
+        expires_timestamp = int(time.time()) + (365 * 24 * 60 * 60)
+        try:
+            parts = clean_tok.split(".")
+            if len(parts) >= 2:
+                padded = parts[1] + "=" * ((4 - len(parts[1]) % 4) % 4)
+                payload_json = json.loads(base64.urlsafe_b64decode(padded.encode()))
+                if isinstance(payload_json, dict) and "exp" in payload_json:
+                    jwt_exp = int(payload_json["exp"])
+                    # Use JWT exp if in future, else keep 1 year buffer for refresh
+                    if jwt_exp > time.time():
+                        expires_timestamp = jwt_exp
+        except Exception:  # noqa: BLE001
+            pass
+
         try:
             # 1. Set CDP Network Cookies
             for domain in [".traderepublic.com", "app.traderepublic.com", "api.traderepublic.com"]:
@@ -47,7 +66,7 @@ class AuthHelper:
                             "secure": True,
                             "httpOnly": False,
                             "sameSite": "None",
-                            "expires": 2147483647,
+                            "expires": expires_timestamp,
                         },
                     )
 
