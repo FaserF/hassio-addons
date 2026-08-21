@@ -137,7 +137,6 @@ class TRWebSocketKeeper:
                 except Exception as exc:
                     _LOGGER.debug("WS Keeper: dynamic unsub '%s' failed: %s", cat, exc)
 
-
     # ─── Internal ────────────────────────────────────────────────────────────
 
     async def _close_ws(self) -> None:
@@ -268,18 +267,13 @@ class TRWebSocketKeeper:
             try:
                 net_size = float(pos.get("netSize", 0.0))
                 average_buy_in = float(pos.get("averageBuyIn", 0.0))
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 continue
 
             pos_invested = net_size * average_buy_in
             invested_capital += pos_invested
 
-            raw_net_value = (
-                pos.get("netValue")
-                or pos.get("value")
-                or pos.get("marketValue")
-                or pos.get("currentValue")
-            )
+            raw_net_value = pos.get("netValue") or pos.get("value") or pos.get("marketValue") or pos.get("currentValue")
             raw_profit = (
                 pos.get("unrealisedProfit")
                 or pos.get("unrealisedPnl")
@@ -303,9 +297,7 @@ class TRWebSocketKeeper:
         self.latest_data["net_value"] = securities_value + available_cash
         self.latest_data["total_profit"] = securities_value - invested_capital
         self.latest_data["total_profit_percent"] = (
-            (self.latest_data["total_profit"] / invested_capital * 100)
-            if invested_capital > 0
-            else 0.0
+            (self.latest_data["total_profit"] / invested_capital * 100) if invested_capital > 0 else 0.0
         )
         self.latest_data["holdings"] = holdings
 
@@ -328,7 +320,7 @@ class TRWebSocketKeeper:
         try:
             sub_id = int(sub_id_str)
             payload = json.loads(payload_str)
-        except (ValueError, json.JSONDecodeError, TypeError):
+        except ValueError, json.JSONDecodeError, TypeError:
             return
 
         # Check main subscriptions
@@ -344,7 +336,11 @@ class TRWebSocketKeeper:
                     if isin and isin not in [p.get("isin") for p in self._ticker_subs.values()]:
                         ex_ids = pos.get("exchangeIds")
                         ex_suffix = ex_ids[0] if isinstance(ex_ids, list) and ex_ids else "LSX"
-                        ticker_id = isin if (pos.get("instrumentType") == "crypto" or isin.startswith("XF")) else f"{isin}.{ex_suffix}"
+                        ticker_id = (
+                            isin
+                            if (pos.get("instrumentType") == "crypto" or isin.startswith("XF"))
+                            else f"{isin}.{ex_suffix}"
+                        )
                         ticker_sub_id = self._sub_counter
                         self._sub_counter += 1
                         self._ticker_subs[ticker_sub_id] = pos
@@ -359,7 +355,7 @@ class TRWebSocketKeeper:
                 if api_rate is not None:
                     try:
                         self.latest_data["api_interest_rate"] = float(api_rate)
-                    except (ValueError, TypeError):
+                    except ValueError, TypeError:
                         pass
                 self._recalculate_portfolio()
 
@@ -379,12 +375,14 @@ class TRWebSocketKeeper:
                 amount_obj = item.get("amount")
                 if isinstance(amount_obj, dict):
                     amount_val = float(amount_obj.get("value") or 0.0)
-                txs.append({
-                    "title": item.get("title"),
-                    "subtitle": item.get("subtitle"),
-                    "amount": amount_val,
-                    "timestamp": item.get("timestamp"),
-                })
+                txs.append(
+                    {
+                        "title": item.get("title"),
+                        "subtitle": item.get("subtitle"),
+                        "amount": amount_val,
+                        "timestamp": item.get("timestamp"),
+                    }
+                )
             self.latest_data["recent_transactions"] = txs
 
         elif sub_id in self._ticker_subs:
@@ -392,6 +390,7 @@ class TRWebSocketKeeper:
             pos = self._ticker_subs[sub_id]
             isin = pos.get("isin")
             if isin:
+
                 def _parse_p(val: Any) -> Optional[float]:
                     if isinstance(val, (int, float)):
                         return float(val)
@@ -400,7 +399,7 @@ class TRWebSocketKeeper:
                         if p is not None:
                             try:
                                 return float(p)
-                            except (ValueError, TypeError):
+                            except ValueError, TypeError:
                                 pass
                     return None
 
