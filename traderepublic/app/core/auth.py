@@ -36,7 +36,7 @@ class AuthHelper:
         try:
             # 1. Set CDP Network Cookies
             for domain in [".traderepublic.com", "app.traderepublic.com", "api.traderepublic.com"]:
-                for name in ["tr_session", "sessionToken", "tr_session_id"]:
+                for name in ["tr_session", "sessionToken", "tr_session_id", "auth_token"]:
                     await self.cdp.send_cmd(
                         "Network.setCookie",
                         {
@@ -47,6 +47,7 @@ class AuthHelper:
                             "secure": True,
                             "httpOnly": False,
                             "sameSite": "None",
+                            "expires": 2147483647,
                         },
                     )
 
@@ -56,8 +57,11 @@ class AuthHelper:
                 try {{
                     localStorage.setItem('sessionToken', JSON.stringify('{clean_tok}'));
                     localStorage.setItem('tr_session', '{clean_tok}');
-                    document.cookie = 'tr_session={clean_tok}; path=/; domain=.traderepublic.com; secure; SameSite=None';
-                    document.cookie = 'sessionToken={clean_tok}; path=/; domain=.traderepublic.com; secure; SameSite=None';
+                    localStorage.setItem('auth_token', '{clean_tok}');
+                    sessionStorage.setItem('sessionToken', '{clean_tok}');
+                    sessionStorage.setItem('tr_session', '{clean_tok}');
+                    document.cookie = 'tr_session={clean_tok}; path=/; domain=.traderepublic.com; secure; SameSite=None; max-age=31536000';
+                    document.cookie = 'sessionToken={clean_tok}; path=/; domain=.traderepublic.com; secure; SameSite=None; max-age=31536000';
                 }} catch(e) {{}}
             }})()
             """
