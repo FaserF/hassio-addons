@@ -58,20 +58,29 @@ COPY --from=backend /app/pyproject.toml /app/pyproject.toml
 
 # Install Python Dependencies for Backend
 # Installing directly from the dependencies listed in pyproject.toml
-# hadolint ignore=DL3013
-RUN pip3 install --no-cache-dir --break-system-packages \
-    fastapi==0.115.8 \
-    "uvicorn[standard]==0.34.0" \
-    httpx==0.28.1 \
-    "pydantic[email]==2.10.6" \
-    pydantic-settings==2.7.1 \
-    sqlalchemy==2.0.37 \
-    alembic==1.14.1 \
-    asyncpg==0.30.0 \
-    python-multipart==0.0.20 \
-    "python-jose[cryptography]==3.3.0" \
-    "passlib[bcrypt]==1.7.4" \
-    structlog==25.1.0
+# hadolint ignore=DL3013,DL3018
+RUN \
+    apk add --no-cache --virtual .build-deps \
+        build-base \
+        python3-dev \
+        libffi-dev \
+        openssl-dev \
+        cargo \
+        rust \
+    && pip3 install --no-cache-dir --break-system-packages \
+        fastapi==0.115.8 \
+        "uvicorn[standard]==0.34.0" \
+        httpx==0.28.1 \
+        "pydantic[email]==2.10.6" \
+        pydantic-settings==2.7.1 \
+        sqlalchemy==2.0.37 \
+        alembic==1.14.1 \
+        asyncpg==0.30.0 \
+        python-multipart==0.0.20 \
+        "python-jose[cryptography]==3.3.0" \
+        "passlib[bcrypt]==1.7.4" \
+        structlog==25.1.0 \
+    && apk del .build-deps
 
 # Copy root filesystem
 COPY rootfs /
