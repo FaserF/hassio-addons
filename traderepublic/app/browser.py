@@ -9,7 +9,7 @@ from core.auth import AuthHelper
 from core.cdp import CDPClient
 from core.constants import CDP_PORT, DATA_DIR, KEEP_ALIVE_INTERVAL
 from core.session_manager import SessionManager
-from core.verifier import verify_tr_token
+from core.ws_keeper import TRWebSocketKeeper
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,6 +35,9 @@ class TradeRepublicBrowserService:
         self._lock = asyncio.Lock()
         self._keepalive_task: Optional[asyncio.Task] = None
         self.login_started_at: Optional[float] = None
+
+        # Persistent WebSocket keeper — one connection, always alive
+        self._ws_keeper = TRWebSocketKeeper(token_factory=lambda: self.session_token)
 
     async def start(self) -> None:
         """Start headless Chromium with remote debugging port."""
@@ -64,13 +67,29 @@ class TradeRepublicBrowserService:
                 _LOGGER.warning("Chromium CDP not ready within 20s — proceeding anyway")
 
             await self._load_saved_session()
+            # Start persistent WS keeper and Chromium watchdog
+            self._ws_keeper.start()
             self._keepalive_task = asyncio.create_task(self._keepalive_loop())
         except Exception as e:
             _LOGGER.error("Failed to start browser process: %s", e)
             self.status_message = f"Error starting browser: {e}"
 
     async def verify_token_validity(self, token: str) -> bool:
-        """Verify token against Trade Republic WebSocket backend."""
+        """Check token validity via the keeper's persistent connection state.
+
+        We no longer open a new WebSocket just to verify — instead we rely on
+        the keeper's connection state. If the keeper is connected and authenticated,
+        the token is valid. This avoids the repeated open/close pattern that
+        caused TR to detect bot activity and invalidate sessions.
+        """
+        if not token:
+            return False
+        if self._ws_keeper.is_authenticated:
+            self.token_verified_at = time.time()
+            return True
+        # Keeper not yet connected or rejected — fall back to one-off check
+        # only on startup (when keeper hasn't had time to connect yet)
+        from core.verifier import verify_tr_token
         is_valid = await verify_tr_token(token)
         if is_valid:
             self.token_verified_at = time.time()
@@ -82,26 +101,14 @@ class TradeRepublicBrowserService:
             self.session_token = data.get("session_token")
             self.phone_number = data.get("phone_number")
             if self.session_token:
-                is_valid = await self.verify_token_validity(self.session_token)
-                if not is_valid:
-                    _LOGGER.info("Saved token from file invalid, attempting extraction from browser cookies/storage...")
-                    browser_token = await self.auth_helper.extract_token_from_cookies()
-                    if browser_token:
-                        is_valid = await self.verify_token_validity(browser_token)
-                        if is_valid:
-                            self.session_token = browser_token
-
-                self.is_logged_in = is_valid
-                if is_valid:
-                    self.status_message = "Everything is connected and running normally."
-                    self.last_error = None
-                    if self.session_token:
-                        await self.auth_helper.inject_session_cookies(self.session_token)
-                else:
-                    self.status_message = "Stored session token is expired. Please re-authenticate."
-                    self.last_error = (
-                        "Session expired or rejected by Trade Republic (HTTP 401). Please click Re-authenticate."
-                    )
+                # Inject cookies into Chromium immediately so the page stays authenticated
+                await self.auth_helper.inject_session_cookies(self.session_token)
+                # Optimistically mark as logged in — the ws_keeper will validate the
+                # connection within seconds and will update status if the token is bad.
+                self.is_logged_in = True
+                self.status_message = "Everything is connected and running normally."
+                self.last_error = None
+                _LOGGER.info("Loaded session token from disk — keeper will verify connection shortly")
 
     async def save_session(self, token: str, phone: Optional[str] = None) -> None:
         if not token:
@@ -116,6 +123,8 @@ class TradeRepublicBrowserService:
         self.last_error = None
         self.session_manager.save(clean_tok, self.phone_number)
         await self.auth_helper.inject_session_cookies(clean_tok)
+        # Tell keeper about the new token so it reconnects if previously stopped
+        self._ws_keeper.update_token(clean_tok)
 
     async def start_login(self, phone: str, pin: str) -> Dict[str, Any]:
         """Navigate and input credentials via CDP + direct API fallback with AWS WAF token."""
@@ -224,56 +233,41 @@ class TradeRepublicBrowserService:
         """Perform active page interaction and token extraction to keep session alive."""
         async with self._lock:
             try:
-                # 1. First check if current session token is still valid via WebSocket
-                if self.session_token:
-                    is_valid = await self.verify_token_validity(self.session_token)
-                    if is_valid:
-                        self.is_logged_in = True
-                        self.last_error = None
-                        self.status_message = "Everything is connected and running normally. Session renewed 24/7."
-                        return self.session_token
+                # The ws_keeper handles continuous token validation.
+                # Here we just sync its state into browser_service and optionally
+                # attempt to refresh the token from Chromium cookies if the keeper
+                # has detected an auth failure.
+                if self._ws_keeper.is_authenticated:
+                    self.is_logged_in = True
+                    self.last_error = None
+                    self.status_message = "Everything is connected and running normally. Session renewed 24/7."
+                    return self.session_token
 
-                # 2. If token check was negative, try gentle in-page interaction (no blind hard reload)
-                touch_script = """
-                (() => {
-                    try {
-                        window.dispatchEvent(new Event('mousemove'));
-                        window.dispatchEvent(new Event('focus'));
-                        if (document.body) {
-                            document.body.dispatchEvent(new Event('click'));
-                        }
-                    } catch(e) {}
-                })()
-                """
-                await self.cdp.send_cmd("Runtime.evaluate", {"expression": touch_script})
-                await asyncio.sleep(1)
+                # Keeper detected auth failure — try to extract a fresh token from browser
+                _LOGGER.info("WS Keeper not authenticated — attempting token extraction from Chromium")
+                browser_token = await self.auth_helper.extract_token_from_cookies()
+                if browser_token and browser_token != self.session_token:
+                    _LOGGER.info("Extracted new token from Chromium cookies, updating session")
+                    await self.save_session(browser_token)
+                    return browser_token
 
-                token = await self.auth_helper.extract_token_from_cookies()
-                if token and token != self.session_token:
-                    is_valid = await self.verify_token_validity(token)
-                    if is_valid:
-                        await self.save_session(token)
-                        return token
+                # If keeper explicitly got a 401, mark session as expired
+                if self._ws_keeper.last_error and "401" in self._ws_keeper.last_error:
+                    self.is_logged_in = False
+                    self.status_message = "Session token expired. Please re-authenticate."
+                    self.last_error = (
+                        "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+                    )
+                    return None
 
-                # 3. Only if token is definitely invalid after interaction, mark expired
-                if self.session_token:
-                    is_still_valid = await self.verify_token_validity(self.session_token)
-                    if not is_still_valid:
-                        _LOGGER.warning("Trade Republic WebSocket rejected session token")
-                        self.is_logged_in = False
-                        self.status_message = "Session token expired. Please re-authenticate."
-                        self.last_error = (
-                            "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
-                        )
-                        return None
-
+                # Keeper is still connecting — optimistically keep current state
                 return self.session_token
             except Exception as e:
                 _LOGGER.debug("Session refresh attempt info: %s", e)
             return self.session_token
 
     async def _keepalive_loop(self) -> None:
-        """Run periodic keepalive every 5 minutes with Chromium watchdog."""
+        """Chromium watchdog and keeper state sync loop."""
         while True:
             await asyncio.sleep(KEEP_ALIVE_INTERVAL)
             try:
@@ -303,21 +297,19 @@ class TradeRepublicBrowserService:
                     ready = await self.cdp.wait_for_ready(timeout=20.0)
                     if not ready:
                         _LOGGER.warning("Chromium CDP not ready after restart within 20s")
-                    # Reload session from disk after restart
                     if self.session_token:
-                        await self._load_saved_session()
-                    return
+                        await self.auth_helper.inject_session_cookies(self.session_token)
+                    continue
 
-                _LOGGER.debug("24/7 Keepalive running to refresh session...")
-                new_token = await self.refresh_session()
-                if new_token:
-                    await self.save_session(new_token)
-                else:
-                    _LOGGER.warning("Keepalive: session refresh returned no valid token — session marked as expired")
+                # Sync keeper auth state into service state
+                _LOGGER.debug("Keepalive: syncing ws_keeper state (authenticated=%s)", self._ws_keeper.is_authenticated)
+                await self.refresh_session()
+
             except Exception as e:
                 _LOGGER.debug("Keepalive error: %s", e)
 
     async def close(self) -> None:
+        self._ws_keeper.stop()
         if self._keepalive_task:
             self._keepalive_task.cancel()
         if self.proc:
