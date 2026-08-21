@@ -1566,8 +1566,7 @@ async function selectModerationGroup(groupId) {
       config.greetings?.captcha_timeout_seconds ||
       120;
   const capTimeAdded = document.getElementById('mod-captcha-timeout-added');
-  if (capTimeAdded)
-    capTimeAdded.value = config.greetings?.captcha_timeout_added_seconds || 600;
+  if (capTimeAdded) capTimeAdded.value = config.greetings?.captcha_timeout_added_seconds || 600;
   const namePrio = document.getElementById('mod-name-priority');
   if (namePrio) namePrio.value = config.greetings?.name_priority || 'name_push_phone';
   const nameFall = document.getElementById('mod-name-fallback');

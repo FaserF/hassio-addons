@@ -19,7 +19,9 @@ export function registerConfigCommands(registry) {
           session,
           groupId,
           {
-            text: gt(config, 'bot_replies.cmd_setwelcome_usage', { prefix: config.commands.prefix }),
+            text: gt(config, 'bot_replies.cmd_setwelcome_usage', {
+              prefix: config.commands.prefix,
+            }),
           },
           rawMsg
         );
@@ -32,7 +34,12 @@ export function registerConfigCommands(registry) {
       c.greetings.welcome_message = text;
       c.greetings.welcome_enabled = true;
       saveModerationStore(store);
-      await reply(session, groupId, { text: gt(config, 'bot_replies.welcome_updated_success') }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.welcome_updated_success') },
+        rawMsg
+      );
     },
     { adminOnly: true, help: 'Set the welcome message' }
   );
@@ -44,7 +51,12 @@ export function registerConfigCommands(registry) {
         config.greetings?.welcome_text ||
         config.greetings?.welcome_message ||
         gt(config, 'bot_replies.welcome_template_default');
-      await reply(session, groupId, { text: gt(config, 'bot_replies.current_welcome_msg', { text }) }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.current_welcome_msg', { text }) },
+        rawMsg
+      );
     },
     { adminOnly: true, help: 'View the welcome message' }
   );
@@ -58,7 +70,9 @@ export function registerConfigCommands(registry) {
           session,
           groupId,
           {
-            text: gt(config, 'bot_replies.cmd_setgoodbye_usage', { prefix: config.commands.prefix }),
+            text: gt(config, 'bot_replies.cmd_setgoodbye_usage', {
+              prefix: config.commands.prefix,
+            }),
           },
           rawMsg
         );
@@ -71,7 +85,12 @@ export function registerConfigCommands(registry) {
       c.greetings.goodbye_message = text;
       c.greetings.goodbye_enabled = true;
       saveModerationStore(store);
-      await reply(session, groupId, { text: gt(config, 'bot_replies.goodbye_updated_success') }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.goodbye_updated_success') },
+        rawMsg
+      );
     },
     { adminOnly: true, help: 'Set the goodbye message' }
   );
@@ -80,8 +99,15 @@ export function registerConfigCommands(registry) {
     'goodbye',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
       const text =
-        config.greetings?.goodbye_text || config.greetings?.goodbye_message || gt(config, 'bot_replies.goodbye_template_default');
-      await reply(session, groupId, { text: gt(config, 'bot_replies.current_goodbye_msg', { text }) }, rawMsg);
+        config.greetings?.goodbye_text ||
+        config.greetings?.goodbye_message ||
+        gt(config, 'bot_replies.goodbye_template_default');
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.current_goodbye_msg', { text }) },
+        rawMsg
+      );
     },
     { adminOnly: true, help: 'View the goodbye message' }
   );
@@ -105,7 +131,12 @@ export function registerConfigCommands(registry) {
       if (!c.notes) c.notes = {};
       c.notes[name] = content;
       saveModerationStore(store);
-      await reply(session, groupId, { text: gt(config, 'bot_replies.note_saved_success', { name }) }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.note_saved_success', { name }) },
+        rawMsg
+      );
     },
     { adminOnly: true, aliases: ['safe'], help: 'Save a note (#name content)' }
   );
@@ -128,7 +159,12 @@ export function registerConfigCommands(registry) {
       if (c.notes && c.notes[name]) {
         await reply(session, groupId, { text: c.notes[name] }, rawMsg);
       } else {
-        await reply(session, groupId, { text: gt(config, 'bot_replies.note_not_found', { name }) }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.note_not_found', { name }) },
+          rawMsg
+        );
       }
     },
     { help: 'Retrieve a note' }
@@ -146,7 +182,11 @@ export function registerConfigCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: gt(config, 'bot_replies.notes_list_header', { notes: noteKeys.map((k) => `• #${k}`).join('\n') }) },
+          {
+            text: gt(config, 'bot_replies.notes_list_header', {
+              notes: noteKeys.map((k) => `• #${k}`).join('\n'),
+            }),
+          },
           rawMsg
         );
       }
@@ -204,7 +244,12 @@ export function registerConfigCommands(registry) {
       if (Array.isArray(c.filters)) {
         c.filters = c.filters.filter((f) => f.trigger.toLowerCase() !== trigger);
         saveModerationStore(store);
-        await reply(session, groupId, { text: gt(config, 'bot_replies.filter_stopped', { trigger }) }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.filter_stopped', { trigger }) },
+          rawMsg
+        );
       } else {
         await reply(session, groupId, { text: gt(config, 'bot_replies.filter_not_found') }, rawMsg);
       }
@@ -285,7 +330,12 @@ export function registerConfigCommands(registry) {
       }
 
       if (targetJid && isSameUser(targetJid, session?.sock?.user?.id, session)) {
-        await reply(session, groupId, { text: gt(config, 'bot_replies.report_bot_forbidden') }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.report_bot_forbidden') },
+          rawMsg
+        );
         return;
       }
 
@@ -524,7 +574,12 @@ export function registerConfigCommands(registry) {
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
       const prefix = config.commands?.prefix || '!';
       if (args.length === 0 || isNaN(parseInt(args[0], 10))) {
-        await reply(session, groupId, { text: gt(config, 'bot_replies.usage_setwarnlimit', { prefix }) }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.usage_setwarnlimit', { prefix }) },
+          rawMsg
+        );
         return;
       }
       const limit = Math.max(1, Math.min(10, parseInt(args[0], 10)));
@@ -533,7 +588,12 @@ export function registerConfigCommands(registry) {
       if (!c.warnings) c.warnings = {};
       c.warnings.limit = limit;
       saveModerationStore(store);
-      await reply(session, groupId, { text: gt(config, 'bot_replies.warn_limit_set', { limit }) }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.warn_limit_set', { limit }) },
+        rawMsg
+      );
     },
     { adminOnly: true, help: 'Set group warning threshold limit' }
   );
@@ -589,7 +649,11 @@ export function registerConfigCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: gt(config, 'bot_replies.auto_translation_toggle', { status: c.translation.enabled ? 'ENABLED' : 'DISABLED' }) },
+        {
+          text: gt(config, 'bot_replies.auto_translation_toggle', {
+            status: c.translation.enabled ? 'ENABLED' : 'DISABLED',
+          }),
+        },
         rawMsg
       );
     },

@@ -521,7 +521,12 @@ export function registerContentCommands(registry) {
         }
       } catch (err) {
         logger.error({ error: err.message, groupId }, 'Failed to generate chat export');
-        await reply(session, groupId, { text: gt(config, 'bot_replies.export_failed', { error: err.message }) }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.export_failed', { error: err.message }) },
+          rawMsg
+        );
       }
     },
     {

@@ -48,7 +48,12 @@ export function registerFederationCommands(registry) {
       }
       const store = loadModerationStore();
       if (!store.federations || !store.federations[fedId]) {
-        await reply(session, groupId, { text: gt(config, 'bot_replies.fed_not_found', { fedId }) }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.fed_not_found', { fedId }) },
+          rawMsg
+        );
         return;
       }
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
@@ -88,12 +93,7 @@ export function registerFederationCommands(registry) {
       const store = loadModerationStore();
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       if (!c.federation_id || !store.federations?.[c.federation_id]) {
-        await reply(
-          session,
-          groupId,
-          { text: gt(config, 'bot_replies.fed_not_linked') },
-          rawMsg
-        );
+        await reply(session, groupId, { text: gt(config, 'bot_replies.fed_not_linked') }, rawMsg);
         return;
       }
       const fed = store.federations[c.federation_id];
@@ -159,7 +159,10 @@ export function registerFederationCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: gt(config, 'bot_replies.fed_unbanned_user', { targetId, name: fed.name }), mentions: [`${targetId}@s.whatsapp.net`] },
+        {
+          text: gt(config, 'bot_replies.fed_unbanned_user', { targetId, name: fed.name }),
+          mentions: [`${targetId}@s.whatsapp.net`],
+        },
         rawMsg
       );
     },
@@ -263,12 +266,7 @@ export function registerFederationCommands(registry) {
   registry.register(
     'fedgroups',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
-      await reply(
-        session,
-        groupId,
-        { text: gt(config, 'bot_replies.fed_groups_active') },
-        rawMsg
-      );
+      await reply(session, groupId, { text: gt(config, 'bot_replies.fed_groups_active') }, rawMsg);
     },
     { help: 'List groups in federation' }
   );

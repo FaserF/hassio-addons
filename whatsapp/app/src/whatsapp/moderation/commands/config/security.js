@@ -75,7 +75,11 @@ export function registerSecurityCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: gt(config, 'bot_replies.whitelist_list_header', { list: list.map((d) => `• \`${d}\``).join('\n') }) },
+          {
+            text: gt(config, 'bot_replies.whitelist_list_header', {
+              list: list.map((d) => `• \`${d}\``).join('\n'),
+            }),
+          },
           rawMsg
         );
       }
@@ -228,7 +232,12 @@ export function registerSecurityCommands(registry) {
       if (!c.blacklisted_words) c.blacklisted_words = [];
       if (!word) {
         if (c.blacklisted_words.length === 0) {
-          await reply(session, groupId, { text: gt(config, 'bot_replies.blacklist_empty') }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.blacklist_empty') },
+            rawMsg
+          );
           return;
         }
         await reply(
@@ -246,7 +255,12 @@ export function registerSecurityCommands(registry) {
       }
       if (!c.blacklisted_words.includes(word)) c.blacklisted_words.push(word);
       saveModerationStore(store);
-      await reply(session, groupId, { text: gt(config, 'bot_replies.blacklist_added', { word }) }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.blacklist_added', { word }) },
+        rawMsg
+      );
     },
     { help: 'Manage group blacklisted words' }
   );
@@ -278,7 +292,12 @@ export function registerSecurityCommands(registry) {
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       c.blacklist_action = action;
       saveModerationStore(store);
-      await reply(session, groupId, { text: gt(config, 'bot_replies.blacklist_action_set', { action }) }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.blacklist_action_set', { action }) },
+        rawMsg
+      );
     },
     { adminOnly: true, help: 'Set action for blacklisted word hits' }
   );

@@ -121,7 +121,8 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
   // STRICT LOOP & BOT-RESPONSE GUARD:
   // Outgoing messages from bot or self account must NEVER execute prefixless commands or bot response templates
   if (msg?.key?.fromMe) {
-    const hasCommandPrefix = rawText.startsWith(prefix) || rawText.startsWith('/') || rawText.startsWith('#');
+    const hasCommandPrefix =
+      rawText.startsWith(prefix) || rawText.startsWith('/') || rawText.startsWith('#');
     if (!hasCommandPrefix) {
       return false;
     }
@@ -251,9 +252,7 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
 
   const multiCmdEnabled = Boolean(config.commands?.multi_command_enabled);
   // Cap multi-command batch execution to maximum 3 commands per message to prevent spamming
-  const linesToProcess = multiCmdEnabled
-    ? validCommandLines.slice(0, 3)
-    : [validCommandLines[0]];
+  const linesToProcess = multiCmdEnabled ? validCommandLines.slice(0, 3) : [validCommandLines[0]];
 
   // Fast path for single command line
   if (linesToProcess.length === 1) {
@@ -504,12 +503,7 @@ async function executeSingleCommandLine(
     await command.handler(session, groupId, userId, args, freshConfig, isAdminUser, msg);
   } catch (err) {
     logger.error({ error: err.message }, `Error executing command ${cmdStr}`);
-    await reply(
-      session,
-      groupId,
-      { text: gt(config, 'bot_replies.command_execution_error') },
-      msg
-    );
+    await reply(session, groupId, { text: gt(config, 'bot_replies.command_execution_error') }, msg);
   }
 
   return true;

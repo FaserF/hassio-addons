@@ -899,9 +899,8 @@ try {
   console.log('✅ PASSED: Captcha retry limit correctly kicks user after 3 failed attempts');
 
   // Test: Captcha persistence and restart restoration
-  const { savePendingCaptcha, restorePendingCaptchas, clearPendingCaptcha, isUserVerified } = await import(
-    '../src/whatsapp/moderation/engine/captcha.js'
-  );
+  const { savePendingCaptcha, restorePendingCaptchas, clearPendingCaptcha, isUserVerified } =
+    await import('../src/whatsapp/moderation/engine/captcha.js');
   const restartGroupId = '1203630999999999@g.us';
   const restartUserId = '4917644444444';
 

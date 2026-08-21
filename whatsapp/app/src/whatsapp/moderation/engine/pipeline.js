@@ -199,14 +199,7 @@ export async function handleModerationMessage(session, event) {
               await session.sock.sendMessage(groupId, { delete: rawMsg.key });
             } catch (_e) {}
           }
-          await executePenalty(
-            session,
-            groupId,
-            userId,
-            'kick',
-            'Captcha failed 3 times',
-            rawMsg
-          );
+          await executePenalty(session, groupId, userId, 'kick', 'Captcha failed 3 times', rawMsg);
           return true;
         }
       }
@@ -227,7 +220,10 @@ export async function handleModerationMessage(session, event) {
       if (now - lastReminder > 5000) {
         _captchaReminderCooldowns.set(remKey, now);
         const reminderText = expectedUpper
-          ? gt(config, 'bot_replies.captcha_reminder_pending', { user: userId, code: expectedUpper })
+          ? gt(config, 'bot_replies.captcha_reminder_pending', {
+              user: userId,
+              code: expectedUpper,
+            })
           : gt(config, 'bot_replies.captcha_reminder_required', { user: userId });
 
         await reply(
@@ -940,8 +936,6 @@ export async function handleModerationMessage(session, event) {
       return true;
     }
   }
-
-
 
   // 6. Notes & Rules trigger matching
   if (text) {

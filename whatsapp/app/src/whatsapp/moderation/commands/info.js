@@ -467,7 +467,12 @@ export function registerInfoCommands(registry) {
         );
 
         if (admins.length === 0) {
-          await reply(session, groupId, { text: gt(config, 'bot_replies.no_admins_found') }, rawMsg);
+          await reply(
+            session,
+            groupId,
+            { text: gt(config, 'bot_replies.no_admins_found') },
+            rawMsg
+          );
           return;
         }
 
@@ -493,7 +498,12 @@ export function registerInfoCommands(registry) {
 
         await reply(session, groupId, { text, mentions: admins.map((a) => a.id) }, rawMsg);
       } catch (e) {
-        await reply(session, groupId, { text: gt(config, 'bot_replies.fetch_admin_list_failed') }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.fetch_admin_list_failed') },
+          rawMsg
+        );
       }
     },
     { adminOnly: false, aliases: ['admins', 'admin'], help: 'List all group administrators' }
@@ -503,7 +513,12 @@ export function registerInfoCommands(registry) {
     'locktypes',
     async (session, groupId, _u, _a, config, _ia, rawMsg) => {
       const list = LOCK_TYPES.map((t) => `• \`${t}\``).join('\n');
-      await reply(session, groupId, { text: gt(config, 'bot_replies.available_lock_types', { list }) }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.available_lock_types', { list }) },
+        rawMsg
+      );
     },
     { adminOnly: false, help: 'List all available content lock types' }
   );
@@ -517,7 +532,12 @@ export function registerInfoCommands(registry) {
         if (v && v.enabled) activeLocks.push(k);
       }
       if (activeLocks.length === 0) {
-        await reply(session, groupId, { text: gt(config, 'bot_replies.all_locks_disabled') }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.all_locks_disabled') },
+          rawMsg
+        );
       } else {
         await reply(
           session,
@@ -566,7 +586,12 @@ export function registerInfoCommands(registry) {
           rawMsg
         );
       } else {
-        await reply(session, groupId, { text: gt(config, 'bot_replies.group_rules', { rules: rulesText }) }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.group_rules', { rules: rulesText }) },
+          rawMsg
+        );
       }
     },
     { help: 'View group rules or ask a question about them' }
@@ -1011,7 +1036,12 @@ export function registerInfoCommands(registry) {
       }
       // Maximum timer duration is 24 hours
       if (durationMs > 86400000) {
-        await reply(session, groupId, { text: gt(config, 'bot_replies.timer_max_duration') }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.timer_max_duration') },
+          rawMsg
+        );
         return;
       }
 

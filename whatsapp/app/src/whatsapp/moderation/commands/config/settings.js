@@ -11,7 +11,12 @@ export function registerSettingsCommands(registry) {
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       c.log_channel_jid = target;
       saveModerationStore(store);
-      await reply(session, groupId, { text: gt(config, 'bot_replies.log_channel_set', { target }) }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.log_channel_set', { target }) },
+        rawMsg
+      );
     },
     { adminOnly: true, help: 'Set moderation log channel' }
   );
@@ -32,7 +37,12 @@ export function registerSettingsCommands(registry) {
     'slowmode',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
       const timeStr = args[0] || 'off';
-      await reply(session, groupId, { text: gt(config, 'bot_replies.slowmode_set', { time: timeStr }) }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.slowmode_set', { time: timeStr }) },
+        rawMsg
+      );
     },
     { adminOnly: true, help: 'Configure group slow mode' }
   );
@@ -44,9 +54,19 @@ export function registerSettingsCommands(registry) {
       if (!title) return;
       try {
         await session.sock.groupUpdateSubject(groupId, title);
-        await reply(session, groupId, { text: gt(config, 'bot_replies.group_title_updated', { title }) }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.group_title_updated', { title }) },
+          rawMsg
+        );
       } catch (e) {
-        await reply(session, groupId, { text: gt(config, 'bot_replies.group_title_failed', { error: e.message }) }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.group_title_failed', { error: e.message }) },
+          rawMsg
+        );
       }
     },
     { adminOnly: true, help: 'Set group subject/title' }
@@ -58,7 +78,12 @@ export function registerSettingsCommands(registry) {
       const desc = args.join(' ');
       try {
         await session.sock.groupUpdateDescription(groupId, desc);
-        await reply(session, groupId, { text: gt(config, 'bot_replies.group_desc_updated') }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.group_desc_updated') },
+          rawMsg
+        );
       } catch (e) {
         await reply(
           session,
@@ -74,7 +99,12 @@ export function registerSettingsCommands(registry) {
   registry.register(
     'setphoto',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
-      await reply(session, groupId, { text: gt(config, 'bot_replies.group_photo_updated') }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.group_photo_updated') },
+        rawMsg
+      );
     },
     { adminOnly: true, help: 'Set group icon/photo' }
   );
@@ -133,7 +163,12 @@ export function registerSettingsCommands(registry) {
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       c.approved_users = [];
       saveModerationStore(store);
-      await reply(session, groupId, { text: gt(config, 'bot_replies.approved_all_cleared') }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.approved_all_cleared') },
+        rawMsg
+      );
     },
     { adminOnly: true, help: 'Clear all user approvals' }
   );
@@ -172,7 +207,12 @@ export function registerSettingsCommands(registry) {
   registry.register(
     'pinned',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
-      await reply(session, groupId, { text: gt(config, 'bot_replies.pinned_check_header') }, rawMsg);
+      await reply(
+        session,
+        groupId,
+        { text: gt(config, 'bot_replies.pinned_check_header') },
+        rawMsg
+      );
     },
     { help: 'Show current pinned message' }
   );
@@ -208,7 +248,11 @@ export function registerSettingsCommands(registry) {
             return await reply(
               session,
               groupId,
-              { text: gt(config, 'bot_replies.feature_anti_spam', { status: statusIcon(enableState) }) },
+              {
+                text: gt(config, 'bot_replies.feature_anti_spam', {
+                  status: statusIcon(enableState),
+                }),
+              },
               rawMsg
             );
           }
@@ -220,7 +264,11 @@ export function registerSettingsCommands(registry) {
             return await reply(
               session,
               groupId,
-              { text: gt(config, 'bot_replies.feature_anti_raid', { status: statusIcon(enableState) }) },
+              {
+                text: gt(config, 'bot_replies.feature_anti_raid', {
+                  status: statusIcon(enableState),
+                }),
+              },
               rawMsg
             );
           }
@@ -232,7 +280,11 @@ export function registerSettingsCommands(registry) {
             return await reply(
               session,
               groupId,
-              { text: gt(config, 'bot_replies.feature_anti_flood', { status: statusIcon(enableState) }) },
+              {
+                text: gt(config, 'bot_replies.feature_anti_flood', {
+                  status: statusIcon(enableState),
+                }),
+              },
               rawMsg
             );
           }
@@ -244,7 +296,11 @@ export function registerSettingsCommands(registry) {
             return await reply(
               session,
               groupId,
-              { text: gt(config, 'bot_replies.feature_captcha', { status: statusIcon(enableState) }) },
+              {
+                text: gt(config, 'bot_replies.feature_captcha', {
+                  status: statusIcon(enableState),
+                }),
+              },
               rawMsg
             );
           }
@@ -256,7 +312,11 @@ export function registerSettingsCommands(registry) {
             return await reply(
               session,
               groupId,
-              { text: gt(config, 'bot_replies.feature_welcome', { status: statusIcon(enableState) }) },
+              {
+                text: gt(config, 'bot_replies.feature_welcome', {
+                  status: statusIcon(enableState),
+                }),
+              },
               rawMsg
             );
           }
@@ -268,7 +328,11 @@ export function registerSettingsCommands(registry) {
             return await reply(
               session,
               groupId,
-              { text: gt(config, 'bot_replies.feature_goodbye', { status: statusIcon(enableState) }) },
+              {
+                text: gt(config, 'bot_replies.feature_goodbye', {
+                  status: statusIcon(enableState),
+                }),
+              },
               rawMsg
             );
           }
@@ -279,7 +343,11 @@ export function registerSettingsCommands(registry) {
             return await reply(
               session,
               groupId,
-              { text: gt(config, 'bot_replies.feature_reports', { status: statusIcon(enableState) }) },
+              {
+                text: gt(config, 'bot_replies.feature_reports', {
+                  status: statusIcon(enableState),
+                }),
+              },
               rawMsg
             );
           }

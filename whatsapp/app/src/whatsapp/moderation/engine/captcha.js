@@ -34,7 +34,10 @@ export function savePendingCaptcha(groupId, userId, data) {
     };
     saveModerationStore(store);
   } catch (err) {
-    logger.warn({ error: err.message, groupId, userId }, 'Failed to persist pending captcha to store');
+    logger.warn(
+      { error: err.message, groupId, userId },
+      'Failed to persist pending captcha to store'
+    );
   }
 }
 
@@ -63,7 +66,10 @@ export function removePendingCaptchaFromStore(groupId, userId) {
       saveModerationStore(store);
     }
   } catch (err) {
-    logger.warn({ error: err.message, groupId, userId }, 'Failed to remove pending captcha from store');
+    logger.warn(
+      { error: err.message, groupId, userId },
+      'Failed to remove pending captcha from store'
+    );
   }
 }
 

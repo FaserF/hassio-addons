@@ -166,7 +166,9 @@ export function registerMuteCommands(registry) {
           session,
           groupId,
           {
-            text: gt(config, 'bot_replies.cmd_tmute_usage', { prefix: config.commands?.prefix || '!' }),
+            text: gt(config, 'bot_replies.cmd_tmute_usage', {
+              prefix: config.commands?.prefix || '!',
+            }),
           },
           rawMsg
         );
@@ -175,12 +177,7 @@ export function registerMuteCommands(registry) {
 
       const durationMs = parseDuration(args[0]);
       if (!durationMs) {
-        await reply(
-          session,
-          groupId,
-          { text: gt(config, 'bot_replies.invalid_duration') },
-          rawMsg
-        );
+        await reply(session, groupId, { text: gt(config, 'bot_replies.invalid_duration') }, rawMsg);
         return;
       }
 
@@ -278,7 +275,9 @@ export function registerMuteCommands(registry) {
           session,
           groupId,
           {
-            text: gt(config, 'bot_replies.cmd_tban_usage', { prefix: config.commands?.prefix || '!' }),
+            text: gt(config, 'bot_replies.cmd_tban_usage', {
+              prefix: config.commands?.prefix || '!',
+            }),
           },
           rawMsg
         );
@@ -287,12 +286,7 @@ export function registerMuteCommands(registry) {
 
       const durationMs = parseDuration(args[0]);
       if (!durationMs) {
-        await reply(
-          session,
-          groupId,
-          { text: gt(config, 'bot_replies.invalid_duration') },
-          rawMsg
-        );
+        await reply(session, groupId, { text: gt(config, 'bot_replies.invalid_duration') }, rawMsg);
         return;
       }
 
@@ -327,7 +321,10 @@ export function registerMuteCommands(registry) {
             session,
             groupId,
             {
-              text: gt(config, 'bot_replies.tban_expired', { id: targetId, duration: formatDuration(durationMs) }),
+              text: gt(config, 'bot_replies.tban_expired', {
+                id: targetId,
+                duration: formatDuration(durationMs),
+              }),
               mentions: [targetJid],
             },
             rawMsg
@@ -341,7 +338,10 @@ export function registerMuteCommands(registry) {
         session,
         groupId,
         {
-          text: gt(config, 'bot_replies.tban_active_notice', { duration: formatDuration(durationMs), reason }),
+          text: gt(config, 'bot_replies.tban_active_notice', {
+            duration: formatDuration(durationMs),
+            reason,
+          }),
           mentions: validTargets,
         },
         rawMsg

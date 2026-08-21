@@ -806,9 +806,7 @@ export function handleIncomingMessages(session) {
             : null;
           const evLoc = evData?.location?.name || '';
           const evLink = evData?.joinLink || '';
-          const evCanceled = evData?.isCanceled
-            ? ` ${t(lang, 'events.event_canceled')}`
-            : '';
+          const evCanceled = evData?.isCanceled ? ` ${t(lang, 'events.event_canceled')}` : '';
           const lines = [`📅 *[${t(lang, 'events.event_label')}${evCanceled}]: ${evName}*`];
           if (evStart) lines.push(`🕐 ${evStart}`);
           if (evDesc) lines.push(`📝 ${evDesc}`);
@@ -851,7 +849,8 @@ export function handleIncomingMessages(session) {
           mediaType = 'buttons';
           const btnObj =
             msg.message?.buttonsMessage || msg.message?.templateMessage?.hydratedTemplate;
-          const bodyText = btnObj?.contentText || btnObj?.hydratedContentText || t(lang, 'events.buttons_label');
+          const bodyText =
+            btnObj?.contentText || btnObj?.hydratedContentText || t(lang, 'events.buttons_label');
           const footer = btnObj?.footerText || btnObj?.hydratedFooterText || '';
           const buttonsList = (btnObj?.buttons || btnObj?.hydratedButtons || []).map((b, i) => {
             const label =
@@ -884,7 +883,8 @@ export function handleIncomingMessages(session) {
         } else if (messageType === 'interactiveMessage') {
           mediaType = 'interactive';
           const intObj = msg.message?.interactiveMessage;
-          const body = intObj?.body?.text || intObj?.header?.title || t(lang, 'events.interactive_label');
+          const body =
+            intObj?.body?.text || intObj?.header?.title || t(lang, 'events.interactive_label');
           text = `🔘 [${t(lang, 'events.interactive_label')}: ${body}]`;
         }
 
@@ -1146,7 +1146,10 @@ export function handleIncomingMessages(session) {
         // 1. Process via Moderation Engine first (enforces Captcha verification, content locks, anti-spam, blacklist)
         const consumedByModeration = await handleModerationMessage(session, event);
         if (consumedByModeration) {
-          logger.debug({ senderJid }, 'Message consumed by Moderation Engine (captcha/lock/penalty)');
+          logger.debug(
+            { senderJid },
+            'Message consumed by Moderation Engine (captcha/lock/penalty)'
+          );
           return event;
         }
 
