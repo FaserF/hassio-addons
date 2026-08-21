@@ -180,6 +180,7 @@ class TRWebSocketKeeper:
         headers = {
             "User-Agent": _USER_AGENT,
             "Origin": "https://app.traderepublic.com",
+            "Authorization": f"Bearer {clean}",
             "Cookie": f"tr_session={clean}; tr_session_id={clean}; sessionToken={clean}",
         }
 
@@ -193,32 +194,35 @@ class TRWebSocketKeeper:
                 close_timeout=5,
             )
         except Exception as first_exc:
-            # If cookies-only upgrade rejected, try with Authorization Bearer header
             if "401" in str(first_exc) or getattr(first_exc, "status_code", None) == 401:
-                auth_headers = {
+                # Retry with cookies-only in case TR proxy dislikes Authorization header
+                cookie_only_headers = {
                     "User-Agent": _USER_AGENT,
                     "Origin": "https://app.traderepublic.com",
-                    "Authorization": f"Bearer {clean}",
                     "Cookie": headers["Cookie"],
                 }
                 try:
                     self._ws = await websockets.connect(
                         _TR_WS_URL,
                         ssl=ssl_ctx,
-                        additional_headers=auth_headers,
+                        additional_headers=cookie_only_headers,
                         ping_interval=20,
                         ping_timeout=20,
                         close_timeout=5,
                     )
-                except Exception:
-                    _LOGGER.warning("WS Keeper: TR rejected token (HTTP 401) — stopping until new token")
+                except Exception as second_exc:
+                    _LOGGER.warning(
+                        "WS Keeper: TR rejected token (HTTP 401) [first: %s, second: %s] — stopping until new token",
+                        first_exc,
+                        second_exc,
+                    )
                     self.is_authenticated = False
                     self.last_error = (
-                        "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+                        f"Session expired or rejected by Trade Republic (HTTP 401: {second_exc}). Please re-authenticate."
                     )
                     return False
             else:
-                _LOGGER.debug("WS Keeper: connection error: %s", first_exc)
+                _LOGGER.warning("WS Keeper: connection error: %s", first_exc)
                 return False
 
         # Handshake
@@ -308,7 +312,7 @@ class TRWebSocketKeeper:
             try:
                 net_size = float(pos.get("netSize", 0.0))
                 average_buy_in = float(pos.get("averageBuyIn", 0.0))
-            except ValueError, TypeError:
+            except (ValueError, TypeError):
                 continue
 
             pos_invested = net_size * average_buy_in
@@ -361,7 +365,7 @@ class TRWebSocketKeeper:
         try:
             sub_id = int(sub_id_str)
             payload = json.loads(payload_str)
-        except ValueError, json.JSONDecodeError, TypeError:
+        except (ValueError, json.JSONDecodeError, TypeError):
             return
 
         # Check main subscriptions
@@ -396,7 +400,7 @@ class TRWebSocketKeeper:
                 if api_rate is not None:
                     try:
                         self.latest_data["api_interest_rate"] = float(api_rate)
-                    except ValueError, TypeError:
+                    except (ValueError, TypeError):
                         pass
                 self._recalculate_portfolio()
 
@@ -447,7 +451,7 @@ class TRWebSocketKeeper:
                         if p is not None:
                             try:
                                 return float(p)
-                            except ValueError, TypeError:
+                            except (ValueError, TypeError):
                                 pass
                     return None
 
