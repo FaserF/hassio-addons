@@ -337,7 +337,11 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           } else if (res.status === 401 || res.status === 403) {
             const errMsg = gt('bot_replies.stt_err_aegisbot_auth', { status: res.status });
             errorsCaptured.push(errMsg);
-            recordSttError('aegisbot', `Authentication failed / Invalid token (HTTP ${res.status})`, groupId);
+            recordSttError(
+              'aegisbot',
+              `Authentication failed / Invalid token (HTTP ${res.status})`,
+              groupId
+            );
           } else if (res.status === 404) {
             const errMsg = gt('bot_replies.stt_err_aegisbot_not_found');
             errorsCaptured.push(errMsg);

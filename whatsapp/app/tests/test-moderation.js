@@ -967,7 +967,8 @@ try {
   await handleModerationMessage(mockTransSession, {
     sender: transGroupId,
     sender_number: '491761111111',
-    content: '📊 [Poll Votes Update: 🧪 Diagnostic Test [4/7]: Interactive Poll Choice]\n🗳️ Voice: Option 2 (Pass)',
+    content:
+      '📊 [Poll Votes Update: 🧪 Diagnostic Test [4/7]: Interactive Poll Choice]\n🗳️ Voice: Option 2 (Pass)',
     type: 'poll_update',
     media_type: 'poll_update',
     raw: { key: { id: 'pollUpMsg1', fromMe: false } },
@@ -982,7 +983,11 @@ try {
     from_me: true,
     raw: { key: { id: 'diagMsg1', fromMe: true } },
   });
-  assert.strictEqual(transSent, false, 'Bot own messages (fromMe: true) must never be auto-translated');
+  assert.strictEqual(
+    transSent,
+    false,
+    'Bot own messages (fromMe: true) must never be auto-translated'
+  );
 
   // 3. Bot commands (!help, /status) must NOT trigger auto-translation
   await handleModerationMessage(mockTransSession, {
@@ -992,7 +997,9 @@ try {
     raw: { key: { id: 'cmdMsg1', fromMe: false } },
   });
   assert.strictEqual(transSent, false, 'Bot commands must never be auto-translated');
-  console.log('✅ PASSED: Auto-translation safely ignores bot messages, poll updates, and diagnostics');
+  console.log(
+    '✅ PASSED: Auto-translation safely ignores bot messages, poll updates, and diagnostics'
+  );
 
   // Reset store
   saveModerationStore(getDefaultModerationStore());
