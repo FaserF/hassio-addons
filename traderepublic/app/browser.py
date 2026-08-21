@@ -70,9 +70,30 @@ class TradeRepublicBrowserService:
             # Start persistent WS keeper and Chromium watchdog
             self._ws_keeper.start()
             self._keepalive_task = asyncio.create_task(self._keepalive_loop())
+            # Validate token 15 s after startup — keeper has had time to connect by then
+            asyncio.create_task(self._startup_validation())
         except Exception as e:
             _LOGGER.error("Failed to start browser process: %s", e)
             self.status_message = f"Error starting browser: {e}"
+
+    async def _startup_validation(self) -> None:
+        """Wait briefly, then confirm keeper actually authenticated.
+
+        The session is loaded optimistically on disk. If the saved token is
+        expired, the keeper will get a 401 within seconds. This task detects
+        that and immediately marks the session as expired so the HA integration
+        shows the correct status without waiting 5 minutes for the keepalive.
+        """
+        await asyncio.sleep(15)
+        if self.is_logged_in and not self._ws_keeper.is_authenticated:
+            # If the keeper explicitly got a 401 (not just still connecting), mark expired
+            if self._ws_keeper.last_error and "401" in self._ws_keeper.last_error:
+                _LOGGER.warning("Startup validation: saved session token rejected by TR (401) — marking expired")
+                self.is_logged_in = False
+                self.status_message = "Stored session token is expired. Please re-authenticate."
+                self.last_error = (
+                    "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+                )
 
     async def verify_token_validity(self, token: str) -> bool:
         """Check token validity via the keeper's persistent connection state.
