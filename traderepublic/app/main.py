@@ -214,6 +214,29 @@ async def get_session():
     }
 
 
+@app.get("/api/v1/data", dependencies=[Security(require_supervisor_auth)])
+async def get_data(categories: Optional[str] = None):
+    """Return live portfolio data and metrics collected by the persistent keeper."""
+    import time
+
+    browser_service.client_requests_count += 1
+    browser_service.last_sync_time = time.time()
+
+    # If specific categories requested, sync subscriptions on-demand
+    if categories and hasattr(browser_service, "_ws_keeper"):
+        requested_set = {c.strip().lower() for c in categories.split(",") if c.strip()}
+        await browser_service._ws_keeper.sync_categories(requested_set)
+
+    data = getattr(browser_service._ws_keeper, "latest_data", {})
+    return {
+        "is_logged_in": browser_service.is_logged_in,
+        "is_authenticated": browser_service._ws_keeper.is_authenticated,
+        "phone_number": browser_service.phone_number,
+        "data": data,
+        "timestamp": time.time(),
+    }
+
+
 @app.post("/api/v1/session/manual", dependencies=[Security(require_supervisor_auth)])
 async def set_manual_session(req: ManualTokenRequest):
     await browser_service.save_session(req.session_token, req.phone_number)

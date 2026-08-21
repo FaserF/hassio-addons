@@ -62,6 +62,16 @@ class TRWebSocketKeeper:
         self._running: bool = False
         self._reconnect_delay: float = _RECONNECT_DELAY_MIN
 
+        # Data collection & dynamic subscription management
+        self.latest_data: dict[str, Any] = {}
+        self.active_categories: set[str] = {"portfolio", "cash"}
+        self._subscribed_categories: dict[str, int] = {}
+        self._portfolio_payload: dict[str, Any] = {}
+        self._prices: dict[str, float] = {}
+        self._ticker_subs: dict[int, dict[str, Any]] = {}
+        self._sub_map: dict[int, str] = {}
+        self._sub_counter: int = 10
+
     # ─── Public API ──────────────────────────────────────────────────────────
 
     def start(self) -> None:
@@ -81,11 +91,52 @@ class TRWebSocketKeeper:
 
     def update_token(self, token: str) -> None:
         """Provide a new token; reconnect if currently disconnected."""
-        # Token factory will pick it up automatically on next (re)connect.
         if not self.is_authenticated and self._running:
             if self._task and not self._task.done():
                 self._task.cancel()
             self._task = asyncio.create_task(self._run_loop(), name="tr-ws-keeper")
+
+    async def sync_categories(self, categories: set[str]) -> None:
+        """Dynamically add or remove subscriptions based on requested active categories."""
+        if not categories:
+            categories = {"portfolio", "cash"}
+        self.active_categories = categories
+
+        if not self._ws or not self.is_authenticated:
+            return
+
+        cat_type_map = {
+            "portfolio": "compactPortfolioByType",
+            "cash": "cash",
+            "savings": "savingsPlans",
+            "card": "card",
+            "timeline": "timeline",
+        }
+
+        # Subscribe newly enabled categories
+        for cat in self.active_categories:
+            if cat not in self._subscribed_categories and cat in cat_type_map:
+                sub_id = self._sub_counter
+                self._sub_counter += 1
+                self._subscribed_categories[cat] = sub_id
+                self._sub_map[sub_id] = cat
+                try:
+                    await self._ws.send(f'sub {sub_id} {{"type":"{cat_type_map[cat]}"}}')
+                    _LOGGER.info("WS Keeper: dynamically subscribed to category '%s' (sub %s)", cat, sub_id)
+                except Exception as exc:
+                    _LOGGER.debug("WS Keeper: dynamic sub '%s' failed: %s", cat, exc)
+
+        # Unsubscribe disabled categories (keep portfolio and cash always active for basic functionality)
+        for cat in list(self._subscribed_categories.keys()):
+            if cat not in ("portfolio", "cash") and cat not in self.active_categories:
+                sub_id = self._subscribed_categories.pop(cat)
+                self._sub_map.pop(sub_id, None)
+                try:
+                    await self._ws.send(f"unsub {sub_id}")
+                    _LOGGER.info("WS Keeper: unsubscribed from disabled category '%s' (sub %s)", cat, sub_id)
+                except Exception as exc:
+                    _LOGGER.debug("WS Keeper: dynamic unsub '%s' failed: %s", cat, exc)
+
 
     # ─── Internal ────────────────────────────────────────────────────────────
 
@@ -97,7 +148,7 @@ class TRWebSocketKeeper:
             pass
 
     async def _connect(self) -> bool:
-        """Open WebSocket and perform TR handshake. Returns True on success."""
+        """Open WebSocket, perform TR handshake and subscribe to live data streams."""
         token = self._token_factory()
         if not token:
             _LOGGER.debug("WS Keeper: no token available, skipping connect")
@@ -115,9 +166,6 @@ class TRWebSocketKeeper:
         }
 
         try:
-            # Enable standard WebSocket ping/pong keepalive every 20s.
-            # Trade Republic WebSocket supports protocol-level Ping frames natively
-            # without triggering query rate limits or stream drops.
             self._ws = await websockets.connect(
                 _TR_WS_URL,
                 ssl=ssl_ctx,
@@ -156,10 +204,44 @@ class TRWebSocketKeeper:
                     await self._close_ws()
                     return False
 
-                # Subscribe once to compactPortfolioByType — persistent live stream
-                # that matches normal Trade Republic app behavior and keeps the session active
-                await self._ws.send('sub 1 {"type":"compactPortfolioByType"}')
-                _LOGGER.debug("WS Keeper: subscribed to persistent compactPortfolioByType stream")
+                # Reset subscription mapping & state
+                self._sub_map = {}
+                self._subscribed_categories = {}
+                self._ticker_subs = {}
+                self._prices = {}
+                self._portfolio_payload = {}
+                if not self.latest_data:
+                    self.latest_data = {
+                        "net_value": 0.0,
+                        "available_cash": 0.0,
+                        "invested_capital": 0.0,
+                        "savings_plans_count": 0,
+                        "holdings": [],
+                        "card_status": "INACTIVE",
+                        "card_saveback_earned": 0.0,
+                        "card_saveback_limit": 0.0,
+                        "recent_transactions": [],
+                        "interest_rate": 2.25,
+                        "accrued_interest_daily": 0.0,
+                        "accrued_interest_monthly_est": 0.0,
+                    }
+
+                # Register active subscriptions based on current active_categories
+                cat_type_map = {
+                    "portfolio": "compactPortfolioByType",
+                    "cash": "cash",
+                    "savings": "savingsPlans",
+                    "card": "card",
+                    "timeline": "timeline",
+                }
+                for cat in self.active_categories:
+                    if cat in cat_type_map:
+                        sub_id = self._sub_counter
+                        self._sub_counter += 1
+                        self._subscribed_categories[cat] = sub_id
+                        self._sub_map[sub_id] = cat
+                        await self._ws.send(f'sub {sub_id} {{"type":"{cat_type_map[cat]}"}}')
+                _LOGGER.info("WS Keeper: initial active subscriptions registered (%s)", list(self.active_categories))
         except Exception as exc:
             _LOGGER.debug("WS Keeper: handshake/sub failed: %s", exc)
             await self._close_ws()
@@ -171,12 +253,174 @@ class TRWebSocketKeeper:
         _LOGGER.info("WS Keeper: authenticated and connected to Trade Republic")
         return True
 
+    def _recalculate_portfolio(self) -> None:
+        """Recalculate portfolio metrics from latest in-memory payload & ticker prices."""
+        categories = self._portfolio_payload.get("categories", [])
+        positions = [pos for cat in categories for pos in cat.get("positions", [])]
+
+        invested_capital = 0.0
+        securities_value = 0.0
+        holdings = []
+
+        for pos in positions:
+            isin = pos.get("isin")
+            name = pos.get("name", isin)
+            try:
+                net_size = float(pos.get("netSize", 0.0))
+                average_buy_in = float(pos.get("averageBuyIn", 0.0))
+            except (ValueError, TypeError):
+                continue
+
+            pos_invested = net_size * average_buy_in
+            invested_capital += pos_invested
+
+            raw_net_value = (
+                pos.get("netValue")
+                or pos.get("value")
+                or pos.get("marketValue")
+                or pos.get("currentValue")
+            )
+            raw_profit = (
+                pos.get("unrealisedProfit")
+                or pos.get("unrealisedPnl")
+                or pos.get("unrealizedProfit")
+                or pos.get("profit")
+            )
+
+            if raw_net_value is not None:
+                pos_value = float(raw_net_value)
+            elif raw_profit is not None:
+                pos_value = pos_invested + float(raw_profit)
+            else:
+                current_price = self._prices.get(isin, average_buy_in)
+                pos_value = net_size * current_price
+
+            securities_value += pos_value
+            holdings.append({"isin": isin, "name": name, "value": pos_value})
+
+        available_cash = float(self.latest_data.get("available_cash", 0.0))
+        self.latest_data["invested_capital"] = invested_capital
+        self.latest_data["net_value"] = securities_value + available_cash
+        self.latest_data["total_profit"] = securities_value - invested_capital
+        self.latest_data["total_profit_percent"] = (
+            (self.latest_data["total_profit"] / invested_capital * 100)
+            if invested_capital > 0
+            else 0.0
+        )
+        self.latest_data["holdings"] = holdings
+
+        # Interest calculations
+        active_rate = float(self.latest_data.get("api_interest_rate") or 2.25)
+        rate_factor = active_rate / 100.0 if active_rate > 1.0 else active_rate
+        self.latest_data["interest_rate"] = round(rate_factor * 100.0, 4)
+        self.latest_data["accrued_interest_daily"] = available_cash * (rate_factor / 365.0)
+        self.latest_data["accrued_interest_monthly_est"] = available_cash * (rate_factor / 12.0)
+
+    async def _handle_message(self, raw_msg: str) -> None:
+        """Parse incoming WebSocket messages and update latest_data in-memory."""
+        parts = raw_msg.split(" ", 2)
+        if len(parts) < 3:
+            return
+        sub_id_str, status, payload_str = parts
+        if status != "A":
+            return
+
+        try:
+            sub_id = int(sub_id_str)
+            payload = json.loads(payload_str)
+        except (ValueError, json.JSONDecodeError, TypeError):
+            return
+
+        # Check main subscriptions
+        sub_type = self._sub_map.get(sub_id)
+        if sub_type == "portfolio":
+            self._portfolio_payload = payload
+            self._recalculate_portfolio()
+
+            # Subscribe to tickers for positions if not subscribed yet
+            for cat in payload.get("categories", []):
+                for pos in cat.get("positions", []):
+                    isin = pos.get("isin")
+                    if isin and isin not in [p.get("isin") for p in self._ticker_subs.values()]:
+                        ex_ids = pos.get("exchangeIds")
+                        ex_suffix = ex_ids[0] if isinstance(ex_ids, list) and ex_ids else "LSX"
+                        ticker_id = isin if (pos.get("instrumentType") == "crypto" or isin.startswith("XF")) else f"{isin}.{ex_suffix}"
+                        ticker_sub_id = self._sub_counter
+                        self._sub_counter += 1
+                        self._ticker_subs[ticker_sub_id] = pos
+                        if self._ws:
+                            await self._ws.send(f'sub {ticker_sub_id} {{"type":"ticker","id":"{ticker_id}"}}')
+
+        elif sub_type == "cash":
+            target = payload[0] if isinstance(payload, list) and len(payload) > 0 else payload
+            if isinstance(target, dict):
+                self.latest_data["available_cash"] = float(target.get("amount") or target.get("availableCash") or 0.0)
+                api_rate = target.get("interestRate") or target.get("rate") or target.get("interest")
+                if api_rate is not None:
+                    try:
+                        self.latest_data["api_interest_rate"] = float(api_rate)
+                    except (ValueError, TypeError):
+                        pass
+                self._recalculate_portfolio()
+
+        elif sub_type == "savingsPlans":
+            self.latest_data["savings_plans_count"] = len(payload.get("savingsPlans") or [])
+
+        elif sub_type == "card":
+            self.latest_data["card_status"] = payload.get("status", "INACTIVE")
+            self.latest_data["card_saveback_earned"] = float(payload.get("savebackEarned") or 0.0)
+            self.latest_data["card_saveback_limit"] = float(payload.get("savebackLimit") or 0.0)
+
+        elif sub_type == "timeline":
+            items = payload.get("items", [])
+            txs = []
+            for item in items[:5]:
+                amount_val = 0.0
+                amount_obj = item.get("amount")
+                if isinstance(amount_obj, dict):
+                    amount_val = float(amount_obj.get("value") or 0.0)
+                txs.append({
+                    "title": item.get("title"),
+                    "subtitle": item.get("subtitle"),
+                    "amount": amount_val,
+                    "timestamp": item.get("timestamp"),
+                })
+            self.latest_data["recent_transactions"] = txs
+
+        elif sub_id in self._ticker_subs:
+            # Ticker price update
+            pos = self._ticker_subs[sub_id]
+            isin = pos.get("isin")
+            if isin:
+                def _parse_p(val: Any) -> Optional[float]:
+                    if isinstance(val, (int, float)):
+                        return float(val)
+                    if isinstance(val, dict):
+                        p = val.get("price")
+                        if p is not None:
+                            try:
+                                return float(p)
+                            except (ValueError, TypeError):
+                                pass
+                    return None
+
+                price = (
+                    _parse_p(payload.get("last"))
+                    or _parse_p(payload.get("bid"))
+                    or _parse_p(payload.get("ask"))
+                    or _parse_p(payload.get("price"))
+                )
+                if price is not None:
+                    self._prices[isin] = price
+                    self._recalculate_portfolio()
+
     async def _receive_loop(self) -> None:
-        """Drain incoming messages from persistent subscription to maintain connection."""
+        """Drain incoming messages from persistent subscriptions to update latest_data."""
         while self._ws is not None:
             try:
                 msg = await self._ws.recv()
-                _LOGGER.debug("WS Keeper: recv: %s", str(msg)[:120])
+                if msg:
+                    await self._handle_message(str(msg))
             except Exception as exc:
                 _LOGGER.debug("WS Keeper: recv ended/disconnected: %s", exc)
                 return
@@ -193,7 +437,6 @@ class TRWebSocketKeeper:
             connected = await self._connect()
             if not connected:
                 if not self.is_authenticated and self.last_error and "401" in self.last_error:
-                    # Hard auth failure — wait for update_token() to reset state
                     _LOGGER.debug("WS Keeper: pausing reconnect until new token provided")
                     await asyncio.sleep(30)
                     continue
@@ -211,7 +454,6 @@ class TRWebSocketKeeper:
 
             if self._running:
                 if self.is_authenticated:
-                    # Connection dropped unexpectedly, reconnect with short backoff
                     _LOGGER.info("WS Keeper: connection closed, reconnecting in %.0f s", self._reconnect_delay)
                     await asyncio.sleep(self._reconnect_delay)
                     self._reconnect_delay = min(self._reconnect_delay * 1.5, _RECONNECT_DELAY_MAX)
