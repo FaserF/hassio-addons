@@ -38,6 +38,7 @@ import {
   checkSystemUpdates,
   monitorHACore,
 } from './events/index.js';
+import { restorePendingCaptchas } from './moderation/engine/captcha.js';
 import { PORT, API_TOKEN } from '../config.js';
 import { isHANetwork } from '../ha.js';
 import {
@@ -430,6 +431,9 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       session._reconnectedAt = Date.now();
       session._offlineSince = consumeDisconnectTime(sessionId) || session._reconnectedAt;
       clearNotifiedChats();
+
+      // Restore any pending captchas across server restart / reconnect
+      restorePendingCaptchas(session);
 
       // Populate groupCache with all participating group subjects (names)
       if (sock.groupFetchAllParticipating) {

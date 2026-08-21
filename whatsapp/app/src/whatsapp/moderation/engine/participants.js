@@ -10,9 +10,11 @@ import {
   resolveCanonicalUserKey,
   resolveUserDisplayName,
   normalizeJid,
+  isSameUser,
 } from '../../../utils/security.js';
 import { checkSuspiciousName } from '../securityScanner.js';
 import { gt } from './translations.js';
+import { formatDuration } from '../../../utils/format.js';
 import {
   isSelfParticipant,
   generateBotWelcomeMessage,
@@ -22,6 +24,7 @@ import {
 import {
   findPendingCaptcha,
   clearPendingCaptcha,
+  savePendingCaptcha,
   isUserVerified,
   recentKickReasons,
   getWindowKey,
@@ -391,6 +394,20 @@ export async function handleModerationParticipantUpdate(session, update) {
         // 3. Inline Captcha Challenge
         if (isCaptchaEnabled) {
           const mode = config.greetings.captcha_mode || 'math';
+          const author = update.author || update.actor || null;
+          const isSelfJoin =
+            !author ||
+            action === 'invite' ||
+            action === 'join' ||
+            isSameUser(author, participantJid, session) ||
+            isSameUser(author, userId, session);
+          const timeoutSec = isSelfJoin
+            ? config.greetings?.captcha_timeout_join_seconds ||
+              config.greetings?.captcha_timeout_seconds ||
+              120
+            : config.greetings?.captcha_timeout_added_seconds || 600;
+          const timeoutFormatted = formatDuration(timeoutSec * 1000);
+
           let answer;
           let captchaSection;
 
@@ -403,6 +420,7 @@ export async function handleModerationParticipantUpdate(session, update) {
               n1,
               op,
               n2,
+              timeout: timeoutFormatted,
             });
           } else if (mode === 'text' || mode === 'code') {
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -411,13 +429,20 @@ export async function handleModerationParticipantUpdate(session, update) {
               code += chars.charAt(Math.floor(Math.random() * chars.length));
             }
             answer = code.toLowerCase();
-            captchaSection = gt(config, 'bot_replies.captcha_challenge_code', { code });
+            captchaSection = gt(config, 'bot_replies.captcha_challenge_code', {
+              code,
+              timeout: timeoutFormatted,
+            });
           } else {
             // Default / Button fallback
             const n1 = Math.floor(Math.random() * 9) + 1;
             const n2 = Math.floor(Math.random() * 9) + 1;
             answer = String(n1 + n2);
-            captchaSection = gt(config, 'bot_replies.captcha_challenge_math_simple', { n1, n2 });
+            captchaSection = gt(config, 'bot_replies.captcha_challenge_math_simple', {
+              n1,
+              n2,
+              timeout: timeoutFormatted,
+            });
           }
 
           messageParts.push(captchaSection);
@@ -427,7 +452,6 @@ export async function handleModerationParticipantUpdate(session, update) {
           clearPendingCaptcha(groupId, participantJid, session);
 
           const captchaKey = getWindowKey(groupId, userId);
-          const timeoutSec = config.greetings.captcha_timeout_seconds || 120;
           const mentionJid = normalizeJid(participantJid).replace(/@lid$/, '@s.whatsapp.net');
 
           const timeoutHandle = setTimeout(async () => {
@@ -547,6 +571,7 @@ export async function handleModerationParticipantUpdate(session, update) {
             timestamp: Date.now(),
             delivered: false,
             participantJid,
+            expiresAt: Date.now() + timeoutSec * 1000,
           };
           pendingCaptchas.set(captchaKey, captchaObj);
           if (cleanDigits) pendingCaptchas.set(getWindowKey(groupId, cleanDigits), captchaObj);
@@ -556,6 +581,15 @@ export async function handleModerationParticipantUpdate(session, update) {
           const canonicalPhoneKeyVal = resolveCanonicalUserKey(participantJid, session);
           if (canonicalPhoneKeyVal)
             pendingCaptchas.set(getWindowKey(groupId, canonicalPhoneKeyVal), captchaObj);
+
+          savePendingCaptcha(groupId, userId, {
+            participantJid,
+            answer,
+            mode,
+            timestamp: Date.now(),
+            timeoutSec,
+            expiresAt: Date.now() + timeoutSec * 1000,
+          });
         }
 
         const fullText = messageParts.join('\n\n');

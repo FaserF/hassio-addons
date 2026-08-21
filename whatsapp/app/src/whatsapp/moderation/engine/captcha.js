@@ -9,8 +9,140 @@ import {
 } from '../../../utils/security.js';
 import { gt } from './translations.js';
 
-export const pendingCaptchas = new Map(); // key: groupId:userId -> { answer, mode, timeoutHandle, timestamp, delivered, participantJid, attempts }
+export const pendingCaptchas = new Map(); // key: groupId:userId -> { answer, mode, timeoutHandle, timestamp, delivered, participantJid, attempts, expiresAt }
 export const recentKickReasons = new Map(); // key: groupId:userId -> { reason, expires }
+
+/**
+ * Saves a pending captcha entry to the persistent moderation store so it survives addon/server restarts.
+ */
+export function savePendingCaptcha(groupId, userId, data) {
+  try {
+    const store = loadModerationStore();
+    if (!store.pending_captchas) store.pending_captchas = {};
+    const key = getWindowKey(groupId, userId);
+    store.pending_captchas[key] = {
+      groupId,
+      userId,
+      participantJid: data.participantJid,
+      answer: data.answer,
+      mode: data.mode,
+      timestamp: data.timestamp || Date.now(),
+      timeoutSec: data.timeoutSec || 120,
+      expiresAt: data.expiresAt || Date.now() + (data.timeoutSec || 120) * 1000,
+      attempts: data.attempts || 0,
+      delivered: Boolean(data.delivered),
+    };
+    saveModerationStore(store);
+  } catch (err) {
+    logger.warn({ error: err.message, groupId, userId }, 'Failed to persist pending captcha to store');
+  }
+}
+
+/**
+ * Removes a pending captcha from the persistent moderation store.
+ */
+export function removePendingCaptchaFromStore(groupId, userId) {
+  try {
+    const store = loadModerationStore();
+    if (!store.pending_captchas) return;
+    const key = getWindowKey(groupId, userId);
+    const cleanDigits = userId ? userId.replace(/\D/g, '') : '';
+    let deleted = false;
+    if (store.pending_captchas[key]) {
+      delete store.pending_captchas[key];
+      deleted = true;
+    }
+    if (cleanDigits) {
+      const key2 = getWindowKey(groupId, cleanDigits);
+      if (store.pending_captchas[key2]) {
+        delete store.pending_captchas[key2];
+        deleted = true;
+      }
+    }
+    if (deleted) {
+      saveModerationStore(store);
+    }
+  } catch (err) {
+    logger.warn({ error: err.message, groupId, userId }, 'Failed to remove pending captcha from store');
+  }
+}
+
+/**
+ * Restores pending captchas from disk upon server restart / reconnect and reschedules their expiration timers.
+ */
+export function restorePendingCaptchas(session) {
+  try {
+    const store = loadModerationStore();
+    const saved = store.pending_captchas || {};
+    const now = Date.now();
+    let restoredCount = 0;
+    let expiredCount = 0;
+
+    for (const [key, obj] of Object.entries(saved)) {
+      if (!obj || !obj.groupId || !obj.userId) continue;
+
+      // If user is already verified, clean up and skip
+      if (isUserVerified(obj.groupId, obj.userId, session)) {
+        delete saved[key];
+        continue;
+      }
+
+      const expiresAt = obj.expiresAt || obj.timestamp + (obj.timeoutSec || 120) * 1000;
+      const remainingMs = expiresAt - now;
+
+      if (remainingMs <= 0) {
+        // Captcha expired during downtime
+        delete saved[key];
+        expiredCount++;
+        continue;
+      }
+
+      const timeoutHandle = setTimeout(async () => {
+        const pendingCheck = findPendingCaptcha(obj.groupId, obj.userId, session);
+        if (!pendingCheck || isUserVerified(obj.groupId, obj.userId, session)) {
+          clearPendingCaptcha(obj.groupId, obj.userId, session);
+          return;
+        }
+
+        clearPendingCaptcha(obj.groupId, obj.userId, session);
+        const groupConfig = getGroupModerationConfig(obj.groupId);
+        const action = groupConfig?.greetings?.captcha_timeout_action || 'kick';
+        const targetJid = obj.participantJid || `${obj.userId.replace(/\D/g, '')}@s.whatsapp.net`;
+
+        if (action === 'kick' || action === 'remove') {
+          try {
+            await session?.sock?.groupParticipantsUpdate(obj.groupId, [targetJid], 'remove');
+          } catch (_e) {
+            /* ignore */
+          }
+        }
+      }, remainingMs);
+      if (timeoutHandle.unref) timeoutHandle.unref();
+
+      pendingCaptchas.set(key, {
+        answer: obj.answer,
+        mode: obj.mode,
+        timestamp: obj.timestamp,
+        timeoutHandle,
+        delivered: obj.delivered,
+        participantJid: obj.participantJid,
+        attempts: obj.attempts || 0,
+        expiresAt,
+      });
+      restoredCount++;
+    }
+
+    if (expiredCount > 0) {
+      saveModerationStore(store);
+    }
+
+    if (restoredCount > 0) {
+      logger.info({ restoredCount }, '🛡️ Restored active pending captchas across server restart');
+    }
+  } catch (err) {
+    logger.warn({ error: err.message }, 'Failed to restore pending captchas from disk');
+  }
+}
 
 /**
  * Periodically purges expired pending captchas and kick reasons to prevent memory leaks.
@@ -22,6 +154,10 @@ export function cleanupExpiredCaptchas() {
     if (obj?.timestamp && now - obj.timestamp > 15 * 60 * 1000) {
       if (obj.timeoutHandle) clearTimeout(obj.timeoutHandle);
       pendingCaptchas.delete(key);
+      const colonIdx = key.indexOf(':');
+      if (colonIdx !== -1) {
+        removePendingCaptchaFromStore(key.slice(0, colonIdx), key.slice(colonIdx + 1));
+      }
     }
   }
   for (const [key, kick] of recentKickReasons.entries()) {
@@ -126,17 +262,17 @@ export function findPendingCaptcha(groupId, userId, session = null, rawMsg = nul
 export function clearPendingCaptcha(groupId, userId, session = null) {
   if (!groupId || !userId) return;
   const entry = findPendingCaptcha(groupId, userId, session);
-  if (!entry || !entry.captchaObj) return;
-
-  if (entry.captchaObj.timeoutHandle) {
-    clearTimeout(entry.captchaObj.timeoutHandle);
-  }
-
-  for (const [k, obj] of pendingCaptchas.entries()) {
-    if (obj === entry.captchaObj) {
-      pendingCaptchas.delete(k);
+  if (entry && entry.captchaObj) {
+    if (entry.captchaObj.timeoutHandle) {
+      clearTimeout(entry.captchaObj.timeoutHandle);
+    }
+    for (const [k, obj] of pendingCaptchas.entries()) {
+      if (obj === entry.captchaObj) {
+        pendingCaptchas.delete(k);
+      }
     }
   }
+  removePendingCaptchaFromStore(groupId, userId);
 }
 
 export function isUserVerified(groupId, userId, session = null, _rawMsg = null) {

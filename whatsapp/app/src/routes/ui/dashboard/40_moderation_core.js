@@ -580,8 +580,15 @@ async function selectModerationGroup(groupId) {
   if (capMode) capMode.value = config.greetings?.captcha_mode || 'math';
   const capTarget = document.getElementById('mod-captcha-target');
   if (capTarget) capTarget.value = config.greetings?.captcha_target || 'private';
-  const capTime = document.getElementById('mod-captcha-timeout');
-  if (capTime) capTime.value = config.greetings?.captcha_timeout_seconds || 120;
+  const capTimeJoin = document.getElementById('mod-captcha-timeout-join');
+  if (capTimeJoin)
+    capTimeJoin.value =
+      config.greetings?.captcha_timeout_join_seconds ||
+      config.greetings?.captcha_timeout_seconds ||
+      120;
+  const capTimeAdded = document.getElementById('mod-captcha-timeout-added');
+  if (capTimeAdded)
+    capTimeAdded.value = config.greetings?.captcha_timeout_added_seconds || 600;
   const namePrio = document.getElementById('mod-name-priority');
   if (namePrio) namePrio.value = config.greetings?.name_priority || 'name_push_phone';
   const nameFall = document.getElementById('mod-name-fallback');
@@ -963,6 +970,9 @@ async function selectModerationGroup(groupId) {
   // Speech-to-Text (STT)
   const sttEnabled = document.getElementById('mod-stt-enabled');
   if (sttEnabled) sttEnabled.checked = Boolean(config.stt_enabled);
+  const sttPrivate = document.getElementById('mod-stt-private-enabled');
+  if (sttPrivate)
+    sttPrivate.checked = Boolean(config.stt_allow_private_chats || config.allow_private_chats);
   const sttEngine = document.getElementById('mod-stt-engine');
   if (sttEngine) sttEngine.value = config.stt_engine || 'aegisbot';
   const sttAegisUrl = document.getElementById('mod-stt-aegisbot-url');
@@ -1263,8 +1273,12 @@ async function saveGroupGreetings() {
     captcha_enabled: Boolean(document.getElementById('mod-captcha-enabled')?.checked),
     captcha_mode: document.getElementById('mod-captcha-mode')?.value || 'math',
     captcha_target: document.getElementById('mod-captcha-target')?.value || 'private',
+    captcha_timeout_join_seconds:
+      parseInt(document.getElementById('mod-captcha-timeout-join')?.value, 10) || 120,
+    captcha_timeout_added_seconds:
+      parseInt(document.getElementById('mod-captcha-timeout-added')?.value, 10) || 600,
     captcha_timeout_seconds:
-      parseInt(document.getElementById('mod-captcha-timeout')?.value, 10) || 120,
+      parseInt(document.getElementById('mod-captcha-timeout-join')?.value, 10) || 120,
     name_priority: document.getElementById('mod-name-priority')?.value || 'name_push_phone',
     name_fallback: document.getElementById('mod-name-fallback')?.value || 'phone',
   };

@@ -898,6 +898,47 @@ try {
   assert.strictEqual(kickExecuted, true, 'Third failed captcha attempt must trigger kick penalty');
   console.log('✅ PASSED: Captcha retry limit correctly kicks user after 3 failed attempts');
 
+  // Test: Captcha persistence and restart restoration
+  const { savePendingCaptcha, restorePendingCaptchas, clearPendingCaptcha, isUserVerified } = await import(
+    '../src/whatsapp/moderation/engine/captcha.js'
+  );
+  const restartGroupId = '1203630999999999@g.us';
+  const restartUserId = '4917644444444';
+
+  savePendingCaptcha(restartGroupId, restartUserId, {
+    participantJid: `${restartUserId}@s.whatsapp.net`,
+    answer: '42',
+    mode: 'math',
+    timestamp: Date.now(),
+    timeoutSec: 120,
+    expiresAt: Date.now() + 120000,
+  });
+
+  // Clear in-memory state simulating server restart
+  pendingCaptchas.clear();
+  assert.strictEqual(pendingCaptchas.size, 0, 'In-memory captchas cleared on simulated restart');
+
+  // Restore captchas from disk
+  restorePendingCaptchas(mockSession);
+  const restoredEntry = pendingCaptchas.get(`${restartGroupId}:${restartUserId}`);
+  assert.ok(restoredEntry, 'Pending captcha must be restored into memory after restart');
+  assert.strictEqual(restoredEntry.answer, '42', 'Restored captcha answer matches saved data');
+
+  // Verify that user can solve the captcha after restart
+  await handleModerationMessage(mockSession, {
+    sender: restartGroupId,
+    sender_number: restartUserId,
+    content: '42',
+    raw: { key: { id: 'restoredMsg1' } },
+  });
+  assert.strictEqual(
+    isUserVerified(restartGroupId, restartUserId, mockSession),
+    true,
+    'User must be verified after solving restored captcha'
+  );
+  clearPendingCaptcha(restartGroupId, restartUserId, mockSession);
+  console.log('✅ PASSED: Captcha persists across server restart and user can verify successfully');
+
   // Reset store
   saveModerationStore(getDefaultModerationStore());
   console.log('='.repeat(50) + '\n✅ ALL MODERATION TESTS PASSED\n');

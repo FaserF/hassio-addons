@@ -152,8 +152,15 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     return false;
   }
 
-  // Verification guard: unverified users in groups with Captcha enabled cannot trigger Speech-to-Text
   const isGroup = groupId && groupId.endsWith('@g.us');
+
+  // Private 1:1 chat toggle: default off unless allow_private_chats is explicitly enabled
+  if (!isGroup && !config.stt_allow_private_chats && !config.allow_private_chats) {
+    logger.debug({ groupId }, 'STT skipped in private 1:1 chat (allow_private_chats is disabled)');
+    return false;
+  }
+
+  // Verification guard: unverified users in groups with Captcha enabled cannot trigger Speech-to-Text
   if (isGroup && config.greetings?.captcha_enabled) {
     const rawParticipant = rawMsg.key?.participant || rawMsg.participant;
     const rawUserId = rawParticipant ? rawParticipant.split('@')[0].replace(/\D/g, '') : '';
@@ -417,11 +424,24 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       }
     }
 
-    if (!transcribedText && !failureReason) {
-      failureReason =
-        errorsCaptured.length > 0
-          ? errorsCaptured.join('\n• ')
-          : gt('bot_replies.stt_transcription_failed');
+    const SILENCE_PATTERNS = [
+      /^\[blank_audio\]$/i,
+      /^\[silence\]$/i,
+      /^\[no_speech\]$/i,
+      /^\[unintelligible\]$/i,
+      /^\[music\]$/i,
+      /^\(silence\)$/i,
+      /^\(quiet\)$/i,
+      /^no speech detected\.?$/i,
+      /^empty audio\.?$/i,
+      /^silence\.?$/i,
+      /^thank you for watching\.?!*$/i,
+    ];
+
+    const isSilence = (t) => !t || SILENCE_PATTERNS.some((p) => p.test(t.trim()));
+
+    if (transcribedText && isSilence(transcribedText)) {
+      transcribedText = '';
     }
 
     function getEngineDisplayName(eng, subEng) {
@@ -462,14 +482,40 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       await reply(session, groupId, { text: replyText }, rawMsg);
       return true;
     } else {
+      // Check if engine ran normally without hard API/network errors (silence / quiet sounds / no words spoken)
+      const isCleanNoSpeech =
+        usedEngine &&
+        (errorsCaptured.length === 0 ||
+          errorsCaptured.every(
+            (e) =>
+              e.toLowerCase().includes('empty') ||
+              e.toLowerCase().includes('leer') ||
+              e.toLowerCase().includes('silent') ||
+              e.toLowerCase().includes('no speech')
+          ));
+
       lastSttEvent = {
         timestamp: Date.now(),
         engine: usedEngine,
         engineName: getEngineDisplayName(usedEngine, usedSubEngine),
-        status: 'failed',
-        error: failureReason,
+        status: isCleanNoSpeech ? 'no_speech' : 'failed',
+        error: isCleanNoSpeech ? 'No speech detected' : failureReason,
         group_id: groupId,
       };
+
+      if (isCleanNoSpeech) {
+        // Output clean, informative hint instead of error message
+        const notice = gt('bot_replies.stt_no_speech_detected');
+        await reply(session, groupId, { text: notice }, rawMsg);
+        return true;
+      }
+
+      if (!failureReason) {
+        failureReason =
+          errorsCaptured.length > 0
+            ? errorsCaptured.join('\n• ')
+            : gt('bot_replies.stt_transcription_failed');
+      }
 
       const header = gt('bot_replies.stt_error_header');
       const detailsHeader = gt('bot_replies.stt_error_details_header');

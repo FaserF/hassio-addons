@@ -210,8 +210,8 @@ export default () => `
                             <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-captcha-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
                             <span class="mod-option-label" data-i18n="moderation.require_captcha">Require captcha on join</span>
                             <select id="mod-captcha-mode" class="mod-select mod-select-sm"><option value="code" data-i18n="moderation.captcha_code">Security Code</option><option value="math" data-i18n="moderation.captcha_math">Math problem</option><option value="button" data-i18n="moderation.captcha_button">Button challenge</option></select>
-                            <select id="mod-captcha-target" class="mod-select mod-select-sm"><option value="private" data-i18n="moderation.captcha_dest_private">Private Chat (DM)</option><option value="group" data-i18n="moderation.captcha_dest_group">Group Chat</option></select>
-                            <div class="mod-number-group"><input type="number" id="mod-captcha-timeout" class="mod-number-input" value="240" min="30" max="600"><span class="mod-number-unit" data-i18n="moderation.timeout_seconds">s timeout</span></div>
+                            <div class="mod-number-group" title="Timeout when user joins on their own via link"><span class="mod-field-label" style="margin:0; font-size:11px;" data-i18n="moderation.timeout_join_label">Self-Join:</span><input type="number" id="mod-captcha-timeout-join" class="mod-number-input" value="120" min="30" max="1800"><span class="mod-number-unit">s</span></div>
+                            <div class="mod-number-group" title="Timeout when user is added by group member"><span class="mod-field-label" style="margin:0; font-size:11px;" data-i18n="moderation.timeout_added_label">Added:</span><input type="number" id="mod-captcha-timeout-added" class="mod-number-input" value="600" min="30" max="3600"><span class="mod-number-unit">s</span></div>
                         </div>
                         <div class="mod-divider"></div>
                         <div class="mod-feature-header">
@@ -566,6 +566,10 @@ export default () => `
                         <div class="mod-inline-controls" style="margin-bottom:12px;">
                             <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-stt-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
                             <span class="mod-option-label" data-i18n="moderation.enable_stt">Enable Speech-to-Text (STT) for incoming voice messages</span>
+                        </div>
+                        <div class="mod-inline-controls" style="margin-bottom:12px;">
+                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-stt-private-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
+                            <span class="mod-option-label" data-i18n="moderation.enable_stt_private">Enable Speech-to-Text in private 1:1 chats with bot (Default: Off)</span>
                         </div>
                         <div class="mod-inline-controls" style="margin-bottom:12px;">
                             <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.stt_engine_label">STT Engine:</label>

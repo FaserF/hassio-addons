@@ -784,7 +784,10 @@
     "lang_de_opt": "German",
     "lang_es_opt": "Spanish",
     "lang_fr_opt": "French",
-    "lang_it_opt": "Italian"
+    "lang_it_opt": "Italian",
+    "timeout_join_label": "Self-Join:",
+    "timeout_added_label": "Added:",
+    "enable_stt_private": "Enable Speech-to-Text in private 1:1 chats with bot (Default: Off)"
   },
   "telegram": {
     "title": "WhatsApp & Telegram Native Bridge",
@@ -1397,9 +1400,9 @@
     "welcome_template_default": "Welcome {mention} to {group}!",
     "welcome_short_greeting": "👋 Welcome @{user}!",
     "rules_title": "Group Rules",
-    "captcha_challenge_math": "🤖 *Captcha Verification*\nSolve the security challenge to verify:\n👉 *{n1} {op} {n2} = ?*\n\nReply with the correct number to gain access.",
-    "captcha_challenge_code": "🤖 *Captcha Verification*\nType the following security code to verify:\n👉 *{code}*",
-    "captcha_challenge_math_simple": "🤖 *Captcha Verification*\nSolve math problem to verify:\n👉 *{n1} + {n2} = ?*",
+    "captcha_challenge_math": "🤖 *Captcha Verification*\nSolve the security challenge to verify:\n👉 *{n1} {op} {n2} = ?*\n⏱️ You have *{timeout}* to verify.\n\nReply with the correct number to gain access.",
+    "captcha_challenge_code": "🤖 *Captcha Verification*\nType the following security code to verify:\n👉 *{code}*\n⏱️ You have *{timeout}* to verify.",
+    "captcha_challenge_math_simple": "🤖 *Captcha Verification*\nSolve the math problem to verify:\n👉 *{n1} + {n2} = ?*\n⏱️ You have *{timeout}* to verify.",
     "departure_voluntary": "🚶 Left voluntarily",
     "departure_banned": "Banned",
     "departure_fed_banned": "Banned via Global Security Federation",
@@ -1526,7 +1529,12 @@
     "timer_rate_limit": "⏳ *Cooldown:* You can create at most 3 timers per minute. Please wait a moment.",
     "timer_set": "⏰ *Timer Set:* I will remind you in *{duration}*{reason}!",
     "timer_expired": "⏰ *Timer Alert:* @{user} your timer for *\"{reason}\"* has expired! 🔔",
-    "roll_rate_limit": "⏳ *Cooldown:* Please wait a moment before rolling dice again (max 3 rolls per 10 seconds)."
+    "roll_rate_limit": "⏳ *Cooldown:* Please wait a moment before rolling dice again (max 3 rolls per 10 seconds).",
+    "resetwarn_mention_prompt": "⚠️ Mention a user or reply to a message to reset warnings.",
+    "resetwarn_success": "✅ Reset warnings for target user(s).",
+    "usage_setwarnlimit": "⚠️ Usage: `{prefix}setwarnlimit <1-10>`",
+    "usage_setwarnaction": "⚠️ Usage: `{prefix}setwarnaction <kick|mute|ban>`",
+    "stt_no_speech_detected": "🎙️ _No spoken words detected in voice message._"
   },
   "autoresponder": {
     "title": "Auto Responder (Away / Vacation)",

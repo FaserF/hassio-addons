@@ -1559,8 +1559,15 @@ async function selectModerationGroup(groupId) {
   if (capMode) capMode.value = config.greetings?.captcha_mode || 'math';
   const capTarget = document.getElementById('mod-captcha-target');
   if (capTarget) capTarget.value = config.greetings?.captcha_target || 'private';
-  const capTime = document.getElementById('mod-captcha-timeout');
-  if (capTime) capTime.value = config.greetings?.captcha_timeout_seconds || 120;
+  const capTimeJoin = document.getElementById('mod-captcha-timeout-join');
+  if (capTimeJoin)
+    capTimeJoin.value =
+      config.greetings?.captcha_timeout_join_seconds ||
+      config.greetings?.captcha_timeout_seconds ||
+      120;
+  const capTimeAdded = document.getElementById('mod-captcha-timeout-added');
+  if (capTimeAdded)
+    capTimeAdded.value = config.greetings?.captcha_timeout_added_seconds || 600;
   const namePrio = document.getElementById('mod-name-priority');
   if (namePrio) namePrio.value = config.greetings?.name_priority || 'name_push_phone';
   const nameFall = document.getElementById('mod-name-fallback');
@@ -2137,8 +2144,12 @@ async function saveGroupGreetings() {
     captcha_enabled: Boolean(document.getElementById('mod-captcha-enabled')?.checked),
     captcha_mode: document.getElementById('mod-captcha-mode')?.value || 'math',
     captcha_target: document.getElementById('mod-captcha-target')?.value || 'private',
+    captcha_timeout_join_seconds:
+      parseInt(document.getElementById('mod-captcha-timeout-join')?.value, 10) || 120,
+    captcha_timeout_added_seconds:
+      parseInt(document.getElementById('mod-captcha-timeout-added')?.value, 10) || 600,
     captcha_timeout_seconds:
-      parseInt(document.getElementById('mod-captcha-timeout')?.value, 10) || 120,
+      parseInt(document.getElementById('mod-captcha-timeout-join')?.value, 10) || 120,
     name_priority: document.getElementById('mod-name-priority')?.value || 'name_push_phone',
     name_fallback: document.getElementById('mod-name-fallback')?.value || 'phone',
   };
@@ -3228,6 +3239,9 @@ async function saveGroupAiConfig() {
       'You are an intelligent, friendly, and professional WhatsApp Group Moderator AI. Your goals are to assist group members with accurate information, enforce group etiquette, keep responses concise, polite, and well-formatted for WhatsApp, and maintain a constructive community atmosphere.',
   };
   groupConfig.stt_enabled = Boolean(document.getElementById('mod-stt-enabled')?.checked);
+  groupConfig.stt_allow_private_chats = Boolean(
+    document.getElementById('mod-stt-private-enabled')?.checked
+  );
   groupConfig.stt_engine = document.getElementById('mod-stt-engine')?.value || 'auto';
   groupConfig.translation = {
     enabled: document.getElementById('mod-trans-enabled')

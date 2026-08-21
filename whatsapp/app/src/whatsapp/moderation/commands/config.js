@@ -500,7 +500,7 @@ export function registerConfigCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: '⚠️ Mention a user or reply to reset warnings.' },
+          { text: gt(config, 'bot_replies.resetwarn_mention_prompt') },
           rawMsg
         );
         return;
@@ -514,7 +514,7 @@ export function registerConfigCommands(registry) {
         store.warnings[groupId][targetId] = [];
       }
       saveModerationStore(store);
-      await reply(session, groupId, { text: '✅ Reset warnings for target user(s).' }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.resetwarn_success') }, rawMsg);
     },
     { adminOnly: true, help: 'Reset all warnings for a user', aliases: ['rmwarn'] }
   );
@@ -524,7 +524,7 @@ export function registerConfigCommands(registry) {
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
       const prefix = config.commands?.prefix || '!';
       if (args.length === 0 || isNaN(parseInt(args[0], 10))) {
-        await reply(session, groupId, { text: `⚠️ Usage: \`${prefix}setwarnlimit <1-10>\`` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.usage_setwarnlimit', { prefix }) }, rawMsg);
         return;
       }
       const limit = Math.max(1, Math.min(10, parseInt(args[0], 10)));
@@ -547,7 +547,7 @@ export function registerConfigCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Usage: \`${prefix}setwarnaction <kick|mute|ban>\`` },
+          { text: gt(config, 'bot_replies.usage_setwarnaction', { prefix }) },
           rawMsg
         );
         return;

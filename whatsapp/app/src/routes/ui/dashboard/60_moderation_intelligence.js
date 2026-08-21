@@ -135,6 +135,9 @@ async function saveGroupAiConfig() {
       'You are an intelligent, friendly, and professional WhatsApp Group Moderator AI. Your goals are to assist group members with accurate information, enforce group etiquette, keep responses concise, polite, and well-formatted for WhatsApp, and maintain a constructive community atmosphere.',
   };
   groupConfig.stt_enabled = Boolean(document.getElementById('mod-stt-enabled')?.checked);
+  groupConfig.stt_allow_private_chats = Boolean(
+    document.getElementById('mod-stt-private-enabled')?.checked
+  );
   groupConfig.stt_engine = document.getElementById('mod-stt-engine')?.value || 'aegisbot';
   groupConfig.stt_aegisbot_url =
     document.getElementById('mod-stt-aegisbot-url')?.value?.trim() || '';
