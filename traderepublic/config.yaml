@@ -19,12 +19,14 @@ panel_title: "Trade Republic"
 options:
   log_level: "info"
   keep_alive_interval: 600
+  cache_retention_hours: 12
   auto_install_integration: true
   github_token: ""
 
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
   keep_alive_interval: int
+  cache_retention_hours: int
   auto_install_integration: bool
   github_token: str?
 

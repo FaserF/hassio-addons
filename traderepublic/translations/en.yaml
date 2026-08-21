@@ -5,6 +5,9 @@ configuration:
   keep_alive_interval:
     name: "Keep-Alive Interval (Seconds)"
     description: "Interval in seconds to ping/refresh the web session."
+  cache_retention_hours:
+    name: "Cache Retention Period (Hours)"
+    description: "Duration in hours to retain and serve cached portfolio/metric data during session dropouts or offline periods (default: 12)."
   auto_install_integration:
     name: "Auto Install Integration"
     description: "Automatically install or update ha-traderepublic custom integration."

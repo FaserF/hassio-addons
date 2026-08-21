@@ -273,13 +273,20 @@ async def get_data(categories: Optional[str] = None):
     is_stale = False
     grace_remaining = 0
 
+    try:
+        retention_hours = float(os.environ.get("CACHE_RETENTION_HOURS", "12"))
+    except ValueError:
+        retention_hours = 12.0
+
+    retention_seconds = max(0.0, retention_hours * 3600.0)
+
     if not is_active:
-        if last_update and (now - last_update <= 12 * 3600):
-            # Within 12-hour grace period: serve cached metrics with stale flag
+        if last_update and (now - last_update <= retention_seconds):
+            # Within configured grace period: serve cached metrics with stale flag
             is_stale = True
-            grace_remaining = int((12 * 3600) - (now - last_update))
+            grace_remaining = int(retention_seconds - (now - last_update))
         else:
-            # Over 12 hours without valid session: invalidate metrics
+            # Over configured retention time without valid session: invalidate metrics
             data = {}
 
     return {

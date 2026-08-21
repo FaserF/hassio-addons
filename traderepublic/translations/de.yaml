@@ -5,6 +5,9 @@ configuration:
   keep_alive_interval:
     name: "Keep-Alive Intervall (Sekunden)"
     description: "Intervall in Sekunden für den automatischen Session-Refresh."
+  cache_retention_hours:
+    name: "Cache-Aufbewahrungsdauer (Stunden)"
+    description: "Dauer in Stunden, für die zwischengespeicherte Portfolio-/Metrik-Daten bei Session-Unterbrechungen oder Offline-Phasen vorgehalten werden (Standard: 12)."
   auto_install_integration:
     name: "Integration automatisch installieren"
     description: "Automatische Installation und Aktualisierung der ha-traderepublic Integration."
