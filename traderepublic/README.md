@@ -55,6 +55,7 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ```yaml
 auto_install_integration: true
+cache_retention_hours: 12
 github_token: ''
 keep_alive_interval: 600
 log_level: info

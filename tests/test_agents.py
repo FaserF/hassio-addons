@@ -1,8 +1,8 @@
 """Tests validating AGENTS.MD rules, guidelines, and referenced architecture."""
 
-from pathlib import Path
 import re
 import unittest
+from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 AGENTS_MD = REPO_ROOT / "AGENTS.MD"
@@ -43,9 +43,7 @@ class TestAgentsMd(unittest.TestCase):
 
     def test_agents_no_unsupported_markdown_alerts(self) -> None:
         """Ensure AGENTS.MD adheres to standard markdown without broken alert syntax."""
-        unsupported_alerts = re.compile(
-            r"\[!(TIP|NOTE|WARNING|CAUTION|IMPORTANT)\]", re.IGNORECASE
-        )
+        unsupported_alerts = re.compile(r"\[!(TIP|NOTE|WARNING|CAUTION|IMPORTANT)\]", re.IGNORECASE)
         content = AGENTS_MD.read_text(encoding="utf-8")
 
         errors = [
@@ -53,9 +51,7 @@ class TestAgentsMd(unittest.TestCase):
             for idx, line in enumerate(content.splitlines())
             if unsupported_alerts.search(line)
         ]
-        self.assertFalse(
-            errors, f"Unsupported markdown alerts in AGENTS.MD: {errors}"
-        )
+        self.assertFalse(errors, f"Unsupported markdown alerts in AGENTS.MD: {errors}")
 
 
 if __name__ == "__main__":
