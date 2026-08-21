@@ -157,6 +157,10 @@ class TradeRepublicBrowserService:
                 self.session_token = None
                 self.login_started_at = time.time()
 
+                # Stop the persistent WS connection so TR doesn't see an active
+                # session — otherwise TR suppresses the push notification to the app.
+                self._ws_keeper.stop()
+
                 self.status_message = "Navigating to Trade Republic login..."
                 login_res = await self.auth_helper.execute_login(clean_phone, clean_pin)
 
@@ -174,6 +178,8 @@ class TradeRepublicBrowserService:
 
     async def _poll_for_app_approval(self) -> None:
         """Poll for session token in background for 120s after credentials submission."""
+        from core.verifier import verify_tr_token
+
         for _ in range(40):
             await asyncio.sleep(3)
             if self.is_logged_in:
@@ -185,14 +191,19 @@ class TradeRepublicBrowserService:
                 break
             token = await self.auth_helper.extract_token_from_cookies()
             if token:
-                is_valid = await self.verify_token_validity(token)
+                # During login the keeper is stopped — use one-off verifier directly
+                is_valid = await verify_tr_token(token)
                 if is_valid:
                     await self.save_session(token)
-                    _LOGGER.info("App approval detected! Session saved successfully.")
+                    # save_session calls update_token → keeper restarts with new token
+                    self._ws_keeper.start()
+                    _LOGGER.info("App approval detected! Session saved and WS keeper restarted.")
                     break
 
     async def submit_2fa(self, code: str) -> Dict[str, Any]:
         """Submit 2FA code or check In-App approval via CDP."""
+        from core.verifier import verify_tr_token
+
         async with self._lock:
             try:
                 # Check if 120s timeout passed
@@ -212,9 +223,11 @@ class TradeRepublicBrowserService:
                     await asyncio.sleep(1.5)
                     token = await self.auth_helper.extract_token_from_cookies()
                     if token:
-                        is_valid = await self.verify_token_validity(token)
+                        # Keeper is stopped during login — use one-off verifier
+                        is_valid = await verify_tr_token(token)
                         if is_valid:
                             await self.save_session(token)
+                            self._ws_keeper.start()
                             return {
                                 "success": True,
                                 "session_token": token,
