@@ -465,7 +465,9 @@ class TRWebSocketKeeper:
             connected = await self._connect()
             if not connected:
                 if not self.is_authenticated and self.last_error and "401" in self.last_error:
-                    _LOGGER.info("WS Keeper: stopping reconnection loop due to 401 auth failure — waiting for new login")
+                    _LOGGER.info(
+                        "WS Keeper: stopping reconnection loop due to 401 auth failure — waiting for new login"
+                    )
                     self._running = False
                     return
                 delay = min(self._reconnect_delay, _RECONNECT_DELAY_MAX)
