@@ -109,10 +109,11 @@ class TRWebSocketKeeper:
 
     def update_token(self, token: str) -> None:
         """Provide a new token; reconnect if currently disconnected."""
-        if not self.is_authenticated and self._running:
-            if self._task and not self._task.done():
-                self._task.cancel()
-            self._task = asyncio.create_task(self._run_loop(), name="tr-ws-keeper")
+        self.last_error = None
+        self._running = True
+        if self._task and not self._task.done():
+            self._task.cancel()
+        self._task = asyncio.create_task(self._run_loop(), name="tr-ws-keeper")
 
     async def sync_categories(self, categories: set[str]) -> None:
         """Dynamically add or remove subscriptions based on requested active categories."""
@@ -464,9 +465,9 @@ class TRWebSocketKeeper:
             connected = await self._connect()
             if not connected:
                 if not self.is_authenticated and self.last_error and "401" in self.last_error:
-                    _LOGGER.debug("WS Keeper: pausing reconnect until new token provided")
-                    await asyncio.sleep(30)
-                    continue
+                    _LOGGER.info("WS Keeper: stopping reconnection loop due to 401 auth failure — waiting for new login")
+                    self._running = False
+                    return
                 delay = min(self._reconnect_delay, _RECONNECT_DELAY_MAX)
                 _LOGGER.debug("WS Keeper: reconnecting in %.0f s", delay)
                 self._reconnect_delay = min(self._reconnect_delay * 2, _RECONNECT_DELAY_MAX)
