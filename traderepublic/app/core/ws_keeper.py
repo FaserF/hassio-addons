@@ -56,8 +56,6 @@ class TRWebSocketKeeper:
         self._token_factory = token_factory
         self._ws: Optional[Any] = None
         self._task: Optional[asyncio.Task] = None
-        self._heartbeat_task: Optional[asyncio.Task] = None
-        self._sub_counter: int = 1
 
         self.is_authenticated: bool = False
         self.last_error: Optional[str] = None
@@ -76,8 +74,6 @@ class TRWebSocketKeeper:
     def stop(self) -> None:
         """Stop the keeper and close the connection."""
         self._running = False
-        if self._heartbeat_task and not self._heartbeat_task.done():
-            self._heartbeat_task.cancel()
         if self._task and not self._task.done():
             self._task.cancel()
         if self._ws:
@@ -87,9 +83,9 @@ class TRWebSocketKeeper:
         """Provide a new token; reconnect if currently disconnected."""
         # Token factory will pick it up automatically on next (re)connect.
         if not self.is_authenticated and self._running:
-            # Trigger reconnect immediately by cancelling heartbeat
-            if self._heartbeat_task and not self._heartbeat_task.done():
-                self._heartbeat_task.cancel()
+            if self._task and not self._task.done():
+                self._task.cancel()
+            self._task = asyncio.create_task(self._run_loop(), name="tr-ws-keeper")
 
     # ─── Internal ────────────────────────────────────────────────────────────
 
@@ -119,11 +115,15 @@ class TRWebSocketKeeper:
         }
 
         try:
+            # Enable standard WebSocket ping/pong keepalive every 20s.
+            # Trade Republic WebSocket supports protocol-level Ping frames natively
+            # without triggering query rate limits or stream drops.
             self._ws = await websockets.connect(
                 _TR_WS_URL,
                 ssl=ssl_ctx,
                 additional_headers=headers,
-                ping_interval=None,  # We manage keepalive ourselves
+                ping_interval=20,
+                ping_timeout=20,
                 close_timeout=5,
             )
         except Exception as exc:
@@ -155,8 +155,13 @@ class TRWebSocketKeeper:
                     _LOGGER.debug("WS Keeper: unexpected handshake response: %s", resp)
                     await self._close_ws()
                     return False
+
+                # Subscribe once to compactPortfolioByType — persistent live stream
+                # that matches normal Trade Republic app behavior and keeps the session active
+                await self._ws.send('sub 1 {"type":"compactPortfolioByType"}')
+                _LOGGER.debug("WS Keeper: subscribed to persistent compactPortfolioByType stream")
         except Exception as exc:
-            _LOGGER.debug("WS Keeper: handshake failed: %s", exc)
+            _LOGGER.debug("WS Keeper: handshake/sub failed: %s", exc)
             await self._close_ws()
             return False
 
@@ -166,34 +171,14 @@ class TRWebSocketKeeper:
         _LOGGER.info("WS Keeper: authenticated and connected to Trade Republic")
         return True
 
-    async def _heartbeat_loop(self) -> None:
-        """Send a lightweight keepalive subscription every _HEARTBEAT_INTERVAL seconds."""
-        while True:
-            await asyncio.sleep(_HEARTBEAT_INTERVAL)
-            if self._ws is None or not self.is_authenticated:
-                return
-            try:
-                sub_id = self._sub_counter
-                self._sub_counter += 1
-                # Use a cheap, fast-returning subscription type for keepalive
-                await self._ws.send(f'sub {sub_id} {{"type":"neonSearch","data":{{"q":"a","page":1,"pageSize":1}}}}')
-                _LOGGER.debug("WS Keeper: sent heartbeat sub %s", sub_id)
-            except Exception as exc:
-                _LOGGER.debug("WS Keeper: heartbeat send failed: %s", exc)
-                return  # Let the main loop detect disconnect and reconnect
-
     async def _receive_loop(self) -> None:
-        """Drain incoming messages to prevent buffer stall and detect disconnects."""
+        """Drain incoming messages from persistent subscription to maintain connection."""
         while self._ws is not None:
             try:
-                msg = await asyncio.wait_for(self._ws.recv(), timeout=90)
+                msg = await self._ws.recv()
                 _LOGGER.debug("WS Keeper: recv: %s", str(msg)[:120])
-            except asyncio.TimeoutError:
-                # No message in 90 s — TR should have sent something if alive
-                _LOGGER.debug("WS Keeper: recv timeout, connection may be dead")
-                return
             except Exception as exc:
-                _LOGGER.debug("WS Keeper: recv error: %s", exc)
+                _LOGGER.debug("WS Keeper: recv ended/disconnected: %s", exc)
                 return
 
     async def _run_loop(self) -> None:
@@ -218,20 +203,18 @@ class TRWebSocketKeeper:
                 await asyncio.sleep(delay)
                 continue
 
-            # Start heartbeat and drain concurrently
-            self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
             try:
                 await self._receive_loop()
             finally:
-                if self._heartbeat_task and not self._heartbeat_task.done():
-                    self._heartbeat_task.cancel()
                 await self._close_ws()
                 self._ws = None
 
             if self._running:
                 if self.is_authenticated:
-                    # Clean disconnect — reconnect quickly
-                    _LOGGER.info("WS Keeper: connection closed cleanly, reconnecting in %.0f s", _RECONNECT_DELAY_MIN)
-                    await asyncio.sleep(_RECONNECT_DELAY_MIN)
+                    # Connection dropped unexpectedly, reconnect with short backoff
+                    _LOGGER.info("WS Keeper: connection closed, reconnecting in %.0f s", self._reconnect_delay)
+                    await asyncio.sleep(self._reconnect_delay)
+                    self._reconnect_delay = min(self._reconnect_delay * 1.5, _RECONNECT_DELAY_MAX)
                 else:
                     await asyncio.sleep(30)
+
