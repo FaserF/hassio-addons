@@ -67,7 +67,7 @@ class TradeRepublicBrowserService:
                 "--disable-gpu",
                 "--disable-blink-features=AutomationControlled",
                 "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-                "https://app.traderepublic.com",
+                "about:blank",
             ]
             _LOGGER.info("Launching headless Chromium via CDP...")
             self.proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -77,10 +77,13 @@ class TradeRepublicBrowserService:
                 _LOGGER.warning("Chromium CDP not ready within 20s — proceeding anyway")
 
             await self._load_saved_session()
+            if self.session_token:
+                # Navigate now that session cookies and storage are configured
+                await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com"})
             # Start persistent WS keeper and Chromium watchdog
             self._ws_keeper.start()
             self._keepalive_task = asyncio.create_task(self._keepalive_loop())
-            # Validate token 15 s after startup — keeper has had time to connect by then
+            # Validate token after startup — keeper has had time to connect by then
             asyncio.create_task(self._startup_validation())
         except Exception as e:
             _LOGGER.error("Failed to start browser process: %s", e)
