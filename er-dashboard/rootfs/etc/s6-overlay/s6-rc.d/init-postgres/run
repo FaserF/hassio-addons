@@ -142,7 +142,7 @@ else
             rm -f /tmp/pgpass
 
             bashio::log.info "Running pg_upgrade..."
-            if (cd /tmp && su-exec postgres pg_upgrade \
+            if (cd /tmp && su-exec postgres env PGPASSWORD="${POSTGRES_PASSWORD}" pg_upgrade \
                 -b "$OLD_BINDIR" \
                 -B "$NEW_BINDIR" \
                 -d /data/er_dashboard/database \
