@@ -9,8 +9,30 @@ import {
 } from '../../../utils/security.js';
 import { gt } from './translations.js';
 
-export const pendingCaptchas = new Map(); // key: groupId:userId -> { answer, mode, timeoutHandle, timestamp, delivered, participantJid }
+export const pendingCaptchas = new Map(); // key: groupId:userId -> { answer, mode, timeoutHandle, timestamp, delivered, participantJid, attempts }
 export const recentKickReasons = new Map(); // key: groupId:userId -> { reason, expires }
+
+/**
+ * Periodically purges expired pending captchas and kick reasons to prevent memory leaks.
+ */
+export function cleanupExpiredCaptchas() {
+  const now = Date.now();
+  for (const [key, obj] of pendingCaptchas.entries()) {
+    // If pending captcha is older than 15 minutes without timer, purge it
+    if (obj?.timestamp && now - obj.timestamp > 15 * 60 * 1000) {
+      if (obj.timeoutHandle) clearTimeout(obj.timeoutHandle);
+      pendingCaptchas.delete(key);
+    }
+  }
+  for (const [key, kick] of recentKickReasons.entries()) {
+    if (kick?.expires && now > kick.expires) {
+      recentKickReasons.delete(key);
+    }
+  }
+}
+
+// Run cleanup every 5 minutes
+setInterval(cleanupExpiredCaptchas, 5 * 60 * 1000).unref?.();
 
 export function getWindowKey(groupId, userId) {
   return `${groupId}:${userId}`;

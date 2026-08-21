@@ -427,7 +427,7 @@ export function registerContentCommands(registry) {
         session,
         groupId,
         {
-          text: `⏳ *Exporting Chat & Security Data...*\n• *Timeframe:* \`${timeframe}\`\n• *Scope:* \`${componentTypes}\`\nCompiling structured archive...`,
+          text: gt(config, 'bot_replies.export_progress', { timeframe, scope: componentTypes }),
         },
         rawMsg
       );
@@ -492,7 +492,7 @@ export function registerContentCommands(registry) {
             session,
             groupId,
             {
-              text: `✅ *Export Dispatched:* Sent securely via private message to @${userId.split('@')[0]}.`,
+              text: gt(config, 'bot_replies.export_dispatched', { user: userId.split('@')[0] }),
               mentions: [userId],
             },
             rawMsg
@@ -521,7 +521,7 @@ export function registerContentCommands(registry) {
         }
       } catch (err) {
         logger.error({ error: err.message, groupId }, 'Failed to generate chat export');
-        await reply(session, groupId, { text: `❌ *Export Failed:* ${err.message}` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.export_failed', { error: err.message }) }, rawMsg);
       }
     },
     {

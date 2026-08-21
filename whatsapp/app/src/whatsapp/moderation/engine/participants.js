@@ -324,7 +324,10 @@ export async function handleModerationParticipantUpdate(session, update) {
               session,
               groupId,
               {
-                text: `🚫 *Automated Moderation Notice*\n\nUser @${cleanDigits || userId} was removed.\n*Reason:* ${nameViolation}`,
+                text: gt(config, 'bot_replies.auto_moderation_name_notice', {
+                  user: cleanDigits || userId,
+                  reason: nameViolation,
+                }),
                 mentions: [participantJid],
               },
               rawMsg,

@@ -1,5 +1,6 @@
 import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from '../../store.js';
 import { reply } from '../../../actions.js';
+import { gt } from '../../engine/translations.js';
 
 export function registerSettingsCommands(registry) {
   registry.register(
@@ -10,7 +11,7 @@ export function registerSettingsCommands(registry) {
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       c.log_channel_jid = target;
       saveModerationStore(store);
-      await reply(session, groupId, { text: `✅ *Log Channel Set:* ${target}` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.log_channel_set', { target }) }, rawMsg);
     },
     { adminOnly: true, help: 'Set moderation log channel' }
   );
@@ -22,7 +23,7 @@ export function registerSettingsCommands(registry) {
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       delete c.log_channel_jid;
       saveModerationStore(store);
-      await reply(session, groupId, { text: `✅ Log channel unset.` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.log_channel_unset') }, rawMsg);
     },
     { adminOnly: true, help: 'Unset moderation log channel' }
   );
@@ -31,7 +32,7 @@ export function registerSettingsCommands(registry) {
     'slowmode',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
       const timeStr = args[0] || 'off';
-      await reply(session, groupId, { text: `⏱️ *Slow Mode:* Set to ${timeStr}.` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.slowmode_set', { time: timeStr }) }, rawMsg);
     },
     { adminOnly: true, help: 'Configure group slow mode' }
   );
@@ -43,9 +44,9 @@ export function registerSettingsCommands(registry) {
       if (!title) return;
       try {
         await session.sock.groupUpdateSubject(groupId, title);
-        await reply(session, groupId, { text: `✅ Group subject updated to *${title}*.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.group_title_updated', { title }) }, rawMsg);
       } catch (e) {
-        await reply(session, groupId, { text: `❌ Failed to update title: ${e.message}` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.group_title_failed', { error: e.message }) }, rawMsg);
       }
     },
     { adminOnly: true, help: 'Set group subject/title' }
@@ -57,12 +58,12 @@ export function registerSettingsCommands(registry) {
       const desc = args.join(' ');
       try {
         await session.sock.groupUpdateDescription(groupId, desc);
-        await reply(session, groupId, { text: `✅ Group description updated.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.group_desc_updated') }, rawMsg);
       } catch (e) {
         await reply(
           session,
           groupId,
-          { text: `❌ Failed to update description: ${e.message}` },
+          { text: gt(config, 'bot_replies.group_desc_failed', { error: e.message }) },
           rawMsg
         );
       }
@@ -73,7 +74,7 @@ export function registerSettingsCommands(registry) {
   registry.register(
     'setphoto',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
-      await reply(session, groupId, { text: `📷 *Group Photo:* Updated.` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.group_photo_updated') }, rawMsg);
     },
     { adminOnly: true, help: 'Set group icon/photo' }
   );
@@ -90,7 +91,9 @@ export function registerSettingsCommands(registry) {
         session,
         groupId,
         {
-          text: `🛡️ *Scan Notification Mode:* Set to *${c.security_scan_quiet_mode ? 'QUIET' : 'NORMAL'}*.`,
+          text: gt(config, 'bot_replies.scan_mode_set', {
+            mode: c.security_scan_quiet_mode ? 'QUIET' : 'NORMAL',
+          }),
         },
         rawMsg
       );
@@ -105,14 +108,17 @@ export function registerSettingsCommands(registry) {
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       const approved = c.approved_users || [];
       if (approved.length === 0) {
-        await reply(session, groupId, { text: `ℹ️ No approved users in this group.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.approved_empty') }, rawMsg);
         return;
       }
       await reply(
         session,
         groupId,
         {
-          text: `✅ *Approved Users (${approved.length}):*\n${approved.map((u) => `• @${u}`).join('\n')}`,
+          text: gt(config, 'bot_replies.approved_list_header', {
+            count: approved.length,
+            list: approved.map((u) => `• @${u}`).join('\n'),
+          }),
         },
         rawMsg
       );
@@ -127,7 +133,7 @@ export function registerSettingsCommands(registry) {
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       c.approved_users = [];
       saveModerationStore(store);
-      await reply(session, groupId, { text: `✅ All user approvals cleared.` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.approved_all_cleared') }, rawMsg);
     },
     { adminOnly: true, help: 'Clear all user approvals' }
   );
@@ -152,7 +158,11 @@ export function registerSettingsCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: `🚨 *User Reports:* Now *${c.reports_enabled ? 'ENABLED' : 'DISABLED'}*.` },
+        {
+          text: gt(config, 'bot_replies.reports_toggle_status', {
+            status: c.reports_enabled ? 'ENABLED' : 'DISABLED',
+          }),
+        },
         rawMsg
       );
     },
@@ -162,7 +172,7 @@ export function registerSettingsCommands(registry) {
   registry.register(
     'pinned',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
-      await reply(session, groupId, { text: `📌 *Pinned Message:* Check group header.` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.pinned_check_header') }, rawMsg);
     },
     { help: 'Show current pinned message' }
   );
@@ -198,7 +208,7 @@ export function registerSettingsCommands(registry) {
             return await reply(
               session,
               groupId,
-              { text: `🛡️ *Anti-Spam:* Set to *${statusIcon(enableState)}*.` },
+              { text: gt(config, 'bot_replies.feature_anti_spam', { status: statusIcon(enableState) }) },
               rawMsg
             );
           }
@@ -210,7 +220,7 @@ export function registerSettingsCommands(registry) {
             return await reply(
               session,
               groupId,
-              { text: `🛡️ *Anti-Raid:* Set to *${statusIcon(enableState)}*.` },
+              { text: gt(config, 'bot_replies.feature_anti_raid', { status: statusIcon(enableState) }) },
               rawMsg
             );
           }
@@ -222,7 +232,7 @@ export function registerSettingsCommands(registry) {
             return await reply(
               session,
               groupId,
-              { text: `🌊 *Anti-Flood:* Set to *${statusIcon(enableState)}*.` },
+              { text: gt(config, 'bot_replies.feature_anti_flood', { status: statusIcon(enableState) }) },
               rawMsg
             );
           }
@@ -234,7 +244,7 @@ export function registerSettingsCommands(registry) {
             return await reply(
               session,
               groupId,
-              { text: `🧩 *Captcha:* Set to *${statusIcon(enableState)}*.` },
+              { text: gt(config, 'bot_replies.feature_captcha', { status: statusIcon(enableState) }) },
               rawMsg
             );
           }
@@ -246,7 +256,7 @@ export function registerSettingsCommands(registry) {
             return await reply(
               session,
               groupId,
-              { text: `👋 *Welcome Message:* Set to *${statusIcon(enableState)}*.` },
+              { text: gt(config, 'bot_replies.feature_welcome', { status: statusIcon(enableState) }) },
               rawMsg
             );
           }
@@ -258,7 +268,7 @@ export function registerSettingsCommands(registry) {
             return await reply(
               session,
               groupId,
-              { text: `🚪 *Goodbye Message:* Set to *${statusIcon(enableState)}*.` },
+              { text: gt(config, 'bot_replies.feature_goodbye', { status: statusIcon(enableState) }) },
               rawMsg
             );
           }
@@ -269,7 +279,7 @@ export function registerSettingsCommands(registry) {
             return await reply(
               session,
               groupId,
-              { text: `🚨 *User Reports:* Set to *${statusIcon(enableState)}*.` },
+              { text: gt(config, 'bot_replies.feature_reports', { status: statusIcon(enableState) }) },
               rawMsg
             );
           }

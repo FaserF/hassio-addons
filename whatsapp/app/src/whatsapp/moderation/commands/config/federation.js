@@ -1,16 +1,18 @@
 import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from '../../store.js';
 import { reply } from '../../../actions.js';
+import { gt } from '../../engine/translations.js';
 
 export function registerFederationCommands(registry) {
   registry.register(
     'newfed',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
       const name = args.join(' ').trim();
+      const prefix = config.commands?.prefix || '!';
       if (!name) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Usage: \`${config.commands?.prefix || '!'}newfed <name>\`` },
+          { text: gt(config, 'bot_replies.cmd_newfed_usage', { prefix }) },
           rawMsg
         );
         return;
@@ -23,7 +25,7 @@ export function registerFederationCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: `✅ *Federation Created!*\n🌐 *Name:* ${name}\n🔑 *ID:* \`${fedId}\`` },
+        { text: gt(config, 'bot_replies.fed_created', { name, fedId }) },
         rawMsg
       );
     },
@@ -34,18 +36,19 @@ export function registerFederationCommands(registry) {
     'joinfed',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
       const fedId = args[0];
+      const prefix = config.commands?.prefix || '!';
       if (!fedId) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Usage: \`${config.commands?.prefix || '!'}joinfed <fed_id>\`` },
+          { text: gt(config, 'bot_replies.cmd_joinfed_usage', { prefix }) },
           rawMsg
         );
         return;
       }
       const store = loadModerationStore();
       if (!store.federations || !store.federations[fedId]) {
-        await reply(session, groupId, { text: `❌ Federation \`${fedId}\` not found.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.fed_not_found', { fedId }) }, rawMsg);
         return;
       }
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
@@ -55,7 +58,7 @@ export function registerFederationCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: `✅ Group joined federation *${store.federations[fedId].name}*.` },
+        { text: gt(config, 'bot_replies.fed_joined', { name: store.federations[fedId].name }) },
         rawMsg
       );
     },
@@ -68,13 +71,13 @@ export function registerFederationCommands(registry) {
       const store = loadModerationStore();
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       if (!c.federation_id) {
-        await reply(session, groupId, { text: `ℹ️ Group is not in any federation.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.fed_not_in_any') }, rawMsg);
         return;
       }
       delete c.federation_id;
       store.groups[groupId] = c;
       saveModerationStore(store);
-      await reply(session, groupId, { text: `✅ Group left the federation.` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.fed_left') }, rawMsg);
     },
     { adminOnly: true, help: 'Leave current ban federation' }
   );
@@ -88,7 +91,7 @@ export function registerFederationCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `❌ Group is not linked to a valid federation.` },
+          { text: gt(config, 'bot_replies.fed_not_linked') },
           rawMsg
         );
         return;
@@ -101,7 +104,7 @@ export function registerFederationCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Mention a user or reply to their message to federation-ban.` },
+          { text: gt(config, 'bot_replies.fed_mention_required') },
           rawMsg
         );
         return;
@@ -121,7 +124,8 @@ export function registerFederationCommands(registry) {
         session,
         groupId,
         {
-          text: `🚫 User @${targetId} has been *Federation Banned* across federation *${fed.name}*.`,
+          text: gt(config, 'bot_replies.fed_banned_user', { targetId, name: fed.name }),
+          mentions: [`${targetId}@s.whatsapp.net`],
         },
         rawMsg
       );
@@ -135,16 +139,17 @@ export function registerFederationCommands(registry) {
       const store = loadModerationStore();
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       if (!c.federation_id || !store.federations?.[c.federation_id]) {
-        await reply(session, groupId, { text: `❌ Group is not linked to a federation.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.fed_not_linked') }, rawMsg);
         return;
       }
       const fed = store.federations[c.federation_id];
       const targetId = args[0] ? args[0].replace('@', '') : null;
+      const prefix = config.commands?.prefix || '!';
       if (!targetId) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Usage: \`${config.commands?.prefix || '!'}unfban <user_id>\`` },
+          { text: gt(config, 'bot_replies.cmd_unfban_usage', { prefix }) },
           rawMsg
         );
         return;
@@ -154,7 +159,7 @@ export function registerFederationCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: `✅ User @${targetId} unbanned from federation *${fed.name}*.` },
+        { text: gt(config, 'bot_replies.fed_unbanned_user', { targetId, name: fed.name }), mentions: [`${targetId}@s.whatsapp.net`] },
         rawMsg
       );
     },
@@ -168,7 +173,7 @@ export function registerFederationCommands(registry) {
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       const fedId = args[0] || c.federation_id;
       if (!fedId || !store.federations?.[fedId]) {
-        await reply(session, groupId, { text: `ℹ️ No active federation found.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.fed_no_active') }, rawMsg);
         return;
       }
       const fed = store.federations[fedId];
@@ -176,7 +181,11 @@ export function registerFederationCommands(registry) {
         session,
         groupId,
         {
-          text: `🌐 *Federation Info*\n*Name:* ${fed.name}\n*ID:* \`${fed.id}\` \n*Bans:* ${fed.bans?.length || 0}`,
+          text: gt(config, 'bot_replies.fed_info', {
+            name: fed.name,
+            id: fed.id,
+            bans: fed.bans?.length || 0,
+          }),
         },
         rawMsg
       );
@@ -190,7 +199,7 @@ export function registerFederationCommands(registry) {
       const store = loadModerationStore();
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       if (!c.federation_id || !store.federations?.[c.federation_id]) {
-        await reply(session, groupId, { text: `ℹ️ Group is not in a federation.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.fed_not_in_any') }, rawMsg);
         return;
       }
       const fed = store.federations[c.federation_id];
@@ -199,7 +208,7 @@ export function registerFederationCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `✅ No active federation bans in *${fed.name}*.` },
+          { text: gt(config, 'bot_replies.fed_no_bans', { name: fed.name }) },
           rawMsg
         );
         return;
@@ -208,7 +217,7 @@ export function registerFederationCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: `🚫 *Federation Ban List (${fed.name}):*\n${listText}` },
+        { text: gt(config, 'bot_replies.fed_ban_list_header', { name: fed.name, list: listText }) },
         rawMsg
       );
     },
@@ -221,14 +230,14 @@ export function registerFederationCommands(registry) {
       const store = loadModerationStore();
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       if (!c.federation_id || !store.federations?.[c.federation_id]) {
-        await reply(session, groupId, { text: `ℹ️ Group is not in a federation.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.fed_not_in_any') }, rawMsg);
         return;
       }
       const fed = store.federations[c.federation_id];
       await reply(
         session,
         groupId,
-        { text: `👮 *Federation Admins (${fed.name}):*\n👑 Owner: @${fed.owner}` },
+        { text: gt(config, 'bot_replies.fed_admins_header', { name: fed.name, owner: fed.owner }) },
         rawMsg
       );
     },
@@ -238,7 +247,7 @@ export function registerFederationCommands(registry) {
   registry.register(
     'addfedadmin',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
-      await reply(session, groupId, { text: `✅ User added as federation admin.` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.fed_admin_added') }, rawMsg);
     },
     { adminOnly: true, help: 'Add a federation admin' }
   );
@@ -246,7 +255,7 @@ export function registerFederationCommands(registry) {
   registry.register(
     'rmfedadmin',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
-      await reply(session, groupId, { text: `✅ User removed from federation admins.` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.fed_admin_removed') }, rawMsg);
     },
     { adminOnly: true, help: 'Remove a federation admin' }
   );
@@ -257,7 +266,7 @@ export function registerFederationCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: `🌐 *Groups in Federation:* Linked groups active.` },
+        { text: gt(config, 'bot_replies.fed_groups_active') },
         rawMsg
       );
     },

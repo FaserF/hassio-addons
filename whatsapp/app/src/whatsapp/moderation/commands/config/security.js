@@ -1,12 +1,19 @@
 import { loadModerationStore, getGroupModerationConfig, saveModerationStore } from '../../store.js';
 import { reply } from '../../../actions.js';
+import { gt } from '../../engine/translations.js';
 
 export function registerSecurityCommands(registry) {
   registry.register(
     'whitelist',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+      const prefix = config.commands?.prefix || '!';
       if (args.length === 0) {
-        await reply(session, groupId, { text: '⚠️ Usage: `!whitelist <domain>`' }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.cmd_whitelist_usage', { prefix }) },
+          rawMsg
+        );
         return;
       }
       const domain = args[0].toLowerCase();
@@ -20,7 +27,7 @@ export function registerSecurityCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: `✅ Domain \`${domain}\` added to link whitelist.` },
+        { text: gt(config, 'bot_replies.whitelist_added', { domain }) },
         rawMsg
       );
     },
@@ -30,8 +37,14 @@ export function registerSecurityCommands(registry) {
   registry.register(
     'unwhitelist',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+      const prefix = config.commands?.prefix || '!';
       if (args.length === 0) {
-        await reply(session, groupId, { text: '⚠️ Usage: `!unwhitelist <domain>`' }, rawMsg);
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.cmd_unwhitelist_usage', { prefix }) },
+          rawMsg
+        );
         return;
       }
       const domain = args[0].toLowerCase();
@@ -44,7 +57,7 @@ export function registerSecurityCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: `✅ Domain \`${domain}\` removed from whitelist.` },
+        { text: gt(config, 'bot_replies.whitelist_removed', { domain }) },
         rawMsg
       );
     },
@@ -57,12 +70,12 @@ export function registerSecurityCommands(registry) {
       const c = getGroupModerationConfig(groupId);
       const list = c.whitelisted_domains || [];
       if (list.length === 0) {
-        await reply(session, groupId, { text: 'ℹ️ No whitelisted domains set.' }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.whitelist_empty') }, rawMsg);
       } else {
         await reply(
           session,
           groupId,
-          { text: `🌐 *Whitelisted Domains:*\n${list.map((d) => `• \`${d}\``).join('\n')}` },
+          { text: gt(config, 'bot_replies.whitelist_list_header', { list: list.map((d) => `• \`${d}\``).join('\n') }) },
           rawMsg
         );
       }
@@ -143,7 +156,9 @@ export function registerSecurityCommands(registry) {
           session,
           groupId,
           {
-            text: `🛡️ *Security Scan Alert! Threat(s) Found:*\n${threats.map((t) => `• ${t}`).join('\n')}\n\n*Verdict:* 🔴 Suspicious / High Risk`,
+            text: gt(config, 'bot_replies.scan_alert_threats', {
+              threats: threats.map((t) => `• ${t}`).join('\n'),
+            }),
           },
           rawMsg
         );
@@ -160,7 +175,7 @@ export function registerSecurityCommands(registry) {
         session,
         groupId,
         {
-          text: `🛡️ *Security Scan Results:*\n• *Target:* ${typeDesc}\n• *Threats Detected:* 0\n• *VirusTotal / Malicious Signatures:* Clean 🟢\n\n*Verdict:* Safe to open 🟢`,
+          text: gt(config, 'bot_replies.scan_results_clean', { target: typeDesc }),
         },
         rawMsg
       );
@@ -190,7 +205,9 @@ export function registerSecurityCommands(registry) {
         session,
         groupId,
         {
-          text: `🔗 *Anti-Spam Links:* Automatically removing invite links is now *${c.anti_spam_links_enabled ? 'ENABLED' : 'DISABLED'}*.`,
+          text: gt(config, 'bot_replies.anti_spam_links_status', {
+            status: c.anti_spam_links_enabled ? 'ENABLED' : 'DISABLED',
+          }),
         },
         rawMsg
       );
@@ -211,14 +228,17 @@ export function registerSecurityCommands(registry) {
       if (!c.blacklisted_words) c.blacklisted_words = [];
       if (!word) {
         if (c.blacklisted_words.length === 0) {
-          await reply(session, groupId, { text: `ℹ️ No blacklisted words configured.` }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.blacklist_empty') }, rawMsg);
           return;
         }
         await reply(
           session,
           groupId,
           {
-            text: `🚫 *Blacklisted Words (${c.blacklisted_words.length}):*\n${c.blacklisted_words.map((w) => `• ${w}`).join('\n')}`,
+            text: gt(config, 'bot_replies.blacklist_list_header', {
+              count: c.blacklisted_words.length,
+              list: c.blacklisted_words.map((w) => `• ${w}`).join('\n'),
+            }),
           },
           rawMsg
         );
@@ -226,7 +246,7 @@ export function registerSecurityCommands(registry) {
       }
       if (!c.blacklisted_words.includes(word)) c.blacklisted_words.push(word);
       saveModerationStore(store);
-      await reply(session, groupId, { text: `✅ Added \`${word}\` to blacklisted words.` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.blacklist_added', { word }) }, rawMsg);
     },
     { help: 'Manage group blacklisted words' }
   );
@@ -243,7 +263,7 @@ export function registerSecurityCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: `✅ Removed \`${word}\` from blacklisted words.` },
+        { text: gt(config, 'bot_replies.blacklist_removed', { word }) },
         rawMsg
       );
     },
@@ -258,7 +278,7 @@ export function registerSecurityCommands(registry) {
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       c.blacklist_action = action;
       saveModerationStore(store);
-      await reply(session, groupId, { text: `✅ Blacklist action set to *${action}*.` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.blacklist_action_set', { action }) }, rawMsg);
     },
     { adminOnly: true, help: 'Set action for blacklisted word hits' }
   );
@@ -269,7 +289,7 @@ export function registerSecurityCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: '🌊 *Flood Protection:* Active and monitoring message frequency.' },
+        { text: gt(config, 'bot_replies.flood_status_active') },
         rawMsg
       );
     },

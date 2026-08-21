@@ -10,6 +10,11 @@ import {
 import { isUserVerified } from '../engine/captcha.js';
 import { processAiModeration } from '../ai.js';
 import { gt } from '../engine/translations.js';
+import { parseDuration, formatDuration } from './admin/mutes.js';
+
+const _rollRateLimit = new Map();
+const _timerRateLimit = new Map();
+const _pendingTimers = new Map();
 
 export const LOCK_TYPES = [
   'image',
@@ -454,7 +459,7 @@ export function registerInfoCommands(registry) {
 
   registry.register(
     'adminlist',
-    async (session, groupId, _u, _a, _c, _ia, rawMsg) => {
+    async (session, groupId, _u, _a, config, _ia, rawMsg) => {
       try {
         const groupMeta = await session.sock.groupMetadata(groupId);
         const admins = groupMeta.participants.filter(
@@ -462,7 +467,7 @@ export function registerInfoCommands(registry) {
         );
 
         if (admins.length === 0) {
-          await reply(session, groupId, { text: '❌ No admins found.' }, rawMsg);
+          await reply(session, groupId, { text: gt(config, 'bot_replies.no_admins_found') }, rawMsg);
           return;
         }
 
@@ -488,7 +493,7 @@ export function registerInfoCommands(registry) {
 
         await reply(session, groupId, { text, mentions: admins.map((a) => a.id) }, rawMsg);
       } catch (e) {
-        await reply(session, groupId, { text: '❌ Failed to fetch admin list.' }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.fetch_admin_list_failed') }, rawMsg);
       }
     },
     { adminOnly: false, aliases: ['admins', 'admin'], help: 'List all group administrators' }
@@ -496,9 +501,9 @@ export function registerInfoCommands(registry) {
 
   registry.register(
     'locktypes',
-    async (session, groupId, _u, _a, _c, _ia, rawMsg) => {
+    async (session, groupId, _u, _a, config, _ia, rawMsg) => {
       const list = LOCK_TYPES.map((t) => `• \`${t}\``).join('\n');
-      await reply(session, groupId, { text: `🔒 *Available Lock Types:*\n${list}` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.available_lock_types', { list }) }, rawMsg);
     },
     { adminOnly: false, help: 'List all available content lock types' }
   );
@@ -512,12 +517,16 @@ export function registerInfoCommands(registry) {
         if (v && v.enabled) activeLocks.push(k);
       }
       if (activeLocks.length === 0) {
-        await reply(session, groupId, { text: `🔓 All locks are currently disabled.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.all_locks_disabled') }, rawMsg);
       } else {
         await reply(
           session,
           groupId,
-          { text: `🔒 *Active Locks:*\n` + activeLocks.map((l) => `• ${l}`).join('\n') },
+          {
+            text: gt(config, 'bot_replies.active_locks_header', {
+              list: activeLocks.map((l) => `• ${l}`).join('\n'),
+            }),
+          },
           rawMsg
         );
       }
@@ -544,7 +553,7 @@ export function registerInfoCommands(registry) {
             await reply(
               session,
               groupId,
-              { text: `📜 *Rules Interpretation:*\n\n${aiReply}` },
+              { text: gt(config, 'bot_replies.rules_interpretation', { reply: aiReply }) },
               rawMsg
             );
             return;
@@ -553,11 +562,11 @@ export function registerInfoCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: `📜 *Group Rules:*\n\n${rulesText}\n\n_(AI interpretation not available)_` },
+          { text: gt(config, 'bot_replies.group_rules_with_ai_fallback', { rules: rulesText }) },
           rawMsg
         );
       } else {
-        await reply(session, groupId, { text: `📜 *Group Rules:*\n\n${rulesText}` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.group_rules', { rules: rulesText }) }, rawMsg);
       }
     },
     { help: 'View group rules or ask a question about them' }
@@ -598,6 +607,17 @@ export function registerInfoCommands(registry) {
   registry.register(
     'roll',
     async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
+      // Rate limiting: maximum 3 rolls per 10 seconds per user
+      const rollUserKey = `${groupId || 'dm'}:${userId}`;
+      const now = Date.now();
+      let rollHits = (_rollRateLimit.get(rollUserKey) || []).filter((t) => now - t < 10000);
+      if (rollHits.length >= 3 && !isAdminUser && !rawMsg?.key?.fromMe) {
+        await reply(session, groupId, { text: gt(config, 'bot_replies.roll_rate_limit') }, rawMsg);
+        return;
+      }
+      rollHits.push(now);
+      _rollRateLimit.set(rollUserKey, rollHits);
+
       const argsStr = (args || []).join(' ').trim();
       const lowerArgs = argsStr.toLowerCase();
 
@@ -951,6 +971,93 @@ export function registerInfoCommands(registry) {
       adminOnly: false,
       aliases: ['coinflip', 'münze', 'muenze', 'flip'],
       help: 'Flip a coin (Heads or Tails 🪙)',
+    }
+  );
+
+  registry.register(
+    'timer',
+    async (session, groupId, userId, args, config, isAdminUser, rawMsg) => {
+      const prefix = config.commands?.prefix || '!';
+      if (!args || args.length === 0) {
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.cmd_timer_usage', { prefix }) },
+          rawMsg
+        );
+        return;
+      }
+
+      // Rate limiting: maximum 3 timers per minute per user
+      const timerUserKey = `${groupId || 'dm'}:${userId}`;
+      const now = Date.now();
+      let timerHits = (_timerRateLimit.get(timerUserKey) || []).filter((t) => now - t < 60000);
+      if (timerHits.length >= 3 && !isAdminUser && !rawMsg?.key?.fromMe) {
+        await reply(session, groupId, { text: gt(config, 'bot_replies.timer_rate_limit') }, rawMsg);
+        return;
+      }
+
+      const durationStr = args[0];
+      const durationMs = parseDuration(durationStr);
+      // Minimum timer duration is 30 seconds
+      if (!durationMs || durationMs < 30000) {
+        await reply(
+          session,
+          groupId,
+          { text: gt(config, 'bot_replies.timer_min_duration', { prefix }) },
+          rawMsg
+        );
+        return;
+      }
+      // Maximum timer duration is 24 hours
+      if (durationMs > 86400000) {
+        await reply(session, groupId, { text: gt(config, 'bot_replies.timer_max_duration') }, rawMsg);
+        return;
+      }
+
+      timerHits.push(now);
+      _timerRateLimit.set(timerUserKey, timerHits);
+
+      const reason = args.slice(1).join(' ').trim();
+      const reasonDesc = reason ? ` for "${reason}"` : '';
+
+      await reply(
+        session,
+        groupId,
+        {
+          text: gt(config, 'bot_replies.timer_set', {
+            duration: formatDuration(durationMs),
+            reason: reasonDesc,
+          }),
+        },
+        rawMsg
+      );
+
+      const timerKey = `timer:${groupId}:${userId}:${Date.now()}`;
+      const tId = setTimeout(async () => {
+        _pendingTimers.delete(timerKey);
+        const cleanId = userId ? userId.split('@')[0].replace(/\D/g, '') : '';
+        const targetJid = cleanId ? `${cleanId}@s.whatsapp.net` : groupId;
+        await reply(
+          session,
+          groupId,
+          {
+            text: gt(config, 'bot_replies.timer_expired', {
+              user: cleanId,
+              reason: reason || 'Timer',
+            }),
+            mentions: [targetJid],
+          },
+          rawMsg
+        );
+      }, durationMs);
+      if (tId.unref) tId.unref();
+      _pendingTimers.set(timerKey, tId);
+    },
+    {
+      adminOnly: false,
+      aliases: ['remind', 'wecker', 'countdown'],
+      help: 'Set a countdown timer or reminder (min 30s, max 3/min)',
     }
   );
 }

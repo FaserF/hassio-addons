@@ -835,6 +835,69 @@ try {
     '✅ PASSED: Synthetic messages (location/contact/poll) are skipped by auto-translation'
   );
 
+  // Test 14: Captcha retry limit (3 failed attempts triggers kick)
+  const captchaRetryGroupId = '1203630888888888@g.us';
+  const retryGroupConfig = {
+    ...getDefaultModerationStore().groups['default'],
+    enabled: true,
+    greetings: {
+      welcome_enabled: true,
+      captcha_enabled: true,
+      captcha_mode: 'code',
+      captcha_timeout_seconds: 60,
+    },
+  };
+  setGroupModerationConfig(captchaRetryGroupId, retryGroupConfig);
+
+  let kickExecuted = false;
+  const mockRetrySession = {
+    ...mockSession,
+    sock: {
+      ...mockSession.sock,
+      groupParticipantsUpdate: async (gId, participants, action) => {
+        if (action === 'remove') kickExecuted = true;
+      },
+    },
+  };
+
+  // Add pending captcha challenge
+  const { pendingCaptchas } = await import('../src/whatsapp/moderation/engine/captcha.js');
+  pendingCaptchas.set(`${captchaRetryGroupId}:4917633333333`, {
+    answer: 'SECRET',
+    mode: 'code',
+    timestamp: Date.now(),
+    delivered: true,
+    attempts: 0,
+  });
+
+  // Attempt 1: wrong code
+  await handleModerationMessage(mockRetrySession, {
+    sender: captchaRetryGroupId,
+    sender_number: '4917633333333',
+    content: 'WRONG1',
+    raw: { key: { id: 'cMsg1' } },
+  });
+  assert.strictEqual(kickExecuted, false, 'First failed captcha attempt should not kick user');
+
+  // Attempt 2: wrong code
+  await handleModerationMessage(mockRetrySession, {
+    sender: captchaRetryGroupId,
+    sender_number: '4917633333333',
+    content: 'WRONG2',
+    raw: { key: { id: 'cMsg2' } },
+  });
+  assert.strictEqual(kickExecuted, false, 'Second failed captcha attempt should not kick user');
+
+  // Attempt 3: wrong code -> triggers kick
+  await handleModerationMessage(mockRetrySession, {
+    sender: captchaRetryGroupId,
+    sender_number: '4917633333333',
+    content: 'WRONG3',
+    raw: { key: { id: 'cMsg3' } },
+  });
+  assert.strictEqual(kickExecuted, true, 'Third failed captcha attempt must trigger kick penalty');
+  console.log('✅ PASSED: Captcha retry limit correctly kicks user after 3 failed attempts');
+
   // Reset store
   saveModerationStore(getDefaultModerationStore());
   console.log('='.repeat(50) + '\n✅ ALL MODERATION TESTS PASSED\n');

@@ -18,6 +18,23 @@ const userCommandCooldowns = new Map();
 // Window rate limit map: key `${groupId}:${userId}` -> Array<timestamps>
 const userCommandWindows = new Map();
 
+/**
+ * Periodically purges stale command rate-limiting entries (>1 hour inactive).
+ */
+export function cleanupCommandRateLimiters() {
+  const now = Date.now();
+  for (const [key, ts] of userCommandCooldowns.entries()) {
+    if (now - ts > 60 * 60 * 1000) userCommandCooldowns.delete(key);
+  }
+  for (const [key, arr] of userCommandWindows.entries()) {
+    const valid = (arr || []).filter((t) => now - t < 5000);
+    if (valid.length === 0) userCommandWindows.delete(key);
+    else userCommandWindows.set(key, valid);
+  }
+}
+
+setInterval(cleanupCommandRateLimiters, 10 * 60 * 1000).unref?.();
+
 export class CommandRegistry {
   constructor() {
     this.commands = {};
@@ -81,7 +98,7 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
   // Verification guard: in group chats, non-admin unverified users cannot execute commands
   if (!isPrivateChat && !isAdminUser && config.greetings?.captcha_enabled) {
     const rawUserId = senderJid ? senderJid.split('@')[0].replace(/\D/g, '') : '';
-    if (rawUserId && !isUserVerified(groupId, rawUserId, session, msg)) {
+    if (!rawUserId || !isUserVerified(groupId, rawUserId, session, msg)) {
       logger.debug(
         { groupId, userId: rawUserId },
         'Command skipped: user is not yet verified by captcha'
@@ -101,8 +118,13 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
 
   if (!rawText) return false;
 
-  // Allow self/fromMe command execution if the user sent it, but block bot notification/diagnostic/feedback responses
+  // STRICT LOOP & BOT-RESPONSE GUARD:
+  // Outgoing messages from bot or self account must NEVER execute prefixless commands or bot response templates
   if (msg?.key?.fromMe) {
+    const hasCommandPrefix = rawText.startsWith(prefix) || rawText.startsWith('/') || rawText.startsWith('#');
+    if (!hasCommandPrefix) {
+      return false;
+    }
     const BOT_PREFIXES = [
       '⚠️',
       '🔒',
@@ -117,11 +139,23 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
       '✅',
       'ℹ️',
       '🤖',
+      '🎲',
+      '🎯',
+      '🪙',
+      '📖',
+      '📊',
+      '📋',
+      '👋',
+      '👥',
+      '🚫',
+      '🎙️',
+      'Current ',
+      'Welcome ',
+      'Goodbye ',
+      '*[TEST PACK',
+      '---',
     ];
-    const isBotResponse =
-      BOT_PREFIXES.some((p) => rawText.startsWith(p)) ||
-      rawText.startsWith('*[TEST PACK') ||
-      rawText.includes('---');
+    const isBotResponse = BOT_PREFIXES.some((p) => rawText.startsWith(p));
     if (isBotResponse) return false;
   }
 
@@ -161,6 +195,11 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
         (c) => c.command.toLowerCase().replace(/^[!/#]+/, '') === cmdName
       );
 
+      // Ignore hashtag lines if they do not match any saved note
+      if (usedPrefix === '#' && !currentNotes[cmdName]) {
+        continue;
+      }
+
       // Check if command is known, is a saved note, is custom, or line is strictly a single short command line
       if (
         registry.getCommand(cmdName) !== undefined ||
@@ -170,13 +209,12 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
       ) {
         validCommandLines.push(normalizedCmd);
       }
-    } else if (isPrivateChat) {
+    } else if (isPrivateChat && !msg?.key?.fromMe) {
+      // In private chat, only allow explicit incoming user commands without prefix if they match known safe commands
       const firstWord = line.split(/\s+/)[0].replace(/@.*$/, '').toLowerCase();
-      const currentStore = loadModerationStore();
-      const currentGroupCfg = getGroupModerationConfig(groupId) || {};
-      const currentNotes = currentGroupCfg.notes || currentStore.groups?.[groupId]?.notes || {};
-      if (registry.getCommand(firstWord) !== undefined || Boolean(currentNotes[firstWord])) {
-        validCommandLines.push(line);
+      const safePrefixless = new Set(['help', 'info', 'ping', 'status', 'rules', 'about']);
+      if (safePrefixless.has(firstWord) && registry.getCommand(firstWord) !== undefined) {
+        validCommandLines.push(`${prefix}${line}`);
       }
     }
   }
@@ -185,35 +223,37 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
 
   // Rate Limiting & Cooldown Protection for non-admin users
   if (!isAdminUser && !msg?.key?.fromMe) {
-    const userKey = `${groupId || 'dm'}:${senderJid}`;
+    const rawSender = senderJid ? senderJid.split('@')[0].replace(/\D/g, '') : 'anon';
+    const userKey = `${groupId || 'dm'}:${rawSender}`;
     const now = Date.now();
     const windowMs = 5000;
     let windowHits = userCommandWindows.get(userKey) || [];
     windowHits = windowHits.filter((t) => now - t < windowMs);
-    windowHits.push(now);
-    userCommandWindows.set(userKey, windowHits);
 
     // Max 3 commands per 5 seconds
-    if (windowHits.length > 3) {
+    if (windowHits.length >= 3) {
       logger.warn({ userKey }, '⏳ User exceeded command rate limit (cooldown active)');
-      const lastWarning = userCommandCooldowns.get(userKey) || 0;
-      if (now - lastWarning > 10000) {
-        userCommandCooldowns.set(userKey, now);
-        await reply(
-          session,
-          groupId,
-          {
-            text: gt(config, 'bot_replies.command_cooldown_warning'),
-          },
-          msg
-        );
-      }
+      await reply(
+        session,
+        groupId,
+        {
+          text: gt(config, 'bot_replies.command_cooldown_warning'),
+        },
+        msg
+      );
       return true;
     }
+
+    windowHits.push(now);
+    userCommandWindows.set(userKey, windowHits);
+    userCommandCooldowns.set(userKey, now);
   }
 
   const multiCmdEnabled = Boolean(config.commands?.multi_command_enabled);
-  const linesToProcess = multiCmdEnabled ? validCommandLines : [validCommandLines[0]];
+  // Cap multi-command batch execution to maximum 3 commands per message to prevent spamming
+  const linesToProcess = multiCmdEnabled
+    ? validCommandLines.slice(0, 3)
+    : [validCommandLines[0]];
 
   // Fast path for single command line
   if (linesToProcess.length === 1) {

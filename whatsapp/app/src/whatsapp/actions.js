@@ -86,8 +86,8 @@ export async function checkBotOutboundSpamGuard(session, jid, options = {}) {
   timestamps.push(now);
   botOutboundWindows.set(targetJid, timestamps);
 
-  // 4. Check if limit is exceeded
-  if (timestamps.length >= maxMessagesIn5s) {
+  // 4. Check if limit is exceeded (strictly greater than maxMessagesIn5s)
+  if (timestamps.length > maxMessagesIn5s) {
     let memberCount = 2; // Default for 1:1 chats
     if (targetJid.includes('@g.us')) {
       memberCount = 10; // Default estimate for groups

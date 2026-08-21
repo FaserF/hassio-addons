@@ -158,11 +158,12 @@ export function registerConfigCommands(registry) {
     'filter',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
       const text = args.join(' ');
+      const prefix = config.commands?.prefix || '!';
       if (!text.includes('->')) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Usage: \`${config.commands.prefix}filter <trigger> -> <response>\`` },
+          { text: gt(config, 'bot_replies.usage_filter', { prefix }) },
           rawMsg
         );
         return;
@@ -177,7 +178,7 @@ export function registerConfigCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: `✅ Added auto-responder filter for *"${trigger}"*.` },
+        { text: gt(config, 'bot_replies.filter_added', { trigger }) },
         rawMsg
       );
     },
@@ -187,11 +188,12 @@ export function registerConfigCommands(registry) {
   registry.register(
     'stop',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+      const prefix = config.commands?.prefix || '!';
       if (args.length === 0) {
         await reply(
           session,
           groupId,
-          { text: `⚠️ Usage: \`${config.commands.prefix}stop <trigger>\`` },
+          { text: gt(config, 'bot_replies.usage_stop', { prefix }) },
           rawMsg
         );
         return;
@@ -202,9 +204,9 @@ export function registerConfigCommands(registry) {
       if (Array.isArray(c.filters)) {
         c.filters = c.filters.filter((f) => f.trigger.toLowerCase() !== trigger);
         saveModerationStore(store);
-        await reply(session, groupId, { text: `✅ Removed filter for *"${trigger}"*.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.filter_stopped', { trigger }) }, rawMsg);
       } else {
-        await reply(session, groupId, { text: `❌ Filter not found.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.filter_not_found') }, rawMsg);
       }
     },
     { adminOnly: true, help: 'Remove auto-reply filter' }
@@ -217,13 +219,15 @@ export function registerConfigCommands(registry) {
       const c = store.groups[groupId] || getGroupModerationConfig(groupId);
       const filters = c.filters || [];
       if (filters.length === 0) {
-        await reply(session, groupId, { text: '💬 No active filters in this group.' }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.no_filters') }, rawMsg);
       } else {
         await reply(
           session,
           groupId,
           {
-            text: `💬 *Active Filters:*\n${filters.map((f) => `• "${f.trigger}" → ${f.response}`).join('\n')}`,
+            text: gt(config, 'bot_replies.filters_list', {
+              list: filters.map((f) => `• "${f.trigger}" → ${f.response}`).join('\n'),
+            }),
           },
           rawMsg
         );
@@ -273,7 +277,7 @@ export function registerConfigCommands(registry) {
           session,
           groupId,
           {
-            text: `⚠️ You cannot report yourself. Please mention (@user) or reply to the user you want to report.`,
+            text: gt(config, 'bot_replies.report_self_forbidden'),
           },
           rawMsg
         );
@@ -281,7 +285,7 @@ export function registerConfigCommands(registry) {
       }
 
       if (targetJid && isSameUser(targetJid, session?.sock?.user?.id, session)) {
-        await reply(session, groupId, { text: `⚠️ You cannot report the bot account.` }, rawMsg);
+        await reply(session, groupId, { text: gt(config, 'bot_replies.report_bot_forbidden') }, rawMsg);
         return;
       }
 
@@ -325,7 +329,11 @@ export function registerConfigCommands(registry) {
         session,
         groupId,
         {
-          text: `🚨 *Report from ${reporterLabel}*${targetMentionStr}\nAdmins requested.\nReason: ${reasonText}`,
+          text: gt(config, 'bot_replies.report_group_alert', {
+            reporter: reporterLabel,
+            target: targetMentionStr,
+            reason: reasonText,
+          }),
           mentions: [
             userId + '@s.whatsapp.net',
             ...(targetJid ? [targetJid] : []),
@@ -366,12 +374,13 @@ export function registerConfigCommands(registry) {
   registry.register(
     'setlang',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+      const prefix = config.commands?.prefix || '!';
       if (args.length === 0) {
         await reply(
           session,
           groupId,
           {
-            text: `⚠️ Usage: \`${config.commands.prefix}setlang <language_code>\`\nExamples: en, de, es, fr, ar, zh, ja`,
+            text: gt(config, 'bot_replies.cmd_setlang_usage', { prefix }),
           },
           rawMsg
         );
@@ -513,8 +522,9 @@ export function registerConfigCommands(registry) {
   registry.register(
     'setwarnlimit',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
+      const prefix = config.commands?.prefix || '!';
       if (args.length === 0 || isNaN(parseInt(args[0], 10))) {
-        await reply(session, groupId, { text: '⚠️ Usage: `!setwarnlimit <1-10>`' }, rawMsg);
+        await reply(session, groupId, { text: `⚠️ Usage: \`${prefix}setwarnlimit <1-10>\`` }, rawMsg);
         return;
       }
       const limit = Math.max(1, Math.min(10, parseInt(args[0], 10)));
@@ -523,7 +533,7 @@ export function registerConfigCommands(registry) {
       if (!c.warnings) c.warnings = {};
       c.warnings.limit = limit;
       saveModerationStore(store);
-      await reply(session, groupId, { text: `✅ Warning limit set to *${limit}*.` }, rawMsg);
+      await reply(session, groupId, { text: gt(config, 'bot_replies.warn_limit_set', { limit }) }, rawMsg);
     },
     { adminOnly: true, help: 'Set group warning threshold limit' }
   );
@@ -532,11 +542,12 @@ export function registerConfigCommands(registry) {
     'setwarnaction',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
       const action = (args[0] || '').toLowerCase();
+      const prefix = config.commands?.prefix || '!';
       if (!['kick', 'mute', 'ban', 'remove'].includes(action)) {
         await reply(
           session,
           groupId,
-          { text: '⚠️ Usage: `!setwarnaction <kick|mute|ban>`' },
+          { text: `⚠️ Usage: \`${prefix}setwarnaction <kick|mute|ban>\`` },
           rawMsg
         );
         return;
@@ -549,7 +560,7 @@ export function registerConfigCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: `✅ Warning action set to *${action.toUpperCase()}*.` },
+        { text: gt(config, 'bot_replies.warn_action_set', { action: action.toUpperCase() }) },
         rawMsg
       );
     },
@@ -578,7 +589,7 @@ export function registerConfigCommands(registry) {
       await reply(
         session,
         groupId,
-        { text: `🌐 Auto-translation is now *${c.translation.enabled ? 'ENABLED' : 'DISABLED'}*.` },
+        { text: gt(config, 'bot_replies.auto_translation_toggle', { status: c.translation.enabled ? 'ENABLED' : 'DISABLED' }) },
         rawMsg
       );
     },

@@ -166,7 +166,7 @@ export function registerMuteCommands(registry) {
           session,
           groupId,
           {
-            text: `⚠️ Usage: \`${config.commands.prefix}tmute <duration> [@user]\`\nExample: \`${config.commands.prefix}tmute 1h @user\``,
+            text: gt(config, 'bot_replies.cmd_tmute_usage', { prefix: config.commands?.prefix || '!' }),
           },
           rawMsg
         );
@@ -178,7 +178,7 @@ export function registerMuteCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: '❌ Invalid duration. Use format: 10s, 30m, 12h, 1d' },
+          { text: gt(config, 'bot_replies.invalid_duration') },
           rawMsg
         );
         return;
@@ -236,7 +236,7 @@ export function registerMuteCommands(registry) {
           reply(
             session,
             groupId,
-            { text: `🔊 Temporary mute for @${id} has expired.`, mentions: [jid] },
+            { text: gt(config, 'bot_replies.tmute_expired', { id }), mentions: [jid] },
             rawMsg
           );
         }, durationMs);
@@ -278,7 +278,7 @@ export function registerMuteCommands(registry) {
           session,
           groupId,
           {
-            text: `⚠️ Usage: \`${config.commands.prefix}tban <duration> [@user]\`\nExample: \`${config.commands.prefix}tban 1d @user\`\nDurations: 10s, 30m, 12h, 1d`,
+            text: gt(config, 'bot_replies.cmd_tban_usage', { prefix: config.commands?.prefix || '!' }),
           },
           rawMsg
         );
@@ -290,7 +290,7 @@ export function registerMuteCommands(registry) {
         await reply(
           session,
           groupId,
-          { text: '❌ Invalid duration. Use format: 10s, 30m, 12h, 1d' },
+          { text: gt(config, 'bot_replies.invalid_duration') },
           rawMsg
         );
         return;
@@ -327,7 +327,7 @@ export function registerMuteCommands(registry) {
             session,
             groupId,
             {
-              text: `⏰ Temporary ban for @${targetId} has expired (${formatDuration(durationMs)}). They may rejoin the group.`,
+              text: gt(config, 'bot_replies.tban_expired', { id: targetId, duration: formatDuration(durationMs) }),
               mentions: [targetJid],
             },
             rawMsg
@@ -341,7 +341,7 @@ export function registerMuteCommands(registry) {
         session,
         groupId,
         {
-          text: `⏱️ Temporarily banned for ${formatDuration(durationMs)}.\nReason: ${reason}`,
+          text: gt(config, 'bot_replies.tban_active_notice', { duration: formatDuration(durationMs), reason }),
           mentions: validTargets,
         },
         rawMsg

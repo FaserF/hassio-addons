@@ -11,6 +11,8 @@ import { gt, recordTranslationMap, shouldSkipDuplicateTranslation } from './tran
 import { executePenalty, issueUserWarning } from './penalties.js';
 import {
   findPendingCaptcha,
+  clearPendingCaptcha,
+  recentKickReasons,
   isUserVerified,
   cleanCaptchaInput,
   pendingCaptchas,
@@ -25,6 +27,7 @@ import { resolveCanonicalUserKey } from '../../../utils/security.js';
 // This is defense-in-depth against loops where a bot response contains a trigger substring.
 const TRIGGER_COOLDOWN_MS = 30_000;
 const _triggerCooldowns = new Map();
+const _captchaReminderCooldowns = new Map();
 
 export async function handleModerationMessage(session, event) {
   const store = loadModerationStore();
@@ -75,6 +78,243 @@ export async function handleModerationMessage(session, event) {
     return false;
   }
 
+  // In group chats, ONLY actual WhatsApp Group Admins or the bot itself bypass destructive moderation rules.
+  const isGroupAdminUser = Boolean(
+    (event.is_group ? event.is_group_admin : event.is_admin) || rawMsg?.key?.fromMe
+  );
+
+  // 1. TOP PRIORITY: Captcha & Verification check for non-admin users
+  const isCaptchaEnabled = Boolean(config.greetings?.captcha_enabled);
+  if (isCaptchaEnabled && !isGroupAdminUser) {
+    const verified = isUserVerified(groupId, userId, session, rawMsg);
+    if (!verified) {
+      const captchaEntry = findPendingCaptcha(groupId, userId, session, rawMsg);
+      let expectedUpper = '';
+
+      if (captchaEntry) {
+        const { key: captchaKey, captchaObj } = captchaEntry;
+        const cleanAnswer = String(captchaObj.answer || '')
+          .trim()
+          .toLowerCase();
+        expectedUpper = String(captchaObj.answer || '').toUpperCase();
+
+        const rawInput = text.trim().toLowerCase();
+        const cleanInput = cleanCaptchaInput(text);
+        const words = text.split(/\s+/).map((w) => cleanCaptchaInput(w));
+        const noFormatText = text.toLowerCase().replace(/[*_~`'"\s]/g, '');
+
+        const isMatch =
+          rawInput === cleanAnswer ||
+          cleanInput === cleanAnswer ||
+          words.includes(cleanAnswer) ||
+          noFormatText === cleanAnswer;
+
+        if (isMatch) {
+          clearTimeout(captchaObj.timeoutHandle);
+          pendingCaptchas.delete(captchaKey);
+
+          try {
+            const verRecord = { verified: true, timestamp: Date.now(), mode: 'auto' };
+            config.verified_users = config.verified_users || {};
+            config.verified_users[userId] = verRecord;
+            const cleanId = userId.replace(/\D/g, '');
+            if (cleanId) config.verified_users[cleanId] = verRecord;
+            const canonical = resolveCanonicalUserKey(userId, session);
+            if (canonical) config.verified_users[canonical] = verRecord;
+            store.groups[groupId] = config;
+            saveModerationStore(store);
+          } catch (storeErr) {
+            logger.warn({ error: storeErr.message }, 'Failed to record captcha verification');
+          }
+
+          let groupName = groupId.split('@')[0];
+          if (session?.sock?.groupMetadata) {
+            try {
+              const meta = await session.sock.groupMetadata(groupId);
+              if (meta?.subject) groupName = meta.subject;
+            } catch (_e) {}
+          }
+
+          const captchaTargetMode = config.greetings?.captcha_target || 'private';
+          const userPhoneJid = `${userId.replace(/\D/g, '')}@s.whatsapp.net`;
+          const confirmText = gt(config, 'bot_replies.captcha_verified_full', { group: groupName });
+
+          if (captchaTargetMode === 'private') {
+            let dmSent = false;
+            try {
+              await session.sock.sendMessage(userPhoneJid, { text: confirmText });
+              dmSent = true;
+            } catch (_err) {}
+
+            await reply(
+              session,
+              groupId,
+              {
+                text: gt(config, 'bot_replies.captcha_verified_dm', { user: userId }),
+                mentions: [`${userId}@s.whatsapp.net`],
+              },
+              rawMsg
+            );
+
+            if (!dmSent) {
+              await reply(
+                session,
+                groupId,
+                { text: `@${userId} ${confirmText}`, mentions: [`${userId}@s.whatsapp.net`] },
+                rawMsg
+              );
+            }
+          } else {
+            await reply(
+              session,
+              groupId,
+              {
+                text: gt(config, 'bot_replies.captcha_verified_group', { user: userId }),
+                mentions: [`${userId}@s.whatsapp.net`],
+              },
+              rawMsg
+            );
+          }
+          return true; // Captcha solved, consume message
+        }
+
+        // Increment failed attempts counter
+        captchaObj.attempts = (captchaObj.attempts || 0) + 1;
+        if (captchaObj.attempts >= 3) {
+          logger.warn(
+            { groupId, userId, attempts: captchaObj.attempts },
+            '🚫 Captcha failed 3 times — executing kick penalty'
+          );
+          clearPendingCaptcha(groupId, userId, session);
+          const kickReason = {
+            reason: gt(config, 'bot_replies.captcha_failed_attempts'),
+            expires: Date.now() + 120000,
+          };
+          recentKickReasons.set(getWindowKey(groupId, userId), kickReason);
+          const cleanDigits = userId.replace(/\D/g, '');
+          if (cleanDigits) recentKickReasons.set(getWindowKey(groupId, cleanDigits), kickReason);
+
+          if (rawMsg?.key?.id) {
+            try {
+              await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+            } catch (_e) {}
+          }
+          await executePenalty(
+            session,
+            groupId,
+            userId,
+            'kick',
+            'Captcha failed 3 times',
+            rawMsg
+          );
+          return true;
+        }
+      }
+
+      // Delete message from unverified user
+      if (rawMsg?.key?.id) {
+        try {
+          await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+        } catch (e) {}
+      }
+
+      logger.info({ groupId, userId, text }, 'Blocked message from unverified user');
+
+      // Rate limit reminders: at most 1 reminder per 5 seconds per user
+      const remKey = `${groupId}:${userId}`;
+      const now = Date.now();
+      const lastReminder = _captchaReminderCooldowns.get(remKey) || 0;
+      if (now - lastReminder > 5000) {
+        _captchaReminderCooldowns.set(remKey, now);
+        const reminderText = expectedUpper
+          ? gt(config, 'bot_replies.captcha_reminder_pending', { user: userId, code: expectedUpper })
+          : gt(config, 'bot_replies.captcha_reminder_required', { user: userId });
+
+        await reply(
+          session,
+          groupId,
+          {
+            text: reminderText,
+            mentions: [`${userId}@s.whatsapp.net`],
+          },
+          rawMsg
+        );
+      }
+
+      return true; // Consume message completely: no STT, no translation, no command execution
+    }
+  }
+
+  // 2. Muted Users check — delete messages from muted users
+  if (config.muted_users && config.muted_users[userId]) {
+    const muteEntry = config.muted_users[userId];
+    if (!muteEntry.until || muteEntry.until > Date.now()) {
+      if (rawMsg?.key?.id) {
+        try {
+          await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+        } catch (e) {}
+      }
+      return true;
+    } else {
+      delete config.muted_users[userId];
+      store.groups[groupId] = config;
+      saveModerationStore(store);
+    }
+  }
+
+  // 3. Flood Protection check
+  const floodConfig = config.antispam?.flood_protection;
+  if (floodConfig?.enabled && !isGroupAdminUser) {
+    const key = getWindowKey(groupId, userId);
+    const now = Date.now();
+    const windowMs = (floodConfig.window_seconds || 5) * 1000;
+    const timestamps = (userFloodMap.get(key) || []).filter((t) => now - t < windowMs);
+    timestamps.push(now);
+    userFloodMap.set(key, timestamps);
+
+    if (timestamps.length >= (floodConfig.max_messages || 5)) {
+      if (rawMsg?.key?.id) {
+        try {
+          await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+        } catch (e) {}
+      }
+      await executePenalty(
+        session,
+        groupId,
+        userId,
+        floodConfig.action || 'mute',
+        `Flood protection triggered (${timestamps.length} msgs in ${floodConfig.window_seconds || 5}s)`,
+        rawMsg
+      );
+      return true;
+    }
+  }
+
+  // 4. Suspicious spam/drugs/nsfw name pattern
+  if (config.name_ban_enabled !== false && !isGroupAdminUser) {
+    const senderName = event.sender_name || rawMsg?.pushName || '';
+    const nameViolation = checkSuspiciousName(senderName);
+    if (nameViolation) {
+      logger.warn({ senderName, userId, nameViolation }, '🚫 Flagged suspicious user profile name');
+      if (rawMsg?.key?.id) {
+        try {
+          await session.sock.sendMessage(groupId, { delete: rawMsg.key });
+        } catch (_e) {}
+      }
+      const action = config.name_ban_action || 'ban';
+      await executePenalty(
+        session,
+        groupId,
+        userId,
+        action,
+        `Prohibited Name Pattern: ${nameViolation}`,
+        rawMsg
+      );
+      return true;
+    }
+  }
+
+  // 5. Approved / Whitelisted User check (exempt from content locks & blacklist)
   if (config.approved && config.approved.includes(userId)) {
     if (config.antispam?.notify_bypassed_actions && text && !rawMsg?.key?.fromMe) {
       let bypassedReason = null;
@@ -130,36 +370,7 @@ export async function handleModerationMessage(session, event) {
         );
       }
     }
-    return false; // User is whitelisted, skip moderation
-  }
-
-  // In group chats, ONLY actual WhatsApp Group Admins or the bot itself bypass destructive moderation rules (blacklist, locks, anti-spam).
-  const isGroupAdminUser = Boolean(
-    (event.is_group ? event.is_group_admin : event.is_admin) || rawMsg?.key?.fromMe
-  );
-
-  // Check suspicious spam/drugs/nsfw name pattern
-  if (config.name_ban_enabled !== false && !isGroupAdminUser) {
-    const senderName = event.sender_name || rawMsg?.pushName || '';
-    const nameViolation = checkSuspiciousName(senderName);
-    if (nameViolation) {
-      logger.warn({ senderName, userId, nameViolation }, '🚫 Flagged suspicious user profile name');
-      if (rawMsg?.key?.id) {
-        try {
-          await session.sock.sendMessage(groupId, { delete: rawMsg.key });
-        } catch (_e) {}
-      }
-      const action = config.name_ban_action || 'ban';
-      await executePenalty(
-        session,
-        groupId,
-        userId,
-        action,
-        `Prohibited Name Pattern: ${nameViolation}`,
-        rawMsg
-      );
-      return true;
-    }
+    return false; // User is whitelisted from content locks & blacklist
   }
 
   if (isGroupAdminUser) {
@@ -225,7 +436,7 @@ export async function handleModerationMessage(session, event) {
     }
   }
 
-  // 0. Non-destructive Auto-Translation Engine (never translate bot's own messages or existing translations)
+  // 6. Non-destructive Auto-Translation Engine (never translate bot's own messages or existing translations)
   const isTranslationHeader = isTranslationHeaderText(text);
 
   const isSyntheticMessage =
@@ -327,30 +538,9 @@ export async function handleModerationMessage(session, event) {
     return false;
   }
 
-  // 0. Muted Users check — delete messages from muted users
-  if (config.muted_users && config.muted_users[userId]) {
-    const muteEntry = config.muted_users[userId];
-    if (!muteEntry.until || muteEntry.until > Date.now()) {
-      // User is muted, delete their message
-      if (rawMsg?.key?.id) {
-        try {
-          await session.sock.sendMessage(groupId, { delete: rawMsg.key });
-        } catch (e) {
-          /* ignore delete failure */
-        }
-      }
-      return true; // silently consumed
-    } else {
-      // Mute has expired, clean up
-      delete config.muted_users[userId];
-      store.groups[groupId] = config;
-      saveModerationStore(store);
-    }
-  }
-
-  // 1. Global Ban Federation check & Shared Blacklist
+  // 7. Global Ban Federation check & Shared Blacklist
   if (config.federation_id) {
-    const fed = store.federations.find((f) => f.id === config.federation_id);
+    const fed = store.federations?.find((f) => f.id === config.federation_id);
     if (fed) {
       if (Array.isArray(fed.banned_users) && fed.banned_users.includes(userId)) {
         await executePenalty(
@@ -403,138 +593,6 @@ export async function handleModerationMessage(session, event) {
           }
         }
       }
-    }
-  }
-
-  // 2. Pending Captcha & Verification check
-  const isCaptchaEnabled = Boolean(config.greetings?.captcha_enabled);
-  if (isCaptchaEnabled) {
-    const verified = isUserVerified(groupId, userId, session, rawMsg);
-    if (!verified) {
-      const captchaEntry = findPendingCaptcha(groupId, userId, session, rawMsg);
-      let expectedUpper = '';
-
-      if (captchaEntry) {
-        const { key: captchaKey, captchaObj } = captchaEntry;
-        const cleanAnswer = String(captchaObj.answer || '')
-          .trim()
-          .toLowerCase();
-        expectedUpper = String(captchaObj.answer || '').toUpperCase();
-
-        const rawInput = text.trim().toLowerCase();
-        const cleanInput = cleanCaptchaInput(text);
-        const words = text.split(/\s+/).map((w) => cleanCaptchaInput(w));
-        const noFormatText = text.toLowerCase().replace(/[*_~`'"\s]/g, '');
-
-        const isMatch =
-          rawInput === cleanAnswer ||
-          cleanInput === cleanAnswer ||
-          words.includes(cleanAnswer) ||
-          noFormatText === cleanAnswer;
-
-        if (isMatch) {
-          clearTimeout(captchaObj.timeoutHandle);
-          pendingCaptchas.delete(captchaKey);
-
-          try {
-            const verRecord = { verified: true, timestamp: Date.now(), mode: 'auto' };
-            config.verified_users = config.verified_users || {};
-            config.verified_users[userId] = verRecord;
-            const cleanId = userId.replace(/\D/g, '');
-            if (cleanId) config.verified_users[cleanId] = verRecord;
-            // Also store canonical key if resolved
-            const canonical = resolveCanonicalUserKey(userId, session);
-            if (canonical) config.verified_users[canonical] = verRecord;
-            store.groups[groupId] = config;
-            saveModerationStore(store);
-          } catch (storeErr) {
-            logger.warn({ error: storeErr.message }, 'Failed to record captcha verification');
-          }
-
-          // Fetch group title for human readable group name
-          let groupName = groupId.split('@')[0];
-          if (session?.sock?.groupMetadata) {
-            try {
-              const meta = await session.sock.groupMetadata(groupId);
-              if (meta?.subject) groupName = meta.subject;
-            } catch (_e) {}
-          }
-
-          // Send confirmation — DM if captcha was sent via DM, otherwise group
-          const captchaTargetMode = config.greetings?.captcha_target || 'private';
-          const userPhoneJid = `${userId.replace(/\D/g, '')}@s.whatsapp.net`;
-          const confirmText = gt(config, 'bot_replies.captcha_verified_full', { group: groupName });
-
-          if (captchaTargetMode === 'private') {
-            // Try DM first
-            let dmSent = false;
-            try {
-              await session.sock.sendMessage(userPhoneJid, { text: confirmText });
-              dmSent = true;
-            } catch (_err) {
-              /* fall through to group */
-            }
-
-            // Also post a brief notice in the group so members see the verification
-            await reply(
-              session,
-              groupId,
-              {
-                text: gt(config, 'bot_replies.captcha_verified_dm', { user: userId }),
-                mentions: [`${userId}@s.whatsapp.net`],
-              },
-              rawMsg
-            );
-
-            if (!dmSent) {
-              // DM failed — send full confirmation in group as fallback
-              await reply(
-                session,
-                groupId,
-                { text: `@${userId} ${confirmText}`, mentions: [`${userId}@s.whatsapp.net`] },
-                rawMsg
-              );
-            }
-          } else {
-            await reply(
-              session,
-              groupId,
-              {
-                text: gt(config, 'bot_replies.captcha_verified_group', { user: userId }),
-                mentions: [`${userId}@s.whatsapp.net`],
-              },
-              rawMsg
-            );
-          }
-          return true;
-        }
-      }
-
-      // Delete message from unverified user
-      if (rawMsg?.key?.id) {
-        try {
-          await session.sock.sendMessage(groupId, { delete: rawMsg.key });
-        } catch (e) {
-          /* ignore delete failure */
-        }
-      }
-
-      logger.info({ groupId, userId, text }, 'Blocked message from unverified user');
-      const reminderText = expectedUpper
-        ? gt(config, 'bot_replies.captcha_reminder_pending', { user: userId, code: expectedUpper })
-        : gt(config, 'bot_replies.captcha_reminder_required', { user: userId });
-
-      await reply(
-        session,
-        groupId,
-        {
-          text: reminderText,
-          mentions: [`${userId}@s.whatsapp.net`],
-        },
-        rawMsg
-      );
-
-      return true; // Consume message completely so no command or auto-responder executes
     }
   }
 
@@ -883,30 +941,7 @@ export async function handleModerationMessage(session, event) {
     }
   }
 
-  // 5. Flood Protection check
 
-  const floodConfig = config.antispam?.flood_protection;
-  if (floodConfig?.enabled) {
-    const key = getWindowKey(groupId, userId);
-    const now = Date.now();
-    const windowMs = (floodConfig.window_seconds || 5) * 1000;
-    const timestamps = (userFloodMap.get(key) || []).filter((t) => now - t < windowMs);
-    timestamps.push(now);
-    userFloodMap.set(key, timestamps);
-
-    if (timestamps.length >= (floodConfig.max_messages || 5)) {
-      await executePenalty(
-        session,
-        groupId,
-        userId,
-        floodConfig.action || 'mute',
-        'Message flood rate exceeded',
-        rawMsg
-      );
-      userFloodMap.set(key, []);
-      return true;
-    }
-  }
 
   // 6. Notes & Rules trigger matching
   if (text) {
@@ -996,7 +1031,7 @@ export async function handleModerationMessage(session, event) {
         session,
         groupId,
         {
-          text: `🛡️ *Security Shield Alert*\n\n⚠️ Malicious ${threatType} detected and neutralized.`,
+          text: gt(config, 'bot_replies.security_shield_alert', { threatType }),
         },
         rawMsg
       );

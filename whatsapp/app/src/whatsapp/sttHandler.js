@@ -152,6 +152,20 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     return false;
   }
 
+  // Verification guard: unverified users in groups with Captcha enabled cannot trigger Speech-to-Text
+  const isGroup = groupId && groupId.endsWith('@g.us');
+  if (isGroup && config.greetings?.captcha_enabled) {
+    const rawParticipant = rawMsg.key?.participant || rawMsg.participant;
+    const rawUserId = rawParticipant ? rawParticipant.split('@')[0].replace(/\D/g, '') : '';
+    const { isUserVerified } = await import('./moderation/engine/captcha.js');
+    const { isAdmin } = await import('../utils/security.js');
+    const userIsAdmin = isAdmin(rawParticipant, session) || rawMsg.key?.fromMe;
+    if (!userIsAdmin && (!rawUserId || !isUserVerified(groupId, rawUserId, session, rawMsg))) {
+      logger.debug({ groupId, rawUserId }, 'STT skipped: sender is not verified by captcha');
+      return false;
+    }
+  }
+
   try {
     // 1. Download media stream from WhatsApp (Baileys)
     const stream = await downloadMediaMessage(
