@@ -217,4 +217,3 @@ class TRWebSocketKeeper:
                     self._reconnect_delay = min(self._reconnect_delay * 1.5, _RECONNECT_DELAY_MAX)
                 else:
                     await asyncio.sleep(30)
-
