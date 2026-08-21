@@ -228,7 +228,6 @@ async def get_status():
     }
 
 
-
 @app.get("/api/v1/session", dependencies=[Security(require_supervisor_auth)])
 async def get_session():
     import time
