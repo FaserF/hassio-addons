@@ -21,6 +21,39 @@ function recordSttError(engine, errorMsg, groupId = null) {
   }
 }
 
+export function formatNetworkError(e, gt) {
+  const causeCode = e?.cause?.code || e?.code || '';
+  const causeMsg = e?.cause?.message || e?.message || 'fetch failed';
+
+  if (causeCode === 'ECONNREFUSED') {
+    return gt('bot_replies.stt_err_conn_refused');
+  }
+  if (causeCode === 'ENOTFOUND' || causeCode === 'EAI_AGAIN') {
+    return gt('bot_replies.stt_err_host_not_found');
+  }
+  if (
+    causeCode === 'ETIMEDOUT' ||
+    causeCode === 'UND_ERR_CONNECT_TIMEOUT' ||
+    e?.name === 'AbortError'
+  ) {
+    return gt('bot_replies.stt_err_timeout');
+  }
+  if (causeCode === 'ECONNRESET') {
+    return gt('bot_replies.stt_err_conn_reset');
+  }
+  if (
+    causeCode?.includes?.('CERT_') ||
+    causeCode?.includes?.('TLS_') ||
+    causeCode?.includes?.('UNABLE_TO_VERIFY')
+  ) {
+    return gt('bot_replies.stt_err_ssl');
+  }
+  if (causeMsg === 'fetch failed' && !causeCode) {
+    return gt('bot_replies.stt_err_host_unreachable');
+  }
+  return causeCode ? `${causeMsg} (${causeCode})` : causeMsg;
+}
+
 /**
  * Returns real-time diagnostics on STT engine status, active provider, reasons, and errors.
  */
@@ -302,19 +335,28 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
               recordSttError('aegisbot', data.error || 'transcription_failed', groupId);
             }
           } else if (res.status === 401 || res.status === 403) {
-            const errMsg = gt('bot_replies.stt_err_aegisbot_auth');
+            const errMsg = gt('bot_replies.stt_err_aegisbot_auth', { status: res.status });
             errorsCaptured.push(errMsg);
-            recordSttError('aegisbot', `Authentication error (HTTP ${res.status})`, groupId);
+            recordSttError('aegisbot', `Authentication failed / Invalid token (HTTP ${res.status})`, groupId);
+          } else if (res.status === 404) {
+            const errMsg = gt('bot_replies.stt_err_aegisbot_not_found');
+            errorsCaptured.push(errMsg);
+            recordSttError('aegisbot', 'Endpoint not found (HTTP 404)', groupId);
+          } else if (res.status >= 500) {
+            const errMsg = gt('bot_replies.stt_err_aegisbot_server_error', { status: res.status });
+            errorsCaptured.push(errMsg);
+            recordSttError('aegisbot', `Internal server error (HTTP ${res.status})`, groupId);
           } else {
             const errMsg = gt('bot_replies.stt_err_aegisbot_http_error', { status: res.status });
             errorsCaptured.push(errMsg);
             recordSttError('aegisbot', `HTTP error ${res.status}`, groupId);
           }
         } catch (e) {
-          logger.debug({ error: e.message }, 'AegisBot STT failed');
-          const errMsg = gt('bot_replies.stt_err_aegisbot_network', { error: e.message });
+          logger.debug({ error: e.message, cause: e.cause }, 'AegisBot STT network failure');
+          const detailedError = formatNetworkError(e, gt, 'AegisBot Server');
+          const errMsg = gt('bot_replies.stt_err_aegisbot_network', { error: detailedError });
           errorsCaptured.push(errMsg);
-          recordSttError('aegisbot', `Network error: ${e.message}`, groupId);
+          recordSttError('aegisbot', detailedError, groupId);
         }
       }
 
@@ -335,8 +377,13 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
                 contents: [
                   {
                     parts: [
-                      { inline_data: { mime_type: 'audio/ogg', data: base64Audio } },
                       { text: promptText },
+                      {
+                        inline_data: {
+                          mime_type: 'audio/ogg',
+                          data: base64Audio,
+                        },
+                      },
                     ],
                   },
                 ],
@@ -368,10 +415,11 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
             recordSttError('gemini', `HTTP error ${res.status}`, groupId);
           }
         } catch (e) {
-          logger.debug({ error: e.message }, 'Gemini STT failed');
-          const errMsg = gt('bot_replies.stt_err_gemini_network', { error: e.message });
+          logger.debug({ error: e.message, cause: e.cause }, 'Gemini STT network failure');
+          const detailedError = formatNetworkError(e, gt, 'Gemini AI');
+          const errMsg = gt('bot_replies.stt_err_gemini_network', { error: detailedError });
           errorsCaptured.push(errMsg);
-          recordSttError('gemini', `Network error: ${e.message}`, groupId);
+          recordSttError('gemini', detailedError, groupId);
         }
       }
 
@@ -416,10 +464,11 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
             recordSttError('openai', `HTTP error ${res.status}`, groupId);
           }
         } catch (e) {
-          logger.debug({ error: e.message }, 'Whisper STT failed');
-          const errMsg = gt('bot_replies.stt_err_whisper_network', { error: e.message });
+          logger.debug({ error: e.message, cause: e.cause }, 'Whisper STT network failure');
+          const detailedError = formatNetworkError(e, gt, 'OpenAI Whisper');
+          const errMsg = gt('bot_replies.stt_err_whisper_network', { error: detailedError });
           errorsCaptured.push(errMsg);
-          recordSttError('openai', `Network error: ${e.message}`, groupId);
+          recordSttError('openai', detailedError, groupId);
         }
       }
     }

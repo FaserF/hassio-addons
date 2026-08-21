@@ -20,7 +20,7 @@ import {
   handlePrivateCaptchaMessage,
 } from './captcha.js';
 import { SPAM_INVITE_LINK_PATTERNS, userFloodMap } from './filters.js';
-import { resolveCanonicalUserKey } from '../../../utils/security.js';
+import { resolveCanonicalUserKey, isSameUser } from '../../../utils/security.js';
 
 // Per-trigger cooldown: prevents the same trigger from firing more than once per group
 // within TRIGGER_COOLDOWN_MS milliseconds. Key: `${groupId}:${trigger}`.
@@ -435,26 +435,39 @@ export async function handleModerationMessage(session, event) {
   // 6. Non-destructive Auto-Translation Engine (never translate bot's own messages or existing translations)
   const isTranslationHeader = isTranslationHeaderText(text);
 
-  const isSyntheticMessage =
+  const botUserJid = session?.sock?.user?.id || session?.user?.id || null;
+  const isBotSender =
     rawMsg?.key?.fromMe ||
     event.from_me ||
+    (botUserJid &&
+      (isSameUser(botUserJid, event.sender, session) ||
+        isSameUser(botUserJid, rawMsg?.key?.participant || rawMsg?.key?.remoteJid, session)));
+
+  const isSyntheticMessage =
+    isBotSender ||
     isTranslationHeader ||
     event.media_type === 'location' ||
     event.media_type === 'contact' ||
     event.media_type === 'poll' ||
+    event.media_type === 'poll_update' ||
+    event.media_type === 'pollCreation' ||
     event.media_type === 'sticker' ||
     event.media_type === 'buttons' ||
     event.media_type === 'list' ||
     event.media_type === 'interactive' ||
     event.media_type === 'protocol' ||
     event.type === 'poll' ||
+    event.type === 'poll_update' ||
     event.type === 'location' ||
     event.type === 'contact' ||
     event.type === 'reaction' ||
-    /^(📍\s*\[(Location|Live Location) Share|👤\s*\[Contact:|📊\s*\[Poll|🔘\s*\[|📋\s*\[List:|🗳️\s*Vote:|📅\s*\*?\[Event)/i.test(
+    event.eventType === 'poll_update' ||
+    /^(📍\s*\[|👤\s*\[|📊\s*\[|🔘\s*\[|📋\s*\[|🗳️\s*|📅\s*\*?\[|🧪\s*\*?\[?Diagnostic|🤖\s*\*?WhatsApp|🏁\s*\*?Diagnostic|⚠️\s*\*?Bot|🛡️|📜\s*\*?Rules|⏳|🌴\s*\*?Automated|🌐\s*\*?Auto)/i.test(
       text
     ) ||
-    /^[!/#.?]\w+/i.test(text);
+    /^[!/#.?$]\w+/i.test(text) ||
+    /^https?:\/\/\S+$/i.test(text.trim()) ||
+    /^[\d\s+\-().]+$/.test(text.trim());
 
   if (isTranslationActive && !isSyntheticMessage && text && text.trim().length > 2) {
     const targetLang = config.translation?.target_lang || 'en';

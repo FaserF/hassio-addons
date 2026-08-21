@@ -356,7 +356,10 @@ export function registerInfoCommands(registry) {
 
       await reply(session, groupId, { text: helpText }, rawMsg);
     },
-    { help: 'Shows categorized command overview or details via !help <command>' }
+    {
+      help: 'Shows categorized command overview or details via !help <command>',
+      aliases: ['commands', 'befehle', 'hilfe', 'menu'],
+    }
   );
 
   registry.register(

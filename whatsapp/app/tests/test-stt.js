@@ -109,4 +109,32 @@ assert.strictEqual(diagAuto.status, 'healthy');
 assert.ok(diagAuto.selection_reason.includes('Gemini'));
 console.log('✅ PASSED: getSTTDiagnostics seamlessly uses effective Gemini key');
 
+// Test 12: formatNetworkError formats ECONNREFUSED and ENOTFOUND descriptively
+const { formatNetworkError } = await import('../src/whatsapp/sttHandler.js');
+const dummyGt = (k) => {
+  if (k === 'bot_replies.stt_err_conn_refused')
+    return 'Host nicht erreichbar / Verbindung abgelehnt (Server offline oder falscher Port)';
+  if (k === 'bot_replies.stt_err_host_not_found')
+    return 'Host nicht gefunden / DNS-Auflösung fehlgeschlagen';
+  return k;
+};
+
+const errRefused = new TypeError('fetch failed');
+errRefused.cause = { code: 'ECONNREFUSED', message: 'connect ECONNREFUSED 127.0.0.1:8000' };
+const formattedRefused = formatNetworkError(errRefused, dummyGt, 'AegisBot Server');
+assert.ok(
+  formattedRefused.includes('Verbindung abgelehnt') ||
+    formattedRefused.includes('nicht erreichbar')
+);
+console.log('✅ PASSED: formatNetworkError descriptively explains ECONNREFUSED');
+
+const errNotFound = new TypeError('fetch failed');
+errNotFound.cause = { code: 'ENOTFOUND', message: 'getaddrinfo ENOTFOUND aegisbot' };
+const formattedNotFound = formatNetworkError(errNotFound, dummyGt, 'AegisBot Server');
+assert.ok(
+  formattedNotFound.includes('Host nicht gefunden') ||
+    formattedNotFound.includes('DNS')
+);
+console.log('✅ PASSED: formatNetworkError descriptively explains ENOTFOUND');
+
 console.log('✅ ALL STT & DIAGNOSTICS TESTS PASSED');

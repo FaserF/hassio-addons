@@ -938,6 +938,62 @@ try {
   clearPendingCaptcha(restartGroupId, restartUserId, mockSession);
   console.log('✅ PASSED: Captcha persists across server restart and user can verify successfully');
 
+  // Test: Auto-translation exclusion for bot's own messages, poll updates and diagnostic tests
+  const transGroupId = '1203630888888888@g.us';
+  setGroupModerationConfig(transGroupId, {
+    ...getDefaultModerationStore().groups['default'],
+    enabled: true,
+    translation: {
+      enabled: true,
+      target_lang: 'en',
+      provider: 'google',
+    },
+  });
+
+  let transSent = false;
+  const mockTransSession = {
+    ...mockSession,
+    sock: {
+      ...mockSession.sock,
+      sendMessage: async (gId, msgObj) => {
+        if (msgObj?.text && msgObj.text.includes('Automatische Übersetzung')) {
+          transSent = true;
+        }
+      },
+    },
+  };
+
+  // 1. Poll vote update message must NOT trigger auto-translation
+  await handleModerationMessage(mockTransSession, {
+    sender: transGroupId,
+    sender_number: '491761111111',
+    content: '📊 [Poll Votes Update: 🧪 Diagnostic Test [4/7]: Interactive Poll Choice]\n🗳️ Voice: Option 2 (Pass)',
+    type: 'poll_update',
+    media_type: 'poll_update',
+    raw: { key: { id: 'pollUpMsg1', fromMe: false } },
+  });
+  assert.strictEqual(transSent, false, 'Poll vote update message must never be auto-translated');
+
+  // 2. Bot self-message (fromMe: true) must NOT trigger auto-translation
+  await handleModerationMessage(mockTransSession, {
+    sender: transGroupId,
+    sender_number: '491761234567',
+    content: '🧪 *Diagnostic Test [1/7]*: Text message works! ✅',
+    from_me: true,
+    raw: { key: { id: 'diagMsg1', fromMe: true } },
+  });
+  assert.strictEqual(transSent, false, 'Bot own messages (fromMe: true) must never be auto-translated');
+
+  // 3. Bot commands (!help, /status) must NOT trigger auto-translation
+  await handleModerationMessage(mockTransSession, {
+    sender: transGroupId,
+    sender_number: '491761111111',
+    content: '!help',
+    raw: { key: { id: 'cmdMsg1', fromMe: false } },
+  });
+  assert.strictEqual(transSent, false, 'Bot commands must never be auto-translated');
+  console.log('✅ PASSED: Auto-translation safely ignores bot messages, poll updates, and diagnostics');
+
   // Reset store
   saveModerationStore(getDefaultModerationStore());
   console.log('='.repeat(50) + '\n✅ ALL MODERATION TESTS PASSED\n');

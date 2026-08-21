@@ -23,6 +23,10 @@ async function runTests() {
 
   // Phase 1 Commands
   assert(registry.getCommand('help') !== undefined, 'help command is registered');
+  assert(registry.getCommand('commands') !== undefined, 'commands alias is registered');
+  assert(registry.getCommand('befehle') !== undefined, 'befehle alias is registered');
+  assert(registry.getCommand('hilfe') !== undefined, 'hilfe alias is registered');
+  assert(registry.getCommand('menu') !== undefined, 'menu alias is registered');
   assert(registry.getCommand('ping') !== undefined, 'ping command is registered');
   assert(registry.getCommand('warn') !== undefined, 'warn command is registered');
   assert(registry.getCommand('warns') !== undefined, 'warns command is registered');
