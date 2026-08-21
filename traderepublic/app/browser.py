@@ -90,6 +90,7 @@ class TradeRepublicBrowserService:
         # Keeper not yet connected or rejected — fall back to one-off check
         # only on startup (when keeper hasn't had time to connect yet)
         from core.verifier import verify_tr_token
+
         is_valid = await verify_tr_token(token)
         if is_valid:
             self.token_verified_at = time.time()

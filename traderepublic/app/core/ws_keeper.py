@@ -123,7 +123,7 @@ class TRWebSocketKeeper:
                 _TR_WS_URL,
                 ssl=ssl_ctx,
                 additional_headers=headers,
-                ping_interval=None,   # We manage keepalive ourselves
+                ping_interval=None,  # We manage keepalive ourselves
                 close_timeout=5,
             )
         except Exception as exc:
@@ -147,7 +147,9 @@ class TRWebSocketKeeper:
                     if "401" in str(resp) or "error" in str(resp).lower():
                         _LOGGER.warning("WS Keeper: TR rejected handshake — token invalid")
                         self.is_authenticated = False
-                        self.last_error = "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+                        self.last_error = (
+                            "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+                        )
                         await self._close_ws()
                         return False
                     _LOGGER.debug("WS Keeper: unexpected handshake response: %s", resp)
