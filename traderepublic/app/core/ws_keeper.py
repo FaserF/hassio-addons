@@ -63,8 +63,25 @@ class TRWebSocketKeeper:
         self._reconnect_delay: float = _RECONNECT_DELAY_MIN
 
         # Data collection & dynamic subscription management
-        self.latest_data: dict[str, Any] = {}
-        self.active_categories: set[str] = {"portfolio", "cash"}
+        self.latest_data: dict[str, Any] = {
+            "net_value": 0.0,
+            "available_cash": 0.0,
+            "invested_capital": 0.0,
+            "total_profit": 0.0,
+            "total_profit_percent": 0.0,
+            "exemption_total": 1000.00,
+            "exemption_used": 0.00,
+            "savings_plans_count": 0,
+            "holdings": [],
+            "card_status": "INACTIVE",
+            "card_saveback_earned": 0.0,
+            "card_saveback_limit": 0.0,
+            "recent_transactions": [],
+            "interest_rate": 2.25,
+            "accrued_interest_daily": 0.0,
+            "accrued_interest_monthly_est": 0.0,
+        }
+        self.active_categories: set[str] = {"portfolio", "cash", "savings", "card", "timeline"}
         self._subscribed_categories: dict[str, int] = {}
         self._portfolio_payload: dict[str, Any] = {}
         self._prices: dict[str, float] = {}
@@ -364,7 +381,14 @@ class TRWebSocketKeeper:
                 self._recalculate_portfolio()
 
         elif sub_type == "savingsPlans":
-            self.latest_data["savings_plans_count"] = len(payload.get("savingsPlans") or [])
+            count = 0
+            if isinstance(payload, list):
+                count = len(payload)
+            elif isinstance(payload, dict):
+                plans = payload.get("savingsPlans") or payload.get("items") or payload.get("data") or []
+                count = len(plans) if isinstance(plans, list) else int(payload.get("count", 0))
+            self.latest_data["savings_plans_count"] = count
+            _LOGGER.debug("WS Keeper: updated savings_plans_count to %s", count)
 
         elif sub_type == "card":
             self.latest_data["card_status"] = payload.get("status", "INACTIVE")
