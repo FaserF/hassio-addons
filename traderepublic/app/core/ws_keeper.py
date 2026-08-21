@@ -67,6 +67,10 @@ class TRWebSocketKeeper:
             "net_value": 0.0,
             "available_cash": 0.0,
             "invested_capital": 0.0,
+            "invested_stocks_etfs": 0.0,
+            "invested_crypto": 0.0,
+            "value_stocks_etfs": 0.0,
+            "value_crypto": 0.0,
             "total_profit": 0.0,
             "total_profit_percent": 0.0,
             "exemption_total": 1000.00,
@@ -302,19 +306,29 @@ class TRWebSocketKeeper:
 
         invested_capital = 0.0
         securities_value = 0.0
+        invested_stocks_etfs = 0.0
+        invested_crypto = 0.0
+        value_stocks_etfs = 0.0
+        value_crypto = 0.0
         holdings = []
 
         for pos in positions:
             isin = pos.get("isin")
             name = pos.get("name", isin)
+            instrument_type = str(pos.get("instrumentType", "")).lower()
+            is_crypto = instrument_type == "crypto" or (isin and str(isin).startswith("XF"))
             try:
                 net_size = float(pos.get("netSize", 0.0))
                 average_buy_in = float(pos.get("averageBuyIn", 0.0))
-            except ValueError, TypeError:
+            except (ValueError, TypeError):
                 continue
 
             pos_invested = net_size * average_buy_in
             invested_capital += pos_invested
+            if is_crypto:
+                invested_crypto += pos_invested
+            else:
+                invested_stocks_etfs += pos_invested
 
             raw_net_value = pos.get("netValue") or pos.get("value") or pos.get("marketValue") or pos.get("currentValue")
             raw_profit = (
@@ -333,10 +347,24 @@ class TRWebSocketKeeper:
                 pos_value = net_size * current_price
 
             securities_value += pos_value
-            holdings.append({"isin": isin, "name": name, "value": pos_value})
+            if is_crypto:
+                value_crypto += pos_value
+            else:
+                value_stocks_etfs += pos_value
+
+            holdings.append({
+                "isin": isin,
+                "name": name,
+                "value": pos_value,
+                "type": "crypto" if is_crypto else "stock_etf",
+            })
 
         available_cash = float(self.latest_data.get("available_cash", 0.0))
         self.latest_data["invested_capital"] = invested_capital
+        self.latest_data["invested_stocks_etfs"] = invested_stocks_etfs
+        self.latest_data["invested_crypto"] = invested_crypto
+        self.latest_data["value_stocks_etfs"] = value_stocks_etfs
+        self.latest_data["value_crypto"] = value_crypto
         self.latest_data["net_value"] = securities_value + available_cash
         self.latest_data["total_profit"] = securities_value - invested_capital
         self.latest_data["total_profit_percent"] = (
@@ -363,7 +391,7 @@ class TRWebSocketKeeper:
         try:
             sub_id = int(sub_id_str)
             payload = json.loads(payload_str)
-        except ValueError, json.JSONDecodeError, TypeError:
+        except (ValueError, json.JSONDecodeError, TypeError):
             return
 
         # Check main subscriptions
@@ -398,7 +426,7 @@ class TRWebSocketKeeper:
                 if api_rate is not None:
                     try:
                         self.latest_data["api_interest_rate"] = float(api_rate)
-                    except ValueError, TypeError:
+                    except (ValueError, TypeError):
                         pass
                 self._recalculate_portfolio()
 
@@ -449,7 +477,7 @@ class TRWebSocketKeeper:
                         if p is not None:
                             try:
                                 return float(p)
-                            except ValueError, TypeError:
+                            except (ValueError, TypeError):
                                 pass
                     return None
 

@@ -266,12 +266,30 @@ async def get_data(categories: Optional[str] = None):
         await browser_service._ws_keeper.sync_categories(requested_set)
 
     data = getattr(browser_service._ws_keeper, "latest_data", {})
+    last_update = getattr(browser_service._ws_keeper, "last_data_update_time", None)
+    now = time.time()
+
+    is_active = browser_service.is_logged_in and browser_service._ws_keeper.is_authenticated
+    is_stale = False
+    grace_remaining = 0
+
+    if not is_active:
+        if last_update and (now - last_update <= 12 * 3600):
+            # Within 12-hour grace period: serve cached metrics with stale flag
+            is_stale = True
+            grace_remaining = int((12 * 3600) - (now - last_update))
+        else:
+            # Over 12 hours without valid session: invalidate metrics
+            data = {}
+
     return {
-        "is_logged_in": browser_service.is_logged_in,
-        "is_authenticated": browser_service._ws_keeper.is_authenticated,
+        "is_logged_in": is_active or is_stale,
+        "is_authenticated": is_active,
+        "is_stale": is_stale,
+        "grace_remaining_seconds": grace_remaining,
         "phone_number": browser_service.phone_number,
         "data": data,
-        "timestamp": time.time(),
+        "timestamp": now,
     }
 
 
