@@ -177,6 +177,9 @@ async def get_index(request: Request):
             "last_error": browser_service.last_error,
             "requests_count": browser_service.client_requests_count,
             "last_sync_sec": last_sync_sec,
+            "last_interaction_type": browser_service.last_interaction_type,
+            "last_interaction_details": browser_service.last_interaction_details,
+            "request_counts_by_type": browser_service.request_counts_by_type,
             "all_i18n": json.dumps(all_i18n),
         },
     )
@@ -194,6 +197,9 @@ async def get_status():
         "last_error": browser_service.last_error,
         "requests_count": browser_service.client_requests_count,
         "last_sync_time": browser_service.last_sync_time,
+        "last_interaction_type": browser_service.last_interaction_type,
+        "last_interaction_details": browser_service.last_interaction_details,
+        "request_counts_by_type": browser_service.request_counts_by_type,
     }
 
 
@@ -203,6 +209,9 @@ async def get_session():
 
     browser_service.client_requests_count += 1
     browser_service.last_sync_time = time.time()
+    browser_service.last_interaction_type = "Session Token Sync"
+    browser_service.last_interaction_details = "Home Assistant synchronized session token"
+    browser_service.request_counts_by_type["session"] += 1
     if not browser_service.session_token:
         return JSONResponse(status_code=404, content={"error": "No active session token available"})
     return {
@@ -221,6 +230,10 @@ async def get_data(categories: Optional[str] = None):
 
     browser_service.client_requests_count += 1
     browser_service.last_sync_time = time.time()
+    browser_service.last_interaction_type = "Live Data Fetch"
+    cat_str = categories or "all"
+    browser_service.last_interaction_details = f"Live metrics query (categories: {cat_str})"
+    browser_service.request_counts_by_type["data"] += 1
 
     # If specific categories requested, sync subscriptions on-demand
     if categories and hasattr(browser_service, "_ws_keeper"):

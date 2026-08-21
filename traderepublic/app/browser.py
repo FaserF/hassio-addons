@@ -31,6 +31,14 @@ class TradeRepublicBrowserService:
         self.last_error: Optional[str] = None
         self.client_requests_count: int = 0
         self.token_verified_at: Optional[float] = None
+        self.last_interaction_type: str = "None"
+        self.last_interaction_details: str = "No interactions yet"
+        self.request_counts_by_type: dict[str, int] = {
+            "data": 0,
+            "session": 0,
+            "refresh": 0,
+            "status": 0,
+        }
 
         self._lock = asyncio.Lock()
         self._keepalive_task: Optional[asyncio.Task] = None
