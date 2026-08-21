@@ -17,6 +17,14 @@ from pydantic import BaseModel
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 _LOGGER = logging.getLogger("traderepublic-addon")
 
+
+class EndpointFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return "/api/v1/status" not in record.getMessage()
+
+
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
+
 # ── Supervisor token auth ─────────────────────────────────────────────────────
 _SUPERVISOR_TOKEN = os.getenv("SUPERVISOR_TOKEN", "")
 _api_key_header = APIKeyHeader(name="Authorization", auto_error=False)

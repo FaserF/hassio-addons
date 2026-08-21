@@ -23,7 +23,7 @@ class TradeRepublicBrowserService:
         self.auth_helper = AuthHelper(self.cdp)
 
         self.proc: Optional[subprocess.Popen] = None
-        self.is_logged_in: bool = False
+        self._is_logged_in_override: Optional[bool] = None
         self.session_token: Optional[str] = None
         self.phone_number: Optional[str] = None
         self.status_message: str = "App started. Ready for login."
@@ -48,6 +48,19 @@ class TradeRepublicBrowserService:
 
         # Persistent WebSocket keeper — one connection, always alive
         self._ws_keeper = TRWebSocketKeeper(token_factory=lambda: self.session_token)
+
+    @property
+    def is_logged_in(self) -> bool:
+        """Dynamic login status driven by persistent keeper or disk session."""
+        if self._is_logged_in_override is not None:
+            return self._is_logged_in_override
+        if getattr(self, "_ws_keeper", None) and self._ws_keeper.is_authenticated:
+            return True
+        return bool(self.session_token)
+
+    @is_logged_in.setter
+    def is_logged_in(self, value: bool) -> None:
+        self._is_logged_in_override = value
 
     async def start(self) -> None:
         """Start headless Chromium with remote debugging port."""
@@ -94,12 +107,18 @@ class TradeRepublicBrowserService:
 
         The session is loaded optimistically on disk. If the saved token is
         expired, the keeper will get a 401 within seconds. This task detects
-        that and immediately marks the session as expired so the HA integration
-        shows the correct status without waiting 5 minutes for the keepalive.
+        that and marks the session as expired so the HA integration
+        shows the correct status.
         """
         await asyncio.sleep(15)
-        if self.is_logged_in and not self._ws_keeper.is_authenticated:
-            # If the keeper explicitly got a 401 (not just still connecting), mark expired
+        if self._ws_keeper.is_authenticated:
+            self._is_logged_in_override = None
+            self.last_error = None
+            self.status_message = "Everything is connected and running normally."
+            return
+
+        if not self._ws_keeper.is_authenticated:
+            # If the keeper explicitly got a 401, mark expired
             if self._ws_keeper.last_error and "401" in self._ws_keeper.last_error:
                 _LOGGER.warning("Startup validation: saved session token rejected by TR (401) — marking expired")
                 self.is_logged_in = False
