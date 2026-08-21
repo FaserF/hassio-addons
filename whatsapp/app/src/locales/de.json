@@ -787,7 +787,18 @@
     "lang_it_opt": "Italienisch",
     "timeout_join_label": "Selbstbeitritt:",
     "timeout_added_label": "Hinzugefügt:",
-    "enable_stt_private": "Speech-to-Text in privaten 1:1 Chats mit dem Bot aktivieren (Standard: Aus)"
+    "enable_stt_private": "Speech-to-Text in privaten 1:1 Chats mit dem Bot aktivieren (Standard: Aus)",
+    "stt_lang_label": "Sprache der Audionachricht:",
+    "stt_lang_auto": "🌐 Automatisch erkennen (Universell, Standard)",
+    "lang_es": "🇪🇸 Spanisch (Español)",
+    "lang_fr": "🇫🇷 Französisch (Français)",
+    "lang_it": "🇮🇹 Italienisch (Italiano)",
+    "lang_nl": "🇳🇱 Niederländisch (Nederlands)",
+    "lang_pl": "🇵🇱 Polnisch (Polski)",
+    "lang_tr": "🇹🇷 Türkisch (Türkçe)",
+    "lang_ru": "🇷🇺 Russisch (Русский)",
+    "lang_uk": "🇺🇦 Ukrainisch (Українська)",
+    "lang_ar": "🇸🇦 Arabisch (العربية)"
   },
   "telegram": {
     "title": "WhatsApp & Telegram Bridge",
@@ -1187,7 +1198,7 @@
     "start_group_msg": "🛡️ *WhatsApp Gateway & Orchestrator Aktiv*\n\nDiese Gruppe (*{group}*) wird aktiv geschützt und orchestriert.\n\n• 🧠 *Anti-Spam, Raid & Namensfilter:* Aktiv\n• 🔗 *Telegram-Brücke:* Verbunden & synchronisiert\n• 🌍 *Übersetzung & Audio STT:* Bereit\n\n📌 *Wichtige Befehle:*\n• `{prefix}help` — Vollständige Befehlsübersicht\n• `{prefix}rules` — Gruppenregeln & FAQ\n• `{prefix}info` — Benutzer- & Reputationsstatus",
     "start_private_msg": "🛡️ *Willkommen beim WhatsApp Gateway & Security Orchestrator*\n_Professionelle Gruppen-Moderation & Plattform-Integration._\n\n• 🤖 *Automatisierter Schutz:* Anti-Spam, Anti-Raid, Content-Locks & Namensfilter\n• 🔗 *Telegram-Brücke:* 2-Wege Synchronisation von Text, Medien, Pins & Reaktionen\n• 🎙️ *Speech-to-Text:* Automatische Transkription von Sprachnachrichten\n• 🌐 *Multi-Language:* Automatische Echtzeit-Übersetzung\n\n📌 *Schnellstart:*\n• `{prefix}help` — Befehlsverzeichnis anzeigen\n• `{prefix}info` — Eigenen Account- & Berechtigungsstatus prüfen\n• Web-Dashboard im Home Assistant / Web-Interface für erweiterte Konfiguration nutzen.",
     "stt_error_details_header": "*Details / Ursache:*",
-    "stt_prompt_text": "Transkribiere das gesprochene Audio exakt, wortgetreu und mit korrekter Zeichensetzung. Behalte gemischtsprachige Wörter (z.B. Denglisch/Englisch) exakt wie gesprochen bei. Gib ausschließlich den transkribierten Text ohne Anführungszeichen, Metadaten oder Erklärungen zurück.",
+    "stt_prompt_text": "Transkribiere die gesprochene Audionachricht exakt und wortgetreu in der tatsächlich gesprochenen Sprache (z. B. Deutsch, Englisch, Französisch, Spanisch usw.). Erkenne die gesprochene Sprache automatisch. Behalte gemischtsprachige Begriffe exakt bei. Gib ausschließlich den transkribierten Text ohne Anführungszeichen oder Erklärungen zurück.",
     "stt_err_gemini_empty": "Gemini AI: Antwort enthielt keinen transkribierten Text.",
     "stt_err_gemini_rate_limit": "Gemini AI API: Rate-Limit / Quota überschritten (HTTP 429).",
     "stt_err_gemini_auth": "Gemini AI API: Ungültiger oder abgelaufener API-Schlüssel (HTTP 401/403).",

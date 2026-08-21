@@ -974,6 +974,8 @@ async function selectModerationGroup(groupId) {
     sttPrivate.checked = Boolean(config.stt_allow_private_chats || config.allow_private_chats);
   const sttEngine = document.getElementById('mod-stt-engine');
   if (sttEngine) sttEngine.value = config.stt_engine || 'aegisbot';
+  const sttLang = document.getElementById('mod-stt-lang');
+  if (sttLang) sttLang.value = config.stt_language || config.stt?.language || 'auto';
   const sttAegisUrl = document.getElementById('mod-stt-aegisbot-url');
   if (sttAegisUrl) sttAegisUrl.value = config.stt_aegisbot_url || '';
   const sttAegisKey = document.getElementById('mod-stt-aegisbot-key');

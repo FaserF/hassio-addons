@@ -137,4 +137,13 @@ assert.ok(
 );
 console.log('✅ PASSED: formatNetworkError descriptively explains ENOTFOUND');
 
+// Test 13: detectLanguageHeuristic recognizes languages correctly
+const { detectLanguageHeuristic } = await import('../src/whatsapp/sttHandler.js');
+const enDetected = detectLanguageHeuristic('Hello this is a test voice message for the bot');
+assert.strictEqual(enDetected, 'EN', 'English text must be detected as EN');
+
+const deDetected = detectLanguageHeuristic('Hallo das ist eine Testnachricht für den Bot');
+assert.strictEqual(deDetected, 'DE', 'German text must be detected as DE');
+console.log('✅ PASSED: detectLanguageHeuristic correctly differentiates spoken languages');
+
 console.log('✅ ALL STT & DIAGNOSTICS TESTS PASSED');

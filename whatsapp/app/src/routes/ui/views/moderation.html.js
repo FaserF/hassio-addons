@@ -579,6 +579,23 @@ export default () => `
                                 <option value="openai" data-i18n="moderation.stt_engine_openai">🤖 OpenAI Whisper API (Requires API Key)</option>
                             </select>
                         </div>
+                        <div class="mod-inline-controls" style="margin-bottom:12px;">
+                            <label class="mod-field-label" style="margin:0; white-space:nowrap;" data-i18n="moderation.stt_lang_label">Audio Language:</label>
+                            <select id="mod-stt-lang" class="mod-select mod-select-sm">
+                                <option value="auto" data-i18n="moderation.stt_lang_auto">🌐 Auto-Detect (Universal, Default)</option>
+                                <option value="de" data-i18n="moderation.lang_de">🇩🇪 German (Deutsch)</option>
+                                <option value="en" data-i18n="moderation.lang_en">🇬🇧 English</option>
+                                <option value="es" data-i18n="moderation.lang_es">🇪🇸 Spanish (Español)</option>
+                                <option value="fr" data-i18n="moderation.lang_fr">🇫🇷 French (Français)</option>
+                                <option value="it" data-i18n="moderation.lang_it">🇮🇹 Italian (Italiano)</option>
+                                <option value="nl" data-i18n="moderation.lang_nl">🇳🇱 Dutch (Nederlands)</option>
+                                <option value="pl" data-i18n="moderation.lang_pl">🇵🇱 Polish (Polski)</option>
+                                <option value="tr" data-i18n="moderation.lang_tr">🇹🇷 Turkish (Türkçe)</option>
+                                <option value="ru" data-i18n="moderation.lang_ru">🇷🇺 Russian (Русский)</option>
+                                <option value="uk" data-i18n="moderation.lang_uk">🇺🇦 Ukrainian (Українська)</option>
+                                <option value="ar" data-i18n="moderation.lang_ar">🇸🇦 Arabic (العربية)</option>
+                            </select>
+                        </div>
                         <div id="mod-stt-aegisbot-config" class="mod-field-group" style="margin-bottom:12px; padding:10px; background:rgba(0,0,0,0.15); border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
                             <div style="margin-bottom:8px;">
                                 <label class="mod-field-label" style="font-size:12px; margin-bottom:4px;" data-i18n="moderation.stt_aegisbot_url_label">AegisBot Server URL (Base URL):</label>

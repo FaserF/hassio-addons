@@ -3242,6 +3242,7 @@ async function saveGroupAiConfig() {
     document.getElementById('mod-stt-private-enabled')?.checked
   );
   groupConfig.stt_engine = document.getElementById('mod-stt-engine')?.value || 'auto';
+  groupConfig.stt_language = document.getElementById('mod-stt-lang')?.value || 'auto';
   groupConfig.translation = {
     enabled: document.getElementById('mod-trans-enabled')
       ? Boolean(document.getElementById('mod-trans-enabled').checked)

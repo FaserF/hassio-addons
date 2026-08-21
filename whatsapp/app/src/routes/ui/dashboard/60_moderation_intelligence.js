@@ -139,6 +139,7 @@ async function saveGroupAiConfig() {
     document.getElementById('mod-stt-private-enabled')?.checked
   );
   groupConfig.stt_engine = document.getElementById('mod-stt-engine')?.value || 'aegisbot';
+  groupConfig.stt_language = document.getElementById('mod-stt-lang')?.value || 'auto';
   groupConfig.stt_aegisbot_url =
     document.getElementById('mod-stt-aegisbot-url')?.value?.trim() || '';
   groupConfig.stt_aegisbot_key =

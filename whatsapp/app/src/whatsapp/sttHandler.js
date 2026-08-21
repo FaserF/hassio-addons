@@ -54,6 +54,39 @@ export function formatNetworkError(e, gt) {
   return causeCode ? `${causeMsg} (${causeCode})` : causeMsg;
 }
 
+export function detectLanguageHeuristic(text) {
+  if (!text) return '';
+  const lower = text.toLowerCase();
+  const deScore = (
+    lower.match(
+      /\b(der|die|das|und|ist|nicht|ich|wir|sie|haben|werden|auch|auf|mit|eine|einer|eines|dass|für|von|nach)\b/g
+    ) || []
+  ).length;
+  const enScore = (
+    lower.match(
+      /\b(the|and|is|not|you|we|they|have|will|also|with|that|for|from|this|what|how|are|was)\b/g
+    ) || []
+  ).length;
+  const esScore = (
+    lower.match(
+      /\b(el|la|los|las|por|para|con|que|esta|este|como|pero|muy)\b/g
+    ) || []
+  ).length;
+  const frScore = (
+    lower.match(
+      /\b(le|la|les|des|pour|dans|avec|que|est|sont|mais|nous|vous)\b/g
+    ) || []
+  ).length;
+
+  const max = Math.max(deScore, enScore, esScore, frScore);
+  if (max < 1) return '';
+  if (deScore === max) return 'DE';
+  if (enScore === max) return 'EN';
+  if (esScore === max) return 'ES';
+  if (frScore === max) return 'FR';
+  return '';
+}
+
 /**
  * Returns real-time diagnostics on STT engine status, active provider, reasons, and errors.
  */
@@ -262,6 +295,8 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
 
     const hasAnyConfig = geminiKey || openAiKey || aegisbotUrl;
 
+    const explicitSttLang = config.stt_language || config.stt?.language || 'auto';
+
     if (!hasAnyConfig) {
       if (sttEngine === 'auto') {
         failureReason =
@@ -271,7 +306,7 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       }
       recordSttError(sttEngine, failureReason, groupId);
     } else {
-      // 1. Try AegisBot Server (Local Self-Hosted Faster-Whisper)
+      // 1. Try AegisBot Server (Local Self-Hosted Faster-Whisper with universal auto-detection)
       if (sttEngine === 'aegisbot' || (sttEngine === 'auto' && aegisbotUrl)) {
         usedEngine = 'aegisbot';
         try {
@@ -284,8 +319,8 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           const formData = new Blob([stream], { type: 'audio/ogg' });
           const body = new FormData();
           body.append('file', formData, 'voice.ogg');
-          if (groupLang && groupLang !== 'auto') {
-            body.append('language', groupLang);
+          if (explicitSttLang && explicitSttLang !== 'auto') {
+            body.append('language', explicitSttLang);
           }
 
           const headers = {};
@@ -353,14 +388,14 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           }
         } catch (e) {
           logger.debug({ error: e.message, cause: e.cause }, 'AegisBot STT network failure');
-          const detailedError = formatNetworkError(e, gt, 'AegisBot Server');
+          const detailedError = formatNetworkError(e, gt);
           const errMsg = gt('bot_replies.stt_err_aegisbot_network', { error: detailedError });
           errorsCaptured.push(errMsg);
           recordSttError('aegisbot', detailedError, groupId);
         }
       }
 
-      // 2. Try Gemini 1.5 Multimodal Audio API
+      // 2. Try Gemini 1.5 Multimodal Audio API (Multilingual prompt & auto-detection)
       if (!transcribedText && (sttEngine === 'gemini' || (sttEngine === 'auto' && geminiKey))) {
         usedEngine = 'gemini';
         try {
@@ -395,7 +430,11 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
             transcribedText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
             if (transcribedText) {
               usedSubEngine = geminiModel;
-              if (groupLang && groupLang !== 'auto') detectedLang = groupLang;
+              if (explicitSttLang && explicitSttLang !== 'auto') {
+                detectedLang = explicitSttLang;
+              } else {
+                detectedLang = detectLanguageHeuristic(transcribedText);
+              }
             } else {
               const errMsg = gt('bot_replies.stt_err_gemini_empty');
               errorsCaptured.push(errMsg);
@@ -416,14 +455,14 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           }
         } catch (e) {
           logger.debug({ error: e.message, cause: e.cause }, 'Gemini STT network failure');
-          const detailedError = formatNetworkError(e, gt, 'Gemini AI');
+          const detailedError = formatNetworkError(e, gt);
           const errMsg = gt('bot_replies.stt_err_gemini_network', { error: detailedError });
           errorsCaptured.push(errMsg);
           recordSttError('gemini', detailedError, groupId);
         }
       }
 
-      // 3. Try OpenAI Whisper API
+      // 3. Try OpenAI Whisper API (Multilingual auto-detection)
       if (!transcribedText && (sttEngine === 'openai' || (sttEngine === 'auto' && openAiKey))) {
         usedEngine = 'openai';
         try {
@@ -432,7 +471,10 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           const body = new FormData();
           body.append('file', formData, 'audio.ogg');
           body.append('model', 'whisper-1');
-          if (groupLang === 'de') body.append('language', 'de');
+          body.append('response_format', 'verbose_json');
+          if (explicitSttLang && explicitSttLang !== 'auto') {
+            body.append('language', explicitSttLang);
+          }
 
           const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
             method: 'POST',
@@ -465,7 +507,7 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           }
         } catch (e) {
           logger.debug({ error: e.message, cause: e.cause }, 'Whisper STT network failure');
-          const detailedError = formatNetworkError(e, gt, 'OpenAI Whisper');
+          const detailedError = formatNetworkError(e, gt);
           const errMsg = gt('bot_replies.stt_err_whisper_network', { error: detailedError });
           errorsCaptured.push(errMsg);
           recordSttError('openai', detailedError, groupId);

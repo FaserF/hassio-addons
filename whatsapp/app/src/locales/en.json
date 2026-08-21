@@ -787,7 +787,18 @@
     "lang_it_opt": "Italian",
     "timeout_join_label": "Self-Join:",
     "timeout_added_label": "Added:",
-    "enable_stt_private": "Enable Speech-to-Text in private 1:1 chats with bot (Default: Off)"
+    "enable_stt_private": "Enable Speech-to-Text in private 1:1 chats with bot (Default: Off)",
+    "stt_lang_label": "Audio Language:",
+    "stt_lang_auto": "🌐 Auto-Detect (Universal, Default)",
+    "lang_es": "🇪🇸 Spanish (Español)",
+    "lang_fr": "🇫🇷 French (Français)",
+    "lang_it": "🇮🇹 Italian (Italiano)",
+    "lang_nl": "🇳🇱 Dutch (Nederlands)",
+    "lang_pl": "🇵🇱 Polish (Polski)",
+    "lang_tr": "🇹🇷 Turkish (Türkçe)",
+    "lang_ru": "🇷🇺 Russian (Русский)",
+    "lang_uk": "🇺🇦 Ukrainian (Українська)",
+    "lang_ar": "🇸🇦 Arabic (العربية)"
   },
   "telegram": {
     "title": "WhatsApp & Telegram Native Bridge",
@@ -1187,7 +1198,7 @@
     "start_group_msg": "🛡️ *WhatsApp Gateway & Orchestrator Active*\n\nThis group (*{group}*) is actively protected and orchestrated.\n\n• 🧠 *Anti-Spam, Raid & Name Filter:* Active\n• 🔗 *Telegram Bridge:* Connected & Synced\n• 🌍 *Translation & Audio STT:* Ready\n\n📌 *Key Commands:*\n• `{prefix}help` — Full commands directory\n• `{prefix}rules` — Group rules & FAQ\n• `{prefix}info` — User & reputation status",
     "start_private_msg": "🛡️ *Welcome to WhatsApp Gateway & Security Orchestrator*\n_Professional community moderation & platform bridging._\n\n• 🤖 *Automated Protection:* Anti-Spam, Anti-Raid, Content Locks & Name Filters\n• 🔗 *Telegram Bridge:* 2-Way sync of text, media, pins & reactions\n• 🎙️ *Speech-to-Text:* Automatic voice note transcription\n• 🌐 *Multi-Language:* Automated real-time translation\n\n📌 *Quickstart:*\n• `{prefix}help` — View commands directory\n• `{prefix}info` — Check account & permission status\n• Access the Web Console in Home Assistant for advanced orchestrations.",
     "stt_error_details_header": "*Details / Reason:*",
-    "stt_prompt_text": "Transcribe the spoken audio message accurately and verbatim with proper punctuation. Preserve mixed-language speech (such as Denglish or English loanwords) exactly as spoken. Return ONLY the transcribed text without quotes, metadata, or explanations.",
+    "stt_prompt_text": "Transcribe the spoken audio message accurately and verbatim in the original spoken language (such as English, German, French, Spanish, etc.). Auto-detect the spoken language automatically. Preserve mixed-language terms and loanwords. Return ONLY the transcribed text without surrounding quotes or commentary.",
     "stt_err_gemini_empty": "Gemini AI: Response contained no transcribed text.",
     "stt_err_gemini_rate_limit": "Gemini AI API: Rate limit / quota exceeded (HTTP 429).",
     "stt_err_gemini_auth": "Gemini AI API: Invalid or expired API key (HTTP 401/403).",
