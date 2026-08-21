@@ -68,14 +68,10 @@ export function detectLanguageHeuristic(text) {
     ) || []
   ).length;
   const esScore = (
-    lower.match(
-      /\b(el|la|los|las|por|para|con|que|esta|este|como|pero|muy)\b/g
-    ) || []
+    lower.match(/\b(el|la|los|las|por|para|con|que|esta|este|como|pero|muy)\b/g) || []
   ).length;
   const frScore = (
-    lower.match(
-      /\b(le|la|les|des|pour|dans|avec|que|est|sont|mais|nous|vous)\b/g
-    ) || []
+    lower.match(/\b(le|la|les|des|pour|dans|avec|que|est|sont|mais|nous|vous)\b/g) || []
   ).length;
 
   const max = Math.max(deScore, enScore, esScore, frScore);

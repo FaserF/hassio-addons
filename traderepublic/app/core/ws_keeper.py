@@ -235,7 +235,9 @@ class TRWebSocketKeeper:
                 resp = await self._ws.recv()
                 _LOGGER.info("WS Keeper: handshake response: %s", resp)
                 resp_str = str(resp)
-                if not resp or ("connected" not in resp_str and "26" not in resp_str and "success" not in resp_str.lower()):
+                if not resp or (
+                    "connected" not in resp_str and "26" not in resp_str and "success" not in resp_str.lower()
+                ):
                     if "401" in resp_str or "error" in resp_str.lower():
                         _LOGGER.warning("WS Keeper: TR rejected handshake — token invalid")
                         self.is_authenticated = False
