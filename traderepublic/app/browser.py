@@ -224,9 +224,16 @@ class TradeRepublicBrowserService:
         """Perform active page interaction and token extraction to keep session alive."""
         async with self._lock:
             try:
-                await self.cdp.send_cmd("Page.reload", {})
-                await asyncio.sleep(4)
+                # 1. First check if current session token is still valid via WebSocket
+                if self.session_token:
+                    is_valid = await self.verify_token_validity(self.session_token)
+                    if is_valid:
+                        self.is_logged_in = True
+                        self.last_error = None
+                        self.status_message = "Everything is connected and running normally. Session renewed 24/7."
+                        return self.session_token
 
+                # 2. If token check was negative, try gentle in-page interaction (no blind hard reload)
                 touch_script = """
                 (() => {
                     try {
@@ -239,36 +246,30 @@ class TradeRepublicBrowserService:
                 })()
                 """
                 await self.cdp.send_cmd("Runtime.evaluate", {"expression": touch_script})
-                await asyncio.sleep(2)
+                await asyncio.sleep(1)
 
                 token = await self.auth_helper.extract_token_from_cookies()
-                if token:
+                if token and token != self.session_token:
                     is_valid = await self.verify_token_validity(token)
                     if is_valid:
-                        self.is_logged_in = True
-                        self.last_error = None
-                        self.status_message = "Everything is connected and running normally. Session renewed 24/7."
+                        await self.save_session(token)
                         return token
-                    else:
-                        _LOGGER.warning("Extracted token failed validity check")
+
+                # 3. Only if token is definitely invalid after interaction, mark expired
+                if self.session_token:
+                    is_still_valid = await self.verify_token_validity(self.session_token)
+                    if not is_still_valid:
+                        _LOGGER.warning("Trade Republic WebSocket rejected session token")
                         self.is_logged_in = False
                         self.status_message = "Session token expired. Please re-authenticate."
                         self.last_error = (
                             "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
                         )
                         return None
-                else:
-                    # Fallback to saved session token if browser DOM has not re-rendered cookies yet
-                    if self.session_token:
-                        is_valid = await self.verify_token_validity(self.session_token)
-                        if is_valid:
-                            self.is_logged_in = True
-                            self.last_error = None
-                            return self.session_token
-                    _LOGGER.warning("No token extracted during refresh")
-                    return self.session_token
+
+                return self.session_token
             except Exception as e:
-                _LOGGER.warning("Session refresh failed: %s", e)
+                _LOGGER.debug("Session refresh attempt info: %s", e)
             return self.session_token
 
     async def _keepalive_loop(self) -> None:
