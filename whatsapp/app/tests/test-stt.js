@@ -123,18 +123,14 @@ const errRefused = new TypeError('fetch failed');
 errRefused.cause = { code: 'ECONNREFUSED', message: 'connect ECONNREFUSED 127.0.0.1:8000' };
 const formattedRefused = formatNetworkError(errRefused, dummyGt, 'AegisBot Server');
 assert.ok(
-  formattedRefused.includes('Verbindung abgelehnt') ||
-    formattedRefused.includes('nicht erreichbar')
+  formattedRefused.includes('Verbindung abgelehnt') || formattedRefused.includes('nicht erreichbar')
 );
 console.log('✅ PASSED: formatNetworkError descriptively explains ECONNREFUSED');
 
 const errNotFound = new TypeError('fetch failed');
 errNotFound.cause = { code: 'ENOTFOUND', message: 'getaddrinfo ENOTFOUND aegisbot' };
 const formattedNotFound = formatNetworkError(errNotFound, dummyGt, 'AegisBot Server');
-assert.ok(
-  formattedNotFound.includes('Host nicht gefunden') ||
-    formattedNotFound.includes('DNS')
-);
+assert.ok(formattedNotFound.includes('Host nicht gefunden') || formattedNotFound.includes('DNS'));
 console.log('✅ PASSED: formatNetworkError descriptively explains ENOTFOUND');
 
 // Test 13: detectLanguageHeuristic recognizes languages correctly
