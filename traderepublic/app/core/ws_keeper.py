@@ -192,15 +192,32 @@ class TRWebSocketKeeper:
                 ping_timeout=20,
                 close_timeout=5,
             )
-        except Exception as exc:
-            err_str = str(exc)
-            if "401" in err_str or getattr(exc, "status_code", None) == 401:
-                _LOGGER.warning("WS Keeper: TR rejected token (HTTP 401) — stopping until new token")
-                self.is_authenticated = False
-                self.last_error = "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+        except Exception as first_exc:
+            # If cookies-only upgrade rejected, try with Authorization Bearer header
+            if "401" in str(first_exc) or getattr(first_exc, "status_code", None) == 401:
+                auth_headers = {
+                    "User-Agent": _USER_AGENT,
+                    "Origin": "https://app.traderepublic.com",
+                    "Authorization": f"Bearer {clean}",
+                    "Cookie": headers["Cookie"],
+                }
+                try:
+                    self._ws = await websockets.connect(
+                        _TR_WS_URL,
+                        ssl=ssl_ctx,
+                        additional_headers=auth_headers,
+                        ping_interval=20,
+                        ping_timeout=20,
+                        close_timeout=5,
+                    )
+                except Exception:
+                    _LOGGER.warning("WS Keeper: TR rejected token (HTTP 401) — stopping until new token")
+                    self.is_authenticated = False
+                    self.last_error = "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+                    return False
+            else:
+                _LOGGER.debug("WS Keeper: connection error: %s", first_exc)
                 return False
-            _LOGGER.debug("WS Keeper: connection error: %s", exc)
-            return False
 
         # Handshake
         handshake = {**_HANDSHAKE_PAYLOAD, "token": clean}
