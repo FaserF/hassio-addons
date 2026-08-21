@@ -134,6 +134,20 @@
           </div>
         </div>
       </div>
+      <div style="margin-top:0.9rem;padding-top:0.75rem;border-top:1px solid rgba(255,255,255,0.08);display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:0.75rem;font-size:0.8rem;">
+        <div>
+          <span style="color:var(--muted);" data-i18n="lbl_last_data">Last Data Live-Sync:</span>
+          <b id="last-data-time" style="color:#f8fafc;margin-left:0.35rem;">{{ last_data_sec }}</b>
+        </div>
+        <div>
+          <span style="color:var(--muted);" data-i18n="lbl_last_token">Token Last Renewed:</span>
+          <b id="last-token-time" style="color:#f8fafc;margin-left:0.35rem;">{{ last_token_sec }}</b>
+        </div>
+        <div>
+          <span style="color:var(--muted);" data-i18n="lbl_last_login">Last In-App Login:</span>
+          <b id="last-login-time" style="color:#f8fafc;margin-left:0.35rem;">{{ last_login_sec }}</b>
+        </div>
+      </div>
     </div>
     <div class="info-banner">
       💡 <b data-i18n="all_set_title">Everything is set up!</b>
@@ -245,6 +259,24 @@
     if (syncEl) {
       const rawSec = {% if last_sync_sec is not none %}{{ last_sync_sec }}{% else %}null{% endif %};
       syncEl.textContent = formatLastSync(rawSec);
+    }
+
+    const dataEl = document.getElementById('last-data-time');
+    if (dataEl) {
+      const rawDataSec = {% if last_data_sec is not none %}{{ last_data_sec }}{% else %}null{% endif %};
+      dataEl.textContent = formatLastSync(rawDataSec);
+    }
+
+    const tokenEl = document.getElementById('last-token-time');
+    if (tokenEl) {
+      const rawTokSec = {% if last_token_sec is not none %}{{ last_token_sec }}{% else %}null{% endif %};
+      tokenEl.textContent = formatLastSync(rawTokSec);
+    }
+
+    const loginEl = document.getElementById('last-login-time');
+    if (loginEl) {
+      const rawLoginSec = {% if last_login_sec is not none %}{{ last_login_sec }}{% else %}null{% endif %};
+      loginEl.textContent = formatLastSync(rawLoginSec);
     }
 
     const langEnBtn = document.getElementById('lang-en');

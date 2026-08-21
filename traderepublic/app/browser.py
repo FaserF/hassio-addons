@@ -31,6 +31,8 @@ class TradeRepublicBrowserService:
         self.last_error: Optional[str] = None
         self.client_requests_count: int = 0
         self.token_verified_at: Optional[float] = None
+        self.last_login_time: Optional[float] = None
+        self.last_token_update_time: Optional[float] = None
         self.last_interaction_type: str = "None"
         self.last_interaction_details: str = "No interactions yet"
         self.request_counts_by_type: dict[str, int] = {
@@ -139,6 +141,8 @@ class TradeRepublicBrowserService:
                 _LOGGER.info("Loaded session token from disk — keeper will verify connection shortly")
 
     async def save_session(self, token: str, phone: Optional[str] = None) -> None:
+        import time
+
         if not token:
             _LOGGER.warning("Attempted to save empty session token")
             return
@@ -147,6 +151,9 @@ class TradeRepublicBrowserService:
         if phone:
             self.phone_number = phone
         self.is_logged_in = True
+        self.last_token_update_time = time.time()
+        if self.login_started_at:
+            self.last_login_time = time.time()
         self.status_message = "Everything is connected and running normally. Re-login is only required if your session expires or if you experience connection issues."
         self.last_error = None
         self.session_manager.save(clean_tok, self.phone_number)
