@@ -240,6 +240,14 @@ jobs:
             echo "✅ Root package-lock.json is valid JSON"
           fi
 
+      - name: 🧪 Run Repository & AGENTS Tests
+        run: |
+          if [ -d tests ]; then
+            python3 -m pip install --upgrade pip
+            pip install pytest
+            pytest tests/
+          fi
+
   # --------------------------------------------------------------------------------
   lint:
     name: 🧹 Lint & Validate
