@@ -188,6 +188,7 @@ class TradeRepublicBrowserService:
 
                 self.phone_number = clean_phone
                 self.is_logged_in = False
+                self._last_invalidated_token = self.session_token
                 self.session_token = None
                 self.login_started_at = time.time()
 
@@ -233,8 +234,10 @@ class TradeRepublicBrowserService:
         """Poll for session token in background for 120s after credentials submission."""
         from core.verifier import verify_tr_token
 
-        # Remember the old token so we don't waste WS connections re-verifying it
-        old_token = self.session_token
+        # Remember the old token so we don't treat old cookies as new login
+        invalid_tokens = set()
+        if getattr(self, "_last_invalidated_token", None):
+            invalid_tokens.add(self._last_invalidated_token)
 
         for _ in range(40):
             await asyncio.sleep(3)
@@ -248,8 +251,8 @@ class TradeRepublicBrowserService:
             token = await self.auth_helper.extract_token_from_cookies()
             if not token:
                 continue
-            # Skip the old (known-invalid) token to avoid spamming TR with 401 verifications
-            if token == old_token:
+            # Skip any known invalid / previous tokens
+            if token in invalid_tokens:
                 continue
             # New token appeared — verify it once via direct WS check
             is_valid = await verify_tr_token(token)
@@ -259,8 +262,8 @@ class TradeRepublicBrowserService:
                 _LOGGER.info("App approval detected! Session saved and WS keeper restarted.")
                 break
             else:
-                # Token present but invalid — update old_token so we don't re-check it
-                old_token = token
+                # Token present but invalid — record so we don't re-check it
+                invalid_tokens.add(token)
 
     async def submit_2fa(self, code: str) -> Dict[str, Any]:
         """Submit 2FA code or check In-App approval via CDP."""

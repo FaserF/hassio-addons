@@ -82,11 +82,5 @@ async def verify_tr_token(token: str) -> bool:
             await ws.close()
 
     except Exception as e:
-        err_str = str(e).lower()
-        # 401 = definitely invalid token
-        if "401" in err_str or "unauth" in err_str or "rejected" in err_str:
-            _LOGGER.warning("Token validation rejected by Trade Republic: %s", e)
-            return False
-        # Network/timeout errors = inconclusive, assume still valid to avoid false expiry
-        _LOGGER.debug("Token validation network error (assuming still valid): %s", e)
-        return True
+        _LOGGER.warning("Token validation failed with error: %s", e)
+        return False
