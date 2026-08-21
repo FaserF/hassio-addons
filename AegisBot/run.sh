@@ -325,19 +325,21 @@ VERSION=$(bashio::config 'version' | xargs)
 bashio::log.info "Target Version: $VERSION"
 
 # Log Level
-if bashio::config.has_value 'log_level'; then
-	LOG_LEVEL=$(bashio::config 'log_level')
-	LOG_LEVEL=$(echo "$LOG_LEVEL" | tr '[:lower:]' '[:upper:]')
-	case "$LOG_LEVEL" in
-	TRACE | DEBUG) LOG_LEVEL="DEBUG" ;;
-	INFO | NOTICE) LOG_LEVEL="INFO" ;;
-	WARNING | WARN) LOG_LEVEL="WARNING" ;;
-	ERROR | FATAL) LOG_LEVEL="ERROR" ;;
-	*) LOG_LEVEL="INFO" ;;
-	esac
-	export LOG_LEVEL
-	bashio::log.info "Log level set to: $LOG_LEVEL"
+if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
+	bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+	LOG_LEVEL="info"
 fi
+bashio::log.level "${LOG_LEVEL}"
+LOG_LEVEL=$(echo "$LOG_LEVEL" | tr '[:lower:]' '[:upper:]')
+case "$LOG_LEVEL" in
+TRACE | DEBUG) LOG_LEVEL="DEBUG" ;;
+INFO | NOTICE) LOG_LEVEL="INFO" ;;
+WARNING | WARN) LOG_LEVEL="WARNING" ;;
+ERROR | FATAL) LOG_LEVEL="ERROR" ;;
+*) LOG_LEVEL="INFO" ;;
+esac
+export LOG_LEVEL
+bashio::log.info "Log level set to: $LOG_LEVEL"
 
 # Database Configuration
 DB_TYPE=$(bashio::config 'database.type')

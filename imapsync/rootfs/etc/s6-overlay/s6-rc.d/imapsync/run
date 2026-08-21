@@ -230,13 +230,11 @@ bashio::log.info "Starting Imapsync Add-on (Service Boot)..."
 
 # Global configuration
 SYNC_INTERVAL=$(bashio::config 'sync_interval' '3600')
-LOG_LEVEL=$(bashio::config 'log_level' 'info')
-
-# Validate logs
-if ! bashio::log.has_level "${LOG_LEVEL}"; then
-    bashio::log.warning "Invalid log_level '${LOG_LEVEL}'. Defaulting to info."
+if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
     LOG_LEVEL="info"
 fi
+bashio::log.level "${LOG_LEVEL}"
 
 # Validate interval
 if [[ ! "${SYNC_INTERVAL}" =~ ^[0-9]+$ ]] || { [[ "${SYNC_INTERVAL}" -ne 0 ]] && [[ "${SYNC_INTERVAL}" -lt 90 ]]; }; then

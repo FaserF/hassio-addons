@@ -23,7 +23,7 @@ options:
   github_token: ""
 
 schema:
-  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?
   keep_alive_interval: int
   auto_install_integration: bool
   github_token: str?

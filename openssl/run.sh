@@ -223,7 +223,10 @@ fi
 set -e
 
 # Configure log level
-log_level=$(bashio::config 'log_level')
+if ! log_level=$(bashio::config 'log_level') || [ -z "$log_level" ]; then
+	bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+	log_level="info"
+fi
 bashio::log.level "${log_level}"
 bashio::log.info "Log level set to ${log_level}"
 

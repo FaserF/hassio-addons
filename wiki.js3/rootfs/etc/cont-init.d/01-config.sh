@@ -4,7 +4,11 @@
 ssl=$(bashio::config 'ssl')
 certfile=$(bashio::config 'certfile')
 keyfile=$(bashio::config 'keyfile')
-log_level=$(bashio::config 'log_level')
+if ! log_level=$(bashio::config 'log_level') || [ -z "$log_level" ]; then
+	bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+	log_level="info"
+fi
+bashio::log.level "${log_level}"
 
 # Retrieve config variables
 host="localhost"

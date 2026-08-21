@@ -222,11 +222,11 @@ if type bashio::log.blue > /dev/null 2>&1; then
     _show_app_banner
 fi
 
-# </App_BANNER_INJECTION>
-
-if bashio::config.has_value 'log_level'; then
-    bashio::log.level "$(bashio::config 'log_level')"
+if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+    LOG_LEVEL="info"
 fi
+bashio::log.level "${LOG_LEVEL}"
 
 # Fix/Create stats file (must be raw number, not JSON)
 if [ ! -f "/data/stats.json" ] || grep -q "{" "/data/stats.json"; then

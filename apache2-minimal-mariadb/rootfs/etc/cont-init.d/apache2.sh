@@ -18,8 +18,11 @@ phpini=$(bashio::config 'php_ini')
 username=$(bashio::config 'username')
 password=$(bashio::config 'password')
 default_conf=$(bashio::config 'default_conf')
-default_ssl_conf=$(bashio::config 'default_ssl_conf')
-log_level=$(bashio::config 'log_level')
+if ! log_level=$(bashio::config 'log_level') || [ -z "$log_level" ]; then
+	bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+	log_level="info"
+fi
+bashio::log.level "${log_level}"
 webrootdocker=/var/www/localhost/htdocs/
 phppath=/etc/php85/php.ini
 

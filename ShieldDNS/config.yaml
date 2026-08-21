@@ -37,7 +37,7 @@ schema:
   prefer_encrypted: bool?
   certfile: str
   keyfile: str
-  log_level: list(debug|info|warning|error|fatal)?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?
   dot_port: port?
   doh_port: port?
   fallback_dns: bool?

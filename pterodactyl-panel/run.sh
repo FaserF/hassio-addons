@@ -500,7 +500,11 @@ fi
 sed -i "s|^APP_ENV=.*|APP_ENV=production|" .env
 
 # Map log_level to APP_DEBUG
-log_level=$(bashio::config 'log_level')
+if ! log_level=$(bashio::config 'log_level') || [ -z "$log_level" ]; then
+	bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+	log_level="info"
+fi
+bashio::log.level "${log_level}"
 case "${log_level}" in
 trace | debug) app_debug="true" ;;
 info | notice | warning | warn | error | fatal) app_debug="false" ;;

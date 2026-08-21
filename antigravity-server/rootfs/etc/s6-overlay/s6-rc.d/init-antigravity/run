@@ -340,19 +340,21 @@ EOF
 chmod +x /home/dev/.config/tigervnc/xstartup
 
 # Configure Log Level
-ANTIGRAVITY_LOG_LEVEL="info"
-if bashio::config.has_value 'log_level'; then
-    LOG_LEVEL=$(bashio::config 'log_level')
-    case "${LOG_LEVEL}" in
-        trace)       ANTIGRAVITY_LOG_LEVEL="trace" ;;
-        debug)       ANTIGRAVITY_LOG_LEVEL="debug" ;;
-        info|notice) ANTIGRAVITY_LOG_LEVEL="info" ;;
-        warning)     ANTIGRAVITY_LOG_LEVEL="warn" ;;
-        error)       ANTIGRAVITY_LOG_LEVEL="error" ;;
-        fatal)       ANTIGRAVITY_LOG_LEVEL="critical" ;;
-        *)           ANTIGRAVITY_LOG_LEVEL="info" ;;
-    esac
+if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+    LOG_LEVEL="info"
 fi
+bashio::log.level "${LOG_LEVEL}"
+ANTIGRAVITY_LOG_LEVEL="info"
+case "${LOG_LEVEL}" in
+    trace)       ANTIGRAVITY_LOG_LEVEL="trace" ;;
+    debug)       ANTIGRAVITY_LOG_LEVEL="debug" ;;
+    info|notice) ANTIGRAVITY_LOG_LEVEL="info" ;;
+    warning)     ANTIGRAVITY_LOG_LEVEL="warn" ;;
+    error)       ANTIGRAVITY_LOG_LEVEL="error" ;;
+    fatal)       ANTIGRAVITY_LOG_LEVEL="critical" ;;
+    *)           ANTIGRAVITY_LOG_LEVEL="info" ;;
+esac
 
 # 2. Configure Antigravity Autostart (Idempotent)
 if bashio::config.true 'autostart_antigravity'; then

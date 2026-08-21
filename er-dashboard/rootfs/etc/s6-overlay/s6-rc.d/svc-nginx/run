@@ -4,7 +4,11 @@
 bashio::log.info "Starting Nginx..."
 
 # Map Bashio log_level to Nginx log_level
-log_level=$(bashio::config 'log_level')
+if ! log_level=$(bashio::config 'log_level') || [ -z "$log_level" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+    log_level="info"
+fi
+bashio::log.level "${log_level}"
 nginx_log_level="warn"
 case "${log_level}" in
     trace|debug) nginx_log_level="debug" ;;

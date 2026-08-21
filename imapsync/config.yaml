@@ -46,7 +46,7 @@ options:
 schema:
   # Minimum 90 seconds to prevent overlapping sync cycles
   sync_interval: int(90,)
-  log_level: list(trace|debug|info|warning|error)?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?
   jobs:
     - source_host: "str"
       source_user: "str"

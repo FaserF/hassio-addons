@@ -29,7 +29,7 @@ options:
   privacy_policy_url: ""
   auto_install_integration: true
 schema:
-  log_level: list(debug|info|warning|error|fatal)?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?
   workers: int?
   imprint_name: str?
   imprint_address: str?

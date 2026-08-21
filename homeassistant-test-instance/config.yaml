@@ -20,6 +20,6 @@ options:
   copy_host_data: false
   enable_automations: false
 schema:
-  log_level: list(trace|debug|info|warning|error|fatal)
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?
   copy_host_data: bool?
   enable_automations: bool?

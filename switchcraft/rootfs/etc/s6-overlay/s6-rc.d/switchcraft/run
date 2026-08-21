@@ -232,7 +232,11 @@ set -e
 bashio::log.info "Starting SwitchCraft App Service..."
 
 # Get Config
-LOG_LEVEL=$(bashio::config 'log_level')
+if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+    LOG_LEVEL="info"
+fi
+bashio::log.level "${LOG_LEVEL}"
 bashio::log.info "Log Level: ${LOG_LEVEL}"
 
 # handle flet_secret

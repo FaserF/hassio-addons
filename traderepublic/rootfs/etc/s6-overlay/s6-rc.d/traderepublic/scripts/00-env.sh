@@ -3,7 +3,12 @@
 # shellcheck shell=bash
 
 export KEEP_ALIVE_INTERVAL=$(bashio::config 'keep_alive_interval' 600)
-export LOG_LEVEL=$(bashio::config 'log_level' 'info')
+if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
+	bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+	LOG_LEVEL="info"
+fi
+bashio::log.level "${LOG_LEVEL}"
+export LOG_LEVEL
 
 # Detect Home Assistant config directory (/config or /homeassistant)
 HA_CONFIG_ROOT=""

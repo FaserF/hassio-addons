@@ -223,7 +223,11 @@ fi
 set -e
 
 # Read options using bashio
-LOG_LEVEL=$(bashio::config 'log_level' 'info')
+if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
+    bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+    LOG_LEVEL="info"
+fi
+bashio::log.level "${LOG_LEVEL}"
 SCAN_INTERVAL=$(bashio::config 'scan_interval' '1800')
 ADAPTIVE_POLLING=$(bashio::config 'adaptive_polling' 'true')
 FAST_POLL_INTERVAL=$(bashio::config 'fast_poll_interval' '180')

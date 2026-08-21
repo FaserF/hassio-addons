@@ -264,8 +264,10 @@ ln -sf "$config_file" /etc/pterodactyl/config.yml
 
 # Map log level to debug flag in config.yml
 if ! log_level=$(bashio::config 'log_level') || [ -z "$log_level" ]; then
+	bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
 	log_level="info"
 fi
+bashio::log.level "${log_level}"
 
 case "${log_level}" in
 trace | debug) wings_debug="true" ;;

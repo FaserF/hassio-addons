@@ -235,11 +235,11 @@ else
 	bashio::exit.nok
 fi
 
-if bashio::config.exists 'log_level'; then
-	log_level=$(bashio::config 'log_level')
-else
+if ! log_level=$(bashio::config 'log_level') || [ -z "$log_level" ]; then
+	bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
 	log_level="info"
 fi
+bashio::log.level "${log_level}"
 bashio::log.info "Log level: $log_level"
 
 # Helpful hint for self-hosting

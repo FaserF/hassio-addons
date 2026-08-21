@@ -241,7 +241,11 @@ if [ -f "/data/options.json" ] && [ -n "$(command -v bashio::config)" ]; then
 	PREFER_ENCRYPTED=$(bashio::config 'prefer_encrypted')
 	CERT_FILE=$(bashio::config 'certfile')
 	KEY_FILE=$(bashio::config 'keyfile')
-	LOG_LEVEL=$(bashio::config 'log_level')
+	if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
+		bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+		LOG_LEVEL="info"
+	fi
+	bashio::log.level "${LOG_LEVEL}"
 	DOT_PORT=$(bashio::config 'dot_port')
 	DOH_PORT=$(bashio::config 'doh_port')
 	FALLBACK_DNS_ENABLED=$(bashio::config 'fallback_dns')

@@ -226,9 +226,11 @@ set -eo pipefail
 
 username=$(bashio::config 'username')
 password=$(bashio::config 'password')
-minTemp=$(bashio::config 'minTemp')
-maxTemp=$(bashio::config 'maxTemp')
-log_level=$(bashio::config 'log_level')
+if ! log_level=$(bashio::config 'log_level') || [ -z "$log_level" ]; then
+	bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
+	log_level="info"
+fi
+bashio::log.level "${log_level}"
 
 # Validate credentials
 if [ -z "$username" ] || [ "$username" = "null" ] || [ -z "$password" ] || [ "$password" = "null" ]; then
