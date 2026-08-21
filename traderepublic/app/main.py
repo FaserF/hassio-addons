@@ -167,6 +167,10 @@ async def get_index(request: Request):
     if browser_service.last_token_update_time:
         last_token_sec = int(time.time() - browser_service.last_token_update_time)
 
+    last_checked_sec: Optional[int] = None
+    if browser_service.token_verified_at:
+        last_checked_sec = int(time.time() - browser_service.token_verified_at)
+
     all_i18n: dict[str, Any] = {}
     i18n_dir = os.path.join(static_dir, "i18n")
     if os.path.exists(i18n_dir):
@@ -193,6 +197,7 @@ async def get_index(request: Request):
             "last_data_sec": last_data_sec,
             "last_login_sec": last_login_sec,
             "last_token_sec": last_token_sec,
+            "last_checked_sec": last_checked_sec,
             "last_interaction_type": browser_service.last_interaction_type,
             "last_interaction_details": browser_service.last_interaction_details,
             "request_counts_by_type": browser_service.request_counts_by_type,
@@ -213,6 +218,7 @@ async def get_status():
         "last_error": browser_service.last_error,
         "requests_count": browser_service.client_requests_count,
         "last_sync_time": browser_service.last_sync_time,
+        "last_checked_time": browser_service.token_verified_at,
         "last_data_update_time": getattr(browser_service._ws_keeper, "last_data_update_time", None),
         "last_login_time": browser_service.last_login_time,
         "last_token_update_time": browser_service.last_token_update_time,
@@ -220,6 +226,7 @@ async def get_status():
         "last_interaction_details": browser_service.last_interaction_details,
         "request_counts_by_type": browser_service.request_counts_by_type,
     }
+
 
 
 @app.get("/api/v1/session", dependencies=[Security(require_supervisor_auth)])

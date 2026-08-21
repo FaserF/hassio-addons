@@ -120,21 +120,34 @@
         <div class="status-item">
           <div class="status-label" data-i18n="lbl_ha_interaction">Home Assistant Interaction</div>
           <div class="status-value" style="color:#60a5fa;" id="ha-sync-val">
-            <span id="ha-sync-time">{{ last_sync }}</span> ({{ requests_count }} <span data-i18n="queries">queries</span>)
+            <span id="ha-sync-time">{{ last_sync }}</span> (<span id="ha-req-count">{{ requests_count }}</span> <span data-i18n="queries">queries</span>)
           </div>
           <div style="font-size:0.75rem;color:#94a3b8;margin-top:0.25rem;" id="ha-interaction-detail">
-            {{ last_interaction_type }}: {{ last_interaction_details }}
+            {% if last_interaction_type == 'None' %}
+              <span data-i18n="interaction_no_details">No interactions yet</span>
+            {% elif last_interaction_type == 'Live Data Fetch' %}
+              <span data-i18n="interaction_data_fetch">Live Data Fetch</span>: {{ last_interaction_details }}
+            {% elif last_interaction_type == 'Session Token Sync' %}
+              <span data-i18n="interaction_session_sync">Session Token Sync</span>
+            {% else %}
+              {{ last_interaction_type }}: {{ last_interaction_details }}
+            {% endif %}
           </div>
         </div>
         <div class="status-item">
           <div class="status-label" data-i18n="lbl_health">Integration Health</div>
           <div class="status-value" style="color:#4ade80;" data-i18n="health_ok">✓ Healthy &amp; Operational</div>
           <div style="font-size:0.75rem;color:#94a3b8;margin-top:0.25rem;">
-            Data: {{ request_counts_by_type.get('data', 0) }} | Session: {{ request_counts_by_type.get('session', 0) }}
+            <span data-i18n="lbl_data_count">Data</span>: <b id="ha-data-count">{{ request_counts_by_type.get('data', 0) }}</b> |
+            <span data-i18n="lbl_session_count">Session</span>: <b id="ha-session-count">{{ request_counts_by_type.get('session', 0) }}</b>
           </div>
         </div>
       </div>
       <div style="margin-top:0.9rem;padding-top:0.75rem;border-top:1px solid rgba(255,255,255,0.08);display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:0.75rem;font-size:0.8rem;">
+        <div>
+          <span style="color:var(--muted);" data-i18n="lbl_last_checked">Session Last Checked:</span>
+          <b id="last-checked-time" style="color:#f8fafc;margin-left:0.35rem;">{{ last_checked_sec }}</b>
+        </div>
         <div>
           <span style="color:var(--muted);" data-i18n="lbl_last_data">Last Data Live-Sync:</span>
           <b id="last-data-time" style="color:#f8fafc;margin-left:0.35rem;">{{ last_data_sec }}</b>
@@ -259,6 +272,12 @@
     if (syncEl) {
       const rawSec = {% if last_sync_sec is not none %}{{ last_sync_sec }}{% else %}null{% endif %};
       syncEl.textContent = formatLastSync(rawSec);
+    }
+
+    const checkEl = document.getElementById('last-checked-time');
+    if (checkEl) {
+      const rawCheckSec = {% if last_checked_sec is not none %}{{ last_checked_sec }}{% else %}null{% endif %};
+      checkEl.textContent = formatLastSync(rawCheckSec);
     }
 
     const dataEl = document.getElementById('last-data-time');
@@ -434,6 +453,75 @@
       resEl.innerHTML = '<span style="color:#ef4444;">' + t('js_req_error') + e + '</span>';
     }
   }
+
+  // ── Periodic Live Status Polling (every 3s) ───────────────────────────
+  setInterval(async () => {
+    try {
+      const res = await fetch('./api/v1/status');
+      if (!res.ok) return;
+      const st = await res.json();
+
+      // If logged in state changed, reload to render correct step card
+      const currentlyLoggedIn = {% if is_logged_in and not last_error %}true{% else %}false{% endif %};
+      if (st.is_logged_in !== currentlyLoggedIn) {
+        window.location.reload();
+        return;
+      }
+
+      // Update counters
+      const reqCountEl = document.getElementById('ha-req-count');
+      if (reqCountEl && st.requests_count !== undefined) reqCountEl.textContent = st.requests_count;
+
+      const dataCountEl = document.getElementById('ha-data-count');
+      if (dataCountEl && st.request_counts_by_type) dataCountEl.textContent = st.request_counts_by_type.data || 0;
+
+      const sessCountEl = document.getElementById('ha-session-count');
+      if (sessCountEl && st.request_counts_by_type) sessCountEl.textContent = st.request_counts_by_type.session || 0;
+
+      // Update interaction details
+      const detailEl = document.getElementById('ha-interaction-detail');
+      if (detailEl) {
+        const itype = st.last_interaction_type || 'None';
+        const idetail = st.last_interaction_details || '';
+        if (itype === 'None') {
+          detailEl.textContent = t('interaction_no_details');
+        } else if (itype === 'Live Data Fetch') {
+          detailEl.textContent = t('interaction_data_fetch') + (idetail ? ': ' + idetail : '');
+        } else if (itype === 'Session Token Sync') {
+          detailEl.textContent = t('interaction_session_sync');
+        } else {
+          detailEl.textContent = itype + (idetail ? ': ' + idetail : '');
+        }
+      }
+
+      // Update timestamps
+      const now = Date.now() / 1000;
+      const syncEl = document.getElementById('ha-sync-time');
+      if (syncEl && st.last_sync_time) {
+        syncEl.textContent = formatLastSync(Math.max(0, Math.floor(now - st.last_sync_time)));
+      }
+
+      const checkEl = document.getElementById('last-checked-time');
+      if (checkEl && st.last_checked_time) {
+        checkEl.textContent = formatLastSync(Math.max(0, Math.floor(now - st.last_checked_time)));
+      }
+
+      const dataEl = document.getElementById('last-data-time');
+      if (dataEl && st.last_data_update_time) {
+        dataEl.textContent = formatLastSync(Math.max(0, Math.floor(now - st.last_data_update_time)));
+      }
+
+      const tokEl = document.getElementById('last-token-time');
+      if (tokEl && st.last_token_update_time) {
+        tokEl.textContent = formatLastSync(Math.max(0, Math.floor(now - st.last_token_update_time)));
+      }
+
+      const loginEl = document.getElementById('last-login-time');
+      if (loginEl && st.last_login_time) {
+        loginEl.textContent = formatLastSync(Math.max(0, Math.floor(now - st.last_login_time)));
+      }
+    } catch {}
+  }, 3000);
 </script>
 </body>
 </html>
