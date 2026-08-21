@@ -161,6 +161,25 @@ class TradeRepublicBrowserService:
                 # session — otherwise TR suppresses the push notification to the app.
                 self._ws_keeper.stop()
 
+                # Clear stale session cookies from Chromium so that
+                # _poll_for_app_approval won't find and re-verify the old expired token
+                try:
+                    await self.cdp.send_cmd("Network.clearBrowserCookies", {})
+                    clear_storage_script = """
+                    (() => {
+                        try {
+                            ['sessionToken','tr_session','tr_session_id','auth_token'].forEach(k => {
+                                localStorage.removeItem(k);
+                                sessionStorage.removeItem(k);
+                            });
+                        } catch(e) {}
+                    })()
+                    """
+                    await self.cdp.send_cmd("Runtime.evaluate", {"expression": clear_storage_script})
+                    _LOGGER.debug("Cleared stale session cookies before login")
+                except Exception as clear_err:  # noqa: BLE001
+                    _LOGGER.debug("Could not clear cookies before login: %s", clear_err)
+
                 self.status_message = "Navigating to Trade Republic login..."
                 login_res = await self.auth_helper.execute_login(clean_phone, clean_pin)
 
@@ -180,6 +199,9 @@ class TradeRepublicBrowserService:
         """Poll for session token in background for 120s after credentials submission."""
         from core.verifier import verify_tr_token
 
+        # Remember the old token so we don't waste WS connections re-verifying it
+        old_token = self.session_token
+
         for _ in range(40):
             await asyncio.sleep(3)
             if self.is_logged_in:
@@ -190,15 +212,21 @@ class TradeRepublicBrowserService:
                 self.last_error = "Authentication timed out. The 2FA confirmation window has expired."
                 break
             token = await self.auth_helper.extract_token_from_cookies()
-            if token:
-                # During login the keeper is stopped — use one-off verifier directly
-                is_valid = await verify_tr_token(token)
-                if is_valid:
-                    await self.save_session(token)
-                    # save_session calls update_token → keeper restarts with new token
-                    self._ws_keeper.start()
-                    _LOGGER.info("App approval detected! Session saved and WS keeper restarted.")
-                    break
+            if not token:
+                continue
+            # Skip the old (known-invalid) token to avoid spamming TR with 401 verifications
+            if token == old_token:
+                continue
+            # New token appeared — verify it once via direct WS check
+            is_valid = await verify_tr_token(token)
+            if is_valid:
+                await self.save_session(token)
+                self._ws_keeper.start()
+                _LOGGER.info("App approval detected! Session saved and WS keeper restarted.")
+                break
+            else:
+                # Token present but invalid — update old_token so we don't re-check it
+                old_token = token
 
     async def submit_2fa(self, code: str) -> Dict[str, Any]:
         """Submit 2FA code or check In-App approval via CDP."""
