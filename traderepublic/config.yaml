@@ -1,8 +1,6 @@
-name: "Trade Republic Headless Browser"
-version: "0.1.0"
+name: "Trade Republic Headless Browser (Edge)"
+version: "0.1.1-dev-20260822-0927-555dde0"
 slug: "traderepublic"
-
-image: ghcr.io/faserf/hassio-addons-traderepublic-{arch}
 description: "Trade Republic Headless Browser & Session Provider (WAF Solver & Keep-Alive)."
 url: "https://github.com/FaserF/ha-traderepublic"
 arch:

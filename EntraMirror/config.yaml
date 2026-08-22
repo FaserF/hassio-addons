@@ -1,8 +1,7 @@
 ---
-name: EntraMirror
-version: "0.1.0"
+name: EntraMirror (Edge)
+version: "0.1.1-dev-20260821-1457-7ddda20"
 slug: entramirror
-image: ghcr.io/faserf/hassio-addons-entramirror-{arch}
 description: Microsoft Entra ID Tenant Backup, Restore, Synchronization & Cloning for Home Assistant.
 url: https://github.com/FaserF/EntraMirror
 arch:
@@ -16,7 +15,7 @@ panel_icon: mdi:cloud-sync
 startup: services
 
 ports:
-  8094/tcp: 8094
+  8094/tcp: 18094
 ports_description:
   8094/tcp: Web Interface (HTTP)
 map:
