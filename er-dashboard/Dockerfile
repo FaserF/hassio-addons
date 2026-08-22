@@ -25,6 +25,8 @@ ENV APP_VERSION="1.4.7"
 ENV APP_NAME="ER-Startseite (Dashboard)"
 ENV APP_SLUG="er-dashboard"
 ENV APP_UNSUPPORTED="false"
+ENV PIP_BREAK_SYSTEM_PACKAGES=1 \
+    PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1
 
 RUN \
     ALPINE_VERSION=$(cat /etc/alpine-release 2>/dev/null | cut -d. -f1,2 || echo "3.24") \
@@ -44,6 +46,10 @@ RUN \
         python3 \
         py3-pip \
         py3-greenlet \
+        py3-pydantic \
+        py3-pydantic-core \
+        py3-fastapi \
+        py3-httpx \
         su-exec \
     \
     && pip3 install --no-cache-dir --upgrade pip
