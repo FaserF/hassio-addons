@@ -99,6 +99,19 @@ def get_git_log_for_addon(addon_path, since_tag=None, ignore_tag=None):
         # Fallback: If no tag found, search for the last "release(slug)" or "release(addon_name)" commit
         if not tag and not since_tag:
             try:
+                addon_slug = addon_name
+                # Read slug from config.yaml if present
+                config_file = os.path.join(addon_path, "config.yaml")
+                if os.path.isfile(config_file):
+                    try:
+                        with open(config_file, "r", encoding="utf-8") as f:
+                            for line in f:
+                                if line.startswith("slug:"):
+                                    addon_slug = line.split(":", 1)[1].strip().strip("\"'")
+                                    break
+                    except Exception:
+                        pass
+
                 # Search for specific "release(addon_name)" in commit messages with --fixed-strings
                 for pattern in [f"release({addon_name})", f"release({addon_slug})"]:
                     result = subprocess.run(
@@ -416,28 +429,31 @@ def generate_changelog_entry(version, addon_path, changelog_message=None, existi
 
             pass
 
-        for category, items in categories.items():
-            if items:
-                entry += f"### {category}\n"
-                for item in items[:15]:  # Limit increased
-                    entry += f"- {item}\n"
-                entry += "\n"
+        has_entries = any(bool(items) for items in categories.values())
+        if has_entries:
+            for category, items in categories.items():
+                if items:
+                    entry += f"### {category}\n"
+                    for item in items[:15]:  # Limit increased
+                        entry += f"- {item}\n"
+                    entry += "\n"
 
-        if changelog_message and changelog_message not in [
-            "Manual release via Orchestrator",
-            "Automatic release after dependency update",
-        ]:
-            entry += f"### 📌 Release Note\n- {changelog_message}\n\n"
-
-        # If we had existing content, we might want to preserve "Release Note" styled things.
-        if existing_entry:
-            pass
+            if changelog_message and changelog_message not in [
+                "Manual release via Orchestrator",
+                "Automatic release after dependency update",
+            ]:
+                entry += f"### 📌 Release Note\n- {changelog_message}\n\n"
+        else:
+            if changelog_message:
+                entry += f"- {changelog_message}\n\n"
+            else:
+                entry += f"- Release version {version}\n\n"
 
     else:
         if changelog_message:
             entry += f"- {changelog_message}\n\n"
         else:
-            entry += f"- Bump version to {version}\n\n"
+            entry += f"- Release version {version}\n\n"
 
     return entry
 
