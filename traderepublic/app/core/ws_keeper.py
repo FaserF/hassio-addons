@@ -321,7 +321,7 @@ class TRWebSocketKeeper:
             try:
                 net_size = float(pos.get("netSize", 0.0))
                 average_buy_in = float(pos.get("averageBuyIn", 0.0))
-            except ValueError, TypeError:
+            except (ValueError, TypeError):
                 continue
 
             pos_invested = net_size * average_buy_in
@@ -394,7 +394,7 @@ class TRWebSocketKeeper:
         try:
             sub_id = int(sub_id_str)
             payload = json.loads(payload_str)
-        except ValueError, json.JSONDecodeError, TypeError:
+        except (ValueError, json.JSONDecodeError, TypeError):
             return
 
         # Check main subscriptions
@@ -429,11 +429,13 @@ class TRWebSocketKeeper:
                 if api_rate is not None:
                     try:
                         self.latest_data["api_interest_rate"] = float(api_rate)
-                    except ValueError, TypeError:
+                    except (ValueError, TypeError):
                         pass
                 self._recalculate_portfolio()
 
         elif sub_type == "savingsPlans":
+            import time
+
             count = 0
             if isinstance(payload, list):
                 count = len(payload)
@@ -441,14 +443,20 @@ class TRWebSocketKeeper:
                 plans = payload.get("savingsPlans") or payload.get("items") or payload.get("data") or []
                 count = len(plans) if isinstance(plans, list) else int(payload.get("count", 0))
             self.latest_data["savings_plans_count"] = count
+            self.last_data_update_time = time.time()
             _LOGGER.debug("WS Keeper: updated savings_plans_count to %s", count)
 
         elif sub_type == "card":
+            import time
+
             self.latest_data["card_status"] = payload.get("status", "INACTIVE")
             self.latest_data["card_saveback_earned"] = float(payload.get("savebackEarned") or 0.0)
             self.latest_data["card_saveback_limit"] = float(payload.get("savebackLimit") or 0.0)
+            self.last_data_update_time = time.time()
 
         elif sub_type == "timeline":
+            import time
+
             items = payload.get("items", [])
             txs = []
             for item in items[:5]:
@@ -465,6 +473,7 @@ class TRWebSocketKeeper:
                     }
                 )
             self.latest_data["recent_transactions"] = txs
+            self.last_data_update_time = time.time()
 
         elif sub_id in self._ticker_subs:
             # Ticker price update
@@ -480,7 +489,7 @@ class TRWebSocketKeeper:
                         if p is not None:
                             try:
                                 return float(p)
-                            except ValueError, TypeError:
+                            except (ValueError, TypeError):
                                 pass
                     return None
 

@@ -152,6 +152,10 @@ class TradeRepublicBrowserService:
         if data:
             self.session_token = data.get("session_token")
             self.phone_number = data.get("phone_number")
+            updated_at = data.get("updated_at")
+            if updated_at:
+                self.last_token_update_time = float(updated_at)
+                self.last_login_time = float(updated_at)
             if self.session_token:
                 # Inject cookies into Chromium immediately so the page stays authenticated
                 await self.auth_helper.inject_session_cookies(self.session_token)
@@ -344,13 +348,19 @@ class TradeRepublicBrowserService:
                     self.status_message = "Everything is connected and running normally. Session renewed 24/7."
                     return self.session_token
 
-                # Keeper detected auth failure — try to extract a fresh token from browser
+                # Keeper detected auth failure — try to extract and verify a fresh token from browser
                 _LOGGER.info("WS Keeper not authenticated — attempting token extraction from Chromium")
                 browser_token = await self.auth_helper.extract_token_from_cookies()
                 if browser_token and browser_token != self.session_token:
-                    _LOGGER.info("Extracted new token from Chromium cookies, updating session")
-                    await self.save_session(browser_token)
-                    return browser_token
+                    from core.verifier import verify_tr_token
+
+                    is_valid = await verify_tr_token(browser_token)
+                    if is_valid:
+                        _LOGGER.info("Extracted and verified new token from Chromium cookies, updating session")
+                        await self.save_session(browser_token)
+                        self._ws_keeper.start()
+                        return browser_token
+                    _LOGGER.warning("Extracted token from Chromium cookies is invalid or rejected")
 
                 # If keeper explicitly got a 401, mark session as expired
                 if self._ws_keeper.last_error and "401" in self._ws_keeper.last_error:
