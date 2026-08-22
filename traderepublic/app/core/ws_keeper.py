@@ -29,9 +29,11 @@ _HANDSHAKE_PAYLOAD = {
 }
 _USER_AGENT = USER_AGENT
 
-# Keepalive heartbeat interval — send a lightweight sub every 60 s to keep the
-# connection alive. TR drops idle connections after ~90 s.
+# Keepalive heartbeat interval — send lightweight echo/ping every 60 s to prevent idle timeout
 _HEARTBEAT_INTERVAL = 60
+
+# Data refresh interval for active categories (5 minutes) — prevents TR rate limits while keeping data fresh
+_DATA_REFRESH_INTERVAL = 300
 
 # Back-off caps
 _RECONNECT_DELAY_MIN = 5.0
@@ -503,6 +505,40 @@ class TRWebSocketKeeper:
                     self._prices[isin] = price
                     self._recalculate_portfolio()
 
+    async def _periodic_refresh_loop(self) -> None:
+        """Periodically re-request active category subscriptions (every 5 min) to ensure fresh data without rate limiting."""
+        cat_type_map = {
+            "portfolio": "compactPortfolioByType",
+            "cash": "cash",
+            "savings": "savingsPlans",
+            "card": "card",
+            "timeline": "timeline",
+        }
+        while self._ws is not None and self.is_authenticated:
+            try:
+                await asyncio.sleep(_DATA_REFRESH_INTERVAL)
+                if not self._ws or not self.is_authenticated:
+                    break
+                for cat in list(self.active_categories):
+                    if cat in cat_type_map and self._ws:
+                        sub_id = self._sub_counter
+                        self._sub_counter += 1
+                        old_sub = self._subscribed_categories.get(cat)
+                        if old_sub:
+                            self._sub_map.pop(old_sub, None)
+                            try:
+                                await self._ws.send(f"unsub {old_sub}")
+                            except Exception:  # noqa: BLE001
+                                pass
+                        self._subscribed_categories[cat] = sub_id
+                        self._sub_map[sub_id] = cat
+                        await self._ws.send(f'sub {sub_id} {{"type":"{cat_type_map[cat]}"}}')
+                        await asyncio.sleep(0.5)
+            except asyncio.CancelledError:
+                break
+            except Exception as exc:
+                _LOGGER.debug("WS Keeper: periodic refresh cycle info: %s", exc)
+
     async def _receive_loop(self) -> None:
         """Drain incoming messages from persistent subscriptions to update latest_data."""
         while self._ws is not None:
@@ -537,9 +573,11 @@ class TRWebSocketKeeper:
                 await asyncio.sleep(delay)
                 continue
 
+            refresh_task = asyncio.create_task(self._periodic_refresh_loop())
             try:
                 await self._receive_loop()
             finally:
+                refresh_task.cancel()
                 await self._close_ws()
                 self._ws = None
 
