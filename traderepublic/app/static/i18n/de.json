@@ -30,6 +30,8 @@
   "health_ok": "✓ Aktiv & in Betrieb",
   "all_set_title": "Alles eingerichtet!",
   "all_set_body": "Home Assistant ruft automatisch deine Portfolio- und Kontowerte ab. Du musst diese Seite nur aufrufen, wenn du deine Zugangsdaten änderst oder deine Session abläuft.",
+  "restart_notice_title": "Wichtiger Hinweis zu Add-on-Neustarts:",
+  "restart_notice_body": "Trade Republic bindet aktive Anmeldungen direkt an die laufende Live-Verbindung. Wird das Add-on neu gestartet oder aktualisiert, beendet Trade Republic die Sitzung serverseitig. Nach einem Neustart genügt eine kurze 1-Klick-Bestätigung in deiner Trade Republic Smartphone-App.",
   "btn_reauth": "🔄 Erneut anmelden / Konto wechseln",
   "btn_check_session": "🔍 Anmeldesitzung prüfen",
   "btn_cancel_reauth": "✖ Erneute Anmeldung abbrechen",

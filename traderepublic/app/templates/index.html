@@ -163,8 +163,14 @@
       </div>
     </div>
     <div class="info-banner">
-      💡 <b data-i18n="all_set_title">Everything is set up!</b>
-      <span data-i18n="all_set_body">Home Assistant will automatically fetch portfolio and cash values. You only need to interact with this page if you change your credentials or your session expires.</span>
+      <div style="margin-bottom:0.6rem;">
+        💡 <b data-i18n="all_set_title">Everything is set up!</b>
+        <span data-i18n="all_set_body">Home Assistant will automatically fetch portfolio and cash values. You only need to interact with this page if you change your credentials or your session expires.</span>
+      </div>
+      <div style="padding-top:0.6rem;border-top:1px solid rgba(59,130,246,0.25);font-size:0.85rem;color:#93c5fd;">
+        ℹ️ <b data-i18n="restart_notice_title">Important note regarding Add-on restarts:</b>
+        <span data-i18n="restart_notice_body">Trade Republic links active sessions directly to the running live connection. When this Add-on is stopped or restarted, Trade Republic terminates the session on their servers, requiring a quick 1-tap re-confirmation in your Trade Republic app.</span>
+      </div>
     </div>
     <div style="display:flex;gap:0.75rem;margin-top:0.75rem;">
       <button onclick="checkSession()" class="btn-secondary" id="check-session-btn" style="margin-top:0;" data-i18n="btn_check_session">🔍 Check Session Status</button>

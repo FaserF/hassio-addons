@@ -30,6 +30,8 @@
   "health_ok": "✓ Healthy & Operational",
   "all_set_title": "Everything is set up!",
   "all_set_body": "Home Assistant will automatically fetch portfolio and cash values. You only need to interact with this page if you change your credentials or your session expires.",
+  "restart_notice_title": "Important note regarding Add-on restarts:",
+  "restart_notice_body": "Trade Republic links active sessions directly to the running live connection. When this Add-on is stopped or restarted, Trade Republic terminates the session on their servers, requiring a quick 1-tap re-confirmation in your Trade Republic app.",
   "btn_reauth": "🔄 Re-authenticate / Switch Account",
   "btn_check_session": "🔍 Check Session Status",
   "btn_cancel_reauth": "✖ Cancel Re-login",
