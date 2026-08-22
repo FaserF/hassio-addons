@@ -273,6 +273,7 @@ jobs:
         uses: ludeeus/action-shellcheck@2.0.0
         with:
           scandir: "./${{ matrix.App }}"
+          format: tty
         env:
           SHELLCHECK_OPTS: -s bash -e SC2086
 
