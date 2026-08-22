@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-08-21T15:14:40.654278",
+  "timestamp": "2026-08-22T20:46:07.644906",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -28,7 +28,7 @@
     {
       "slug": "EntraMirror",
       "name": "EntraMirror",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Microsoft Entra ID Tenant Backup, Restore, Synchronization & Cloning for Home Assistant.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-entramirror-{arch}",
@@ -418,7 +418,7 @@
     {
       "slug": "whatsapp",
       "name": "WhatsApp Gateway",
-      "version": "2.1.1",
+      "version": "2.1.2",
       "description": "Home Assistant WhatsApp App (Baileys/Node.js).",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-whatsapp-{arch}",
@@ -749,7 +749,15 @@
     "wordpress/rootfs/etc/nginx/templates": ["http.conf", "https.conf"],
     "wordpress/rootfs/etc/nginx/includes": ["php.conf", "server_params.conf"],
     "wordpress/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
-    "whatsapp": ["API.md", "CHANGELOG.md", "DOCS.md", "Dockerfile", "README.md", "config.yaml"],
+    "whatsapp": [
+      "API.md",
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
     "whatsapp/app": ["eslint.config.js", "index.js", "package.json", "requirements.txt"],
     "whatsapp/app/src": [
       "config.js",
