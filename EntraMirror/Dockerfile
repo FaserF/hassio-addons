@@ -18,7 +18,7 @@ ENV PATH="/usr/local/bin:/root/.local/bin:${PATH}"
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.1.0"
+ENV APP_VERSION="0.1.1"
 ENV APP_NAME="EntraMirror"
 ENV APP_SLUG="entramirror"
 ENV APP_UNSUPPORTED="false"

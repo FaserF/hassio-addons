@@ -1,6 +1,6 @@
 ---
 name: EntraMirror
-version: "0.1.0"
+version: "0.1.1"
 slug: entramirror
 image: ghcr.io/faserf/hassio-addons-entramirror-{arch}
 description: Microsoft Entra ID Tenant Backup, Restore, Synchronization & Cloning for Home Assistant.
