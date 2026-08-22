@@ -1093,9 +1093,8 @@ jobs:
       - name: 🏗️ Build & Push App
         if: matrix.App != 'sap-abap-cloud-dev'
         run: |
-          # Read architectures from config.yaml
-          # shellcheck disable=SC2001,SC2046
-          ARCHS=$(grep -A 10 "^arch:" "${{ matrix.App }}/config.yaml" | grep -E "^\s+-" | sed 's/^\s*-\s*//' | tr '\n' ' ' | xargs || echo "")
+          # Read architectures from config.yaml safely with yq
+          ARCHS=$(yq -r '.arch[]' "${{ matrix.App }}/config.yaml" 2>/dev/null | tr '\n' ' ' | xargs || echo "")
 
           # Default to amd64 and aarch64 if no arches found
           if [ -z "$ARCHS" ]; then
@@ -1162,21 +1161,25 @@ jobs:
             echo "VERSION=$VERSION"
           } >> "$GITHUB_ENV"
 
-          # Extract build_from from build.yaml (legacy format)
-          BUILD_FROM_AMD64=$(yq -r '.build_from.amd64' "${{ matrix.App }}/build.yaml")
-          if [ "$BUILD_FROM_AMD64" == "null" ] || [ -z "$BUILD_FROM_AMD64" ]; then
-            BUILD_FROM_AMD64=$(yq -r '.build_from' "${{ matrix.App }}/build.yaml")
-          fi
-          if [ "$BUILD_FROM_AMD64" == "null" ] || [ -z "$BUILD_FROM_AMD64" ]; then
-            BUILD_FROM_AMD64=""
-          fi
+          # Extract build_from from build.yaml (legacy format) if file exists
+          BUILD_FROM_AMD64=""
+          BUILD_FROM_AARCH64=""
+          if [ -f "${{ matrix.App }}/build.yaml" ]; then
+            BUILD_FROM_AMD64=$(yq -r '.build_from.amd64' "${{ matrix.App }}/build.yaml" 2>/dev/null || echo "")
+            if [ "$BUILD_FROM_AMD64" == "null" ] || [ -z "$BUILD_FROM_AMD64" ]; then
+              BUILD_FROM_AMD64=$(yq -r '.build_from' "${{ matrix.App }}/build.yaml" 2>/dev/null || echo "")
+            fi
+            if [ "$BUILD_FROM_AMD64" == "null" ]; then
+              BUILD_FROM_AMD64=""
+            fi
 
-          BUILD_FROM_AARCH64=$(yq -r '.build_from.aarch64' "${{ matrix.App }}/build.yaml")
-          if [ "$BUILD_FROM_AARCH64" == "null" ] || [ -z "$BUILD_FROM_AARCH64" ]; then
-            BUILD_FROM_AARCH64=$(yq -r '.build_from' "${{ matrix.App }}/build.yaml")
-          fi
-          if [ "$BUILD_FROM_AARCH64" == "null" ] || [ -z "$BUILD_FROM_AARCH64" ]; then
-            BUILD_FROM_AARCH64=""
+            BUILD_FROM_AARCH64=$(yq -r '.build_from.aarch64' "${{ matrix.App }}/build.yaml" 2>/dev/null || echo "")
+            if [ "$BUILD_FROM_AARCH64" == "null" ] || [ -z "$BUILD_FROM_AARCH64" ]; then
+              BUILD_FROM_AARCH64=$(yq -r '.build_from' "${{ matrix.App }}/build.yaml" 2>/dev/null || echo "")
+            fi
+            if [ "$BUILD_FROM_AARCH64" == "null" ]; then
+              BUILD_FROM_AARCH64=""
+            fi
           fi
 
           BUILD_DESCRIPTION=$(yq -r '.description' "${{ matrix.App }}/config.yaml" 2>/dev/null || echo "")
