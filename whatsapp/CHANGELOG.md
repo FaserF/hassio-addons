@@ -3,6 +3,7 @@
 ## 2.1.3 (2026-08-22)
 
 ### ✨ Features
+
 - universal multi-language auto-detection and language configuration ([`e768b8db`](https://github.com/FaserF/hassio-addons/commit/e768b8dbda817f3c973f114dbd9a559039499aed))
 - prevent auto-translating bot-own messages, poll updates & add !commands alias ([`eabc3b3e`](https://github.com/FaserF/hassio-addons/commit/eabc3b3e147d9cdd1f86c9b4513793a023d73629))
 - add smart captcha timeouts, restart persistence, silent STT handling & i18n parity ([`93c61baf`](https://github.com/FaserF/hassio-addons/commit/93c61baf91b8b4ae91318de2888f88315224cf47))
@@ -11,16 +12,18 @@
 - fix dashboard UI render error and centralize translation header stripping ([`ec48af76`](https://github.com/FaserF/hassio-addons/commit/ec48af76cf718d9db44b40399a8fbbb455571759))
 
 ### 🐛 Bug Fixes
+
 - release workflow fixes ([`9855a73c`](https://github.com/FaserF/hassio-addons/commit/9855a73cbd810e669851ee07336b8f1df9b3c4e8))
 - resolve LID for private goodbye DMs & graceful fallback on connection closed ([`0f97fab6`](https://github.com/FaserF/hassio-addons/commit/0f97fab68305506ce43aa76c5621c1cea0d9df61))
 
 ### 📦 Dependencies
+
 - ⬆️ Update dependency eslint to v10.9.0 (#1003) ([`603ab786`](https://github.com/FaserF/hassio-addons/commit/603ab7865461793d92c5be93c3e76a60f126acc1))
 
 ### 🚀 Other
+
 - Standardize log_level configuration and handling across all add-ons ([`7ddda206`](https://github.com/FaserF/hassio-addons/commit/7ddda206529ef9453a58d36af03969ed975a8e66))
 - small fix ([`5c053a55`](https://github.com/FaserF/hassio-addons/commit/5c053a55cfb9ba977c4c7660233be0a506b38b57))
-
 
 ## 2.1.2 (2026-08-22)
 
