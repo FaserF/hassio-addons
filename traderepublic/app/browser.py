@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional
 
 from core.auth import AuthHelper
 from core.cdp import CDPClient
-from core.constants import CDP_PORT, DATA_DIR, KEEP_ALIVE_INTERVAL
+from core.constants import CDP_PORT, DATA_DIR, KEEP_ALIVE_INTERVAL, USER_AGENT
 from core.session_manager import SessionManager
 from core.ws_keeper import TRWebSocketKeeper
 
@@ -79,7 +79,7 @@ class TradeRepublicBrowserService:
                 "--disable-dev-shm-usage",
                 "--disable-gpu",
                 "--disable-blink-features=AutomationControlled",
-                "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                f"--user-agent={USER_AGENT}",
                 "about:blank",
             ]
             _LOGGER.info("Launching headless Chromium via CDP...")

@@ -16,6 +16,8 @@ from typing import Any, Callable, Optional
 
 import websockets
 
+from .constants import USER_AGENT
+
 _LOGGER = logging.getLogger(__name__)
 
 _TR_WS_URL = "wss://api.traderepublic.com"
@@ -25,9 +27,7 @@ _HANDSHAKE_PAYLOAD = {
     "appVersion": "4.120.0",
     "osVersion": "10.0.0",
 }
-_USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
-)
+_USER_AGENT = USER_AGENT
 
 # Keepalive heartbeat interval — send a lightweight sub every 60 s to keep the
 # connection alive. TR drops idle connections after ~90 s.

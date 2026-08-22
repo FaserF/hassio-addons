@@ -5,6 +5,8 @@ import ssl
 
 import websockets
 
+from .constants import USER_AGENT
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -19,7 +21,7 @@ async def verify_tr_token(token: str) -> bool:
     try:
         ssl_ctx = ssl.create_default_context()
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+            "User-Agent": USER_AGENT,
             "Origin": "https://app.traderepublic.com",
             "Cookie": f"tr_session={clean_token}; tr_session_id={clean_token}; sessionToken={clean_token}",
         }

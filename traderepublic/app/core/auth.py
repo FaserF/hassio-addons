@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional
 import aiohttp
 
 from .cdp import CDPClient
+from .constants import USER_AGENT
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -230,7 +231,7 @@ class AuthHelper:
             waf_token = await self.get_waf_token()
             headers = {
                 "Content-Type": "application/json",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                "User-Agent": USER_AGENT,
                 "Origin": "https://app.traderepublic.com",
                 "Referer": "https://app.traderepublic.com/login",
             }
