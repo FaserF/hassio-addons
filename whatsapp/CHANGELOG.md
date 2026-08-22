@@ -3,8 +3,8 @@
 ## 2.1.2 (2026-08-22)
 
 ### 🐛 Bug Fixes
-- reset to 2.1.1 baseline and fix bump_version previous commit lookup ([`03ba1591`](https://github.com/FaserF/hassio-addons/commit/03ba1591e4f3baaf2ff546e75b3e53b5b141b255))
 
+- reset to 2.1.1 baseline and fix bump_version previous commit lookup ([`03ba1591`](https://github.com/FaserF/hassio-addons/commit/03ba1591e4f3baaf2ff546e75b3e53b5b141b255))
 
 ## 2.1.1 (2026-08-19)
 
