@@ -754,10 +754,33 @@ export async function handleModerationParticipantUpdate(session, update) {
 
         const goodbyeTarget = config.greetings.goodbye_target || 'private';
         if (goodbyeTarget === 'private') {
-          // Attempt Private DM delivery to leaving user first
-          const sentDM = await reply(session, participantJid, { text: goodbyeMsg });
+          // Resolve direct phone JID for leaving user (bare LIDs cannot receive unestablished DMs)
+          let targetDmJid = participantJid;
+          if (targetDmJid && targetDmJid.endsWith('@lid') && session?.contactCache) {
+            for (const c of session.contactCache.values()) {
+              if (c.lid === targetDmJid || c.id === targetDmJid) {
+                if (c.id && c.id.endsWith('@s.whatsapp.net')) {
+                  targetDmJid = c.id;
+                  break;
+                }
+              }
+            }
+          }
+          if (!targetDmJid || targetDmJid.endsWith('@lid')) {
+            const canonicalPhone = resolveCanonicalUserKey(participantJid, session);
+            if (canonicalPhone && /^\d+$/.test(canonicalPhone)) {
+              targetDmJid = `${canonicalPhone}@s.whatsapp.net`;
+            }
+          }
+
+          let sentDM = null;
+          if (targetDmJid && !targetDmJid.endsWith('@lid')) {
+            sentDM = await reply(session, targetDmJid, { text: goodbyeMsg }, null, {
+              silentFail: true,
+            });
+          }
           if (!sentDM) {
-            // Fallback to group if DM fails
+            // Gracefully fallback to group if DM delivery fails or user only has an unresolvable LID
             await reply(session, groupId, { text: goodbyeMsg }, rawMsg);
           }
         } else {

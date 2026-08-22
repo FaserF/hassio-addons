@@ -138,12 +138,27 @@ export async function reply(session, jid, content, quotedMsg = null, options = {
     return null;
   }
 
+  let targetJid = String(jid || '').trim();
+  if (targetJid && !targetJid.includes('@')) {
+    targetJid = `${targetJid}@s.whatsapp.net`;
+  }
+  if (targetJid.endsWith('@lid') && session?.contactCache) {
+    for (const c of session.contactCache.values()) {
+      if (c.lid === targetJid || c.id === targetJid) {
+        if (c.id && c.id.endsWith('@s.whatsapp.net')) {
+          targetJid = c.id;
+          break;
+        }
+      }
+    }
+  }
+
   // Check Outbound Anti-Spam Guard (Exempt: Telegram Relay / skipSpamGuard)
   if (!options?.skipSpamGuard && !options?.isTelegramRelay) {
-    const spamCheck = await checkBotOutboundSpamGuard(session, jid, options);
+    const spamCheck = await checkBotOutboundSpamGuard(session, targetJid, options);
     if (!spamCheck.allowed) {
       if (spamCheck.triggerWarning) {
-        const groupCfg = jid.endsWith('@g.us') ? getGroupModerationConfig(jid) : null;
+        const groupCfg = targetJid.endsWith('@g.us') ? getGroupModerationConfig(targetJid) : null;
         const lang = groupCfg?.language || 'en';
         const warningText = t(lang, 'bot_replies.outbound_spam_warning', {
           msgCount: spamCheck.msgCount,
@@ -153,7 +168,7 @@ export async function reply(session, jid, content, quotedMsg = null, options = {
         try {
           await enqueue(session, () =>
             session.sock.sendMessage(
-              jid,
+              targetJid,
               { text: warningText },
               quotedMsg ? { quoted: quotedMsg } : {}
             )
@@ -169,24 +184,41 @@ export async function reply(session, jid, content, quotedMsg = null, options = {
     const sendOptions = quotedMsg ? { quoted: quotedMsg } : {};
     const contentObj = typeof content === 'string' ? { text: content } : content;
     const result = await enqueue(session, () =>
-      session.sock.sendMessage(jid, contentObj, sendOptions)
+      session.sock.sendMessage(targetJid, contentObj, sendOptions)
     );
     if (result && result.key && result.key.id && session.messageStore) {
       session.messageStore.set(result.key.id, result);
     }
     const text = contentObj.text || '[Mixed Content]';
-    const target = jid.includes('@g.us') ? jid : jid.split('@')[0].split(':')[0];
+    const target = targetJid.includes('@g.us') ? targetJid : targetJid.split('@')[0].split(':')[0];
 
     trackSent(session, target, text);
     return result;
   } catch (err) {
-    const text = typeof content === 'string' ? content : content?.text || '[Mixed Content]';
-    const reasonText = err?.message || String(err || 'Unknown sending error');
-    trackFailure(session, jid, text, reasonText);
-    logger.error({ error: reasonText, jid }, 'Failed to send reply');
-    session.stats.failed = (session.stats.failed || 0) + 1;
-    session.stats.lifetime_failed = (session.stats.lifetime_failed || 0) + 1;
-    logger.debug({ sessionId: session.id, jid: maskData(jid) }, '📉 Stat: Failed incremented');
+    if (
+      !options?.isRetry &&
+      (err?.message?.includes('Connection Closed') ||
+        err?.message?.includes('Socket closed') ||
+        err?.output?.statusCode === 428)
+    ) {
+      await delay(1000);
+      if (session.sock) {
+        return reply(session, targetJid, content, quotedMsg, { ...options, isRetry: true });
+      }
+    }
+
+    if (!options?.silentFail) {
+      const text = typeof content === 'string' ? content : content?.text || '[Mixed Content]';
+      const reasonText = err?.message || String(err || 'Unknown sending error');
+      trackFailure(session, targetJid, text, reasonText);
+      logger.error({ error: reasonText, jid: targetJid }, 'Failed to send reply');
+      session.stats.failed = (session.stats.failed || 0) + 1;
+      session.stats.lifetime_failed = (session.stats.lifetime_failed || 0) + 1;
+      logger.debug(
+        { sessionId: session.id, jid: maskData(targetJid) },
+        '📉 Stat: Failed incremented'
+      );
+    }
     return null;
   }
 }
