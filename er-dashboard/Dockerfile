@@ -74,10 +74,8 @@ RUN \
         cargo \
         rust \
     && pip3 install --no-cache-dir --break-system-packages \
-        fastapi==0.115.8 \
         "uvicorn[standard]==0.34.0" \
-        httpx==0.28.1 \
-        "pydantic[email]==2.10.6" \
+        email-validator \
         pydantic-settings==2.7.1 \
         sqlalchemy==2.0.37 \
         alembic==1.14.1 \
