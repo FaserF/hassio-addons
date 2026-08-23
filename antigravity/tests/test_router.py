@@ -35,7 +35,7 @@ async def test_api_status_and_accounts(mock_app_state):
         res = await client.get("/api/status")
         assert res.status_code == 200
         data = res.json()
-        assert data["version"] == "1.0.0"
+        assert data["version"] == "0.1.0"
         assert data["accounts_count"] == 2
 
         res_accounts = await client.get("/api/accounts")

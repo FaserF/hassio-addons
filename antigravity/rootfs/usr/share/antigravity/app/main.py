@@ -22,11 +22,13 @@ _LOGGER = logging.getLogger("antigravity")
 
 # Paths
 OPTIONS_FILE = os.getenv("ANTIGRAVITY_OPTIONS_PATH", "/data/options.json")
+DATA_DIR = Path(os.getenv("ANTIGRAVITY_DATA_DIR", "/data/antigravity"))
+ACCOUNTS_STORE_FILE = DATA_DIR / "accounts.json"
 UI_DIR = Path(__file__).resolve().parent.parent / "ui"
 
 
 def load_configuration() -> dict:
-    """Load configuration from options.json or environment variables."""
+    """Load configuration from options.json or persistent storage."""
     cfg = {
         "log_level": os.getenv("ANTIGRAVITY_LOG_LEVEL", "info"),
         "scan_interval": int(os.getenv("ANTIGRAVITY_SCAN_INTERVAL", "1800")),
@@ -36,6 +38,7 @@ def load_configuration() -> dict:
         "accounts": [],
     }
 
+    # 1. Read base options from options.json
     if os.path.exists(OPTIONS_FILE):
         try:
             with open(OPTIONS_FILE, "r", encoding="utf-8") as f:
@@ -50,16 +53,22 @@ def load_configuration() -> dict:
         except Exception as ex:
             _LOGGER.warning("Could not read options.json: %s", ex)
 
+    # 2. Check persistent accounts store (created via UI)
+    if ACCOUNTS_STORE_FILE.exists():
+        try:
+            with open(ACCOUNTS_STORE_FILE, "r", encoding="utf-8") as f:
+                saved_accounts = json.load(f)
+                if isinstance(saved_accounts, list) and len(saved_accounts) > 0:
+                    cfg["accounts"] = saved_accounts
+        except Exception as ex:
+            _LOGGER.warning("Could not read accounts store: %s", ex)
+
     return cfg
 
 
 def parse_accounts(raw_accounts: list) -> List[AccountConfig]:
     """Parse list of account dictionaries into AccountConfig objects."""
     accounts: List[AccountConfig] = []
-    if not raw_accounts:
-        # Default placeholder account
-        return [AccountConfig(name="Primary Account")]
-
     for item in raw_accounts:
         if isinstance(item, dict):
             name = item.get("name", "Account")
@@ -67,16 +76,18 @@ def parse_accounts(raw_accounts: list) -> List[AccountConfig]:
             cid = item.get("client_id", "")
             csec = item.get("client_secret", "")
             pid = item.get("project_id", "")
-            accounts.append(
-                AccountConfig(
-                    name=name,
-                    refresh_token=token,
-                    client_id=cid,
-                    client_secret=csec,
-                    project_id=pid,
+            # Only add if has name or token
+            if name or token:
+                accounts.append(
+                    AccountConfig(
+                        name=name,
+                        refresh_token=token,
+                        client_id=cid,
+                        client_secret=csec,
+                        project_id=pid,
+                    )
                 )
-            )
-    return accounts or [AccountConfig(name="Primary Account")]
+    return accounts
 
 
 @asynccontextmanager
@@ -100,7 +111,7 @@ async def lifespan(app: FastAPI):
         adaptive_polling=cfg["adaptive_polling"],
         fast_interval=cfg["fast_poll_interval"],
         idle_interval=cfg["idle_backoff_interval"],
-        version="1.0.0",
+        version="0.1.0",
     )
     app.state.scheduler = scheduler
 
@@ -117,7 +128,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Google Antigravity Addon",
-    version="1.0.0",
+    version="0.1.0",
     description="Google Antigravity Quota Monitor and Ingress Dashboard",
     lifespan=lifespan,
 )

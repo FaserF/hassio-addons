@@ -41,16 +41,17 @@ def test_parse_credentials_input():
 
 
 @pytest.mark.asyncio
-async def test_fetcher_demo_quota():
-    """Test fetching quota in unconfigured demo mode."""
+async def test_fetcher_unconfigured_quota():
+    """Test fetching quota in unconfigured mode (no fake demo data)."""
     fetcher = AntigravityFetcher()
-    acc = AccountConfig(name="Demo Account", refresh_token="")
+    acc = AccountConfig(name="New Account", refresh_token="")
     quota, changed = await fetcher.fetch_quota(acc, None)
 
-    assert quota.account_name == "Demo Account"
-    assert quota.rolling_5h_limit.limit == 50
-    assert quota.weekly_limit.limit == 500
-    assert len(quota.models) > 0
+    assert quota.account_name == "New Account"
+    assert quota.status == "unconfigured"
+    assert quota.rolling_5h_limit.limit == 0
+    assert quota.weekly_limit.limit == 0
+    assert len(quota.models) == 0
     assert changed is True
 
 

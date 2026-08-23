@@ -3,9 +3,14 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
+import os
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Dict, List, Optional
+
+import httpx
 
 from .fetcher import AntigravityFetcher
 from .models import (
@@ -20,6 +25,8 @@ _LOGGER = logging.getLogger(__name__)
 # Constants for Adaptive Polling
 ACTIVITY_WINDOW_SECONDS = 900  # 15 minutes
 IDLE_THRESHOLD_SECONDS = 7200  # 2 hours
+DATA_DIR = Path(os.getenv("ANTIGRAVITY_DATA_DIR", "/data/antigravity"))
+ACCOUNTS_STORE_FILE = DATA_DIR / "accounts.json"
 
 
 class DynamicScheduler:
@@ -32,7 +39,7 @@ class DynamicScheduler:
         adaptive_polling: bool = True,
         fast_interval: int = 180,
         idle_interval: int = 3600,
-        version: str = "1.0.0",
+        version: str = "0.1.0",
     ) -> None:
         self.accounts = accounts
         self.base_interval = max(30, base_interval)
@@ -59,6 +66,72 @@ class DynamicScheduler:
     def update_accounts(self, accounts: List[AccountConfig]) -> None:
         """Update configured accounts."""
         self.accounts = accounts
+
+    async def save_accounts_to_storage(self) -> None:
+        """Persist accounts to /data/antigravity/accounts.json and sync with HA Supervisor."""
+        try:
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+            acc_dicts = [a.model_dump() for a in self.accounts]
+            with open(ACCOUNTS_STORE_FILE, "w", encoding="utf-8") as f:
+                json.dump(acc_dicts, f, indent=2)
+            _LOGGER.info("Saved %d account(s) to %s", len(acc_dicts), ACCOUNTS_STORE_FILE)
+        except Exception as err:
+            _LOGGER.warning("Could not write accounts to storage: %s", err)
+
+        # Synchronize with Home Assistant Supervisor options if SUPERVISOR_TOKEN is available
+        sup_token = os.getenv("SUPERVISOR_TOKEN")
+        if sup_token:
+            try:
+                headers = {
+                    "Authorization": f"Bearer {sup_token}",
+                    "Content-Type": "application/json",
+                }
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    res = await client.post(
+                        "http://supervisor/addons/self/options",
+                        headers=headers,
+                        json={"options": {"accounts": [a.model_dump() for a in self.accounts]}},
+                    )
+                    _LOGGER.info("Supervisor options sync status: %s", res.status_code)
+            except Exception as ex:
+                _LOGGER.debug("Could not sync options to Home Assistant Supervisor: %s", ex)
+
+    async def add_or_update_account(self, account: AccountConfig) -> AccountQuota:
+        """Add or update an account, persist to disk, and poll immediately."""
+        async with self._lock:
+            # Replace existing account with same name, or append
+            idx = next((i for i, a in enumerate(self.accounts) if a.name == account.name), None)
+            if idx is not None:
+                self.accounts[idx] = account
+            else:
+                self.accounts.append(account)
+
+            # Persist
+            await self.save_accounts_to_storage()
+
+            # Poll quota
+            quota, changed = await self.fetcher.fetch_quota(account, self._accounts_data.get(account.name))
+            self._accounts_data[account.name] = quota
+            now = datetime.now(timezone.utc)
+            self.last_polled_at = now
+            if changed or self.last_change_at is None:
+                self.last_change_at = now
+
+        self._wake_event.set()
+        return quota
+
+    async def delete_account(self, account_name: str) -> bool:
+        """Delete an account from configuration and cache."""
+        async with self._lock:
+            initial_count = len(self.accounts)
+            self.accounts = [a for a in self.accounts if a.name != account_name]
+            self._accounts_data.pop(account_name, None)
+
+            if len(self.accounts) < initial_count:
+                await self.save_accounts_to_storage()
+                self._wake_event.set()
+                return True
+            return False
 
     async def start(self) -> None:
         """Start the background polling loop."""
@@ -126,7 +199,6 @@ class DynamicScheduler:
 
         now = datetime.now(timezone.utc)
         if self.last_change_at is None:
-            # Default to base interval if no changes recorded yet
             self.current_interval = self.base_interval
             self.is_fast_polling = False
             self.recent_activity = False
@@ -135,17 +207,14 @@ class DynamicScheduler:
         elapsed_since_change = (now - self.last_change_at).total_seconds()
 
         if elapsed_since_change <= ACTIVITY_WINDOW_SECONDS:
-            # Usage/delta detected in last 15 minutes -> Fast poll
             self.current_interval = self.fast_interval
             self.is_fast_polling = True
             self.recent_activity = True
         elif elapsed_since_change >= IDLE_THRESHOLD_SECONDS:
-            # Unchanged for > 2 hours -> Back off
             self.current_interval = self.idle_interval
             self.is_fast_polling = False
             self.recent_activity = False
         else:
-            # Standard base interval
             self.current_interval = self.base_interval
             self.is_fast_polling = False
             self.recent_activity = False
@@ -157,10 +226,7 @@ class DynamicScheduler:
             self.last_polled_at = now
             any_changed = False
 
-            # If no accounts configured, initialize one default demo account
-            accounts_to_poll = self.accounts if self.accounts else [AccountConfig(name="Primary Account")]
-
-            for acc in accounts_to_poll:
+            for acc in self.accounts:
                 prev_quota = self._accounts_data.get(acc.name)
                 try:
                     quota, changed = await self.fetcher.fetch_quota(acc, prev_quota)
@@ -172,7 +238,7 @@ class DynamicScheduler:
 
             if any_changed or self.last_change_at is None:
                 self.last_change_at = now
-                _LOGGER.info("Quota changes detected. Activity timestamp updated.")
+                _LOGGER.info("Quota check completed. Activity timestamp updated.")
 
             self._recalculate_interval()
             self.next_poll_at = now + timedelta(seconds=self.current_interval)
@@ -194,7 +260,6 @@ class DynamicScheduler:
         else:
             await self.poll_all_accounts(is_manual=True)
 
-        # Signal scheduler loop to wake up and reset interval timers
         self._wake_event.set()
         return self.get_system_status()
 
@@ -204,7 +269,6 @@ class DynamicScheduler:
         accounts_list = list(self._accounts_data.values())
         active_name = accounts_list[0].account_name if accounts_list else ""
 
-        # Calculate remaining seconds until next poll
         if self.next_poll_at:
             rem_sec = max(0, int((self.next_poll_at - now).total_seconds()))
         else:

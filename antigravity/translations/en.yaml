@@ -1,36 +1,36 @@
 configuration:
   log_level:
-    name: Log Level
+    name: "Log Level"
     description: "Controls the verbosity of the addon logs (trace, debug, info, notice, warning, error, fatal)."
   scan_interval:
-    name: Base Scan Interval (Seconds)
+    name: "Base Scan Interval (Seconds)"
     description: "Standard interval in seconds between quota checks (default: 1800s / 30 minutes)."
   adaptive_polling:
-    name: Adaptive Polling
+    name: "Adaptive Polling"
     description: "Automatically increase polling frequency when active usage is detected, and back off during idle periods."
   fast_poll_interval:
-    name: Fast Poll Interval (Seconds)
+    name: "Fast Poll Interval (Seconds)"
     description: "Interval in seconds when active quota consumption was detected within the last 15 minutes (default: 180s / 3 minutes)."
   idle_backoff_interval:
-    name: Idle Backoff Interval (Seconds)
+    name: "Idle Backoff Interval (Seconds)"
     description: "Interval in seconds when no quota usage has occurred for > 2 hours (default: 3600s / 60 minutes)."
   accounts:
-    name: Google Accounts
+    name: "Google Accounts"
     description: "List of Google Antigravity accounts with OAuth refresh tokens."
-  accounts:name:
-    name: Account Name
+  name:
+    name: "Account Name"
     description: "Descriptive name or email for this account."
-  accounts:refresh_token:
-    name: OAuth Refresh Token
-    description: "OAuth 2.0 refresh token for Antigravity access."
-  accounts:client_id:
-    name: Client ID
+  refresh_token:
+    name: "OAuth Refresh Token"
+    description: "OAuth 2.0 refresh token or full credentials JSON for Antigravity access."
+  client_id:
+    name: "Client ID"
     description: "Custom Google Cloud OAuth Client ID (optional, uses default if blank)."
-  accounts:client_secret:
-    name: Client Secret
+  client_secret:
+    name: "Client Secret"
     description: "Custom Google Cloud OAuth Client Secret (optional, uses default if blank)."
-  accounts:project_id:
-    name: Project ID
+  project_id:
+    name: "Project ID"
     description: "Google Cloud Project ID (optional)."
 network:
-  8199/tcp: Antigravity Web UI & REST API
+  8199/tcp: "Antigravity Web UI & REST API"

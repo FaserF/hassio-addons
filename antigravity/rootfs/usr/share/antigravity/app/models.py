@@ -23,28 +23,28 @@ class RollingLimit(BaseModel):
     """5-Hour rolling window request and quota limit."""
 
     used: int = Field(default=0, description="Requests consumed in current 5-hour window")
-    limit: int = Field(default=50, description="Total request limit for 5-hour window")
-    remaining: int = Field(default=50, description="Remaining requests in current window")
+    limit: int = Field(default=0, description="Total request limit for 5-hour window")
+    remaining: int = Field(default=0, description="Remaining requests in current window")
     used_percentage: float = Field(default=0.0, description="Percentage of window quota used (0-100)")
     remaining_percentage: float = Field(default=100.0, description="Percentage of window quota remaining (0-100)")
     resets_at: Optional[str] = Field(
         default=None, description="ISO timestamp when the rolling quota window resets/slides"
     )
     reset_in_seconds: int = Field(default=0, description="Seconds until window reset or next sliding token")
-    reset_display: str = Field(default="5h 00m", description="Human-readable reset countdown")
+    reset_display: str = Field(default="--", description="Human-readable reset countdown")
 
 
 class WeeklyLimit(BaseModel):
     """Weekly quota limit and reset schedule."""
 
     used: int = Field(default=0, description="Total requests consumed this week")
-    limit: int = Field(default=500, description="Total weekly request quota limit")
-    remaining: int = Field(default=500, description="Remaining weekly requests")
+    limit: int = Field(default=0, description="Total weekly request quota limit")
+    remaining: int = Field(default=0, description="Remaining weekly requests")
     used_percentage: float = Field(default=0.0, description="Percentage of weekly quota used (0-100)")
     remaining_percentage: float = Field(default=100.0, description="Percentage of weekly quota remaining (0-100)")
     resets_at: Optional[str] = Field(default=None, description="ISO timestamp of the weekly reset")
     reset_in_seconds: int = Field(default=0, description="Seconds until weekly reset")
-    reset_display: str = Field(default="7d 00h", description="Human-readable weekly reset countdown")
+    reset_display: str = Field(default="--", description="Human-readable weekly reset countdown")
 
 
 class ModelQuota(BaseModel):
@@ -65,8 +65,8 @@ class CreditsStatus(BaseModel):
     balance: float = Field(default=0.0, description="Remaining credit balance amount")
     currency: str = Field(default="USD", description="Currency symbol or name")
     used: float = Field(default=0.0, description="Total credits consumed")
-    display: str = Field(default="$0.00 available", description="Formatted credit string")
-    status: str = Field(default="Active", description="Credits status: Active, Warning, Depleted")
+    display: str = Field(default="$0.00", description="Formatted credit string")
+    status: str = Field(default="Active", description="Credits status: Active, Warning, Depleted, Inactive")
 
 
 class AccountConfig(BaseModel):
@@ -83,15 +83,16 @@ class AccountQuota(BaseModel):
     """Complete quota state for an account."""
 
     account_name: str = Field(..., description="Account identifier / name")
-    email: str = Field(default="unknown@google.com", description="Google user email")
-    project_id: str = Field(default="antigravity-default", description="Associated Project ID")
+    email: str = Field(default="Not configured", description="Google user email")
+    project_id: str = Field(default="", description="Associated Project ID")
     plan: PlanTier = Field(default_factory=PlanTier)
     rolling_5h_limit: RollingLimit = Field(default_factory=RollingLimit)
     weekly_limit: WeeklyLimit = Field(default_factory=WeeklyLimit)
     credits: CreditsStatus = Field(default_factory=CreditsStatus)
     models: List[ModelQuota] = Field(default_factory=list)
-    status: str = Field(default="active", description="Account health: active, rate_limited, unauthenticated, error")
-    error_message: Optional[str] = Field(default=None, description="Error detail if status is error")
+    status: str = Field(default="unconfigured", description="Account health: active, rate_limited, unauthenticated, unconfigured, error")
+    is_demo: bool = Field(default=False, description="Whether this account is operating in simulated demo mode")
+    error_message: Optional[str] = Field(default=None, description="Error detail if status is error or unconfigured")
     last_updated: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
@@ -114,7 +115,7 @@ class SchedulerState(BaseModel):
 class SystemStatus(BaseModel):
     """Aggregated system and quota status response."""
 
-    version: str = Field(default="1.0.0", description="Addon software version")
+    version: str = Field(default="0.1.0", description="Addon software version")
     status: str = Field(default="online", description="Overall addon status: online, degraded, error")
     accounts_count: int = Field(default=0, description="Total number of configured accounts")
     active_account: str = Field(default="", description="Name of the currently selected / primary account")
@@ -136,3 +137,69 @@ class CredentialsTestRequest(BaseModel):
     client_id: Optional[str] = Field(default=None, description="Optional Client ID")
     client_secret: Optional[str] = Field(default=None, description="Optional Client Secret")
     raw_json: Optional[str] = Field(default=None, description="Raw JSON content of oauth_creds.json or ADC")
+
+
+class DeviceAuthStartRequest(BaseModel):
+    """Request to initiate Google OAuth Device Flow."""
+
+    client_id: Optional[str] = Field(default=None, description="Custom Client ID, or default if blank")
+    client_secret: Optional[str] = Field(default=None, description="Custom Client Secret, or default if blank")
+
+
+class DeviceAuthStartResponse(BaseModel):
+    """Response from initiating Google OAuth Device Flow."""
+
+    device_code: str
+    user_code: str
+    verification_url: str
+    expires_in: int
+    interval: int
+
+
+class DeviceAuthPollRequest(BaseModel):
+    """Request to poll for Device Flow completion."""
+
+    device_code: str
+    account_name: str = Field(default="Google Account")
+    client_id: Optional[str] = Field(default=None)
+    client_secret: Optional[str] = Field(default=None)
+    project_id: Optional[str] = Field(default=None)
+
+
+class DeviceAuthPollResponse(BaseModel):
+    """Response from polling Device Flow status."""
+
+    status: str  # pending, success, slow_down, expired, error
+    message: str
+    account_name: Optional[str] = None
+    email: Optional[str] = None
+
+
+class AuthCodeExchangeRequest(BaseModel):
+    """Request to exchange authorization code for refresh token."""
+
+    code: str
+    redirect_uri: Optional[str] = Field(default="urn:ietf:wg:oauth:2.0:oob")
+    account_name: str = Field(default="Google Account")
+    client_id: Optional[str] = Field(default=None)
+    client_secret: Optional[str] = Field(default=None)
+    project_id: Optional[str] = Field(default=None)
+
+
+class AccountCreateRequest(BaseModel):
+    """Request to create or update an account manually."""
+
+    name: str = Field(..., description="Account display name")
+    refresh_token: Optional[str] = Field(default="", description="OAuth refresh token")
+    client_id: Optional[str] = Field(default="")
+    client_secret: Optional[str] = Field(default="")
+    project_id: Optional[str] = Field(default="")
+    raw_json: Optional[str] = Field(default="", description="Raw JSON from ADC or credentials file")
+
+
+class AccountActionResponse(BaseModel):
+    """Generic action response for account creation, deletion, or update."""
+
+    success: bool
+    message: str
+    account: Optional[AccountQuota] = None

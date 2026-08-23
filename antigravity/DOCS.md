@@ -28,10 +28,8 @@ To allow the addon to check your Antigravity quotas, you need an OAuth2 `refresh
 
 ### Method 1: Using Antigravity IDE / Gemini CLI Credentials (Easiest)
 
-If you already use Antigravity IDE or Gemini CLI on your PC, credentials already exist:
-
-- **Windows**: `C:\Users\<YourUsername>\.gemini\antigravity\` or `%APPDATA%\gcloud\application_default_credentials.json`
-- **macOS / Linux**: `~/.gemini/antigravity/` or `~/.config/gcloud/application_default_credentials.json`
+- **Windows**: `C:\Users\<YourUsername>\.gemini\oauth_creds.json`
+- **macOS / Linux**: `~/.gemini/oauth_creds.json` or `~/.config/gcloud/application_default_credentials.json`
 
 Open the JSON file and copy the `refresh_token` string.
 
