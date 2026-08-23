@@ -291,16 +291,21 @@ class TRWebSocketKeeper:
                         self._sub_map[sub_id] = cat
                         await self._ws.send(f'sub {sub_id} {{"type":"{cat_type_map[cat]}"}}')
                 _LOGGER.info("WS Keeper: initial active subscriptions registered (%s)", list(self.active_categories))
-        except Exception as exc:
-            _LOGGER.debug("WS Keeper: handshake/sub failed: %s", exc)
-            await self._close_ws()
-            return False
 
-        self.is_authenticated = True
-        self.last_error = None
-        self._reconnect_delay = _RECONNECT_DELAY_MIN
-        _LOGGER.info("WS Keeper: authenticated and connected to Trade Republic")
-        return True
+                self.is_authenticated = True
+                self.last_error = None
+                self._reconnect_delay = _RECONNECT_DELAY_MIN
+                _LOGGER.info("WS Keeper: authenticated and connected to Trade Republic")
+                return True
+            except Exception as exc:
+                _LOGGER.debug("WS Keeper: handshake/sub failed: %s", exc)
+                await self._close_ws()
+                if attempt < 2:
+                    await asyncio.sleep(2 ** attempt)
+                    continue
+                return False
+
+        return False
 
     def _recalculate_portfolio(self) -> None:
         """Recalculate portfolio metrics from latest in-memory payload & ticker prices."""
