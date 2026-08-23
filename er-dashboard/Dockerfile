@@ -2,11 +2,11 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.2
 
 # Stage 1: Get Frontend Assets
 # renovate: datasource=docker depName=ghcr.io/eidolf/er-startseite/frontend
-FROM ghcr.io/eidolf/er-startseite/frontend:v2026.8.4 AS frontend
+FROM ghcr.io/eidolf/er-startseite/frontend:v2026.8.5 AS frontend
 
 # Stage 2: Get Backend Assets
 # renovate: datasource=docker depName=ghcr.io/eidolf/er-startseite/backend
-FROM ghcr.io/eidolf/er-startseite/backend:v2026.8.4 AS backend
+FROM ghcr.io/eidolf/er-startseite/backend:v2026.8.5 AS backend
 
 # Stage 3: Build Add-on
 # hadolint ignore=DL3006
