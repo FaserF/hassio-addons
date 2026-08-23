@@ -46,7 +46,7 @@ Once the App and integration are configured, check out the following resources t
 - [Installation](https://faserf.github.io/ha-whatsapp/installation.html)
 - [Automations](https://faserf.github.io/ha-whatsapp/automations.html)
 - [Rocket.Chat Integration](https://faserf.github.io/ha-whatsapp/rocketchat.html)
-- [API Reference](https://faserf.github.io/ha-whatsapp/SERVICES.html)
+- [API Reference](https://faserf.github.io/ha-whatsapp/services.html)
 
 ### Reacting to Polls (Poll Updates)
 
