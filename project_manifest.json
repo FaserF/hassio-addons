@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-08-22T21:17:03.295438",
+  "timestamp": "2026-08-23T09:46:20.190121",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -178,7 +178,7 @@
     {
       "slug": "er-dashboard",
       "name": "ER-Startseite (Dashboard)",
-      "version": "1.4.7",
+      "version": "1.4.8",
       "description": "A modern, highly customizable dashboard with a neon aesthetic.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-er-dashboard-{arch}",

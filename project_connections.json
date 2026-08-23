@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-08-22T21:17:07.804231",
+  "timestamp": "2026-08-23T09:46:20.979520",
   "connections": {
     "AegisBot": {
       "name": "AegisBot",
@@ -267,7 +267,7 @@
     },
     "er-dashboard": {
       "name": "ER-Startseite (Dashboard)",
-      "version": "1.4.7",
+      "version": "1.4.8",
       "description": "A modern, highly customizable dashboard with a neon aesthetic.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-er-dashboard-{arch}",

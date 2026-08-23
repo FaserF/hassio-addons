@@ -3,20 +3,23 @@
 ## 1.4.8 (2026-08-23)
 
 ### ✨ Features
+
 - added missing build dependencies ([`3d59c3f0`](https://github.com/FaserF/hassio-addons/commit/3d59c3f02d9268ba16747e8fc931bf034711e9fe))
 
 ### 🐛 Bug Fixes
+
 - fix docker build ([`8e2241ab`](https://github.com/FaserF/hassio-addons/commit/8e2241ab0e45aca34b401ffb4805525ec412b8ee))
 - fix docker build ([`124f0852`](https://github.com/FaserF/hassio-addons/commit/124f0852fa757d0e2e761ea44a54b6e224c4507d))
 - pass PGPASSWORD to pg_upgrade ([`d7a15a98`](https://github.com/FaserF/hassio-addons/commit/d7a15a9854c208923007c5290b5d1ffb8ae0746e))
 - regenerate accurate changelogs for all addons and fix release commit matching in bump_version.py ([`b667eef9`](https://github.com/FaserF/hassio-addons/commit/b667eef9f23c882efd02c11535c2ea4c9bbad5f5))
 
 ### 📦 Dependencies
+
 - ⬆️ Update ER-Startseite to v2026.8.5 (#1004) ([`d358807f`](https://github.com/FaserF/hassio-addons/commit/d358807fa91694dca01285916ffc98e84e8b4894))
 
 ### 🚀 Other
-- Standardize log_level configuration and handling across all add-ons ([`7ddda206`](https://github.com/FaserF/hassio-addons/commit/7ddda206529ef9453a58d36af03969ed975a8e66))
 
+- Standardize log_level configuration and handling across all add-ons ([`7ddda206`](https://github.com/FaserF/hassio-addons/commit/7ddda206529ef9453a58d36af03969ed975a8e66))
 
 ## 1.4.7 (2026-08-19)
 
