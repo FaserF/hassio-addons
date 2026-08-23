@@ -33,6 +33,9 @@ class TradeRepublicBrowserService:
         self.token_verified_at: Optional[float] = None
         self.last_login_time: Optional[float] = None
         self.last_token_update_time: Optional[float] = None
+        self.last_logout_time: Optional[float] = None
+        self.last_logout_reason: Optional[str] = None
+        self.last_session_duration: Optional[float] = None
         self.last_interaction_type: str = "None"
         self.last_interaction_details: str = "No interactions yet"
         self.request_counts_by_type: dict[str, int] = {
@@ -134,9 +137,23 @@ class TradeRepublicBrowserService:
             # If the keeper explicitly got a 401, mark expired
             if self._ws_keeper.last_error and "401" in self._ws_keeper.last_error:
                 _LOGGER.warning("Startup validation: saved session token rejected by TR (401) — marking expired")
+                import time
+
+                logout_now = time.time()
+                dur = (
+                    (logout_now - self.last_login_time)
+                    if self.last_login_time
+                    else None
+                )
+                self.last_logout_reason = "Add-on Restart / Update"
+                if dur is not None:
+                    self.last_session_duration = dur
+                self.session_manager.record_logout(
+                    self.last_logout_reason, self.last_session_duration
+                )
                 self.is_logged_in = False
-                self.status_message = "Stored session token is expired. Please re-authenticate."
-                self.last_error = "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+                self.status_message = "Stored session token expired due to Add-on Restart / Update. Please re-authenticate."
+                self.last_error = "Add-on Restart / Update"
 
     async def verify_token_validity(self, token: str) -> bool:
         """Check token validity via the keeper's persistent connection state.
@@ -168,7 +185,10 @@ class TradeRepublicBrowserService:
             updated_at = data.get("updated_at")
             if updated_at:
                 self.last_token_update_time = float(updated_at)
-                self.last_login_time = float(updated_at)
+                self.last_login_time = data.get("last_login_time", float(updated_at))
+            self.last_logout_time = data.get("last_logout_time")
+            self.last_logout_reason = data.get("last_logout_reason")
+            self.last_session_duration = data.get("last_session_duration")
             if self.session_token:
                 # Inject cookies into Chromium immediately so the page stays authenticated
                 await self.auth_helper.inject_session_cookies(self.session_token)
@@ -191,11 +211,16 @@ class TradeRepublicBrowserService:
             self.phone_number = phone
         self.is_logged_in = True
         self.last_token_update_time = time.time()
-        if self.login_started_at:
-            self.last_login_time = time.time()
+        self.last_login_time = time.time()
+        self.last_logout_time = None
+        self.last_logout_reason = None
         self.status_message = "Everything is connected and running normally. Re-login is only required if your session expires or if you experience connection issues."
         self.last_error = None
-        self.session_manager.save(clean_tok, self.phone_number)
+        self.session_manager.save(
+            clean_tok,
+            self.phone_number,
+            login_time=self.last_login_time,
+        )
         await self.auth_helper.inject_session_cookies(clean_tok)
         # Tell keeper about the new token so it reconnects if previously stopped
         self._ws_keeper.update_token(clean_tok)
@@ -377,6 +402,22 @@ class TradeRepublicBrowserService:
 
                 # If keeper explicitly got a 401, mark session as expired
                 if self._ws_keeper.last_error and "401" in self._ws_keeper.last_error:
+                    if self.is_logged_in or not self.last_logout_time:
+                        import time
+
+                        logout_now = time.time()
+                        dur = (
+                            (logout_now - self.last_login_time)
+                            if self.last_login_time
+                            else None
+                        )
+                        self.last_logout_time = logout_now
+                        self.last_logout_reason = self._ws_keeper.last_error
+                        if dur is not None:
+                            self.last_session_duration = dur
+                        self.session_manager.record_logout(
+                            self.last_logout_reason, self.last_session_duration
+                        )
                     self.is_logged_in = False
                     self.status_message = "Session token expired. Please re-authenticate."
                     self.last_error = (
@@ -413,7 +454,7 @@ class TradeRepublicBrowserService:
                         "--disable-dev-shm-usage",
                         "--disable-gpu",
                         "--disable-blink-features=AutomationControlled",
-                        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                        f"--user-agent={USER_AGENT}",
                         "https://app.traderepublic.com",
                     ]
                     self.proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

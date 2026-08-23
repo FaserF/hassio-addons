@@ -25,24 +25,47 @@ class SessionManager:
                 _LOGGER.warning("Failed to load session file: %s", e)
         return {}
 
-    def save(self, token: str, phone: Optional[str] = None) -> None:
-        """Save session token and phone number to disk."""
+    def save(
+        self,
+        token: str,
+        phone: Optional[str] = None,
+        login_time: Optional[float] = None,
+        logout_time: Optional[float] = None,
+        logout_reason: Optional[str] = None,
+        duration_seconds: Optional[float] = None,
+    ) -> None:
+        """Save session token and statistics to disk."""
         if not token:
             _LOGGER.warning("Attempted to save empty session token")
             return
         clean_tok = token.strip().strip('"').strip("'")
         os.makedirs(DATA_DIR, exist_ok=True)
+        existing = self.load()
+        payload = {
+            "session_token": clean_tok,
+            "phone_number": phone or existing.get("phone_number"),
+            "updated_at": time.time(),
+            "last_login_time": login_time or existing.get("last_login_time") or time.time(),
+            "last_logout_time": logout_time or existing.get("last_logout_time"),
+            "last_logout_reason": logout_reason or existing.get("last_logout_reason"),
+            "last_session_duration": duration_seconds or existing.get("last_session_duration"),
+        }
         try:
             with open(self.file_path, "w", encoding="utf-8") as f:
-                json.dump(
-                    {
-                        "session_token": clean_tok,
-                        "phone_number": phone,
-                        "updated_at": time.time(),
-                    },
-                    f,
-                    indent=2,
-                )
+                json.dump(payload, f, indent=2)
             _LOGGER.info("Session saved successfully (token length: %s)", len(clean_tok))
         except Exception as e:
             _LOGGER.error("Failed to save session: %s", e)
+
+    def record_logout(self, reason: str, duration_seconds: Optional[float] = None) -> None:
+        """Record session termination details to disk."""
+        existing = self.load()
+        existing["last_logout_time"] = time.time()
+        existing["last_logout_reason"] = reason
+        if duration_seconds is not None:
+            existing["last_session_duration"] = duration_seconds
+        try:
+            with open(self.file_path, "w", encoding="utf-8") as f:
+                json.dump(existing, f, indent=2)
+        except Exception as e:
+            _LOGGER.debug("Failed to record logout: %s", e)

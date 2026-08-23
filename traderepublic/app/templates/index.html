@@ -177,11 +177,53 @@
       <button onclick="toggleRelogin()" class="btn-secondary" id="relogin-toggle-btn" style="margin-top:0;" data-i18n="btn_reauth">🔄 Re-authenticate / Switch Account</button>
     </div>
   {% else %}
-    {% if last_error %}
+    {% if last_error or last_logout_reason %}
       <div class="alert" style="background:rgba(239,68,68,0.18);border:1px solid #ef4444;color:#fca5a5;margin-bottom:1.5rem;">
         <b style="font-size:1rem;" data-i18n="session_expired_title">⚠️ Action Required: Session Expired</b><br>
-        <div style="margin-top:0.4rem;color:#fecaca;">{{ last_error }}</div>
-        <div style="margin-top:0.5rem;font-size:0.85rem;color:#cbd5e1;" data-i18n="session_expired_hint">Please enter your PIN below and tap Confirm on your Trade Republic smartphone app to renew the session.</div>
+        <div style="margin-top:0.4rem;color:#fecaca;">{{ last_error or last_logout_reason }}</div>
+        
+        <div style="margin-top:0.75rem;padding:0.6rem 0.75rem;background:rgba(0,0,0,0.25);border-radius:8px;border:1px solid rgba(239,68,68,0.25);font-size:0.82rem;color:#e2e8f0;display:grid;grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));gap:0.5rem;">
+          <div>
+            <span style="color:#94a3b8;" data-i18n="lbl_prev_duration">Previous Session Duration:</span>
+            <b id="prev-duration-val" style="color:#fbbf24;display:block;margin-top:0.15rem;">
+              {% if last_session_duration %}
+                {% if last_session_duration < 60 %}
+                  {{ last_session_duration|int }}s
+                {% elif last_session_duration < 3600 %}
+                  {{ (last_session_duration / 60)|int }}m {{ (last_session_duration % 60)|int }}s
+                {% else %}
+                  {{ (last_session_duration / 3600)|int }}h {{ ((last_session_duration % 3600) / 60)|int }}m
+                {% endif %}
+              {% else %}
+                <span data-i18n="unknown">Unknown / First Run</span>
+              {% endif %}
+            </b>
+          </div>
+          <div>
+            <span style="color:#94a3b8;" data-i18n="lbl_logged_out_since">Logged out since:</span>
+            <b id="logout-since-val" style="color:#f87171;display:block;margin-top:0.15rem;">
+              {% if last_logout_sec is not none %}
+                {% if last_logout_sec < 60 %}
+                  {{ last_logout_sec }}s <span data-i18n="ago_sec">ago</span>
+                {% elif last_logout_sec < 3600 %}
+                  {{ (last_logout_sec / 60)|int }}m <span data-i18n="ago_min">ago</span>
+                {% else %}
+                  {{ (last_logout_sec / 3600)|int }}h <span data-i18n="ago_hour">ago</span>
+                {% endif %}
+              {% else %}
+                <span data-i18n="never">Just now</span>
+              {% endif %}
+            </b>
+          </div>
+          <div style="grid-column:1 / -1;">
+            <span style="color:#94a3b8;" data-i18n="lbl_disconnect_reason">Disconnect Reason:</span>
+            <span id="logout-reason-val" style="color:#fed7aa;display:block;margin-top:0.15rem;font-family:monospace;font-size:0.78rem;">
+              {{ last_logout_reason or last_error or "Token invalidated by Trade Republic server (HTTP 401)" }}
+            </span>
+          </div>
+        </div>
+
+        <div style="margin-top:0.6rem;font-size:0.85rem;color:#cbd5e1;" data-i18n="session_expired_hint">Please enter your PIN below and tap Confirm on your Trade Republic smartphone app to renew the session.</div>
       </div>
     {% endif %}
   {% endif %}
