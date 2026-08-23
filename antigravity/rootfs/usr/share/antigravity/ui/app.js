@@ -437,7 +437,11 @@
               closeAddModal();
               fetchStatus();
             }, 1200);
-          } else if (pollData.status === 'expired' || pollData.status === 'denied' || pollData.status === 'error') {
+          } else if (
+            pollData.status === 'expired' ||
+            pollData.status === 'denied' ||
+            pollData.status === 'error'
+          ) {
             clearInterval(devicePollInterval);
             devicePollStatusText.textContent = `❌ ${pollData.message}`;
           }
@@ -445,7 +449,6 @@
           console.error('Polling error:', pollErr);
         }
       }, pollIntervalSeconds * 1000);
-
     } catch (err) {
       alert(`Error starting Google login: ${err.message}`);
     } finally {
@@ -512,7 +515,9 @@
   // Delete Account
   async function handleDeleteAccount() {
     if (!selectedAccountName) return;
-    const confirmDelete = confirm(`Do you really want to delete the account "${selectedAccountName}"?`);
+    const confirmDelete = confirm(
+      `Do you really want to delete the account "${selectedAccountName}"?`
+    );
     if (!confirmDelete) return;
 
     try {

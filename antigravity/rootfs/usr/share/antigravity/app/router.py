@@ -137,7 +137,11 @@ async def poll_device_auth(req: DeviceAuthPollRequest, request: Request) -> Devi
         # Get user email
         user_info = await fetcher.fetch_user_info(access_token or "")
         email = user_info.get("email")
-        acc_name = req.account_name if req.account_name and req.account_name != "Google Account" else (email or "Google Account")
+        acc_name = (
+            req.account_name
+            if req.account_name and req.account_name != "Google Account"
+            else (email or "Google Account")
+        )
 
         acc_config = AccountConfig(
             name=acc_name,
@@ -179,7 +183,9 @@ async def exchange_auth_code(req: AuthCodeExchangeRequest, request: Request) -> 
 
     user_info = await fetcher.fetch_user_info(access_token or "")
     email = user_info.get("email")
-    acc_name = req.account_name if req.account_name and req.account_name != "Google Account" else (email or "Google Account")
+    acc_name = (
+        req.account_name if req.account_name and req.account_name != "Google Account" else (email or "Google Account")
+    )
 
     acc_config = AccountConfig(
         name=acc_name,

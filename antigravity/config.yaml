@@ -49,3 +49,4 @@ schema:
       client_id: str?
       client_secret: password?
       project_id: str?
+stage: experimental

@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-08-23T09:46:20.190121",
+  "timestamp": "2026-08-23T09:59:35.759505",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -73,7 +73,7 @@
     {
       "slug": "antigravity",
       "name": "Antigravity",
-      "version": "1.0.1",
+      "version": "0.1.0",
       "description": "Google Antigravity Quota Monitor, Multi-Account Dashboard, and Dynamic Polling Gateway for Home Assistant.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-antigravity-{arch}",

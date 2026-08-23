@@ -451,16 +451,12 @@ class AntigravityFetcher:
         rolling_used = quota_info.get("rolling5hUsed", 0)
         rolling_limit_val = quota_info.get("rolling5hLimit", 50)
         rolling_rem = max(0, rolling_limit_val - rolling_used)
-        rolling_pct = (
-            round((rolling_used / rolling_limit_val * 100.0), 1) if rolling_limit_val > 0 else 0.0
-        )
+        rolling_pct = round((rolling_used / rolling_limit_val * 100.0), 1) if rolling_limit_val > 0 else 0.0
 
         weekly_used = quota_info.get("weeklyUsed", 0)
         weekly_limit_val = quota_info.get("weeklyLimit", 500)
         weekly_rem = max(0, weekly_limit_val - weekly_used)
-        weekly_pct = (
-            round((weekly_used / weekly_limit_val * 100.0), 1) if weekly_limit_val > 0 else 0.0
-        )
+        weekly_pct = round((weekly_used / weekly_limit_val * 100.0), 1) if weekly_limit_val > 0 else 0.0
 
         return AccountQuota(
             account_name=account.name,

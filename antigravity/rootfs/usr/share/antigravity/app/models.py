@@ -90,7 +90,9 @@ class AccountQuota(BaseModel):
     weekly_limit: WeeklyLimit = Field(default_factory=WeeklyLimit)
     credits: CreditsStatus = Field(default_factory=CreditsStatus)
     models: List[ModelQuota] = Field(default_factory=list)
-    status: str = Field(default="unconfigured", description="Account health: active, rate_limited, unauthenticated, unconfigured, error")
+    status: str = Field(
+        default="unconfigured", description="Account health: active, rate_limited, unauthenticated, unconfigured, error"
+    )
     is_demo: bool = Field(default=False, description="Whether this account is operating in simulated demo mode")
     error_message: Optional[str] = Field(default=None, description="Error detail if status is error or unconfigured")
     last_updated: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
