@@ -1,0 +1,16 @@
+#!/command/with-contenv bashio
+# shellcheck disable=SC1091
+set -e
+
+bashio::log.info "Initializing Google Antigravity Addon..."
+
+# Ensure persistent data directory
+DATA_DIR="/data/antigravity"
+mkdir -p "${DATA_DIR}"
+chmod 755 "${DATA_DIR}"
+
+# Ensure cache/session store directory
+mkdir -p "${DATA_DIR}/cache"
+mkdir -p "${DATA_DIR}/tokens"
+
+bashio::log.info "Google Antigravity initialization completed successfully."

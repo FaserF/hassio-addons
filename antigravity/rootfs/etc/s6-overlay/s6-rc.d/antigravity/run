@@ -244,10 +244,19 @@ export ANTIGRAVITY_DATA_DIR="/data/antigravity"
 bashio::log.info "Starting Antigravity Service on port 8199..."
 bashio::log.info "Log Level: ${LOG_LEVEL} | Base Scan Interval: ${SCAN_INTERVAL}s | Adaptive: ${ADAPTIVE_POLLING}"
 
+case "$LOG_LEVEL" in
+    trace) UVICORN_LOG_LEVEL="trace" ;;
+    debug) UVICORN_LOG_LEVEL="debug" ;;
+    info | notice) UVICORN_LOG_LEVEL="info" ;;
+    warning | warn) UVICORN_LOG_LEVEL="warning" ;;
+    error | fatal) UVICORN_LOG_LEVEL="error" ;;
+    *) UVICORN_LOG_LEVEL="info" ;;
+esac
+
 cd /usr/share/antigravity
 
 exec python3 -m uvicorn app.main:app \
     --host 0.0.0.0 \
     --port 8199 \
-    --log-level "${LOG_LEVEL}" \
+    --log-level "${UVICORN_LOG_LEVEL}" \
     --app-dir /usr/share/antigravity

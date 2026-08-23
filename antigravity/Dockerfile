@@ -41,9 +41,11 @@ RUN \
 # Copy rootfs
 COPY rootfs /
 
-# Set permissions
+# Set permissions and S6-RC types
 RUN \
     find /etc/s6-overlay/s6-rc.d -type f -name "*" -exec sed -i 's/\r$//' {} + \
+    && echo "oneshot" > /etc/s6-overlay/s6-rc.d/init-antigravity/type \
+    && echo "longrun" > /etc/s6-overlay/s6-rc.d/antigravity/type \
     && chmod a+x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/s6-rc.d/*/up 2>/dev/null || true \
     && { chmod a+x /etc/s6-overlay/s6-rc.d/*/*.sh 2>/dev/null || true; } \
     && mkdir -p /data/antigravity
