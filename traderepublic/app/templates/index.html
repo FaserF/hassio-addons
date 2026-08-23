@@ -346,6 +346,16 @@
       loginEl.textContent = formatLastSync(rawLoginSec);
     }
 
+    const logoutSinceEl = document.getElementById('logout-since-val');
+    if (logoutSinceEl) {
+      const rawLogoutSec = {% if last_logout_sec is not none %}{{ last_logout_sec }}{% else %}null{% endif %};
+      if (rawLogoutSec !== null) {
+        logoutSinceEl.textContent = formatLastSync(rawLogoutSec);
+      } else {
+        logoutSinceEl.textContent = t('just_now');
+      }
+    }
+
     const langEnBtn = document.getElementById('lang-en');
     const langDeBtn = document.getElementById('lang-de');
     if (langEnBtn) langEnBtn.classList.toggle('active', currentLang === 'en');

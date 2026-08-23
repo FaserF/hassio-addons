@@ -41,6 +41,7 @@
   "lbl_logged_out_since": "Abgemeldet seit:",
   "lbl_disconnect_reason": "Abmeldegrund:",
   "unknown": "Unbekannt / Erster Start",
+  "just_now": "Gerade eben",
   "lbl_phone_input": "Telefonnummer (internationales Format, z. B. +491701234567, 0170...)",
   "phone_placeholder": "+491701234567",
   "lbl_pin": "PIN (4–6 Ziffern)",

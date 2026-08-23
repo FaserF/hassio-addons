@@ -41,6 +41,7 @@
   "lbl_logged_out_since": "Logged out since:",
   "lbl_disconnect_reason": "Disconnect Reason:",
   "unknown": "Unknown / First Run",
+  "just_now": "Just now",
   "lbl_phone_input": "Phone Number (international format, e.g. +491701234567, 0170...)",
   "phone_placeholder": "+491701234567",
   "lbl_pin": "PIN (4-6 digits)",
