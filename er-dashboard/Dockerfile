@@ -19,14 +19,14 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Setup base system
 
 # hadolint ignore=DL3008,DL3013,DL3018,DL3042
+ENV PIP_BREAK_SYSTEM_PACKAGES=1 \
+    PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.4.7"
+ENV APP_VERSION="1.4.8"
 ENV APP_NAME="ER-Startseite (Dashboard)"
 ENV APP_SLUG="er-dashboard"
 ENV APP_UNSUPPORTED="false"
-ENV PIP_BREAK_SYSTEM_PACKAGES=1 \
-    PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1
 
 RUN \
     ALPINE_VERSION=$(cat /etc/alpine-release 2>/dev/null | cut -d. -f1,2 || echo "3.24") \
