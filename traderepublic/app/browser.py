@@ -140,19 +140,15 @@ class TradeRepublicBrowserService:
                 import time
 
                 logout_now = time.time()
-                dur = (
-                    (logout_now - self.last_login_time)
-                    if self.last_login_time
-                    else None
-                )
+                dur = (logout_now - self.last_login_time) if self.last_login_time else None
                 self.last_logout_reason = "Add-on Restart / Update"
                 if dur is not None:
                     self.last_session_duration = dur
-                self.session_manager.record_logout(
-                    self.last_logout_reason, self.last_session_duration
-                )
+                self.session_manager.record_logout(self.last_logout_reason, self.last_session_duration)
                 self.is_logged_in = False
-                self.status_message = "Stored session token expired due to Add-on Restart / Update. Please re-authenticate."
+                self.status_message = (
+                    "Stored session token expired due to Add-on Restart / Update. Please re-authenticate."
+                )
                 self.last_error = "Add-on Restart / Update"
 
     async def verify_token_validity(self, token: str) -> bool:
@@ -406,18 +402,12 @@ class TradeRepublicBrowserService:
                         import time
 
                         logout_now = time.time()
-                        dur = (
-                            (logout_now - self.last_login_time)
-                            if self.last_login_time
-                            else None
-                        )
+                        dur = (logout_now - self.last_login_time) if self.last_login_time else None
                         self.last_logout_time = logout_now
                         self.last_logout_reason = self._ws_keeper.last_error
                         if dur is not None:
                             self.last_session_duration = dur
-                        self.session_manager.record_logout(
-                            self.last_logout_reason, self.last_session_duration
-                        )
+                        self.session_manager.record_logout(self.last_logout_reason, self.last_session_duration)
                     self.is_logged_in = False
                     self.status_message = "Session token expired. Please re-authenticate."
                     self.last_error = (
