@@ -216,7 +216,7 @@ class TRWebSocketKeeper:
                         )
                     except Exception as second_exc:
                         if attempt < 2:
-                            await asyncio.sleep(2 ** attempt)
+                            await asyncio.sleep(2**attempt)
                             continue
                         _LOGGER.warning(
                             "WS Keeper: TR rejected token (HTTP 401) [first: %s, second: %s] — stopping until new token",
@@ -238,15 +238,19 @@ class TRWebSocketKeeper:
                     resp = await self._ws.recv()
                     _LOGGER.info("WS Keeper: handshake response: %s", resp)
                     resp_str = str(resp)
-                    if not resp or ("connected" not in resp_str and "26" not in resp_str and "success" not in resp_str.lower()):
+                    if not resp or (
+                        "connected" not in resp_str and "26" not in resp_str and "success" not in resp_str.lower()
+                    ):
                         if "401" in resp_str or "error" in resp_str.lower():
                             if attempt < 2:
                                 await self._close_ws()
-                                await asyncio.sleep(2 ** attempt)
+                                await asyncio.sleep(2**attempt)
                                 continue
                             _LOGGER.warning("WS Keeper: TR rejected handshake — token invalid")
                             self.is_authenticated = False
-                            self.last_error = "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+                            self.last_error = (
+                                "Session expired or rejected by Trade Republic (HTTP 401). Please re-authenticate."
+                            )
                             await self._close_ws()
                             return False
                         _LOGGER.debug("WS Keeper: unexpected handshake response: %s", resp)
@@ -301,7 +305,7 @@ class TRWebSocketKeeper:
                 _LOGGER.debug("WS Keeper: handshake/sub failed: %s", exc)
                 await self._close_ws()
                 if attempt < 2:
-                    await asyncio.sleep(2 ** attempt)
+                    await asyncio.sleep(2**attempt)
                     continue
                 return False
 
