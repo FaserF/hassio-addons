@@ -1,4 +1,4 @@
-#!/usr/bin/env bashio
+#!/command/with-contenv bashio
 # shellcheck disable=SC1091
 
 # <App_BANNER_INJECTION>
