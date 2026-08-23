@@ -54,12 +54,12 @@ class TradeRepublicBrowserService:
 
     @property
     def is_logged_in(self) -> bool:
-        """Dynamic login status driven by persistent keeper or disk session."""
+        """Dynamic login status driven by persistent keeper."""
         if self._is_logged_in_override is not None:
             return self._is_logged_in_override
         if getattr(self, "_ws_keeper", None) and self._ws_keeper.is_authenticated:
             return True
-        return bool(self.session_token)
+        return False
 
     @is_logged_in.setter
     def is_logged_in(self, value: bool) -> None:
@@ -195,10 +195,7 @@ class TradeRepublicBrowserService:
             if self.session_token:
                 # Inject cookies into Chromium immediately so the page stays authenticated
                 await self.auth_helper.inject_session_cookies(self.session_token)
-                # Optimistically mark as logged in — the ws_keeper will validate the
-                # connection within seconds and will update status if the token is bad.
-                self.is_logged_in = True
-                self.status_message = "Everything is connected and running normally."
+                self.status_message = "Validating Trade Republic connection..."
                 self.last_error = None
                 _LOGGER.info("Loaded session token from disk — keeper will verify connection shortly")
 
