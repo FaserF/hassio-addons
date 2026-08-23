@@ -57,10 +57,15 @@ class SessionManager:
         except Exception as e:
             _LOGGER.error("Failed to save session: %s", e)
 
-    def record_logout(self, reason: str, duration_seconds: Optional[float] = None) -> None:
+    def record_logout(
+        self,
+        reason: str,
+        duration_seconds: Optional[float] = None,
+        logout_time: Optional[float] = None,
+    ) -> None:
         """Record session termination details to disk."""
         existing = self.load()
-        existing["last_logout_time"] = time.time()
+        existing["last_logout_time"] = logout_time or existing.get("last_logout_time") or time.time()
         existing["last_logout_reason"] = reason
         if duration_seconds is not None:
             existing["last_session_duration"] = duration_seconds

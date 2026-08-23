@@ -139,17 +139,24 @@ class TradeRepublicBrowserService:
                 _LOGGER.warning("Startup validation: saved session token rejected by TR (401) — marking expired")
                 import time
 
-                logout_now = time.time()
-                dur = (logout_now - self.last_login_time) if self.last_login_time else None
-                self.last_logout_reason = "Add-on Restart / Update"
-                if dur is not None:
-                    self.last_session_duration = dur
-                self.session_manager.record_logout(self.last_logout_reason, self.last_session_duration)
+                # If we don't have a recorded logout time or duration from previous runtime, compute it now
+                if not self.last_logout_time:
+                    logout_now = time.time()
+                    dur = (logout_now - self.last_login_time) if self.last_login_time else None
+                    self.last_logout_time = logout_now
+                    self.last_logout_reason = "Add-on Restart / Update"
+                    if dur is not None:
+                        self.last_session_duration = dur
+                    self.session_manager.record_logout(
+                        self.last_logout_reason,
+                        self.last_session_duration,
+                        logout_time=self.last_logout_time,
+                    )
                 self.is_logged_in = False
                 self.status_message = (
                     "Stored session token expired due to Add-on Restart / Update. Please re-authenticate."
                 )
-                self.last_error = "Add-on Restart / Update"
+                self.last_error = self.last_logout_reason or "Add-on Restart / Update"
 
     async def verify_token_validity(self, token: str) -> bool:
         """Check token validity via the keeper's persistent connection state.
