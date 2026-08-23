@@ -6,7 +6,7 @@
   "keepalive_active": "Keep-Alive aktiv",
   "lbl_phone": "Telefonnummer",
   "lbl_session_status": "Session-Status",
-  "session_authenticated": "Angemeldet (24/7 Auto-Verlängerung)",
+  "session_authenticated": "Angemeldet",
   "lbl_ha_interaction": "Home Assistant Interaktion",
   "lbl_last_checked": "Sitzung zuletzt geprüft:",
   "lbl_last_data": "Letzte Daten-Aktualisierung:",
@@ -64,5 +64,7 @@
   "js_verify_failed": "Verifizierung fehlgeschlagen",
   "js_timeout_expired": "⚠️ Die Anmeldeaufforderung ist abgelaufen (2 Minuten überschritten). Du warst zu langsam mit der Bestätigung. Bitte starte eine neue Anmeldung.",
   "js_page_reload": "Seite wird in 1 s neu geladen...",
-  "js_req_error": "Anfragefehler: "
+  "js_req_error": "Anfragefehler: ",
+  "js_session_valid": "Session-Token ist gültig und aktiv!",
+  "js_session_expired": "Session-Token ist abgelaufen oder ungültig."
 }

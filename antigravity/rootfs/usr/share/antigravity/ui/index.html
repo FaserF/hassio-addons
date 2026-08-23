@@ -263,38 +263,40 @@
             <button id="tabDeviceBtn" class="tab-btn active">🚀 1-Click Browser Login</button>
             <button id="tabManualBtn" class="tab-btn">🔑 Manual Entry / JSON</button>
           </div>
-
-          <!-- Tab 1: Device Code Flow -->
+                  <!-- Tab 1: Web Sign-in Flow -->
           <div id="tabDeviceContent" class="tab-content active">
-            <div id="deviceStartSection">
-              <p class="tab-description">
-                Connect your Google account easily via browser authentication. Click <strong>Start Login</strong> to generate an authorization code.
-              </p>
-              <div class="form-group">
-                <label for="deviceAccountNameInput">Account Name (optional):</label>
-                <input type="text" id="deviceAccountNameInput" placeholder="e.g. My Google Account" class="input-text">
-              </div>
-              <button id="startDeviceFlowBtn" class="btn btn-primary btn-large">
-                🚀 Start Login
-              </button>
-            </div>
+            <p class="tab-description">
+              Follow these 2 quick steps to connect your Google account:
+            </p>
 
-            <div id="deviceActiveSection" class="hidden">
-              <div class="device-instruction-box">
-                <p>1. Copy the confirmation code below:</p>
-                <div class="device-code-box">
-                  <span id="deviceUserCode">----</span>
-                  <button id="copyCodeBtn" class="btn btn-secondary btn-sm" title="Copy code">Copy</button>
-                </div>
-                <p>2. Open the Google device login page and confirm access:</p>
-                <a id="deviceAuthLink" href="https://www.google.com/device" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-large">
-                  🔗 Open Google Login (google.com/device)
+            <div class="step-card" style="margin-bottom: 16px;">
+              <div class="step-number">1</div>
+              <div class="step-content">
+                <h4>Sign in with Google</h4>
+                <p>Click the button below to open Google's authorization consent screen in a new tab:</p>
+                <a id="googleSignInLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="margin-top: 8px;">
+                  🔗 1. Open Google Sign-In
                 </a>
               </div>
+            </div>
 
-              <div class="polling-status-box">
-                <div class="spinner"></div>
-                <span id="devicePollStatusText">Waiting for confirmation in browser...</span>
+            <div class="step-card" style="margin-bottom: 16px;">
+              <div class="step-number">2</div>
+              <div class="step-content">
+                <h4>Authorize & Save</h4>
+                <p>After granting access, copy the authorization code (<code>4/0A...</code>) or the full redirected URL from your browser address bar and paste it below:</p>
+                <div class="form-group" style="margin-top: 8px;">
+                  <label for="interactiveAccountNameInput">Account Name (optional):</label>
+                  <input type="text" id="interactiveAccountNameInput" placeholder="e.g. My Google Account" class="input-text">
+                </div>
+                <div class="form-group">
+                  <label for="interactiveAuthCodeInput">Authorization Code or Redirected URL:</label>
+                  <input type="text" id="interactiveAuthCodeInput" placeholder="Paste 4/0A... code or full redirected URL" class="input-text">
+                </div>
+                <button id="submitAuthCodeBtn" class="btn btn-success btn-large" style="width: 100%;">
+                  🚀 2. Authorize & Connect Account
+                </button>
+                <div id="interactiveAuthResult" class="test-result hidden" style="margin-top: 10px;"></div>
               </div>
             </div>
           </div>

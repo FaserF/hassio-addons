@@ -110,6 +110,19 @@ async def delete_account(account_name: str, request: Request) -> AccountActionRe
     )
 
 
+@api_router.get("/oauth/auth-url", response_model=AuthUrlResponse)
+async def get_oauth_auth_url(request: Request, client_id: Optional[str] = None) -> AuthUrlResponse:
+    """Get standard Google OAuth authorization URL for browser sign-in."""
+    fetcher = request.app.state.scheduler.fetcher
+    redirect_uri = "https://sdk.cloud.google.com/applicationdefaultcredentials.html"
+    auth_url = fetcher.get_auth_url(client_id=client_id, redirect_uri=redirect_uri)
+    return AuthUrlResponse(
+        auth_url=auth_url,
+        client_id=client_id or "",
+        redirect_uri=redirect_uri,
+    )
+
+
 @api_router.post("/oauth/device/start", response_model=DeviceAuthStartResponse)
 async def start_device_auth(req: DeviceAuthStartRequest, request: Request) -> DeviceAuthStartResponse:
     """Start Google OAuth 2.0 Device Code Flow."""

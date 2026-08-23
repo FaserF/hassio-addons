@@ -141,6 +141,14 @@ class CredentialsTestRequest(BaseModel):
     raw_json: Optional[str] = Field(default=None, description="Raw JSON content of oauth_creds.json or ADC")
 
 
+class AuthUrlResponse(BaseModel):
+    """Response containing generated Google OAuth authorization URL."""
+
+    auth_url: str
+    client_id: str
+    redirect_uri: str
+
+
 class DeviceAuthStartRequest(BaseModel):
     """Request to initiate Google OAuth Device Flow."""
 

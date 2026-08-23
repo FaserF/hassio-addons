@@ -6,7 +6,7 @@
   "keepalive_active": "Keep-Alive Active",
   "lbl_phone": "Account Phone",
   "lbl_session_status": "Session Status",
-  "session_authenticated": "Authenticated (24/7 Auto-Renew)",
+  "session_authenticated": "Authenticated",
   "lbl_ha_interaction": "Home Assistant Interaction",
   "lbl_last_checked": "Session Last Checked:",
   "lbl_last_data": "Last Data Live-Sync:",
@@ -64,5 +64,7 @@
   "js_verify_failed": "Verification failed",
   "js_timeout_expired": "⚠️ The login challenge timed out (2 minutes exceeded). You took too long to confirm. Please start a new login.",
   "js_page_reload": "Page will reload in 1s...",
-  "js_req_error": "Request error: "
+  "js_req_error": "Request error: ",
+  "js_session_valid": "Session token is valid and active!",
+  "js_session_expired": "Session token has expired or is invalid."
 }

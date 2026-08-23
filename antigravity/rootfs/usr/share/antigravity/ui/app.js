@@ -35,15 +35,12 @@
   const tabDeviceContent = document.getElementById('tabDeviceContent');
   const tabManualContent = document.getElementById('tabManualContent');
 
-  // Device Flow Elements
-  const deviceStartSection = document.getElementById('deviceStartSection');
-  const deviceActiveSection = document.getElementById('deviceActiveSection');
-  const deviceAccountNameInput = document.getElementById('deviceAccountNameInput');
-  const startDeviceFlowBtn = document.getElementById('startDeviceFlowBtn');
-  const deviceUserCode = document.getElementById('deviceUserCode');
-  const copyCodeBtn = document.getElementById('copyCodeBtn');
-  const deviceAuthLink = document.getElementById('deviceAuthLink');
-  const devicePollStatusText = document.getElementById('devicePollStatusText');
+  // Web Sign-In Elements
+  const googleSignInLink = document.getElementById('googleSignInLink');
+  const interactiveAccountNameInput = document.getElementById('interactiveAccountNameInput');
+  const interactiveAuthCodeInput = document.getElementById('interactiveAuthCodeInput');
+  const submitAuthCodeBtn = document.getElementById('submitAuthCodeBtn');
+  const interactiveAuthResult = document.getElementById('interactiveAuthResult');
 
   // Manual Account Elements
   const manualAccountNameInput = document.getElementById('manualAccountNameInput');
@@ -93,7 +90,6 @@
   let selectedAccountName = '';
   let countdownSeconds = 0;
   let countdownTimer = null;
-  let devicePollInterval = null;
 
   async function fetchStatus() {
     try {
@@ -388,83 +384,67 @@
   }
 
   // ==========================================
-  // Device Flow Authentication Handler
+  // Interactive Google Sign-In Flow Handler
   // ==========================================
-  async function startDeviceFlow() {
-    startDeviceFlowBtn.disabled = true;
-    startDeviceFlowBtn.textContent = 'Generating code...';
-
+  async function loadAuthUrl() {
     try {
-      const res = await fetch(`${API_BASE}/oauth/device/start`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.detail || `HTTP ${res.status}`);
-      }
-
-      const deviceData = await res.json();
-      deviceUserCode.textContent = deviceData.user_code;
-      deviceAuthLink.href = `${deviceData.verification_url}?user_code=${deviceData.user_code}`;
-
-      deviceStartSection.classList.add('hidden');
-      deviceActiveSection.classList.remove('hidden');
-      devicePollStatusText.textContent = 'Waiting for confirmation in browser...';
-
-      // Start polling
-      if (devicePollInterval) clearInterval(devicePollInterval);
-      const pollIntervalSeconds = Math.max(3, deviceData.interval || 5);
-
-      devicePollInterval = setInterval(async () => {
-        try {
-          const pollRes = await fetch(`${API_BASE}/oauth/device/poll`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              device_code: deviceData.device_code,
-              account_name: deviceAccountNameInput.value.trim() || 'Google Account',
-            }),
-          });
-
-          const pollData = await pollRes.json();
-          if (pollData.status === 'success') {
-            clearInterval(devicePollInterval);
-            devicePollStatusText.textContent = `✅ ${pollData.message}`;
-            setTimeout(() => {
-              closeAddModal();
-              fetchStatus();
-            }, 1200);
-          } else if (
-            pollData.status === 'expired' ||
-            pollData.status === 'denied' ||
-            pollData.status === 'error'
-          ) {
-            clearInterval(devicePollInterval);
-            devicePollStatusText.textContent = `❌ ${pollData.message}`;
-          }
-        } catch (pollErr) {
-          console.error('Polling error:', pollErr);
+      const res = await fetch(`${API_BASE}/oauth/auth-url`);
+      if (res.ok) {
+        const data = await res.json();
+        if (googleSignInLink && data.auth_url) {
+          googleSignInLink.href = data.auth_url;
         }
-      }, pollIntervalSeconds * 1000);
+      }
     } catch (err) {
-      alert(`Error starting Google login: ${err.message}`);
-    } finally {
-      startDeviceFlowBtn.disabled = false;
-      startDeviceFlowBtn.textContent = '🚀 Start Login';
+      console.error('Could not load auth URL:', err);
     }
   }
 
-  // Copy Device Code
-  copyCodeBtn.addEventListener('click', () => {
-    const code = deviceUserCode.textContent;
-    navigator.clipboard.writeText(code).then(() => {
-      copyCodeBtn.textContent = 'Copied!';
-      setTimeout(() => (copyCodeBtn.textContent = 'Copy'), 2000);
-    });
-  });
+  async function handleExchangeAuthCode() {
+    const code = interactiveAuthCodeInput.value.trim();
+    const name = interactiveAccountNameInput.value.trim() || 'Google Account';
+
+    if (!code) {
+      showInteractiveResult('Please paste the authorization code or redirected URL first.', false);
+      return;
+    }
+
+    submitAuthCodeBtn.disabled = true;
+    submitAuthCodeBtn.textContent = 'Exchanging code & authenticating...';
+
+    try {
+      const res = await fetch(`${API_BASE}/oauth/exchange`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: code,
+          account_name: name,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || `HTTP ${res.status}`);
+      }
+
+      showInteractiveResult(`✅ ${data.message}`, true);
+      setTimeout(() => {
+        closeAddModal();
+        fetchStatus();
+      }, 1200);
+    } catch (err) {
+      showInteractiveResult(`❌ ${err.message}`, false);
+    } finally {
+      submitAuthCodeBtn.disabled = false;
+      submitAuthCodeBtn.textContent = '🚀 2. Authorize & Connect Account';
+    }
+  }
+
+  function showInteractiveResult(msg, success) {
+    interactiveAuthResult.textContent = msg;
+    interactiveAuthResult.className = `test-result ${success ? 'success' : 'error'}`;
+    interactiveAuthResult.classList.remove('hidden');
+  }
 
   // Manual Account Save
   async function handleSaveManualAccount() {
@@ -569,14 +549,14 @@
 
   // Modals & Tabs
   function openAddModal() {
-    deviceStartSection.classList.remove('hidden');
-    deviceActiveSection.classList.add('hidden');
+    interactiveAuthResult.classList.add('hidden');
+    interactiveAuthCodeInput.value = '';
     manualSaveResult.classList.add('hidden');
+    loadAuthUrl();
     addAccountModal.classList.remove('hidden');
   }
 
   function closeAddModal() {
-    if (devicePollInterval) clearInterval(devicePollInterval);
     addAccountModal.classList.add('hidden');
   }
 
@@ -607,7 +587,7 @@
   deleteAccountBtn.addEventListener('click', handleDeleteAccount);
   closeAddAccountBtn.addEventListener('click', closeAddModal);
 
-  startDeviceFlowBtn.addEventListener('click', startDeviceFlow);
+  submitAuthCodeBtn.addEventListener('click', handleExchangeAuthCode);
   saveManualAccountBtn.addEventListener('click', handleSaveManualAccount);
 
   openGuideBtn.addEventListener('click', () => guideModal.classList.remove('hidden'));

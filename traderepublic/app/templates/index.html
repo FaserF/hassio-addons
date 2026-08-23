@@ -115,7 +115,7 @@
         </div>
         <div class="status-item">
           <div class="status-label" data-i18n="lbl_session_status">Session Status</div>
-          <div class="status-value" style="color:#4ade80;" data-i18n="session_authenticated">Authenticated (24/7 Auto-Renew)</div>
+          <div class="status-value" style="color:#4ade80;" data-i18n="session_authenticated">Authenticated</div>
         </div>
         <div class="status-item">
           <div class="status-label" data-i18n="lbl_ha_interaction">Home Assistant Interaction</div>
@@ -502,9 +502,9 @@
       const res = await fetch('./api/v1/session/check', { method: 'POST' });
       const data = await res.json();
       if (data.valid) {
-        resEl.innerHTML = '<span style="color:#22c55e;">✓ ' + data.message + '</span>';
+        resEl.innerHTML = '<span style="color:#22c55e;">✓ ' + t('js_session_valid') + '</span>';
       } else {
-        resEl.innerHTML = '<span style="color:#ef4444;">⚠️ ' + data.message + '</span>';
+        resEl.innerHTML = '<span style="color:#ef4444;">⚠️ ' + t('js_session_expired') + '</span>';
         setTimeout(() => window.location.reload(), 1500);
       }
     } catch (e) {

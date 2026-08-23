@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import urllib.parse
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional, Tuple
 
@@ -24,9 +25,6 @@ from .models import (
 
 _LOGGER = logging.getLogger(__name__)
 
-# Standard Google Cloud SDK / Antigravity public OAuth client credentials
-DEFAULT_CLIENT_ID = "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com"
-DEFAULT_CLIENT_SECRET = "d-FL95ljxbAlgtEcHubERP14"
 GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token"
 GOOGLE_DEVICE_AUTH_URI = "https://oauth2.googleapis.com/device/code"
 GOOGLE_USERINFO_URI = "https://www.googleapis.com/oauth2/v2/userinfo"
@@ -34,7 +32,7 @@ CLOUDAI_BASE_URI = "https://cloudaicompanion.googleapis.com/v1beta"
 OAUTH_SCOPES = (
     "https://www.googleapis.com/auth/userinfo.email "
     "https://www.googleapis.com/auth/cloud-platform "
-    "https://www.googleapis.com/auth/cortex.user"
+    "https://www.googleapis.com/auth/userinfo.profile"
 )
 
 
@@ -94,11 +92,31 @@ class AntigravityFetcher:
         self.timeout = timeout
         self._token_cache: Dict[str, Dict[str, Any]] = {}
 
+    def get_auth_url(
+        self,
+        client_id: Optional[str] = None,
+        redirect_uri: str = "https://sdk.cloud.google.com/applicationdefaultcredentials.html",
+    ) -> str:
+        """Generate Google OAuth 2.0 Web Authorization URL."""
+        cid = client_id.strip() if client_id else ""
+        params = {
+            "response_type": "code",
+            "client_id": cid,
+            "scope": OAUTH_SCOPES,
+            "redirect_uri": redirect_uri,
+            "access_type": "offline",
+            "prompt": "consent",
+        }
+        return f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params)}"
+
     async def start_device_flow(
         self, client_id: Optional[str] = None, client_secret: Optional[str] = None
     ) -> DeviceAuthStartResponse:
         """Start Google OAuth 2.0 Device Flow."""
-        cid = client_id.strip() if client_id else DEFAULT_CLIENT_ID
+        cid = client_id.strip() if client_id else ""
+        if not cid:
+            raise ValueError("Client ID is required for Device Flow authentication.")
+
         payload = {
             "client_id": cid,
             "scope": OAUTH_SCOPES,
@@ -130,15 +148,17 @@ class AntigravityFetcher:
         Returns (status, refresh_token, access_token, error_message).
         Status can be: 'success', 'pending', 'slow_down', 'expired', 'denied', 'error'.
         """
-        cid = client_id.strip() if client_id else DEFAULT_CLIENT_ID
-        csec = client_secret.strip() if client_secret else DEFAULT_CLIENT_SECRET
+        cid = client_id.strip() if client_id else ""
+        csec = client_secret.strip() if client_secret else ""
 
         payload = {
-            "client_id": cid,
-            "client_secret": csec,
             "code": device_code,
             "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
         }
+        if cid:
+            payload["client_id"] = cid
+        if csec:
+            payload["client_secret"] = csec
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             res = await client.post(GOOGLE_TOKEN_URI, data=payload)
@@ -165,7 +185,7 @@ class AntigravityFetcher:
     async def exchange_auth_code(
         self,
         code: str,
-        redirect_uri: str = "urn:ietf:wg:oauth:2.0:oob",
+        redirect_uri: Optional[str] = None,
         client_id: Optional[str] = None,
         client_secret: Optional[str] = None,
     ) -> Tuple[Optional[str], Optional[str], Optional[str]]:
@@ -173,23 +193,45 @@ class AntigravityFetcher:
 
         Returns (refresh_token, access_token, error_message).
         """
-        cid = client_id.strip() if client_id else DEFAULT_CLIENT_ID
-        csec = client_secret.strip() if client_secret else DEFAULT_CLIENT_SECRET
+        cleaned_code = code.strip()
+        if "code=" in cleaned_code:
+            try:
+                parsed_url = urllib.parse.urlparse(cleaned_code)
+                query_params = urllib.parse.parse_qs(parsed_url.query or parsed_url.fragment)
+                if "code" in query_params:
+                    cleaned_code = query_params["code"][0]
+            except Exception as err:
+                _LOGGER.debug("Could not parse URL query for auth code: %s", err)
 
-        payload = {
-            "client_id": cid,
-            "client_secret": csec,
-            "code": code.strip(),
-            "grant_type": "authorization_code",
-            "redirect_uri": redirect_uri,
-        }
+        cid = client_id.strip() if client_id else ""
+        csec = client_secret.strip() if client_secret else ""
 
+        uris_to_try = [
+            redirect_uri or "https://sdk.cloud.google.com/applicationdefaultcredentials.html",
+            "urn:ietf:wg:oauth:2.0:oob",
+            "http://localhost",
+        ]
+
+        last_err = None
         async with httpx.AsyncClient(timeout=self.timeout) as client:
-            res = await client.post(GOOGLE_TOKEN_URI, data=payload)
-            if res.status_code == 200:
-                data = res.json()
-                return data.get("refresh_token"), data.get("access_token"), None
-            return None, None, f"Code exchange failed ({res.status_code}): {res.text}"
+            for uri in uris_to_try:
+                payload = {
+                    "code": cleaned_code,
+                    "grant_type": "authorization_code",
+                    "redirect_uri": uri,
+                }
+                if cid:
+                    payload["client_id"] = cid
+                if csec:
+                    payload["client_secret"] = csec
+
+                res = await client.post(GOOGLE_TOKEN_URI, data=payload)
+                if res.status_code == 200:
+                    data = res.json()
+                    return data.get("refresh_token"), data.get("access_token"), None
+                last_err = res.text
+
+        return None, None, f"Code exchange failed: {last_err}"
 
     async def refresh_access_token(self, account: AccountConfig) -> Tuple[Optional[str], Optional[str]]:
         """Refresh OAuth2 access token for an account.
@@ -205,15 +247,14 @@ class AntigravityFetcher:
         if cached and cached.get("expires_at") > datetime.now(timezone.utc):
             return cached["token"], None
 
-        client_id = account.client_id.strip() if account.client_id else DEFAULT_CLIENT_ID
-        client_secret = account.client_secret.strip() if account.client_secret else DEFAULT_CLIENT_SECRET
-
-        payload = {
-            "client_id": client_id,
-            "client_secret": client_secret,
+        payload: Dict[str, str] = {
             "refresh_token": token,
             "grant_type": "refresh_token",
         }
+        if account.client_id:
+            payload["client_id"] = account.client_id.strip()
+        if account.client_secret:
+            payload["client_secret"] = account.client_secret.strip()
 
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -256,8 +297,8 @@ class AntigravityFetcher:
         parsed = parse_credentials_input(raw_text)
 
         refresh_token = parsed.get("refresh_token") or req.refresh_token or ""
-        client_id = parsed.get("client_id") or req.client_id or DEFAULT_CLIENT_ID
-        client_secret = parsed.get("client_secret") or req.client_secret or DEFAULT_CLIENT_SECRET
+        client_id = parsed.get("client_id") or req.client_id or ""
+        client_secret = parsed.get("client_secret") or req.client_secret or ""
 
         if not refresh_token:
             return {
@@ -451,12 +492,16 @@ class AntigravityFetcher:
         rolling_used = quota_info.get("rolling5hUsed", 0)
         rolling_limit_val = quota_info.get("rolling5hLimit", 50)
         rolling_rem = max(0, rolling_limit_val - rolling_used)
-        rolling_pct = round((rolling_used / rolling_limit_val * 100.0), 1) if rolling_limit_val > 0 else 0.0
+        rolling_pct = (
+            round((rolling_used / rolling_limit_val * 100.0), 1) if rolling_limit_val > 0 else 0.0
+        )
 
         weekly_used = quota_info.get("weeklyUsed", 0)
         weekly_limit_val = quota_info.get("weeklyLimit", 500)
         weekly_rem = max(0, weekly_limit_val - weekly_used)
-        weekly_pct = round((weekly_used / weekly_limit_val * 100.0), 1) if weekly_limit_val > 0 else 0.0
+        weekly_pct = (
+            round((weekly_used / weekly_limit_val * 100.0), 1) if weekly_limit_val > 0 else 0.0
+        )
 
         return AccountQuota(
             account_name=account.name,
