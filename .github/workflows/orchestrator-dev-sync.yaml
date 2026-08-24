@@ -1,16 +1,9 @@
-name: Orchestrator Dev Sync
+name: Orchestrator Dev Sync (Disabled)
 
-# This workflow keeps the 'dev' branch populated with ONLY in-development Apps,
-# moving them from .dev/* to the root level.
+# DISABLED: In-development add-ons are distributed via the Edge channel (#edge).
+# This workflow is kept for reference / future optional use.
 
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - ".dev/**"
-      - ".github/workflows/orchestrator-dev-sync.yaml"
-      - ".scripts/prepare_dev_branch.py"
   workflow_dispatch:
 
 env:
@@ -21,8 +14,9 @@ permissions:
 
 jobs:
   sync-dev:
-    name: 🚥 Sync Dev Branch
+    name: 🚥 Sync Dev Branch (Disabled)
     runs-on: ubuntu-latest
+    if: false
     steps:
       - name: ⤵️ Checkout master
         uses: actions/checkout@v7

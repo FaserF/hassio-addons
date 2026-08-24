@@ -34,25 +34,19 @@ BETA_NOTICE = """
 
 DEV_NOTICE = """
 > [!CAUTION]
-> **In-Development Add-on**
+> **In-Development Add-on (Edge Channel Only)**
 >
 > This add-on is currently in active development and excluded from the stable repository channel.
 > While the Home Assistant add-on wrapper itself may be functional, the underlying upstream software is either in an early development stage or hosted within a private repository.
 >
-> ### 📦 How to Install
->
-> **Option A: Dev Channel (In-Dev Add-ons Only — Recommended)**
-> 1. Click to add the Dev repository:
->    [![Add Dev Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23dev)
+> ### 📦 How to Install via Edge Channel
+> 1. Click to add the Edge repository:
+>    [![Add Edge Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23edge)
 > 2. Or manually add repository in Home Assistant (**Settings** → **Add-ons** → **Add-on Store** → **⋮** → **Repositories**):
 >    ```text
->    https://github.com/FaserF/hassio-addons#dev
+>    https://github.com/FaserF/hassio-addons#edge
 >    ```
->
-> **Option B: Edge Channel (All Add-ons)**
-> - Repository URL: `https://github.com/FaserF/hassio-addons#edge`
->
-> 💡 *After adding the repository, refresh the Add-on Store (⋮ → Check for updates) to install.*
+> 3. Refresh the Add-on Store (⋮ → **Check for updates**), find this add-on under **FaserF's Home Assistant Apps (Edge)**, and click **Install**.
 """
 
 
