@@ -14,6 +14,13 @@ ENV APP_UNSUPPORTED="false"
 
 # 1. Install Alpine packages (Python3, Chromium, ca-certificates, minimal dependencies)
 # hadolint ignore=DL3018
+
+# App metadata (injected by CI)
+ENV APP_VERSION="1.0.0"
+ENV APP_NAME="Trade Republic Headless Browser"
+ENV APP_SLUG="traderepublic"
+ENV APP_UNSUPPORTED="false"
+
 RUN \
     ALPINE_VERSION=$(cat /etc/alpine-release 2>/dev/null | cut -d. -f1,2 || echo "3.24") && \
     echo "http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main" > /etc/apk/repositories && \
