@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-08-23T09:59:35.759505",
+  "timestamp": "2026-08-24T13:08:58.179772",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -388,7 +388,7 @@
     {
       "slug": "traderepublic",
       "name": "Trade Republic Headless Browser",
-      "version": "0.1.0",
+      "version": "1.0.0",
       "description": "Trade Republic Headless Browser & Session Provider (WAF Solver & Keep-Alive).",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-traderepublic-{arch}",
