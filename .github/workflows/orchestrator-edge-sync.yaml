@@ -130,12 +130,35 @@ jobs:
             fi
           done
 
+          # Check for force sync flag in commit messages (e.g. [force-edge], [sync-edge], [force-edge:AegisBot,Alivro])
+          COMMIT_MESSAGES="${{ join(github.event.commits.*.message, ' ') }}"
+          if echo "$COMMIT_MESSAGES" | grep -qiE "\[(force-edge|sync-edge)"; then
+            echo "🚀 Force edge sync tag detected in commit message!"
+            ONLY_WORKFLOWS=false
+
+            # Extract specific apps if specified: [force-edge:AegisBot,Alivro] or [sync-edge:AegisBot,Alivro]
+            SPECIFIC_APPS=$(echo "$COMMIT_MESSAGES" | grep -oE "\[(force-edge|sync-edge):[^]]+\]" | head -1 | sed -E 's/\[[^:]+:([^]]+)\]/\1/' | tr ',' '\n' | tr -d ' ' | grep -v '^$' || true)
+            if [ -n "$SPECIFIC_APPS" ]; then
+              CHANGED_AppS="$SPECIFIC_APPS"
+              echo "🎯 Targeted Apps specified via commit tag:"
+              echo "$CHANGED_AppS"
+            fi
+          fi
+
           if [ "$ONLY_WORKFLOWS" = "true" ]; then
             echo "ℹ️ Only workflow/documentation/metadata files changed, skipping edge sync"
             echo "only_workflows=true" >> "$GITHUB_OUTPUT"
           else
             echo "✅ Relevant add-on files changed, proceeding with edge sync"
             echo "only_workflows=false" >> "$GITHUB_OUTPUT"
+            if [ -z "$CHANGED_AppS" ]; then
+              CHANGED_AppS="ALL"
+            fi
+            {
+              echo "changed_Apps<<EOF"
+              echo "$CHANGED_AppS"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
           fi
 
       - name: ⤵️ Checkout master
