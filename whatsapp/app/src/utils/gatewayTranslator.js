@@ -169,13 +169,17 @@ export async function translateTextGatewayWithReason(
               reason: null,
             };
           } else {
-            attemptedReasons.push(`AegisBot Server: ${data.error || 'Empty translation'}`);
+            const errMsg = data?.error || 'Empty translation returned from AegisBot';
+            recordError('aegisbot', errMsg, targetLang);
+            attemptedReasons.push(`AegisBot Server: ${errMsg}`);
           }
         } else {
+          recordError('aegisbot', `HTTP ${res.status}: ${res.statusText}`, targetLang);
           attemptedReasons.push(`AegisBot Server: HTTP ${res.status}`);
         }
       } catch (err) {
-        logger.debug({ error: err.message }, 'AegisBot translation request failed');
+        logger.warn({ error: err.message, cleanUrl }, 'AegisBot translation request failed, trying next fallback');
+        recordError('aegisbot', `Network error: ${err.message}`, targetLang);
         attemptedReasons.push(`AegisBot Server: Error (${err.message})`);
       }
     }
