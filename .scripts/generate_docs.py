@@ -7,6 +7,7 @@ architecture badges, modern UI, category grouping, and one-click repo install.
 
 import json
 from pathlib import Path
+
 import yaml
 
 REPO_URL = "https://github.com/FaserF/hassio-addons"
@@ -238,7 +239,15 @@ def main():
 
     # 1. Main dir addons
     for item in sorted(repo_root.iterdir()):
-        if item.is_dir() and not item.name.startswith((".", "_")) and item.name != "docs" and item.name != "node_modules" and item.name != "tests" and item.name != "addons" and item.name != "data":
+        if (
+            item.is_dir()
+            and not item.name.startswith((".", "_"))
+            and item.name != "docs"
+            and item.name != "node_modules"
+            and item.name != "tests"
+            and item.name != "addons"
+            and item.name != "data"
+        ):
             config_path = item / "config.yaml"
             if config_path.exists():
                 meta = extract_metadata(config_path, item.name, False)
@@ -754,4 +763,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
