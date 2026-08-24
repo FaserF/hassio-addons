@@ -76,5 +76,7 @@
   "tip_last_token": "Zeitpunkt, an dem der Web-Session JWT-Token zuletzt im Hintergrund-Chromium erneuert oder gespeichert wurde.",
   "tip_last_login": "Ursprünglicher Zeitpunkt des erfolgreichen 2FA In-App Logins auf dem Smartphone.",
   "lbl_addon_version": "Add-on",
-  "lbl_integration_version": "Integration"
+  "lbl_integration_version": "Integration",
+  "restart_required_title": "🔄 Add-on Neustart: Kurze Bestätigung erforderlich",
+  "restart_required_body": "Trade Republic bindet WebSocket-Sitzungen direkt an die laufende Verbindung. Nach einem Neustart oder Update des Add-ons ist eine einmalige 1-Tap Bestätigung in der Trade Republic App erforderlich."
 }

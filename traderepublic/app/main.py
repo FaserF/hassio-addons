@@ -145,7 +145,12 @@ def get_addon_version() -> str:
     if env_ver:
         return env_ver.strip()
     # Try reading config.yaml in add-on folder
-    for path in ["config.yaml", "/opt/traderepublic/config.yaml", "/config.yaml"]:
+    for path in [
+        "config.yaml",
+        "/opt/traderepublic/config.yaml",
+        "/config.yaml",
+        os.path.join(os.path.dirname(__file__), "..", "config.yaml"),
+    ]:
         if os.path.exists(path):
             try:
                 with open(path, "r", encoding="utf-8") as f:
@@ -159,10 +164,22 @@ def get_addon_version() -> str:
 
 def get_integration_version() -> str:
     """Retrieve locally installed Trade Republic custom integration version."""
+    ha_cfg = os.getenv("HA_CONFIG_ROOT", "/config")
     candidates = [
+        os.path.join(ha_cfg, "custom_components", "traderepublic", "manifest.json"),
         "/config/custom_components/traderepublic/manifest.json",
+        "/homeassistant/custom_components/traderepublic/manifest.json",
         "custom_components/traderepublic/manifest.json",
         "../ha-traderepublic/custom_components/traderepublic/manifest.json",
+        os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "..",
+            "ha-traderepublic",
+            "custom_components",
+            "traderepublic",
+            "manifest.json",
+        ),
     ]
     for path in candidates:
         if os.path.exists(path):

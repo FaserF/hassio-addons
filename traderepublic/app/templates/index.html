@@ -137,6 +137,21 @@
       visibility: visible; opacity: 1;
     }
     .hidden { display: none !important; }
+    .version-pills {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.72rem;
+      color: #64748b;
+      margin-top: 0.35rem;
+    }
+    .version-tag {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+      color: #94a3b8;
+    }
     .footer-versions {
       margin-top: 1.75rem;
       padding-top: 1rem;
@@ -162,7 +177,13 @@
 <body>
 <div class="container">
   <div class="header">
-    <h1 class="title">📈 <span data-i18n="title">Trade Republic Session Provider</span></h1>
+    <div>
+      <h1 class="title">📈 <span data-i18n="title">Trade Republic Session Provider</span></h1>
+      <div class="version-pills">
+        <span class="version-tag"><span data-i18n="lbl_addon_version">Add-on</span>: <strong style="color:#cbd5e1;" id="hdr-addon-ver">v{{ addon_version }}</strong></span>
+        <span class="version-tag"><span data-i18n="lbl_integration_version">Integration</span>: <strong style="color:#cbd5e1;" id="hdr-int-ver">v{{ integration_version }}</strong></span>
+      </div>
+    </div>
     <div style="display:flex;align-items:center;gap:0.75rem;">
       <div class="lang-switcher">
         <button class="lang-btn" id="lang-en" onclick="setLang('en')">EN</button>
@@ -277,10 +298,15 @@
     </div>
   {% else %}
     {% if last_error or last_logout_reason %}
-      <div class="alert" style="background:rgba(239,68,68,0.18);border:1px solid #ef4444;color:#fca5a5;margin-bottom:1.5rem;">
+    {% set is_restart = (last_logout_reason == 'Add-on Restart / Update') or ('Restart' in (last_logout_reason or '')) or ('Restart' in (last_error or '')) %}
+    <div class="alert" style="background:{% if is_restart %}rgba(251,191,36,0.12){% else %}rgba(239,68,68,0.18){% endif %};border:1px solid {% if is_restart %}#f59e0b{% else %}#ef4444{% endif %};color:{% if is_restart %}#fde68a{% else %}#fca5a5{% endif %};margin-bottom:1.5rem;">
+      {% if is_restart %}
+        <b style="font-size:1rem;" data-i18n="restart_required_title">🔄 Add-on Restart: Quick Confirmation Required</b><br>
+        <div style="margin-top:0.4rem;color:#fef3c7;" data-i18n="restart_required_body">Trade Republic binds active sessions directly to the running live WebSocket connection. After restarting or updating the Add-on, a 1-tap re-confirmation in the Trade Republic mobile app is required.</div>
+      {% else %}
         <b style="font-size:1rem;" data-i18n="session_expired_title">⚠️ Action Required: Session Expired</b><br>
         <div style="margin-top:0.4rem;color:#fecaca;">{{ last_error or last_logout_reason }}</div>
-        
+      {% endif %}
         <div style="margin-top:0.75rem;padding:0.6rem 0.75rem;background:rgba(0,0,0,0.25);border-radius:8px;border:1px solid rgba(239,68,68,0.25);font-size:0.82rem;color:#e2e8f0;display:grid;grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));gap:0.5rem;">
           <div>
             <span style="color:#94a3b8;" data-i18n="lbl_prev_duration">Previous Session Duration:</span>
@@ -327,16 +353,16 @@
     {% endif %}
   {% endif %}
 
-  <div id="step-login" class="{% if (is_logged_in and not last_error) or login_in_progress %}hidden{% endif %}" style="margin-top:1rem;">
-    <form onsubmit="event.preventDefault(); submitLogin();">
       <div class="form-group">
         <label for="phone" data-i18n="lbl_phone_input">Phone Number (international format, e.g. +491701234567, 0170...)</label>
-        <input type="text" id="phone" data-i18n-ph="phone_placeholder" placeholder="+491701234567"
+        <input type="tel" id="phone" data-i18n-ph="phone_placeholder" placeholder="+491701234567"
+               inputmode="tel" pattern="[+0-9]+" autocomplete="tel"
                value="{% if phone_number and phone_number != 'Not configured' %}{{ phone_number }}{% endif %}" required />
       </div>
       <div class="form-group">
         <label for="pin" data-i18n="lbl_pin">PIN (4-6 digits)</label>
-        <input type="password" id="pin" placeholder="••••" required autofocus />
+        <input type="password" id="pin" placeholder="••••" inputmode="numeric" pattern="[0-9]{4,6}"
+               autocomplete="current-password" required autofocus />
       </div>
       <button type="submit" data-i18n="btn_start_login">Start Login &amp; Solve Challenge</button>
     </form>
@@ -372,6 +398,24 @@
 </div>
 
 <script>
+  // ── Input restrictions ─────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    const phoneEl = document.getElementById('phone');
+    if (phoneEl) {
+      phoneEl.addEventListener('input', () => {
+        const cur = phoneEl.value;
+        phoneEl.value = cur.replace(/[^+0-9]/g, '');
+      });
+    }
+    const pinEl = document.getElementById('pin');
+    if (pinEl) {
+      pinEl.addEventListener('input', () => {
+        const cur = pinEl.value;
+        pinEl.value = cur.replace(/[^0-9]/g, '');
+      });
+    }
+  });
+
   // ── i18n ──────────────────────────────────────────────────────────────
   const FALLBACK_LANG = 'en';
   const BUNDLED_I18N = {{ all_i18n | safe }} || {};
@@ -382,8 +426,7 @@
   function detectLang() {
     const saved = localStorage.getItem('tr_ui_lang');
     if (saved) return saved;
-    const nav = (navigator.language || 'en').toLowerCase();
-    return nav.startsWith('de') ? 'de' : 'en';
+    return 'en';
   }
 
   async function loadTranslations(lang) {
@@ -702,10 +745,15 @@
       if (st.addon_version) {
         const addonVerEl = document.getElementById('addon-ver-val');
         if (addonVerEl) addonVerEl.textContent = 'v' + st.addon_version;
+        const hdrAddonEl = document.getElementById('hdr-addon-ver');
+        if (hdrAddonEl) hdrAddonEl.textContent = 'v' + st.addon_version;
       }
       if (st.integration_version) {
+        const val = st.integration_version !== '—' ? 'v' + st.integration_version : '—';
         const intVerEl = document.getElementById('integration-ver-val');
-        if (intVerEl) intVerEl.textContent = st.integration_version !== '—' ? 'v' + st.integration_version : '—';
+        if (intVerEl) intVerEl.textContent = val;
+        const hdrIntEl = document.getElementById('hdr-int-ver');
+        if (hdrIntEl) hdrIntEl.textContent = val;
       }
     } catch {}
   }, 3000);

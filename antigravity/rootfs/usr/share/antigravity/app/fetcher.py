@@ -15,7 +15,6 @@ from .models import (
     AccountQuota,
     CredentialsTestRequest,
     CreditsStatus,
-    DeviceAuthPollResponse,
     DeviceAuthStartResponse,
     ModelQuota,
     PlanTier,
