@@ -35,7 +35,13 @@ def check_domain(s, domains):
 
 # Import single source of truth for add-ons
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from addons_config import BETA_NOTICE, DEV_ADDONS, DEV_NOTICE, check_dev_addons_version_warnings, is_dev_addon
+from addons_config import (
+    BETA_NOTICE,
+    DEV_ADDONS,
+    DEV_NOTICE,
+    check_dev_addons_version_warnings,
+    is_dev_addon,
+)
 
 WEBSERVER_INTEGRATION_NOTICE = """
 ## 🏠 Home Assistant Integration

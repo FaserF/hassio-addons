@@ -59,14 +59,14 @@ DEV_NOTICE = """
 def is_dev_addon(name_or_slug: str) -> bool:
     if not name_or_slug:
         return False
-    clean = name_or_slug.lower().strip().replace('\\\\', '/').split('/')[-1]
+    clean = name_or_slug.lower().strip().replace("\\\\", "/").split("/")[-1]
     return clean in DEV_ADDONS
 
 
 def is_unsupported_addon(name_or_slug: str) -> bool:
     if not name_or_slug:
         return False
-    clean = name_or_slug.lower().strip().replace('\\', '/').split('/')[-1]
+    clean = name_or_slug.lower().strip().replace("\\", "/").split("/")[-1]
     return clean in UNSUPPORTED_ADDONS
 
 
@@ -76,6 +76,7 @@ def check_dev_addons_version_warnings(repo_root: str) -> list[str]:
     Emits a warning so maintainers can decide whether to unblacklist it.
     """
     import os
+
     import yaml
 
     warnings = []
@@ -108,4 +109,3 @@ def check_dev_addons_version_warnings(repo_root: str) -> list[str]:
                 except Exception:
                     pass
     return warnings
-

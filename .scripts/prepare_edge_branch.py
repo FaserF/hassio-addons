@@ -351,6 +351,7 @@ def update_integration_for_edge() -> bool:
 
 import shutil
 
+
 def main():
     print("🔧 Preparing edge branch for local builds...")
 

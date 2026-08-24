@@ -121,7 +121,7 @@ def _parse_yaml_list_field(content: str, field: str) -> list:
 def discover_addons() -> list[dict]:
     """Return a list of addon metadata dicts, one per addon directory."""
     addons = []
-    
+
     # 1. Root addons
     candidates = []
     for entry in sorted(os.listdir(PROJECT_ROOT)):

@@ -16,12 +16,13 @@ maintained by FaserF.
 ### 📦 Stable Channel (Recommended)
 
 Pre-built Docker images from official releases. Best for general use.
-*Note: In-development add-ons are excluded from the stable channel.*
+_Note: In-development add-ons are excluded from the stable channel._
 
 1. Click to add the stable repository:
    [![Add Stable Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
 2. Or manually add in Home Assistant:
+
    ```text
    https://github.com/FaserF/hassio-addons
    ```
@@ -36,9 +37,11 @@ Contains **ONLY** in-development add-ons (AegisBot, Alivro, Antigravity, EntraMi
 2. Or manually add in Home Assistant:
    - Navigate to **Settings** → **Add-ons** → **Add-on Store** → **⋮** → **Repositories**
    - Enter repository URL:
+
      ```text
      https://github.com/FaserF/hassio-addons#dev
      ```
+
    - Click **Add** and then refresh the Add-on Store (3 dots → **Check for updates**)
    - Find the add-ons under **FaserF's Home Assistant Apps (Dev)** and click **Install**.
 
@@ -50,6 +53,7 @@ Contains **ALL** add-ons (both stable and in-development), built locally on your
    [![Add Edge Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23edge)
 
 2. Or manually add in Home Assistant:
+
    ```text
    https://github.com/FaserF/hassio-addons#edge
    ```
@@ -59,12 +63,12 @@ Contains **ALL** add-ons (both stable and in-development), built locally on your
 > This takes longer and uses more resources than pre-built images.
 > In-development add-ons may contain experimental features or undergo rapid changes.
 
-| Channel    | Included Add-ons                 | Pre-built Images    | Update Speed | Stability |
-| ---------- | -------------------------------- | ------------------- | ------------ | --------- |
-| **Stable** | Stable Releases only             | ✅ Yes              | Fast         | 🟢 High   |
-| **Dev**    | **Only In-Development Add-ons**  | ❌ No (local build) | Medium       | 🟡 Experimental |
-| **Edge**   | **All Add-ons** (Stable + Dev)   | ❌ No (local build) | Slow         | 🟡 Medium |
-| **Unsupported** | Archived & Deprecated only | ❌ No (local build) | N/A          | 🔴 None   |
+| Channel         | Included Add-ons                | Pre-built Images    | Update Speed | Stability       |
+| --------------- | ------------------------------- | ------------------- | ------------ | --------------- |
+| **Stable**      | Stable Releases only            | ✅ Yes              | Fast         | 🟢 High         |
+| **Dev**         | **Only In-Development Add-ons** | ❌ No (local build) | Medium       | 🟡 Experimental |
+| **Edge**        | **All Add-ons** (Stable + Dev)  | ❌ No (local build) | Slow         | 🟡 Medium       |
+| **Unsupported** | Archived & Deprecated only      | ❌ No (local build) | N/A          | 🔴 None         |
 
 ## Apps List 📦
 
