@@ -6,7 +6,7 @@ import { waToTelegramHtml, stripHtmlTags } from '../format.js';
 import { applyRegexReplacements } from '../regex.js';
 import { formatHeader } from '../headers.js';
 import { logger } from '../../../logger.js';
-import { getGroupModerationConfig } from '../../moderation/store.js';
+import { getGroupModerationConfig, loadModerationStore } from '../../moderation/store.js';
 import { translateTextGatewayWithReason } from '../../../utils/gatewayTranslator.js';
 import { activeDiagnosticChats } from '../../actions.js';
 
@@ -43,24 +43,32 @@ export async function syncWhatsAppToTelegram(
     }
   }
 
-  // Check offline catchup message age filter
-  const catchupCfg = store.offline_catchup || { enabled: true, max_age_minutes: 2 };
-  if (catchupCfg.enabled !== false && msg.messageTimestamp) {
+  // Check central missed_messages recovery window from moderation store
+  const modStore = loadModerationStore();
+  const missedCfg = modStore.missed_messages || { enabled: true, lookback_hours: 3 };
+  if (msg.messageTimestamp) {
     const rawTs = Number(msg.messageTimestamp?.low || msg.messageTimestamp);
     if (rawTs && !isNaN(rawTs)) {
       const msgTimeMs = rawTs > 1e11 ? rawTs : rawTs * 1000;
-      const maxAgeMs = Math.max(1, Number(catchupCfg.max_age_minutes || 2)) * 60 * 1000;
-      const ageMs = Date.now() - msgTimeMs;
-      if (ageMs > maxAgeMs) {
-        logger.info(
-          {
-            waMsgId,
-            ageSeconds: Math.round(ageMs / 1000),
-            maxAgeSeconds: Math.round(maxAgeMs / 1000),
-          },
-          '⏳ Skipping outdated offline WhatsApp message beyond catchup window'
-        );
-        return;
+      if (missedCfg.enabled === false) {
+        // If missed messages recovery is disabled, only allow messages within last 2 minutes
+        const ageMs = Date.now() - msgTimeMs;
+        if (ageMs > 120000) return;
+      } else {
+        const lookbackHours = Math.max(0.5, Number(missedCfg.lookback_hours) || 3);
+        const maxAgeMs = lookbackHours * 60 * 60 * 1000;
+        const ageMs = Date.now() - msgTimeMs;
+        if (ageMs > maxAgeMs) {
+          logger.info(
+            {
+              waMsgId,
+              ageSeconds: Math.round(ageMs / 1000),
+              maxAgeSeconds: Math.round(maxAgeMs / 1000),
+            },
+            '⏳ Skipping outdated offline WhatsApp message beyond central recovery window'
+          );
+          return;
+        }
       }
     }
   }

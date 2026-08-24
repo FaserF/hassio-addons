@@ -23,44 +23,7 @@ export default () => `
         </div>
     </div>
 
-    <!-- Offline Message Catchup Card -->
-    <div class="card mod-settings-card" style="margin-top: 16px; padding: 20px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
-            <div style="display:flex; align-items:center; gap:14px; min-width:260px; flex:1;">
-                <div style="font-size: 24px; color: #f59e0b; background: rgba(245, 158, 11, 0.12); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink:0;">
-                    <i class="fas fa-history"></i>
-                </div>
-                <div>
-                    <h3 style="margin: 0; font-weight: 600; font-size:16px;" data-i18n="telegram.offline_catchup_title">Offline Message Catchup</h3>
-                    <p style="color: var(--text-muted); margin: 2px 0 0; font-size: 13px;" data-i18n="telegram.offline_catchup_desc">
-                        Synchronize unread messages received while the server or docker container was offline within a defined time window.
-                    </p>
-                </div>
-            </div>
-            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <label class="mod-toggle-switch">
-                        <input type="checkbox" id="tg-catchup-enabled" onchange="saveTelegramCatchupConfig()">
-                        <span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span>
-                    </label>
-                    <span style="font-size:13px; font-weight:600;" data-i18n="telegram.catchup_enabled_label">Catchup Active</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <label style="font-size:13px; color:var(--text-muted);" data-i18n="telegram.catchup_window_label">Max History Window:</label>
-                    <select id="tg-catchup-window" class="mod-select mod-select-sm" style="width:130px;" onchange="saveTelegramCatchupConfig()">
-                        <option value="1">1 Min</option>
-                        <option value="2" selected>2 Min (Standard)</option>
-                        <option value="5">5 Min</option>
-                        <option value="10">10 Min</option>
-                        <option value="30">30 Min</option>
-                        <option value="60">1 Std (60 Min)</option>
-                        <option value="180">3 Std (180 Min)</option>
-                        <option value="1440">24 Std (1440 Min)</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Bot Token / Multi-Bot Management Card -->
     <div class="card mod-settings-card" style="margin-top: 16px; padding: 20px;">

@@ -84,4 +84,3 @@ window.clearAutoTestLogs = clearAutoTestLogs;
 window.exportAutoTestLogs = exportAutoTestLogs;
 window.handleModConfigFileUpload = handleModConfigFileUpload;
 window.renderModerationDiagnostics = renderModerationDiagnostics;
-window.saveTelegramCatchupConfig = saveTelegramCatchupConfig;
