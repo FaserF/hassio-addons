@@ -1,0 +1,1 @@
+# Home Assistant Add-on: Alivro\n\nClinical AI-Powered Mental Health Companion for Depression, Burnout & Substance Harm Reduction.\n

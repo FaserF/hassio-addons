@@ -34,6 +34,7 @@ body:
         For example: Apache2
       options:
         - Other
+        - Alivro
         - AegisBot
         - EntraMirror
         - ShieldDNS

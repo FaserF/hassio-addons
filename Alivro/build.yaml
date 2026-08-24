@@ -1,0 +1,1 @@
+---\nbuild_from:\n  aarch64: ghcr.io/home-assistant/base-python:3.14-alpine3.23\n  amd64: ghcr.io/home-assistant/base-python:3.14-alpine3.23\nargs:\n  ALIVRO_VERSION: "MATCH"\n

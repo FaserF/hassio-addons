@@ -72,6 +72,7 @@ body:
         The name of the App. For example: Apache2
       options:
         - Other
+        - Alivro
         - AegisBot
         - EntraMirror
         - ShieldDNS
