@@ -195,6 +195,14 @@ async def get_index(request: Request):
                 except Exception:  # noqa: BLE001
                     pass
 
+    login_in_progress = False
+    login_remaining_sec = 0
+    if browser_service.login_started_at and not browser_service.is_logged_in:
+        elapsed = time.time() - browser_service.login_started_at
+        if elapsed < 120:
+            login_in_progress = True
+            login_remaining_sec = int(120 - elapsed)
+
     return templates.TemplateResponse(
         request=request,
         name="index.html",
@@ -213,6 +221,8 @@ async def get_index(request: Request):
             "last_logout_sec": last_logout_sec,
             "last_logout_reason": browser_service.last_logout_reason,
             "last_session_duration": browser_service.last_session_duration,
+            "login_in_progress": login_in_progress,
+            "login_remaining_sec": login_remaining_sec,
             "last_interaction_type": browser_service.last_interaction_type,
             "last_interaction_details": browser_service.last_interaction_details,
             "request_counts_by_type": browser_service.request_counts_by_type,
@@ -223,6 +233,14 @@ async def get_index(request: Request):
 
 @app.get("/api/v1/status")
 async def get_status():
+    login_in_progress = False
+    login_remaining_sec = 0
+    if browser_service.login_started_at and not browser_service.is_logged_in:
+        elapsed = time.time() - browser_service.login_started_at
+        if elapsed < 120:
+            login_in_progress = True
+            login_remaining_sec = int(120 - elapsed)
+
     return {
         "status": "online",
         "service": "traderepublic-addon",
@@ -231,6 +249,8 @@ async def get_status():
         "phone_number": browser_service.phone_number,
         "message": browser_service.status_message,
         "last_error": browser_service.last_error,
+        "login_in_progress": login_in_progress,
+        "login_remaining_sec": login_remaining_sec,
         "requests_count": browser_service.client_requests_count,
         "last_sync_time": browser_service.last_sync_time,
         "last_checked_time": browser_service.token_verified_at,

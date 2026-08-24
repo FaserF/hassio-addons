@@ -195,7 +195,8 @@ class AuthHelper:
                 input.dispatchEvent(new Event('input', {{ bubbles: true }}));
                 input.dispatchEvent(new Event('change', {{ bubbles: true }}));
                 input.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
-                const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"]');
+                input.dispatchEvent(new KeyboardEvent('keyup', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
+                const btn = Array.from(document.querySelectorAll('button')).find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Continue') || b.textContent.includes('Anmelden'))));
                 if (btn) btn.click();
                 return true;
             }}
@@ -203,7 +204,7 @@ class AuthHelper:
         }})()
         """
         await self.cdp.send_cmd("Runtime.evaluate", {"expression": phone_script})
-        await asyncio.sleep(3)
+        await asyncio.sleep(2.5)
 
         # PIN
         pin_script = f"""
@@ -216,7 +217,8 @@ class AuthHelper:
                 input.dispatchEvent(new Event('input', {{ bubbles: true }}));
                 input.dispatchEvent(new Event('change', {{ bubbles: true }}));
                 input.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
-                const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"]');
+                input.dispatchEvent(new KeyboardEvent('keyup', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
+                const btn = Array.from(document.querySelectorAll('button')).find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Anmelden') || b.textContent.includes('Login') || b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Submit'))));
                 if (btn) btn.click();
                 return true;
             }}

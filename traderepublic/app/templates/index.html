@@ -228,7 +228,7 @@
     {% endif %}
   {% endif %}
 
-  <div id="step-login" class="{% if is_logged_in and not last_error %}hidden{% endif %}" style="margin-top:1rem;">
+  <div id="step-login" class="{% if (is_logged_in and not last_error) or login_in_progress %}hidden{% endif %}" style="margin-top:1rem;">
     <form onsubmit="event.preventDefault(); submitLogin();">
       <div class="form-group">
         <label for="phone" data-i18n="lbl_phone_input">Phone Number (international format, e.g. +491701234567, 0170...)</label>
@@ -243,7 +243,7 @@
     </form>
   </div>
 
-  <div id="step-2fa" class="hidden" style="margin-top:1rem;">
+  <div id="step-2fa" class="{% if not login_in_progress %}hidden{% endif %}" style="margin-top:1rem;">
     <form onsubmit="event.preventDefault(); submit2FA();">
       <div class="alert alert-info">
         <b data-i18n="twofa_title">Approval Required:</b><br>
@@ -375,6 +375,12 @@
     currentLang = detectLang();
     translations = await loadTranslations(currentLang);
     applyTranslations();
+
+    const inProgress = {% if login_in_progress %}true{% else %}false{% endif %};
+    const remainingSec = {% if login_remaining_sec %}{{ login_remaining_sec }}{% else %}0{% endif %};
+    if (inProgress && remainingSec > 0) {
+      startTwoFaCountdown(remainingSec);
+    }
   })();
 
   // ── UI Logic ──────────────────────────────────────────────────────────
@@ -390,6 +396,44 @@
       loginStep.classList.add('hidden');
       btn.textContent = t('btn_reauth');
     }
+  function startTwoFaCountdown(seconds) {
+    let totalSeconds = seconds || 120;
+    const countdownEl = document.getElementById('twofa-countdown');
+    const resEl = document.getElementById('result');
+    if (countdownEl) {
+      const m = String(Math.floor(Math.max(0, totalSeconds) / 60)).padStart(2, '0');
+      const s = String(Math.max(0, totalSeconds) % 60).padStart(2, '0');
+      countdownEl.textContent = m + ':' + s;
+    }
+
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(async () => {
+      try {
+        totalSeconds -= 1;
+        if (countdownEl) {
+          const m = String(Math.floor(Math.max(0, totalSeconds) / 60)).padStart(2, '0');
+          const s = String(Math.max(0, totalSeconds) % 60).padStart(2, '0');
+          countdownEl.textContent = m + ':' + s;
+        }
+
+        if (totalSeconds <= 0) {
+          clearInterval(pollTimer);
+          if (resEl) resEl.innerHTML = '<span style="color:#ef4444;">' + t('js_timeout_expired') + '</span>';
+          document.getElementById('step-2fa').classList.add('hidden');
+          document.getElementById('step-login').classList.remove('hidden');
+          return;
+        }
+
+        if (totalSeconds % 2 === 0) {
+          const st = await (await fetch('./api/v1/status')).json();
+          if (st.is_logged_in) {
+            clearInterval(pollTimer);
+            if (resEl) resEl.innerHTML = '<span style="color:#22c55e;">' + t('js_inapp_detected') + '</span>';
+            setTimeout(() => window.location.reload(), 1200);
+          }
+        }
+      } catch {}
+    }, 1000);
   }
 
   async function submitLogin() {
@@ -424,38 +468,7 @@
         document.getElementById('step-login').classList.add('hidden');
         document.getElementById('step-2fa').classList.remove('hidden');
         resEl.innerHTML = '<span style="color:#60a5fa;">' + data.message + '</span>';
-        let totalSeconds = 120;
-        const countdownEl = document.getElementById('twofa-countdown');
-        if (countdownEl) countdownEl.textContent = '02:00';
-
-        if (pollTimer) clearInterval(pollTimer);
-        pollTimer = setInterval(async () => {
-          try {
-            totalSeconds -= 1;
-            if (countdownEl) {
-              const m = String(Math.floor(Math.max(0, totalSeconds) / 60)).padStart(2, '0');
-              const s = String(Math.max(0, totalSeconds) % 60).padStart(2, '0');
-              countdownEl.textContent = m + ':' + s;
-            }
-
-            if (totalSeconds <= 0) {
-              clearInterval(pollTimer);
-              resEl.innerHTML = '<span style="color:#ef4444;">' + t('js_timeout_expired') + '</span>';
-              document.getElementById('step-2fa').classList.add('hidden');
-              document.getElementById('step-login').classList.remove('hidden');
-              return;
-            }
-
-            if (totalSeconds % 2 === 0) {
-              const st = await (await fetch('./api/v1/status')).json();
-              if (st.is_logged_in) {
-                clearInterval(pollTimer);
-                resEl.innerHTML = '<span style="color:#22c55e;">' + t('js_inapp_detected') + '</span>';
-                setTimeout(() => window.location.reload(), 1200);
-              }
-            }
-          } catch {}
-        }, 1000);
+        startTwoFaCountdown(120);
       } else {
         resEl.innerHTML = '<span style="color:#ef4444;">' + (data.error || t('js_login_failed')) + '</span>';
       }
