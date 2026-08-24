@@ -2,8 +2,13 @@ import argparse
 import json
 import os
 import re
+import sys
 
 import yaml
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
 
 
 class IndentedYamlDumper(yaml.SafeDumper):
@@ -33,8 +38,28 @@ BETA_NOTICE = """
 > **Experimental / Beta Status**
 >
 > This App is still in development and/or primarily developed for personal use.
-> It is not extensively testet yet, but is expected to work fundamentally.
+> It is not extensively tested yet, but is expected to work fundamentally.
 """
+
+DEV_NOTICE = """
+> [!CAUTION]
+> **Development / Edge Channel Only**
+>
+> This add-on is currently in active development and provided exclusively on the **Edge** branch.
+> While the Home Assistant add-on wrapper itself may be functional, the underlying upstream software is either in an early development stage or hosted within a private repository.
+>
+> 💡 To test or use this add-on, install the repository via the Edge channel: `https://github.com/FaserF/hassio-addons#edge`
+"""
+
+DEV_ADDONS = {
+    "aegisbot",
+    "solumati",
+    "alivro",
+    "antigravity",
+    "entramirror",
+    "wiki.js3",
+    "switchcraft",
+}
 
 WEBSERVER_INTEGRATION_NOTICE = """
 ## 🏠 Home Assistant Integration
@@ -162,8 +187,13 @@ def clean_existing_content(content):
             if sline.startswith(">"):
                 continue
 
-            # Detect Beta Warning (Avoid duplicates)
-            if "Experimental / Beta Status" in sline or "primarily developed for personal use" in sline:
+            # Detect Beta / Dev Warning (Avoid duplicates)
+            if (
+                "Experimental / Beta Status" in sline
+                or "primarily developed for personal use" in sline
+                or "Development / Edge Channel Only" in sline
+                or "hosted within a private repository" in sline
+            ):
                 continue
 
             # Detect HR
@@ -359,8 +389,11 @@ def process_addon(addon_path):
     new_content += f"> {description}\n\n"
     new_content += "---\n\n"
 
-    # Beta Warning
-    if is_beta(version):
+    # Development / Beta Warning
+    if addon_dirname.lower() in DEV_ADDONS:
+        new_content += DEV_NOTICE.strip() + "\n\n"
+        new_content += "---\n\n"
+    elif is_beta(version):
         new_content += BETA_NOTICE.strip() + "\n\n"
         new_content += "---\n\n"
 

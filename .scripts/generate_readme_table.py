@@ -13,20 +13,37 @@ from pathlib import Path
 
 import yaml
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
+DEV_ADDONS = {
+    "aegisbot",
+    "solumati",
+    "alivro",
+    "antigravity",
+    "entramirror",
+    "wiki.js3",
+    "switchcraft",
+}
+
 
 def parse_version(version_str: str) -> tuple:
     """Parse a version string into major, minor, patch tuple."""
     try:
         parts = version_str.lstrip("v").split(".")
         return tuple(int(p) for p in parts[:3])
-    except ValueError, AttributeError:
+    except (ValueError, AttributeError):
         return (0, 0, 0)
 
 
-def get_status_emoji(version: str, is_unsupported: bool) -> str:
+def get_status_emoji(version: str, is_unsupported: bool, slug_or_path: str = "") -> str:
     """Determine the status emoji based on version and support status."""
     if is_unsupported:
         return "❌"
+
+    if slug_or_path and slug_or_path.lower().split("/")[-1] in DEV_ADDONS:
+        return "⚠️"
 
     major, minor, patch = parse_version(version)
     if major >= 1:

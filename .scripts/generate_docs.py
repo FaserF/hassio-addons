@@ -6,12 +6,27 @@ architecture badges, modern UI, category grouping, and one-click repo install.
 """
 
 import json
+import sys
 from pathlib import Path
 
 import yaml
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
 REPO_URL = "https://github.com/FaserF/hassio-addons"
 REPO_RAW_URL = "https://raw.githubusercontent.com/FaserF/hassio-addons/master"
+
+DEV_ADDONS = {
+    "aegisbot",
+    "solumati",
+    "alivro",
+    "antigravity",
+    "entramirror",
+    "wiki.js3",
+    "switchcraft",
+}
 
 # Enhanced emoji/category detection
 ICON_MAP = {
@@ -184,6 +199,10 @@ def extract_metadata(config_path: Path, relative_path: str, is_unsupported: bool
             status_text = "Unsupported"
             status_class = "unsupported"
             sort_tier = 2
+        elif slug.lower() in DEV_ADDONS or name.lower() in DEV_ADDONS:
+            status_text = "Dev / Edge"
+            status_class = "beta"
+            sort_tier = 1
         else:
             major, _, _ = parse_version(version)
             if major >= 1:

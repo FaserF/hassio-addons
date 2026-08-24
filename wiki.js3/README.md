@@ -12,10 +12,12 @@
 ---
 
 > [!CAUTION]
-> **Experimental / Beta Status**
+> **Development / Edge Channel Only**
 >
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively testet yet, but is expected to work fundamentally.
+> This add-on is currently in active development and provided exclusively on the **Edge** branch.
+> While the Home Assistant add-on wrapper itself may be functional, the underlying upstream software is either in an early development stage or hosted within a private repository.
+>
+> 💡 To test or use this add-on, install the repository via the Edge channel: `https://github.com/FaserF/hassio-addons#edge`
 
 ---
 

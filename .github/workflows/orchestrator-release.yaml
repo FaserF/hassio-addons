@@ -60,6 +60,16 @@ env:
   # Apps to ignore for auto-releases (Blacklist)
   AUTO_RELEASE_IGNORE: |
     sap-abap-cloud-dev
+    aegisbot
+    AegisBot
+    solumati
+    alivro
+    Alivro
+    antigravity
+    entramirror
+    EntraMirror
+    wiki.js3
+    switchcraft
 
   # Labels that indicate safe auto-release
   SAFE_LABELS: dependencies automerge

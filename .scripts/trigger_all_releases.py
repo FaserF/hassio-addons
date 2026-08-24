@@ -18,6 +18,16 @@ import time
 # Add-ons to skip (e.g., test add-ons or ones that shouldn't be released)
 SKIP_ADDONS = {
     "homeassistant-test-instance",  # Test add-on, skip releases
+    "aegisbot",
+    "AegisBot",
+    "solumati",
+    "alivro",
+    "Alivro",
+    "antigravity",
+    "entramirror",
+    "EntraMirror",
+    "wiki.js3",
+    "switchcraft",
 }
 
 

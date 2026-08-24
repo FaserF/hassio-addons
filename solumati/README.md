@@ -11,6 +11,16 @@
 
 ---
 
+> [!CAUTION]
+> **Development / Edge Channel Only**
+>
+> This add-on is currently in active development and provided exclusively on the **Edge** branch.
+> While the Home Assistant add-on wrapper itself may be functional, the underlying upstream software is either in an early development stage or hosted within a private repository.
+>
+> 💡 To test or use this add-on, install the repository via the Edge channel: `https://github.com/FaserF/hassio-addons#edge`
+
+---
+
 ## 📖 About
 
 The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches.

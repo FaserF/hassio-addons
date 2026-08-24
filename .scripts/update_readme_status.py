@@ -21,17 +21,30 @@ Expected Table Format:
 
 import os
 import re
+import sys
 
 try:
     import yaml
 except ImportError:
     print("⚠️ PyYAML not installed. Install with: pip install pyyaml")
-    import sys
-
     sys.exit(1)
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
 
 # Directories to exclude from scanning
 EXCLUDED_DIRS = {"__pycache__", "node_modules", ".git", ".github", ".scripts"}
+
+DEV_ADDONS = {
+    "aegisbot",
+    "solumati",
+    "alivro",
+    "antigravity",
+    "entramirror",
+    "wiki.js3",
+    "switchcraft",
+}
 
 
 def is_prerelease_version(version_str):
@@ -122,10 +135,15 @@ def get_addon_status(addon_path, is_unsupported=False):
     name = config.get("name", os.path.basename(addon_path))
 
     # Determine status and stage
+    addon_basename = os.path.basename(addon_path).lower()
     if is_unsupported:
         status = "❌"
         status_name = "Unsupported"
         stage = "deprecated"
+    elif addon_basename in DEV_ADDONS:
+        status = "⚠️"
+        status_name = "Edge / Dev"
+        stage = "experimental"
     elif is_prerelease_version(version):
         status = "⚠️"
         status_name = "Beta"
