@@ -131,7 +131,9 @@ export async function translateTextGatewayWithReason(
           'User-Agent': 'AegisBot-WhatsApp-Gateway/1.0',
         };
         if (aegisKey) {
-          headers['Authorization'] = `Bearer ${String(aegisKey).trim()}`;
+          const cleanKey = String(aegisKey).trim();
+          headers['Authorization'] = `Bearer ${cleanKey}`;
+          headers['X-API-Key'] = cleanKey;
         }
 
         const res = await fetch(`${cleanUrl}/api/v1/ai/translate`, {
