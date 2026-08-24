@@ -567,7 +567,11 @@ export function getTranslationDiagnostics(groupConfig = {}, store = {}) {
         providersToTry.push(p);
       }
     }
-  } else if (configuredProvider && configuredProvider !== 'auto' && configuredProvider !== 'custom') {
+  } else if (
+    configuredProvider &&
+    configuredProvider !== 'auto' &&
+    configuredProvider !== 'custom'
+  ) {
     providersToTry.push(configuredProvider);
   } else {
     if (hasAegisUrl) providersToTry.push('aegisbot');
@@ -585,34 +589,40 @@ export function getTranslationDiagnostics(groupConfig = {}, store = {}) {
       if (hasAegisUrl) {
         activeProvider = 'aegisbot';
         activeProviderName = 'AegisBot Server (Local)';
-        selectionReason = configuredProvider === 'custom'
-          ? 'Custom Priority: AegisBot Server is top priority and available.'
-          : (configuredProvider === 'aegisbot' ? 'Manual Selection: Explicitly set to AegisBot Server.' : 'Auto-Failover: Local AegisBot Server is active.');
+        selectionReason =
+          configuredProvider === 'custom'
+            ? 'Custom Priority: AegisBot Server is top priority and available.'
+            : configuredProvider === 'aegisbot'
+              ? 'Manual Selection: Explicitly set to AegisBot Server.'
+              : 'Auto-Failover: Local AegisBot Server is active.';
         break;
       }
     } else if (p === 'google') {
       if (googleCooldown <= now) {
         activeProvider = 'google';
         activeProviderName = 'Google Translate';
-        selectionReason = configuredProvider === 'custom'
-          ? 'Custom Priority: Google Translate is active and healthy.'
-          : 'Auto-Failover: Primary engine (Google Translate) is active and healthy.';
+        selectionReason =
+          configuredProvider === 'custom'
+            ? 'Custom Priority: Google Translate is active and healthy.'
+            : 'Auto-Failover: Primary engine (Google Translate) is active and healthy.';
         break;
       }
     } else if (p === 'lingva') {
       activeProvider = 'lingva';
       activeProviderName = 'Lingva Translate';
-      selectionReason = configuredProvider === 'custom'
-        ? 'Custom Priority: Switched to Lingva Translate.'
-        : `Auto-Failover: Higher-priority engines unavailable. Switched to Lingva Translate.`;
+      selectionReason =
+        configuredProvider === 'custom'
+          ? 'Custom Priority: Switched to Lingva Translate.'
+          : `Auto-Failover: Higher-priority engines unavailable. Switched to Lingva Translate.`;
       break;
     } else if (p === 'mymemory') {
       if (mymemoryCooldown <= now) {
         activeProvider = 'mymemory';
         activeProviderName = 'MyMemory';
-        selectionReason = configuredProvider === 'custom'
-          ? 'Custom Priority: Switched to MyMemory.'
-          : 'Auto-Failover: Higher-priority engines unavailable. Switched to MyMemory.';
+        selectionReason =
+          configuredProvider === 'custom'
+            ? 'Custom Priority: Switched to MyMemory.'
+            : 'Auto-Failover: Higher-priority engines unavailable. Switched to MyMemory.';
         break;
       }
     } else if (p === 'ai') {
