@@ -57,6 +57,24 @@
 
 ## 📖 About
 
+[! CAUTION]
+
+> **Experimental / Beta Status**
+>
+> This App is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
+
+## 📖 About
+
+[! CAUTION]
+
+> **Experimental / Beta Status**
+>
+> This App is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
+
+## 📖 About
+
 Sync IMAP accounts easily and reliably.
 
 ---
