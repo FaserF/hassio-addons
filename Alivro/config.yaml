@@ -1,1 +1,68 @@
----\nname: Alivro\nversion: "0.1.0"\nslug: alivro\nimage: ghcr.io/faserf/hassio-addons-alivro-{arch}\ndescription: Clinical AI-Powered Mental Health Companion for Depression, Burnout & Substance Harm Reduction.\nurl: https://github.com/FaserF/Alivro\narch:\n  - aarch64\n  - amd64\ninit: false\nhost_network: true\ningress: true\ningress_port: 8000\ningress_stream: true\npanel_icon: mdi:heart-pulse\nstartup: services\nports:\n  8000/tcp: 8000\nports_description:\n  8000/tcp: Web Interface (HTTP)\nmap:\n  - homeassistant_config:rw\n  - share:rw\noptions:\n  version: "latest"\n  github_token: ""\n  github_repo: "FaserF/Alivro"\n  developer_mode: false\n  reset_database: false\n  log_level: "info"\n  database:\n    type: sqlite\n  secret_key: ""\n  project_name: "Alivro"\n  debug: false\n  demo_mode: false\n  ai_provider: "gemini"\n  release_type: "stable"\n  environment: "production"\n  default_locale: "en"\nschema:\n  version: str\n  github_token: password?\n  github_repo: str?\n  developer_mode: bool\n  reset_database: bool\n  reset_database_confirm: bool?\n  log_level: list(trace|debug|info|notice|warning|error|fatal)?\n  database:\n    type: list(sqlite|postgresql)\n    postgresql_host: str?\n    postgresql_port: port?\n    postgresql_user: str?\n    postgresql_password: password?\n    postgresql_database: str?\n  secret_key: password?\n  project_name: str?\n  debug: bool?\n  demo_mode: bool\n  gemini_api_key: password?\n  ai_model: str?\n  ai_provider: list(gemini)?\n  release_type: list(developer|nightly|pre-release|stable)?\n  first_admin_password: password?\n  environment: str?\n  default_locale: str?\nstage: experimental\n
+---
+name: Alivro
+version: "0.1.0"
+slug: alivro
+image: ghcr.io/faserf/hassio-addons-alivro-{arch}
+description: Clinical AI-Powered Mental Health Companion for Depression, Burnout & Substance Harm Reduction.
+url: https://github.com/FaserF/Alivro
+arch:
+  - aarch64
+  - amd64
+init: false
+host_network: true
+ingress: true
+ingress_port: 8000
+ingress_stream: true
+panel_icon: mdi:heart-pulse
+startup: services
+ports:
+  8000/tcp: 8000
+ports_description:
+  8000/tcp: Web Interface (HTTP)
+map:
+  - homeassistant_config:rw
+  - share:rw
+options:
+  version: "latest"
+  github_token: ""
+  github_repo: "FaserF/Alivro"
+  developer_mode: false
+  reset_database: false
+  log_level: "info"
+  database:
+    type: sqlite
+  secret_key: ""
+  project_name: "Alivro"
+  debug: false
+  demo_mode: false
+  ai_provider: "gemini"
+  release_type: "stable"
+  environment: "production"
+  default_locale: "en"
+schema:
+  version: str
+  github_token: password?
+  github_repo: str?
+  developer_mode: bool
+  reset_database: bool
+  reset_database_confirm: bool?
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?
+  database:
+    type: list(sqlite|postgresql)
+    postgresql_host: str?
+    postgresql_port: port?
+    postgresql_user: str?
+    postgresql_password: password?
+    postgresql_database: str?
+  secret_key: password?
+  project_name: str?
+  debug: bool?
+  demo_mode: bool
+  gemini_api_key: password?
+  ai_model: str?
+  ai_provider: list(gemini)?
+  release_type: list(developer|nightly|pre-release|stable)?
+  first_admin_password: password?
+  environment: str?
+  default_locale: str?
+stage: experimental
