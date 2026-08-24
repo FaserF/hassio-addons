@@ -351,10 +351,10 @@ if [[ "$DB_TYPE" == "postgresql" ]]; then
 	PG_PASS=$(bashio::config 'database.postgresql_password')
 	PG_DB=$(bashio::config 'database.postgresql_database')
 
-	export DATABASE_URL="postgresql://$PG_USER:$PG_PASS@$PG_HOST:$PG_PORT/$PG_DB"
+	export DATABASE_URL="postgresql+asyncpg://$PG_USER:$PG_PASS@$PG_HOST:$PG_PORT/$PG_DB"
 	bashio::log.info "Using PostgreSQL database at $PG_HOST:$PG_PORT"
 else
-	export DATABASE_URL="sqlite:///$DB_DIR/alivro.db"
+	export DATABASE_URL="sqlite+aiosqlite:///$DB_DIR/alivro.db"
 	bashio::log.info "Using SQLite database"
 fi
 

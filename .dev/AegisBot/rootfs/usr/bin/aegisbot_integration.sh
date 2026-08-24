@@ -182,7 +182,7 @@ install_integration() {
 			bashio::log.error "❌ Copy failed: $INTEGRATION_DIR is missing manifest.json."
 		fi
 	else
-		bashio::log.error "❌ Could not complete integration installation."
+		bashio::log.info "ℹ️ Integration installation skipped (repository not available or private)."
 	fi
 
 	rm -rf "$TMP_BUILD" 2>/dev/null
