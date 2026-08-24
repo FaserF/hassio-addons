@@ -13,6 +13,15 @@
 
 ## 📖 About
 
+## 🛠️ Usage & Integration
+
+To actually send messages and automate WhatsApp, you need the **WhatsApp Custom Integration** for Home Assistant.
+
+- **[Official Documentation & Examples](https://faserf.github.io/ha-whatsapp/)**: Comprehensive guide on how to use the `notify` service, send buttons, polls, images, and creating bot automations.
+
+
+
+
 ### 🗝️ Native Control Commands
 
 Control your addon via WhatsApp!
@@ -41,11 +50,9 @@ Full-featured group moderation, anti-raid shield, and bot command engine (Rose &
 - **Content Locks**: Lock images, videos, voice, docs, stickers, URLs, invites, polls, contacts, locations, forwarded messages, or RTL text (`!lock`, `!unlock`).
 - **Automation & AI**: Captchas (Private DM / Group resolution & Web UI status overview), welcome/goodbye greetings with departure reasons, configurable user name addressing priorities, word blacklists, anti-flood, anti-raid, Multi-AI provider support (OpenAI & Gemini), AI FAQ responder, AI Intent & Scam Detection (phishing/crypto protection), AI rules interpreter (`!rules <question>`), AI sentiment toxicity moderation, and AI translation (`!translate`).
 
-> [!TIP]
-> **First Contact:** The bot automatically sends a welcome message to new users on their first direct message, identifying their role (Admin/Standard).
 
-> [!TIP]
-> Send `ha-app-help` from an admin number for a full list of commands and usage examples.
+
+
 
 ## ⚠️ Anti-Ban & Safety Guidelines
 
@@ -81,10 +88,6 @@ services:
       - LOG_LEVEL=info
       - WELCOME_MESSAGE_ENABLED=false
 ```
-
-> [!NOTE]
-> All configuration options can be passed via environment variables in standalone Docker mode (case-insensitive, e.g. `WELCOME_MESSAGE_ENABLED=false` or `welcome_message_enabled=false`).
-> See the **[Configuration Documentation](https://faserf.github.io/ha-whatsapp/configuration.html#-standalone-docker-environment-variables)** for the full environment variable reference table.
 
 ---
 

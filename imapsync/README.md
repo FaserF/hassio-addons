@@ -11,7 +11,7 @@
 
 ---
 
-[! CAUTION]
+> [!CAUTION]
 > **Experimental / Beta Status**
 >
 > This App is still in development and/or primarily developed for personal use.
@@ -21,88 +21,14 @@
 
 ## 📖 About
 
-[! CAUTION]
+Imapsync is the industry-standard utility designed for heavy-duty mail migration, backup, and mailbox synchronization between any two IMAP servers.
 
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
+### ✨ Features
 
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-Sync IMAP accounts easily and reliably.
+* **Incremental Sync**: Only transfers new and modified messages on subsequent runs.
+* **Multi-Account Support**: Configure and sync multiple independent account pairs in a single schedule.
+* **Modern OAuth2 Support**: Full OAuth2 support for Google (Gmail) and Microsoft (Outlook/Office 365).
+* **Flexible Filtering**: Granular inclusion/exclusion of folders, max age, and size limits.
 
 ---
 

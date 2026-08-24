@@ -11,7 +11,7 @@
 
 ---
 
-[! CAUTION]
+> [!CAUTION]
 > **Experimental / Beta Status**
 >
 > This App is still in development and/or primarily developed for personal use.
@@ -21,94 +21,12 @@
 
 ## 📖 About
 
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
+SAP ABAP Platform Developer Edition provides a local development and learning environment for ABAP and ABAP Cloud.
 
+### ⚠️ Important Notice
 
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-## Installation
-
-1. Add this repository to your Home Assistant App store
-2. Install the "SAP ABAP Cloud Developer Trial" app
-3. **READ AND ACCEPT** the SAP license terms
-4. Set `agree_to_license: true` in the configuration
-5. Start the app (initial startup takes 5-10 minutes)
+* This add-on requires high CPU and RAM resources (minimum 16 GB RAM recommended).
+* Free developer license must be obtained from SAP.
 
 ---
 

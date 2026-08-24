@@ -11,7 +11,7 @@
 
 ---
 
-[! CAUTION]
+> [!CAUTION]
 > **Experimental / Beta Status**
 >
 > This App is still in development and/or primarily developed for personal use.
@@ -21,116 +21,13 @@
 
 ## 📖 About
 
-[! CAUTION]
+WordPress is the world's most popular open-source content management and blogging platform.
 
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
+### ✨ Features
 
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-## 🌐 How to Access
-
-The app exposes two ports for accessing your WordPress site:
-
-- **HTTP**: Port `8099` => `http://homeassistant.local:8099`
-- **HTTPS**: Port `8449` => `https://homeassistant.local:8449`
-
-**Important**:
-
-1. If you enable **SSL** (`ssl: true`), requests to the HTTP port will strictly redirect to the HTTPS port.
-2. Make sure your `wordpress_url` configuration matches the protocol you intend to use (e.g., start with `https://` if using SSL).
-
-## 🔐 First Run & Login
-
-### Initial Credentials
-
-On the **very first startup**, the app will install WordPress and automatically generate a secure **Admin Password**.
-
-1. Start the app.
-2. Check the **Log** tab of the app immediately.
-3. Look for a message box containing **"Wordpress Admin Password"**.
-4. **Copy and save this password!** It will only be shown once.
-
-The default **Username** is `admin` (unless changed in configuration).
-
-### Database & Config
-
-- A `wp-config.php` file is automatically generated and maintained by the app.
-- The database connection is handled automatically.
+* **Pre-configured Environment**: Built on Apache with PHP and MariaDB database connectivity.
+* **Extensible & Customizable**: Full access to themes, plugins, and custom PHP scripts.
+* **Ingress & Direct Access**: Accessible through Home Assistant Ingress and dedicated web ports.
 
 ---
 

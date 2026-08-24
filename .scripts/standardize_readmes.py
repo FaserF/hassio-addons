@@ -134,13 +134,41 @@ def generate_badges(addon_slug, addon_name, addon_path=None):
 
 
 def clean_existing_content(content):
-    """Clean existing content by stripping headers, badges, and stopping at Configuration."""
+    """Clean existing content by stripping headers, badges, alerts, conflict markers, and stopping at Configuration."""
+    # Pre-strip git conflict markers and artifacts
+    content = re.sub(r"<<<<<<<[^\n]*\n[\s\S]*?>>>>>>>[^\n]*\n?", "", content)
+    content = re.sub(r"^(?:<{7}|={7}|>{7})[^\n]*$", "", content, flags=re.MULTILINE)
+
+    # Pre-strip all alert/notice blocks (> [!CAUTION], > [!WARNING], etc.)
+    content = re.sub(r">\s*\[!(?:CAUTION|WARNING|NOTE|TIP|IMPORTANT)\][\s\S]*?(?=\n\n\S|\n##|\Z)", "", content, flags=re.IGNORECASE)
+    content = re.sub(r">\s*\*\*.*?(?:Beta|Experimental|Development|UNSUPPORTED).*?\*\*[\s\S]*?(?=\n\n\S|\n##|\Z)", "", content, flags=re.IGNORECASE)
+    content = re.sub(r"^##\s*(?:📖\s*)?About\s*$", "", content, flags=re.MULTILINE | re.IGNORECASE)
+
     lines = content.splitlines()
     cleaned_lines = []
     skip_mode = True
 
     for line in lines:
         sline = line.strip()
+
+        # Always skip conflict markers, alert lines or duplicated notice fragments
+        if (
+            sline.startswith("<<<<<<<")
+            or sline.startswith("=======")
+            or sline.startswith(">>>>>>>")
+            or "Updated upstream" in sline
+            or "Stashed changes" in sline
+            or sline.startswith("> [!")
+            or sline.startswith("[!")
+            or "Experimental / Beta Status" in sline
+            or "primarily developed for personal use" in sline
+            or "In-Development Add-on" in sline
+            or "Development / Edge Channel Only" in sline
+            or "UNSUPPORTED ADD-ON" in sline
+            or "hosted within a private repository" in sline
+            or "excluded from the stable repository" in sline
+        ):
+            continue
 
         # --- TOP LEVEL SKIPPING (Header info) ---
         if skip_mode:
@@ -167,15 +195,6 @@ def clean_existing_content(content):
 
             # Detect Quotes/Description (Common at top)
             if sline.startswith(">"):
-                continue
-
-            # Detect Beta / Dev Warning (Avoid duplicates)
-            if (
-                "Experimental / Beta Status" in sline
-                or "primarily developed for personal use" in sline
-                or "Development / Edge Channel Only" in sline
-                or "hosted within a private repository" in sline
-            ):
                 continue
 
             # Detect HR
@@ -414,11 +433,21 @@ def process_addon(addon_path):
             new_content += "| **Footprint** | 🖥️ Large | ⚡ Smallest | ⚖️ Medium |\n"
             new_content += "| **Best For** | WordPress, Full CMS | Static Sites | Simple PHP Apps |\n\n"
 
-    # Use body content if available, otherwise fallback to description
-    if body_content.strip():
+    # Use body content if available, otherwise specific about text, otherwise fallback to description
+    specific_about = {
+        "imapsync": "Imapsync is the industry-standard utility designed for heavy-duty mail migration, backup, and mailbox synchronization between any two IMAP servers.\n\n### ✨ Features\n\n* **Incremental Sync**: Only transfers new and modified messages on subsequent runs.\n* **Multi-Account Support**: Configure and sync multiple independent account pairs in a single schedule.\n* **Modern OAuth2 Support**: Full OAuth2 support for Google (Gmail) and Microsoft (Outlook/Office 365).\n* **Flexible Filtering**: Granular inclusion/exclusion of folders, max age, and size limits.",
+        "komodo": "Komodo is an intuitive software build, deployment, and server orchestration management tool.\n\n### ✨ Features\n\n* **Multi-Server Management**: Connect and manage deployments across multiple servers and nodes.\n* **Automated Builds & Sync**: Trigger builds, manage containerized services, and monitor deployment health.\n* **Modern Web Interface**: Built-in responsive UI directly accessible via Home Assistant Ingress.",
+        "wordpress": "WordPress is the world's most popular open-source content management and blogging platform.\n\n### ✨ Features\n\n* **Pre-configured Environment**: Built on Apache with PHP and MariaDB database connectivity.\n* **Extensible & Customizable**: Full access to themes, plugins, and custom PHP scripts.\n* **Ingress & Direct Access**: Accessible through Home Assistant Ingress and dedicated web ports.",
+        "tuya-convert": "Tuya-Convert is a specialized firmware flashing utility for Tuya-based IoT devices without opening the device.\n\n### ⚠️ Important Notice\n\n* Many newer Tuya devices manufactured after 2020 have patched bootloaders that block OTA flashing.\n* Use with compatible legacy devices or hardware UART flashing if OTA fails.",
+        "sap-abap-cloud-dev": "SAP ABAP Platform Developer Edition provides a local development and learning environment for ABAP and ABAP Cloud.\n\n### ⚠️ Important Notice\n\n* This add-on requires high CPU and RAM resources (minimum 16 GB RAM recommended).\n* Free developer license must be obtained from SAP.",
+    }
+
+    if body_content.strip() and len(body_content.strip()) > 30 and addon_dirname not in specific_about:
         # Avoid duplicating the text if we already injected it for webserver addons
         if addon_dirname not in WEBSERVER_ADDONS:
             new_content += body_content + "\n\n"
+    elif addon_dirname in specific_about:
+        new_content += specific_about[addon_dirname] + "\n\n"
     else:
         # Fallback to description if About was empty (and not a webserver addon where we just injected text)
         if addon_dirname not in WEBSERVER_ADDONS:

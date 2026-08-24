@@ -25,7 +25,7 @@ UNSUPPORTED_ADDONS: Set[str] = {
 }
 
 BETA_NOTICE = """
-[! CAUTION]
+> [!CAUTION]
 > **Experimental / Beta Status**
 >
 > This App is still in development and/or primarily developed for personal use.

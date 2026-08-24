@@ -11,7 +11,7 @@
 
 ---
 
-[! CAUTION]
+> [!CAUTION]
 > **Experimental / Beta Status**
 >
 > This App is still in development and/or primarily developed for personal use.
@@ -21,93 +21,13 @@
 
 ## 📖 About
 
-[! CAUTION]
+Komodo is an intuitive software build, deployment, and server orchestration management tool.
 
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
+### ✨ Features
 
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-[! CAUTION]
-
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-## 📖 About
-
-## Installation
-
-1. Search for "Komodo" in the Home Assistant App Store.
-2. Install the app.
-3. Start the app.
-4. Open the Web UI.
+* **Multi-Server Management**: Connect and manage deployments across multiple servers and nodes.
+* **Automated Builds & Sync**: Trigger builds, manage containerized services, and monitor deployment health.
+* **Modern Web Interface**: Built-in responsive UI directly accessible via Home Assistant Ingress.
 
 ---
 

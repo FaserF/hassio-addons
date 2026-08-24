@@ -11,7 +11,7 @@
 
 ---
 
-[! CAUTION]
+> [!CAUTION]
 > **Experimental / Beta Status**
 >
 > This App is still in development and/or primarily developed for personal use.
@@ -21,88 +21,12 @@
 
 ## 📖 About
 
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
+Tuya-Convert is a specialized firmware flashing utility for Tuya-based IoT devices without opening the device.
 
+### ⚠️ Important Notice
 
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-[! CAUTION]
-> **Experimental / Beta Status**
->
-> This App is still in development and/or primarily developed for personal use.
-> It is not extensively tested yet, but is expected to work fundamentally.
-
-
-## 📖 About
-
-Unsupported - Tuya-Convert flash utility (Tuya patched vulnerability, no longer works) (Unsupported)
+* Many newer Tuya devices manufactured after 2020 have patched bootloaders that block OTA flashing.
+* Use with compatible legacy devices or hardware UART flashing if OTA fails.
 
 ---
 

@@ -134,6 +134,66 @@ To actually send messages and automate WhatsApp, you need the **WhatsApp Custom 
 """
 
 
+def get_imapsync_specific_content():
+    """Get Imapsync specific content."""
+    return """## 📖 About
+
+Imapsync is the industry-standard utility designed for heavy-duty mail migration, backup, and mailbox synchronization between any two IMAP servers.
+
+### ✨ Features
+
+* **Incremental Sync**: Only transfers new and modified messages on subsequent runs.
+* **Multi-Account Support**: Configure and sync multiple independent account pairs in a single schedule.
+* **Modern OAuth2 Support**: Full OAuth2 support for Google (Gmail) and Microsoft (Outlook/Office 365).
+* **Flexible Filtering**: Granular inclusion/exclusion of folders, max age, and size limits.
+
+"""
+
+
+def get_komodo_specific_content():
+    """Get Komodo specific content."""
+    return """## 📖 About
+
+Komodo is an intuitive software build, deployment, and server orchestration management tool.
+
+### ✨ Features
+
+* **Multi-Server Management**: Connect and manage deployments across multiple servers and nodes.
+* **Automated Builds & Sync**: Trigger builds, manage containerized services, and monitor deployment health.
+* **Modern Web Interface**: Built-in responsive UI directly accessible via Home Assistant Ingress.
+
+"""
+
+
+def get_wordpress_specific_content():
+    """Get WordPress specific content."""
+    return """## 📖 About
+
+WordPress is the world's most popular open-source content management and blogging platform.
+
+### ✨ Features
+
+* **Pre-configured Environment**: Built on Apache with PHP and MariaDB database connectivity.
+* **Extensible & Customizable**: Full access to themes, plugins, and custom PHP scripts.
+* **Ingress & Direct Access**: Accessible through Home Assistant Ingress and dedicated web ports.
+
+"""
+
+
+def get_tuya_convert_specific_content():
+    """Get Tuya-Convert specific content."""
+    return """## 📖 About
+
+Tuya-Convert is a specialized firmware flashing utility for Tuya-based IoT devices without opening the device.
+
+### ⚠️ Important Notice
+
+* Many newer Tuya devices manufactured after 2020 have patched bootloaders that block OTA flashing.
+* Use with compatible legacy devices or hardware UART flashing if OTA fails.
+
+"""
+
+
 def get_addon_specific_content(addon_dirname, config, addon_path):
     """Get app-specific content based on app name."""
 
@@ -156,6 +216,18 @@ def get_addon_specific_content(addon_dirname, config, addon_path):
     # WhatsApp - Usage Section
     if addon_dirname == "whatsapp":
         return get_whatsapp_usage_section()
+
+    if addon_dirname == "imapsync":
+        return get_imapsync_specific_content()
+
+    if addon_dirname == "komodo":
+        return get_komodo_specific_content()
+
+    if addon_dirname == "wordpress":
+        return get_wordpress_specific_content()
+
+    if addon_dirname == "tuya-convert":
+        return get_tuya_convert_specific_content()
 
     # For other apps, try to extract About from DOCS.md or use description
     about_text = extract_about_from_docs(addon_path)

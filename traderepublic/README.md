@@ -39,13 +39,6 @@ This Home Assistant Add-on provides an automated headless browser service powere
 
 ## ℹ️ Session Persistence & Add-on Restarts
 
-> [!NOTE]
-> **Trade Republic Session Lifecycle:**
-> Trade Republic binds active session tokens directly to the live TCP/WebSocket connection.
->
-> - **During Continuous Operation (24/7):** The built-in WebSocket Keeper maintains the live stream and auto-renews subscriptions indefinitely.
-> - **After Container / Add-on Restarts:** Trade Republic's edge security (WAF/Cloudflare) marks tokens as terminated whenever the connection drops. If TR rejects the saved token (`HTTP 401`) upon restart, simply trigger a re-login via the Add-on Web UI or the Home Assistant Repairs notification with a quick 1-tap approval in your Trade Republic smartphone app.
-
 ---
 
 ## ⚙️ Configuration
