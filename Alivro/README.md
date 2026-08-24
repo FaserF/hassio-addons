@@ -15,13 +15,23 @@
 > **Experimental / Beta Status**
 >
 > This App is still in development and/or primarily developed for personal use.
-> It is not extensively testet yet, but is expected to work fundamentally.
+> It is not extensively tested yet, but is expected to work fundamentally.
 
 ---
 
 ## 📖 About
 
-Clinical AI-Powered Mental Health Companion for Depression, Burnout & Substance Harm Reduction.
+**Alivro** is a clinical AI-powered mental health companion designed to assist with depression, burnout, and substance harm reduction.
+
+This Home Assistant add-on packages the complete Alivro application (FastAPI backend and modern React web frontend) with seamless Home Assistant Ingress integration and automated setup.
+
+## 🚀 Key Features
+
+- 🧠 **AI Mental Health Companion**: Context-aware guidance, check-ins, and evidence-based mental health support.
+- 📊 **Real-time Dashboard & Ingress**: Integrated web interface accessible directly inside Home Assistant.
+- 🔒 **Privacy & Data Security**: Full local data persistence with support for SQLite and PostgreSQL.
+- ⚡ **Auto-Discovery & Integration**: Automatic companion integration management for Home Assistant.
+- 🛠️ **Customizable AI Backends**: Native Google Gemini API integration with multi-model support.
 
 ---
 

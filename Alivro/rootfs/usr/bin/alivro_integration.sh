@@ -2,10 +2,10 @@
 # shellcheck shell=bash
 
 # ==============================================================================
-# AegisBot Integration Manager
+# Alivro Integration Manager
 # ==============================================================================
 # Manages automatic installation, version comparison, release download,
-# and supervisor discovery registration for the AegisBot Home Assistant integration.
+# and supervisor discovery registration for the Alivro Home Assistant integration.
 # ==============================================================================
 
 # Helper function to compare semantic versions
@@ -58,8 +58,8 @@ check_github_status() {
 	fi
 }
 
-DOMAIN="aegisbot"
-REPO="FaserF/ha-aegisbot"
+DOMAIN="alivro"
+REPO="FaserF/ha-alivro"
 
 # Detect Home Assistant configuration root directory (/homeassistant or /config)
 HA_CONFIG_ROOT=""
@@ -94,9 +94,9 @@ install_integration() {
 	local TAG_NAME="$1"
 	local IS_UPDATE="$2"
 
-	bashio::log.info "Installing AegisBot integration version: ${TAG_NAME:-Default Branch}..."
+	bashio::log.info "Installing Alivro integration version: ${TAG_NAME:-Default Branch}..."
 
-	local TMP_BUILD="/tmp/ha-aegisbot_install"
+	local TMP_BUILD="/tmp/ha-alivro_install"
 	rm -rf "$TMP_BUILD" 2>/dev/null
 	mkdir -p "$TMP_BUILD"
 
@@ -107,22 +107,22 @@ install_integration() {
 	fi
 
 	if [ -n "$TAG_NAME" ]; then
-		local ZIP_URL="https://github.com/${REPO}/releases/download/${TAG_NAME}/aegisbot.zip"
+		local ZIP_URL="https://github.com/${REPO}/releases/download/${TAG_NAME}/alivro.zip"
 		bashio::log.info "Downloading integration package from ${ZIP_URL}..."
 		local zip_code
-		zip_code=$(curl "${CURL_AUTH[@]}" -L -s --connect-timeout 10 --max-time 60 -w "%{http_code}" -o "/tmp/aegisbot.zip" "${ZIP_URL}" 2>/dev/null)
-		if [ "$zip_code" = "200" ] && [ -s "/tmp/aegisbot.zip" ]; then
-			mkdir -p "${TMP_BUILD}/custom_components/aegisbot"
-			if unzip -q "/tmp/aegisbot.zip" -d "${TMP_BUILD}/custom_components/aegisbot"; then
+		zip_code=$(curl "${CURL_AUTH[@]}" -L -s --connect-timeout 10 --max-time 60 -w "%{http_code}" -o "/tmp/alivro.zip" "${ZIP_URL}" 2>/dev/null)
+		if [ "$zip_code" = "200" ] && [ -s "/tmp/alivro.zip" ]; then
+			mkdir -p "${TMP_BUILD}/custom_components/alivro"
+			if unzip -q "/tmp/alivro.zip" -d "${TMP_BUILD}/custom_components/alivro"; then
 				SUCCESS="true"
 			else
 				bashio::log.error "❌ Failed to unzip integration package."
 			fi
-			rm -f "/tmp/aegisbot.zip"
+			rm -f "/tmp/alivro.zip"
 		else
 			check_github_status "$zip_code" "Release package download"
 			bashio::log.error "❌ Failed to download release zip (HTTP $zip_code): ${ZIP_URL}"
-			rm -f "/tmp/aegisbot.zip"
+			rm -f "/tmp/alivro.zip"
 		fi
 	fi
 
@@ -131,44 +131,44 @@ install_integration() {
 		local FALLBACK_URL="https://github.com/${REPO}/archive/refs/heads/main.zip"
 		bashio::log.info "Attempting fallback download from ${FALLBACK_URL}..."
 		local fb_code
-		fb_code=$(curl "${CURL_AUTH[@]}" -L -s --connect-timeout 10 --max-time 60 -w "%{http_code}" -o "/tmp/aegisbot_fallback.zip" "${FALLBACK_URL}" 2>/dev/null)
-		if [ "$fb_code" = "200" ] && [ -s "/tmp/aegisbot_fallback.zip" ]; then
+		fb_code=$(curl "${CURL_AUTH[@]}" -L -s --connect-timeout 10 --max-time 60 -w "%{http_code}" -o "/tmp/alivro_fallback.zip" "${FALLBACK_URL}" 2>/dev/null)
+		if [ "$fb_code" = "200" ] && [ -s "/tmp/alivro_fallback.zip" ]; then
 			mkdir -p "${TMP_BUILD}/extracted"
-			if unzip -q "/tmp/aegisbot_fallback.zip" -d "${TMP_BUILD}/extracted"; then
+			if unzip -q "/tmp/alivro_fallback.zip" -d "${TMP_BUILD}/extracted"; then
 				local NESTED_DIR
 				NESTED_DIR=$(find "${TMP_BUILD}/extracted" -name "manifest.json" -exec dirname {} \; | head -n 1)
 				if [ -n "$NESTED_DIR" ]; then
-					mkdir -p "${TMP_BUILD}/custom_components/aegisbot"
-					cp -rf "${NESTED_DIR}/"* "${TMP_BUILD}/custom_components/aegisbot/"
+					mkdir -p "${TMP_BUILD}/custom_components/alivro"
+					cp -rf "${NESTED_DIR}/"* "${TMP_BUILD}/custom_components/alivro/"
 					SUCCESS="true"
 				fi
 			fi
-			rm -f "/tmp/aegisbot_fallback.zip"
+			rm -f "/tmp/alivro_fallback.zip"
 		else
 			check_github_status "$fb_code" "Fallback zip download"
-			rm -f "/tmp/aegisbot_fallback.zip"
+			rm -f "/tmp/alivro_fallback.zip"
 		fi
 	fi
 
-	if [ "$SUCCESS" = "true" ] && [ -d "${TMP_BUILD}/custom_components/aegisbot" ]; then
+	if [ "$SUCCESS" = "true" ] && [ -d "${TMP_BUILD}/custom_components/alivro" ]; then
 		if [ -d "$INTEGRATION_DIR" ]; then
 			bashio::log.info "Removing old integration files at $INTEGRATION_DIR..."
 			rm -rf "$INTEGRATION_DIR"
 		fi
 
 		mkdir -p "${HA_CONFIG_ROOT}/custom_components"
-		cp -rf "${TMP_BUILD}/custom_components/aegisbot" "${HA_CONFIG_ROOT}/custom_components/"
+		cp -rf "${TMP_BUILD}/custom_components/alivro" "${HA_CONFIG_ROOT}/custom_components/"
 
 		if [ -d "$INTEGRATION_DIR" ] && [ -f "$INTEGRATION_DIR/manifest.json" ]; then
-			bashio::log.green "✅ AegisBot integration successfully installed/updated at $INTEGRATION_DIR"
+			bashio::log.green "✅ Alivro integration successfully installed/updated at $INTEGRATION_DIR"
 
 			local TITLE MSG
 			if [ "$IS_UPDATE" = "true" ]; then
-				TITLE="AegisBot Integration Updated"
-				MSG="The AegisBot integration has been updated to ${TAG_NAME:-latest}. Please restart Home Assistant."
+				TITLE="Alivro Integration Updated"
+				MSG="The Alivro integration has been updated to ${TAG_NAME:-latest}. Please restart Home Assistant."
 			else
-				TITLE="AegisBot Integration Installed"
-				MSG="The AegisBot integration has been installed. Please restart Home Assistant."
+				TITLE="Alivro Integration Installed"
+				MSG="The Alivro integration has been installed. Please restart Home Assistant."
 			fi
 
 			bashio::log.warning "⚠️ RESTART HOME ASSISTANT to apply integration changes!"
@@ -176,7 +176,7 @@ install_integration() {
 			curl -s -X POST \
 				-H "Authorization: Bearer $SUPERVISOR_TOKEN" \
 				-H "Content-Type: application/json" \
-				-d "{\"title\": \"$TITLE\", \"message\": \"$MSG\", \"notification_id\": \"aegisbot_restart_required\"}" \
+				-d "{\"title\": \"$TITLE\", \"message\": \"$MSG\", \"notification_id\": \"alivro_restart_required\"}" \
 				http://supervisor/core/api/services/persistent_notification/create >/dev/null 2>&1 || true
 		else
 			bashio::log.error "❌ Copy failed: $INTEGRATION_DIR is missing manifest.json."
@@ -198,7 +198,7 @@ export APP_VERSION="${VERSION}"
 export ADDON_SLUG="${SLUG}"
 export APP_SLUG="${SLUG}"
 
-bashio::log.info "Channel Detection - Slug: ${SLUG:-aegisbot}, Name: ${NAME:-AegisBot}, Version: ${VERSION:-unknown}"
+bashio::log.info "Channel Detection - Slug: ${SLUG:-alivro}, Name: ${NAME:-Alivro}, Version: ${VERSION:-unknown}"
 
 if [[ "${SLUG}" == *"edge"* ]] || [[ "${NAME,,}" == *"edge"* ]] || [[ "${VERSION}" == *"dev"* ]] || [[ "${VERSION}" == *"git"* ]] || [[ "${VERSION}" =~ [0-9a-f]{7,40} ]]; then
 	CHANNEL="edge"
@@ -218,14 +218,14 @@ else
 		CURL_AUTH=("-H" "Authorization: Bearer ${GITHUB_TOKEN}")
 	fi
 
-	rel_code=$(curl -s --connect-timeout 10 --max-time 30 -w "%{http_code}" "${CURL_AUTH[@]}" -A "HomeAssistant-Addon" -o /tmp/aegisbot_releases.json "https://api.github.com/repos/${REPO}/releases" 2>/dev/null || echo "000")
-	if [ "$rel_code" = "200" ] && [ -s /tmp/aegisbot_releases.json ]; then
-		RELEASES_JSON=$(cat /tmp/aegisbot_releases.json)
+	rel_code=$(curl -s --connect-timeout 10 --max-time 30 -w "%{http_code}" "${CURL_AUTH[@]}" -A "HomeAssistant-Addon" -o /tmp/alivro_releases.json "https://api.github.com/repos/${REPO}/releases" 2>/dev/null || echo "000")
+	if [ "$rel_code" = "200" ] && [ -s /tmp/alivro_releases.json ]; then
+		RELEASES_JSON=$(cat /tmp/alivro_releases.json)
 	else
 		check_github_status "$rel_code" "Releases check"
 		RELEASES_JSON="[]"
 	fi
-	rm -f /tmp/aegisbot_releases.json
+	rm -f /tmp/alivro_releases.json
 
 	if ! echo "$RELEASES_JSON" | jq -e 'if type=="array" then true else false end' >/dev/null 2>&1; then
 		bashio::log.info "Note: Could not fetch releases (GitHub API rate limit or no internet). Skipping update checks."
@@ -258,19 +258,19 @@ else
 			install_integration "" "false"
 		fi
 	else
-		# Check if integration is official FaserF/ha-aegisbot
+		# Check if integration is official FaserF/ha-alivro
 		IS_OFFICIAL="false"
 		if [ -f "$INTEGRATION_DIR/manifest.json" ]; then
-			if jq -e '(.codeowners // []) | contains(["@FaserF"]) or (.documentation // "" | contains("FaserF")) or (.issue_tracker // "" | contains("FaserF/ha-aegisbot"))' "$INTEGRATION_DIR/manifest.json" >/dev/null 2>&1; then
+			if jq -e '(.codeowners // []) | contains(["@FaserF"]) or (.documentation // "" | contains("FaserF")) or (.issue_tracker // "" | contains("FaserF/ha-alivro"))' "$INTEGRATION_DIR/manifest.json" >/dev/null 2>&1; then
 				IS_OFFICIAL="true"
 			fi
 		fi
 
 		if [ "$IS_OFFICIAL" != "true" ]; then
-			bashio::log.warning "⚠️ Existing integration at $INTEGRATION_DIR does not appear to be FaserF/ha-aegisbot. Overwriting with official release..."
+			bashio::log.warning "⚠️ Existing integration at $INTEGRATION_DIR does not appear to be FaserF/ha-alivro. Overwriting with official release..."
 			install_integration "$TARGET_TAG" "true"
 		else
-			bashio::log.info "✅ Official FaserF ha-aegisbot integration found at $INTEGRATION_DIR"
+			bashio::log.info "✅ Official FaserF ha-alivro integration found at $INTEGRATION_DIR"
 
 			INTEGRATION_VERSION=$(jq -r '.version // "unknown"' "$INTEGRATION_DIR/manifest.json" 2>/dev/null || echo "unknown")
 			bashio::log.info "Integration Version: ${INTEGRATION_VERSION}"
@@ -306,12 +306,12 @@ else
 fi
 
 # Register discovery info in Supervisor
-SLUG_NAME="${SLUG:-aegisbot}"
-bashio::log.info "Registering discovery info in Supervisor for service 'aegisbot' (slug: $SLUG_NAME)..."
+SLUG_NAME="${SLUG:-alivro}"
+bashio::log.info "Registering discovery info in Supervisor for service 'alivro' (slug: $SLUG_NAME)..."
 DISCOVERY_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
 	-H "Authorization: Bearer $SUPERVISOR_TOKEN" \
 	-H "Content-Type: application/json" \
-	-d "{\"service\":\"aegisbot\",\"config\":{\"addon\":\"$SLUG_NAME\"}}" \
+	-d "{\"service\":\"alivro\",\"config\":{\"addon\":\"$SLUG_NAME\"}}" \
 	http://supervisor/discovery 2>/dev/null || echo "Failed")
 bashio::log.info "Supervisor discovery response: $DISCOVERY_RESPONSE"
 

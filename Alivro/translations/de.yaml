@@ -3,20 +3,20 @@ configuration:
   version:
     name: Version
     description: >-
-      Zu installierende AegisBot-Version. Verwende 'latest' für die neueste Version,
+      Zu installierende Alivro-Version. Verwende 'latest' für die neueste Version,
       oder gib einen Versions-Tag wie 'v1.0.0' an.
 
   github_token:
     name: GitHub Token
     description: >-
       Optional: Personal Access Token (Classic oder Fine-grained) für den Zugriff
-      auf private Repositories. Erforderlich wenn das AegisBot Repository privat ist.
+      auf private Repositories. Erforderlich wenn das Alivro Repository privat ist.
 
   github_repo:
     name: GitHub Repository
     description: >-
       GitHub Repository zum Herunterladen (Format: owner/repo).
-      Standard: FaserF/AegisBot
+      Standard: FaserF/Alivro
 
   developer_mode:
     name: Entwickler-Modus
@@ -41,7 +41,7 @@ configuration:
 
   database:
     name: Datenbank-Konfiguration
-    description: Konfiguriere das Datenbank-Backend für AegisBot.
+    description: Konfiguriere das Datenbank-Backend für Alivro.
 
   database.type:
     name: Datenbank-Typ
