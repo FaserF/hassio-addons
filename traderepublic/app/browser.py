@@ -456,9 +456,23 @@ class TradeRepublicBrowserService:
                     ready = await self.cdp.wait_for_ready(timeout=20.0)
                     if not ready:
                         _LOGGER.warning("Chromium CDP not ready after restart within 20s")
-                    if self.session_token:
-                        await self.auth_helper.inject_session_cookies(self.session_token)
-                    continue
+                # Active token auto-renewal:
+                # Trade Republic Web JWTs expire after ~60 minutes unless refreshed via the web app.
+                # Navigate Chromium in background to app.traderepublic.com so TR rotates/renews the session cookies.
+                if self.is_logged_in and self.session_token:
+                    try:
+                        _LOGGER.debug("Keepalive: refreshing web session via Chromium navigation")
+                        await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com"})
+                        await asyncio.sleep(4)
+                        new_token = await self.auth_helper.extract_token_from_cookies()
+                        if new_token and new_token != self.session_token:
+                            from core.verifier import verify_tr_token
+
+                            if await verify_tr_token(new_token):
+                                _LOGGER.info("Keepalive: successfully renewed session token from Chromium (length: %s)", len(new_token))
+                                await self.save_session(new_token)
+                    except Exception as renew_err:  # noqa: BLE001
+                        _LOGGER.debug("Keepalive token rotation attempt: %s", renew_err)
 
                 # Sync keeper auth state into service state
                 _LOGGER.debug("Keepalive: syncing ws_keeper state (authenticated=%s)", self._ws_keeper.is_authenticated)
