@@ -66,6 +66,15 @@
 
 ## 📖 About
 
+[! CAUTION]
+
+> **Experimental / Beta Status**
+>
+> This App is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
+
+## 📖 About
+
 ## 🌐 How to Access
 
 The app exposes two ports for accessing your WordPress site:
