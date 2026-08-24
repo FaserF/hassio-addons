@@ -9,7 +9,14 @@ on:
       - master
     paths-ignore:
       - ".unsupported/**"
-      - ".github/workflows/**"
+      - ".github/**"
+      - "docs/**"
+      - "tests/**"
+      - "*.md"
+      - "**/*.md"
+      - "LICENSE*"
+      - "project_manifest.json"
+      - "project_connections.json"
   workflow_dispatch:
     inputs:
       app:
@@ -87,12 +94,10 @@ jobs:
           echo "Changed files:"
           echo "$CHANGED_FILES"
 
-          # Extract App directories from changed files
-          CHANGED_AppS=$(echo "$CHANGED_FILES" | \
-            grep -E "^[^./][^/]+/" | \
-            cut -d'/' -f1 | \
-            sort -u | \
-            grep -v -E "^(\\.|custom_components$)" || echo "")
+          # Extract App directories from changed files (handles root apps and .dev/ apps)
+          ROOT_APPS=$(echo "$CHANGED_FILES" | grep -E "^[^./][^/]+/" | cut -d'/' -f1 || true)
+          DEV_APPS=$(echo "$CHANGED_FILES" | grep -E "^\.dev/[^/]+/" | cut -d'/' -f2 || true)
+          CHANGED_AppS=$(printf "%s\n%s\n" "$ROOT_APPS" "$DEV_APPS" | sort -u | grep -v -E "^$|^(\\.|custom_components$)" || echo "")
 
           echo "Changed Apps: $CHANGED_AppS"
           # Save to output (newline-separated -> space-separated for easier parsing)
@@ -102,30 +107,33 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-          # Check if only workflow files (and possibly docs) were changed
+          # Check if only workflow files, docs, or non-functional metadata were changed
           ONLY_WORKFLOWS=true
           for file in $CHANGED_FILES; do
-            # Skip if it's a workflow file or documentation
-            if [[ "$file" == .github/workflows/* ]] || \
+            # Skip if it's workflow, documentation, test or repository metadata
+            if [[ "$file" == .github/* ]] || \
+               [[ "$file" == .unsupported/* ]] || \
+               [[ "$file" == docs/* ]] || \
+               [[ "$file" == tests/* ]] || \
                [[ "$file" == *.md ]] || \
-               [[ "$file" == .github/*.md ]] || \
+               [[ "$file" == */*.md ]] || \
+               [[ "$file" == */*/*.md ]] || \
                [[ "$file" == LICENSE* ]] || \
-               [[ "$file" == .gitignore ]] || \
-               [[ "$file" == .editorconfig ]] || \
-               [[ "$file" == README* ]]; then
+               [[ "$file" == .* ]] || \
+               [[ "$file" == project_*.json ]]; then
               continue
             else
-              # Found a non-workflow, non-doc file
+              # Found a functional add-on file modification
               ONLY_WORKFLOWS=false
               break
             fi
           done
 
           if [ "$ONLY_WORKFLOWS" = "true" ]; then
-            echo "ℹ️ Only workflow/documentation files changed, skipping edge sync"
+            echo "ℹ️ Only workflow/documentation/metadata files changed, skipping edge sync"
             echo "only_workflows=true" >> "$GITHUB_OUTPUT"
           else
-            echo "✅ Relevant files changed, proceeding with edge sync"
+            echo "✅ Relevant add-on files changed, proceeding with edge sync"
             echo "only_workflows=false" >> "$GITHUB_OUTPUT"
           fi
 

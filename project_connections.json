@@ -1,79 +1,8 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-08-24T18:59:45.032083",
+  "timestamp": "2026-08-24T19:01:51.352817",
   "connections": {
-    "AegisBot": {
-      "name": "AegisBot",
-      "version": "0.6.2",
-      "description": "Professional Telegram Group Defender — Advanced Security, Automated Moderation, and Community Management.",
-      "arch": ["aarch64", "amd64"],
-      "image": "ghcr.io/faserf/hassio-addons-aegisbot-{arch}",
-      "files": {
-        "core": [
-          "AegisBot/config.yaml",
-          "AegisBot/Dockerfile",
-          "AegisBot/run.sh",
-          "AegisBot/build.yaml",
-          "AegisBot/CHANGELOG.md",
-          "AegisBot/README.md",
-          "AegisBot/DOCS.md"
-        ],
-        "rootfs": [
-          "AegisBot/rootfs/usr/bin/aegisbot_integration.sh",
-          "AegisBot/rootfs/usr/lib/bashio/app.sh",
-          "AegisBot/rootfs/usr/lib/bashio/banner.sh"
-        ],
-        "translations": ["AegisBot/translations/de.yaml", "AegisBot/translations/en.yaml"]
-      }
-    },
-    "Alivro": {
-      "name": "Alivro",
-      "version": "0.1.0",
-      "description": "AI-Powered Mental Health & Well-being Companion.",
-      "arch": ["aarch64", "amd64"],
-      "image": "ghcr.io/faserf/hassio-addons-alivro-{arch}",
-      "files": {
-        "core": [
-          "Alivro/config.yaml",
-          "Alivro/Dockerfile",
-          "Alivro/run.sh",
-          "Alivro/build.yaml",
-          "Alivro/CHANGELOG.md",
-          "Alivro/README.md",
-          "Alivro/DOCS.md"
-        ],
-        "rootfs": [
-          "Alivro/rootfs/usr/bin/alivro_integration.sh",
-          "Alivro/rootfs/usr/lib/bashio/app.sh",
-          "Alivro/rootfs/usr/lib/bashio/banner.sh"
-        ],
-        "translations": ["Alivro/translations/de.yaml", "Alivro/translations/en.yaml"]
-      }
-    },
-    "EntraMirror": {
-      "name": "EntraMirror",
-      "version": "0.1.1",
-      "description": "Microsoft Entra ID Tenant Backup, Restore, Synchronization & Cloning for Home Assistant.",
-      "arch": ["aarch64", "amd64"],
-      "image": "ghcr.io/faserf/hassio-addons-entramirror-{arch}",
-      "files": {
-        "core": [
-          "EntraMirror/config.yaml",
-          "EntraMirror/Dockerfile",
-          "EntraMirror/run.sh",
-          "EntraMirror/build.yaml",
-          "EntraMirror/CHANGELOG.md",
-          "EntraMirror/README.md",
-          "EntraMirror/DOCS.md"
-        ],
-        "rootfs": [
-          "EntraMirror/rootfs/usr/lib/bashio/app.sh",
-          "EntraMirror/rootfs/usr/lib/bashio/banner.sh"
-        ],
-        "translations": ["EntraMirror/translations/de.yaml", "EntraMirror/translations/en.yaml"]
-      }
-    },
     "ShieldDNS": {
       "name": "ShieldDNS",
       "version": "2.5.2",
@@ -115,36 +44,6 @@
         ],
         "rootfs": ["ShieldFile/rootfs/usr/lib/bashio/banner.sh"],
         "translations": ["ShieldFile/translations/de.yaml", "ShieldFile/translations/en.yaml"]
-      }
-    },
-    "antigravity": {
-      "name": "Antigravity",
-      "version": "0.1.0",
-      "description": "Google Antigravity Quota Monitor, Multi-Account Dashboard, and Dynamic Polling Gateway for Home Assistant.",
-      "arch": ["aarch64", "amd64"],
-      "image": "ghcr.io/faserf/hassio-addons-antigravity-{arch}",
-      "files": {
-        "core": [
-          "antigravity/config.yaml",
-          "antigravity/Dockerfile",
-          "antigravity/build.yaml",
-          "antigravity/CHANGELOG.md",
-          "antigravity/README.md",
-          "antigravity/DOCS.md"
-        ],
-        "rootfs": [
-          "antigravity/rootfs/usr/lib/bashio/banner.sh",
-          "antigravity/rootfs/usr/share/antigravity/app/__init__.py",
-          "antigravity/rootfs/usr/share/antigravity/app/fetcher.py",
-          "antigravity/rootfs/usr/share/antigravity/app/main.py",
-          "antigravity/rootfs/usr/share/antigravity/app/models.py",
-          "antigravity/rootfs/usr/share/antigravity/app/router.py",
-          "antigravity/rootfs/usr/share/antigravity/app/scheduler.py",
-          "antigravity/rootfs/usr/share/antigravity/ui/app.js",
-          "antigravity/rootfs/usr/share/antigravity/ui/index.html",
-          "antigravity/rootfs/usr/share/antigravity/ui/style.css"
-        ],
-        "translations": ["antigravity/translations/de.yaml", "antigravity/translations/en.yaml"]
       }
     },
     "apache2": {
@@ -477,26 +376,6 @@
         ]
       }
     },
-    "solumati": {
-      "name": "Solumati",
-      "version": "2.4.0",
-      "description": "The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches.",
-      "arch": ["aarch64", "amd64"],
-      "image": "ghcr.io/faserf/hassio-addons-solumati-{arch}",
-      "files": {
-        "core": [
-          "solumati/config.yaml",
-          "solumati/Dockerfile",
-          "solumati/run.sh",
-          "solumati/build.yaml",
-          "solumati/CHANGELOG.md",
-          "solumati/README.md",
-          "solumati/DOCS.md"
-        ],
-        "rootfs": ["solumati/rootfs/usr/lib/bashio/banner.sh"],
-        "translations": ["solumati/translations/de.yaml", "solumati/translations/en.yaml"]
-      }
-    },
     "switch_lan_play": {
       "name": "Switch LAN Play Client",
       "version": "2.4.2",
@@ -541,28 +420,6 @@
           "switch_lan_play_server/translations/de.yaml",
           "switch_lan_play_server/translations/en.yaml"
         ]
-      }
-    },
-    "switchcraft": {
-      "name": "SwitchCraft",
-      "version": "0.3.1",
-      "description": "SwitchCraft is your powerful, cross-platform tool designed to be a comprehensive packaging assistant for IT Professionals.",
-      "arch": ["aarch64", "amd64"],
-      "image": "ghcr.io/faserf/hassio-addons-switchcraft-{arch}",
-      "files": {
-        "core": [
-          "switchcraft/config.yaml",
-          "switchcraft/Dockerfile",
-          "switchcraft/build.yaml",
-          "switchcraft/CHANGELOG.md",
-          "switchcraft/README.md",
-          "switchcraft/DOCS.md"
-        ],
-        "rootfs": [
-          "switchcraft/rootfs/usr/lib/bashio/banner.sh",
-          "switchcraft/rootfs/usr/local/bin/patch_switchcraft.py"
-        ],
-        "translations": ["switchcraft/translations/de.yaml", "switchcraft/translations/en.yaml"]
       }
     },
     "tado_aa": {
@@ -679,31 +536,6 @@
         "translations": ["wiki.js/translations/de.yaml", "wiki.js/translations/en.yaml"]
       }
     },
-    "wiki.js3": {
-      "name": "Wiki.JS (Version 3 - Alpha)",
-      "version": "0.7.2",
-      "description": "The most powerful and extensible open source Wiki software (Version 3 - Alpha)",
-      "arch": [],
-      "image": "ghcr.io/faserf/hassio-addons-wiki-{arch}",
-      "files": {
-        "core": [
-          "wiki.js3/config.yaml",
-          "wiki.js3/Dockerfile",
-          "wiki.js3/build.yaml",
-          "wiki.js3/CHANGELOG.md",
-          "wiki.js3/README.md",
-          "wiki.js3/DOCS.md"
-        ],
-        "rootfs": [
-          "wiki.js3/rootfs/etc/cont-init.d/00-banner.sh",
-          "wiki.js3/rootfs/etc/cont-init.d/01-config.sh",
-          "wiki.js3/rootfs/etc/cont-init.d/02-git.sh",
-          "wiki.js3/rootfs/usr/lib/bashio/app.sh",
-          "wiki.js3/rootfs/usr/lib/bashio/banner.sh"
-        ],
-        "translations": ["wiki.js3/translations/de.yaml", "wiki.js3/translations/en.yaml"]
-      }
-    },
     "wordpress": {
       "name": "Wordpress",
       "version": "0.4.2",
@@ -730,6 +562,183 @@
           "wordpress/rootfs/usr/lib/bashio/banner.sh"
         ],
         "translations": ["wordpress/translations/de.yaml", "wordpress/translations/en.yaml"]
+      }
+    },
+    "AegisBot": {
+      "name": "AegisBot",
+      "version": "0.6.2",
+      "description": "Professional Telegram Group Defender — Advanced Security, Automated Moderation, and Community Management.",
+      "arch": ["aarch64", "amd64"],
+      "image": "ghcr.io/faserf/hassio-addons-aegisbot-{arch}",
+      "files": {
+        "core": [
+          ".dev/AegisBot/config.yaml",
+          ".dev/AegisBot/Dockerfile",
+          ".dev/AegisBot/run.sh",
+          ".dev/AegisBot/build.yaml",
+          ".dev/AegisBot/CHANGELOG.md",
+          ".dev/AegisBot/README.md",
+          ".dev/AegisBot/DOCS.md"
+        ],
+        "rootfs": [
+          ".dev/AegisBot/rootfs/usr/bin/aegisbot_integration.sh",
+          ".dev/AegisBot/rootfs/usr/lib/bashio/app.sh",
+          ".dev/AegisBot/rootfs/usr/lib/bashio/banner.sh"
+        ],
+        "translations": [".dev/AegisBot/translations/de.yaml", ".dev/AegisBot/translations/en.yaml"]
+      }
+    },
+    "Alivro": {
+      "name": "Alivro",
+      "version": "0.1.0",
+      "description": "AI-Powered Mental Health & Well-being Companion.",
+      "arch": ["aarch64", "amd64"],
+      "image": "ghcr.io/faserf/hassio-addons-alivro-{arch}",
+      "files": {
+        "core": [
+          ".dev/Alivro/config.yaml",
+          ".dev/Alivro/Dockerfile",
+          ".dev/Alivro/run.sh",
+          ".dev/Alivro/build.yaml",
+          ".dev/Alivro/CHANGELOG.md",
+          ".dev/Alivro/README.md",
+          ".dev/Alivro/DOCS.md"
+        ],
+        "rootfs": [
+          ".dev/Alivro/rootfs/usr/bin/alivro_integration.sh",
+          ".dev/Alivro/rootfs/usr/lib/bashio/app.sh",
+          ".dev/Alivro/rootfs/usr/lib/bashio/banner.sh"
+        ],
+        "translations": [".dev/Alivro/translations/de.yaml", ".dev/Alivro/translations/en.yaml"]
+      }
+    },
+    "EntraMirror": {
+      "name": "EntraMirror",
+      "version": "0.1.1",
+      "description": "Microsoft Entra ID Tenant Backup, Restore, Synchronization & Cloning for Home Assistant.",
+      "arch": ["aarch64", "amd64"],
+      "image": "ghcr.io/faserf/hassio-addons-entramirror-{arch}",
+      "files": {
+        "core": [
+          ".dev/EntraMirror/config.yaml",
+          ".dev/EntraMirror/Dockerfile",
+          ".dev/EntraMirror/run.sh",
+          ".dev/EntraMirror/build.yaml",
+          ".dev/EntraMirror/CHANGELOG.md",
+          ".dev/EntraMirror/README.md",
+          ".dev/EntraMirror/DOCS.md"
+        ],
+        "rootfs": [
+          ".dev/EntraMirror/rootfs/usr/lib/bashio/app.sh",
+          ".dev/EntraMirror/rootfs/usr/lib/bashio/banner.sh"
+        ],
+        "translations": [
+          ".dev/EntraMirror/translations/de.yaml",
+          ".dev/EntraMirror/translations/en.yaml"
+        ]
+      }
+    },
+    "antigravity": {
+      "name": "Antigravity",
+      "version": "0.1.0",
+      "description": "Google Antigravity Quota Monitor, Multi-Account Dashboard, and Dynamic Polling Gateway for Home Assistant.",
+      "arch": ["aarch64", "amd64"],
+      "image": "ghcr.io/faserf/hassio-addons-antigravity-{arch}",
+      "files": {
+        "core": [
+          ".dev/antigravity/config.yaml",
+          ".dev/antigravity/Dockerfile",
+          ".dev/antigravity/build.yaml",
+          ".dev/antigravity/CHANGELOG.md",
+          ".dev/antigravity/README.md",
+          ".dev/antigravity/DOCS.md"
+        ],
+        "rootfs": [
+          ".dev/antigravity/rootfs/usr/lib/bashio/banner.sh",
+          ".dev/antigravity/rootfs/usr/share/antigravity/app/__init__.py",
+          ".dev/antigravity/rootfs/usr/share/antigravity/app/fetcher.py",
+          ".dev/antigravity/rootfs/usr/share/antigravity/app/main.py",
+          ".dev/antigravity/rootfs/usr/share/antigravity/app/models.py",
+          ".dev/antigravity/rootfs/usr/share/antigravity/app/router.py",
+          ".dev/antigravity/rootfs/usr/share/antigravity/app/scheduler.py",
+          ".dev/antigravity/rootfs/usr/share/antigravity/ui/app.js",
+          ".dev/antigravity/rootfs/usr/share/antigravity/ui/index.html",
+          ".dev/antigravity/rootfs/usr/share/antigravity/ui/style.css"
+        ],
+        "translations": [
+          ".dev/antigravity/translations/de.yaml",
+          ".dev/antigravity/translations/en.yaml"
+        ]
+      }
+    },
+    "solumati": {
+      "name": "Solumati",
+      "version": "2.4.0",
+      "description": "The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches.",
+      "arch": ["aarch64", "amd64"],
+      "image": "ghcr.io/faserf/hassio-addons-solumati-{arch}",
+      "files": {
+        "core": [
+          ".dev/solumati/config.yaml",
+          ".dev/solumati/Dockerfile",
+          ".dev/solumati/run.sh",
+          ".dev/solumati/build.yaml",
+          ".dev/solumati/CHANGELOG.md",
+          ".dev/solumati/README.md",
+          ".dev/solumati/DOCS.md"
+        ],
+        "rootfs": [".dev/solumati/rootfs/usr/lib/bashio/banner.sh"],
+        "translations": [".dev/solumati/translations/de.yaml", ".dev/solumati/translations/en.yaml"]
+      }
+    },
+    "switchcraft": {
+      "name": "SwitchCraft",
+      "version": "0.3.1",
+      "description": "SwitchCraft is your powerful, cross-platform tool designed to be a comprehensive packaging assistant for IT Professionals.",
+      "arch": ["aarch64", "amd64"],
+      "image": "ghcr.io/faserf/hassio-addons-switchcraft-{arch}",
+      "files": {
+        "core": [
+          ".dev/switchcraft/config.yaml",
+          ".dev/switchcraft/Dockerfile",
+          ".dev/switchcraft/build.yaml",
+          ".dev/switchcraft/CHANGELOG.md",
+          ".dev/switchcraft/README.md",
+          ".dev/switchcraft/DOCS.md"
+        ],
+        "rootfs": [
+          ".dev/switchcraft/rootfs/usr/lib/bashio/banner.sh",
+          ".dev/switchcraft/rootfs/usr/local/bin/patch_switchcraft.py"
+        ],
+        "translations": [
+          ".dev/switchcraft/translations/de.yaml",
+          ".dev/switchcraft/translations/en.yaml"
+        ]
+      }
+    },
+    "wiki.js3": {
+      "name": "Wiki.JS (Version 3 - Alpha)",
+      "version": "0.7.2",
+      "description": "The most powerful and extensible open source Wiki software (Version 3 - Alpha)",
+      "arch": [],
+      "image": "ghcr.io/faserf/hassio-addons-wiki-{arch}",
+      "files": {
+        "core": [
+          ".dev/wiki.js3/config.yaml",
+          ".dev/wiki.js3/Dockerfile",
+          ".dev/wiki.js3/build.yaml",
+          ".dev/wiki.js3/CHANGELOG.md",
+          ".dev/wiki.js3/README.md",
+          ".dev/wiki.js3/DOCS.md"
+        ],
+        "rootfs": [
+          ".dev/wiki.js3/rootfs/etc/cont-init.d/00-banner.sh",
+          ".dev/wiki.js3/rootfs/etc/cont-init.d/01-config.sh",
+          ".dev/wiki.js3/rootfs/etc/cont-init.d/02-git.sh",
+          ".dev/wiki.js3/rootfs/usr/lib/bashio/app.sh",
+          ".dev/wiki.js3/rootfs/usr/lib/bashio/banner.sh"
+        ],
+        "translations": [".dev/wiki.js3/translations/de.yaml", ".dev/wiki.js3/translations/en.yaml"]
       }
     }
   }

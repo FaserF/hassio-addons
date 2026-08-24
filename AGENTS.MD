@@ -160,11 +160,16 @@ This is a **Home Assistant Add-on repository**. Each top-level directory (with a
 - All variables quoted (`"${VAR}"`).
 - Must pass `shellcheck --severity=warning`.
 
-### Version Management
+### Version Management & Addon Lifecycle
 
-- Version is in `config.yaml` as `version: X.Y.Z`.
-- Bump version in `config.yaml` and add a `CHANGELOG.md` entry on every release.
-- The CI workflow (`orchestrator-release.yaml`) handles automated version bumps.
+- **New Add-ons Start at `v0.1.0`**: Every newly created add-on MUST start strictly with initial version `0.1.0` (`version: "0.1.0"` in `config.yaml`).
+- **Initial `.dev/` Placement & Explicit Blacklist**:
+  - Every new add-on in development MUST be placed inside the hidden [`.dev/<addon-slug>`](file:///.dev/) folder on `master` branch so Home Assistant Supervisor completely ignores it in stable repository listings.
+  - Its slug MUST be registered in `DEV_ADDONS` in [.scripts/addons_config.py](file:///.scripts/addons_config.py) (Single Source of Truth blacklist) to prevent automated CI stable releases and ensure Edge-only status.
+  - On the `edge` branch, [.scripts/prepare_edge_branch.py](file:///.scripts/prepare_edge_branch.py) automatically unpacks `.dev/` into the root directory for local Dockerfile builds and testing.
+  - `DEV_ADDONS` is an **explicit blacklist**: add-ons remain blacklisted until intentionally unblacklisted.
+  - **v1.0.0+ Release Threshold Warning**: When an add-on blacklisted in `DEV_ADDONS` / `.dev/` reaches version `v1.0.0` or higher, automated scripts and CI emit a prominent warning (`⚠️ [DEV_ADDONS WARNING] Add-on '<slug>' reached vX.Y.Z (>= 1.0.0) but is still blacklisted`) alerting the maintainer to decide whether to unblacklist the add-on and promote it to the repository root for stable release.
+- **Version Bumping**: Version is in `config.yaml` as `version: X.Y.Z`. Bump version in `config.yaml` and add a `CHANGELOG.md` entry on every release. The CI workflow (`orchestrator-release.yaml`) handles automated version bumps.
 
 ---
 

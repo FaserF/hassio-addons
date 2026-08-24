@@ -349,8 +349,23 @@ def update_integration_for_edge() -> bool:
         return False
 
 
+import shutil
+
 def main():
     print("🔧 Preparing edge branch for local builds...")
+
+    # Move all in-development add-ons from .dev/ to root on edge branch
+    dev_dir = ".dev"
+    if os.path.isdir(dev_dir):
+        for entry in os.listdir(dev_dir):
+            src = os.path.join(dev_dir, entry)
+            dst = os.path.join(".", entry)
+            if os.path.isdir(src):
+                if os.path.exists(dst):
+                    shutil.rmtree(dst)
+                shutil.move(src, dst)
+                print(f"📦 Moved dev add-on {entry} to root for edge branch")
+        shutil.rmtree(dev_dir, ignore_errors=True)
 
     # Find all addon directories
     addon_dirs = []

@@ -121,20 +121,33 @@ def _parse_yaml_list_field(content: str, field: str) -> list:
 def discover_addons() -> list[dict]:
     """Return a list of addon metadata dicts, one per addon directory."""
     addons = []
+    
+    # 1. Root addons
+    candidates = []
     for entry in sorted(os.listdir(PROJECT_ROOT)):
-        if entry.startswith("."):
+        if entry.startswith(".") or entry in IGNORE_DIRS or entry in CI_EXCLUDED_ADDONS:
             continue
-        if entry in IGNORE_DIRS or entry in CI_EXCLUDED_ADDONS:
-            continue
-        addon_dir = os.path.join(PROJECT_ROOT, entry)
+        candidates.append((entry, entry))
+
+    # 2. .dev addons
+    dev_dir = os.path.join(PROJECT_ROOT, ".dev")
+    if os.path.isdir(dev_dir):
+        for entry in sorted(os.listdir(dev_dir)):
+            if entry.startswith("."):
+                continue
+            candidates.append((entry, f".dev/{entry}"))
+
+    for slug, rel_path in candidates:
+        addon_dir = os.path.join(PROJECT_ROOT, rel_path)
         config_path = os.path.join(addon_dir, "config.yaml")
         if not os.path.isdir(addon_dir) or not os.path.isfile(config_path):
             continue
 
         content = _read(config_path)
         addon = {
-            "slug": entry,
-            "name": _parse_yaml_field(content, "name") or entry,
+            "slug": slug,
+            "rel_path": rel_path,
+            "name": _parse_yaml_field(content, "name") or slug,
             "version": _parse_yaml_field(content, "version"),
             "description": _parse_yaml_field(content, "description"),
             "arch": _parse_yaml_list_field(content, "arch"),
@@ -250,7 +263,8 @@ def generate_connections(addons: list[dict]) -> None:
     connections: dict[str, dict] = {}
     for addon in addons:
         slug = addon["slug"]
-        addon_dir = os.path.join(PROJECT_ROOT, slug)
+        rel_path = addon.get("rel_path", slug)
+        addon_dir = os.path.join(PROJECT_ROOT, rel_path)
 
         files: dict[str, list[str]] = {}
 
@@ -274,7 +288,7 @@ def generate_connections(addons: list[dict]) -> None:
         for fname in ["config.yaml", "Dockerfile", "run.sh", "build.yaml", "CHANGELOG.md", "README.md", "DOCS.md"]:
             fpath = os.path.join(addon_dir, fname)
             if os.path.isfile(fpath):
-                toplevel.append(f"{slug}/{fname}")
+                toplevel.append(f"{rel_path}/{fname}")
         if toplevel:
             files["core"] = toplevel
 

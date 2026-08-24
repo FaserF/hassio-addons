@@ -1,0 +1,81 @@
+name: Orchestrator Dev Sync
+
+# This workflow keeps the 'dev' branch populated with ONLY in-development Apps,
+# moving them from .dev/* to the root level.
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - ".dev/**"
+      - ".github/workflows/orchestrator-dev-sync.yaml"
+      - ".scripts/prepare_dev_branch.py"
+    paths-ignore:
+      - ".dev/**/*.md"
+      - ".dev/**/CHANGELOG.md"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
+
+jobs:
+  sync-dev:
+    name: 🚥 Sync Dev Branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Checkout master
+        uses: actions/checkout@v7
+        with:
+          ref: master
+          fetch-depth: 0
+          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: 🔄 Reset dev branch to master
+        run: |
+          echo "Resetting dev branch..."
+          git checkout -B dev master
+
+      - name: 🧹 Clean non-dev Apps
+        run: |
+          echo "Removing non-dev Apps..."
+          mkdir ../temp_dev
+          cp -r .dev/* ../temp_dev/ || echo "No dev Apps found"
+
+          # Remove all directories in root except .github, .scripts, .git
+          find . -maxdepth 1 -type d \
+            -not -name "." \
+            -not -name ".git" \
+            -not -name ".github" \
+            -not -name ".scripts" \
+            -exec rm -rf {} +
+
+          find . -maxdepth 1 -type f \
+            -not -name ".gitignore" \
+            -not -name "repository.json" \
+            -not -name "LICENSE" \
+            -not -name "README.md" \
+            -delete
+
+          echo "Restoring dev Apps to root..."
+          cp -r ../temp_dev/* .
+          rm -rf ../temp_dev
+
+      - name: 📝 Prepare Dev Branch
+        run: |
+          pip install pyyaml --quiet
+          python3 .scripts/prepare_dev_branch.py
+
+      - name: 🚀 Commit and Push to Dev Branch
+        run: |
+          git add -A
+          git commit -m "chore: sync in-development Apps to dev branch [skip ci]" || echo "No changes to commit"
+          git push origin dev --force

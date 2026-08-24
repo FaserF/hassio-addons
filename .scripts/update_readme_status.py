@@ -197,6 +197,17 @@ def update_readme():
                     # Use full path for unsupported addons
                     addons[f".unsupported/{item}"] = status
 
+    # Scan .dev directory
+    dev_dir = ".dev"
+    if os.path.exists(dev_dir):
+        for item in os.listdir(dev_dir):
+            item_path = os.path.join(dev_dir, item)
+            if os.path.isdir(item_path):
+                status = get_addon_status(item_path, is_unsupported=False)
+                if status:
+                    addons[f".dev/{item}"] = status
+                    addons[item] = status
+
     # Read README
     try:
         with open(readme_path, "r", encoding="utf-8") as f:

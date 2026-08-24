@@ -83,6 +83,21 @@ def find_addons(repo_root: Path) -> list[dict]:
                         }
                     )
 
+    # In-development addons (.dev)
+    dev_dir = repo_root / ".dev"
+    if dev_dir.exists():
+        for item in sorted(dev_dir.iterdir()):
+            if item.is_dir():
+                config_path = item / "config.yaml"
+                if config_path.exists():
+                    addons.append(
+                        {
+                            "path": f".dev/{item.name}",
+                            "config": config_path,
+                            "unsupported": False,
+                        }
+                    )
+
     return addons
 
 

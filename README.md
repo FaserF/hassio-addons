@@ -15,39 +15,56 @@ maintained by FaserF.
 
 ### 📦 Stable Channel (Recommended)
 
-Pre-built Docker images from official releases. Best for most users.
+Pre-built Docker images from official releases. Best for general use.
+*Note: In-development add-ons are excluded from the stable channel.*
 
 1. Click to add the stable repository:
    [![Add Stable Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons)
 
-2. Or manually add:
-
+2. Or manually add in Home Assistant:
    ```text
    https://github.com/FaserF/hassio-addons
    ```
 
-### 🚧 Edge Channel (Development)
+### 🧪 Dev Channel (In-Development Add-ons Only)
 
-Latest development builds - built locally from your device. For testing new features.
+Contains **ONLY** in-development add-ons (AegisBot, Alivro, Antigravity, EntraMirror, Solumati, SwitchCraft, Wiki.js V3). Perfect if you only want to test the new WIP add-ons without loading development builds of stable apps.
 
-1. Click to add the edge repository:
+1. Click to add the Dev repository:
+   [![Add Dev Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23dev)
+
+2. Or manually add in Home Assistant:
+   - Navigate to **Settings** → **Add-ons** → **Add-on Store** → **⋮** → **Repositories**
+   - Enter repository URL:
+     ```text
+     https://github.com/FaserF/hassio-addons#dev
+     ```
+   - Click **Add** and then refresh the Add-on Store (3 dots → **Check for updates**)
+   - Find the add-ons under **FaserF's Home Assistant Apps (Dev)** and click **Install**.
+
+### 🚧 Edge Channel (All Add-ons / Bleeding-Edge)
+
+Contains **ALL** add-ons (both stable and in-development), built locally on your device from the latest `master` commits.
+
+1. Click to add the Edge repository:
    [![Add Edge Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23edge)
 
-2. Or manually add:
-
+2. Or manually add in Home Assistant:
    ```text
    https://github.com/FaserF/hassio-addons#edge
    ```
 
 > [!WARNING]
-> **Edge builds are built locally on your device** from the Dockerfile source code.
+> **Dev & Edge builds are built locally on your device** directly from the Dockerfile source code.
 > This takes longer and uses more resources than pre-built images.
-> Edge versions may contain bugs or incomplete features.
+> In-development add-ons may contain experimental features or undergo rapid changes.
 
-| Channel    | Pre-built Images    | Update Speed | Stability |
-| ---------- | ------------------- | ------------ | --------- |
-| **Stable** | ✅ Yes              | Fast         | 🟢 High   |
-| **Edge**   | ❌ No (local build) | Slow         | 🟡 Medium |
+| Channel    | Included Add-ons                 | Pre-built Images    | Update Speed | Stability |
+| ---------- | -------------------------------- | ------------------- | ------------ | --------- |
+| **Stable** | Stable Releases only             | ✅ Yes              | Fast         | 🟢 High   |
+| **Dev**    | **Only In-Development Add-ons**  | ❌ No (local build) | Medium       | 🟡 Experimental |
+| **Edge**   | **All Add-ons** (Stable + Dev)   | ❌ No (local build) | Slow         | 🟡 Medium |
+| **Unsupported** | Archived & Deprecated only | ❌ No (local build) | N/A          | 🔴 None   |
 
 ## Apps List 📦
 

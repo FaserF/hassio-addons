@@ -35,7 +35,7 @@ def check_domain(s, domains):
 
 # Import single source of truth for add-ons
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from addons_config import BETA_NOTICE, DEV_ADDONS, DEV_NOTICE, is_dev_addon
+from addons_config import BETA_NOTICE, DEV_ADDONS, DEV_NOTICE, check_dev_addons_version_warnings, is_dev_addon
 
 WEBSERVER_INTEGRATION_NOTICE = """
 ## 🏠 Home Assistant Integration
@@ -318,6 +318,17 @@ def find_addons(base_path):
                 ):
                     addons.append(item_path)
 
+    # In-development folder check (.dev)
+    dev_path = os.path.join(base_path, ".dev")
+    if os.path.exists(dev_path):
+        for item in os.listdir(dev_path):
+            item_path = os.path.join(dev_path, item)
+            if os.path.isdir(item_path):
+                if os.path.exists(os.path.join(item_path, "config.yaml")) or os.path.exists(
+                    os.path.join(item_path, "config.json")
+                ):
+                    addons.append(item_path)
+
     # Also check if cwd is an addon
     if os.path.exists(os.path.join(base_path, "config.yaml")) or os.path.exists(os.path.join(base_path, "config.json")):
         pass
@@ -452,3 +463,10 @@ if __name__ == "__main__":
         print(f"Found {len(found_addons)} add-ons.")
         for addon in found_addons:
             process_addon(addon)
+
+    warnings = check_dev_addons_version_warnings(base_path)
+    if warnings:
+        print("\n" + "=" * 80)
+        for w in warnings:
+            print(w)
+        print("=" * 80 + "\n")

@@ -280,6 +280,17 @@ def main():
                     if meta:
                         addons.append(meta)
 
+    # 3. In-development addons (.dev)
+    dev_dir = repo_root / ".dev"
+    if dev_dir.exists():
+        for item in sorted(dev_dir.iterdir()):
+            if item.is_dir():
+                config_path = item / "config.yaml"
+                if config_path.exists():
+                    meta = extract_metadata(config_path, f".dev/{item.name}", False)
+                    if meta:
+                        addons.append(meta)
+
     # Sort
     addons.sort(key=lambda x: x["sort_key"])
 
