@@ -142,7 +142,7 @@ CMD [ "/run.sh" ]
 
 # Labels
 LABEL org.opencontainers.image.title="Alivro"
-LABEL org.opencontainers.image.description="Clinical AI-Powered Mental Health Companion for Depression, Burnout & Substance Harm Reduction."
+LABEL org.opencontainers.image.description="AI-Powered Mental Health & Well-being Companion."
 LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Apps"
 LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"

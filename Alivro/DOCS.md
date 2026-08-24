@@ -1,10 +1,10 @@
 # Home Assistant App: Alivro
 
-Clinical AI-Powered Mental Health Companion for Depression, Burnout & Substance Harm Reduction for Home Assistant.
+AI-Powered Mental Health & Well-being Companion for Home Assistant.
 
 ## About
 
-Alivro is a clinical AI-powered mental health companion designed to provide evidence-based support for depression, burnout, and substance harm reduction. This app packages the entire application (frontend dashboard and backend) into a single, easy-to-install Home Assistant App.
+Alivro is an AI-powered mental health and well-being companion designed to provide personalized emotional wellness support, self-reflection check-ins, and guidance. This app packages the entire application (frontend dashboard and backend) into a single, easy-to-install Home Assistant App.
 
 ## Installation
 

@@ -3,7 +3,7 @@ name: Alivro
 version: "0.1.0"
 slug: alivro
 image: ghcr.io/faserf/hassio-addons-alivro-{arch}
-description: Clinical AI-Powered Mental Health Companion for Depression, Burnout & Substance Harm Reduction.
+description: AI-Powered Mental Health & Well-being Companion.
 url: https://github.com/FaserF/Alivro
 arch:
   - aarch64

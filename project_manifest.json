@@ -29,7 +29,7 @@
       "slug": "Alivro",
       "name": "Alivro",
       "version": "0.1.0",
-      "description": "Clinical AI-Powered Mental Health Companion for Depression, Burnout & Substance Harm Reduction.",
+      "description": "AI-Powered Mental Health & Well-being Companion.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-alivro-{arch}",
       "has_dockerfile": true,
