@@ -12,6 +12,7 @@ arch:
 map:
   - ssl
   - addon_config:rw
+  - share:rw # <TEMP_MIGRATION_PERMISSION:REMOVE_ON_RELEASE>
 ingress: true
 ingress_port: 3011
 init: false

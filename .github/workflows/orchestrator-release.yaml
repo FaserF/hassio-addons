@@ -829,6 +829,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: 🧹 Cleanup Temporary Migration Helpers
+        run: |
+          python3 .scripts/cleanup_migration_helpers.py --app "${{ matrix.App }}" || true
+
       - name: 🔧 Fix Image Field Format (if needed)
         if: matrix.App != 'sap-abap-cloud-dev'
         run: |

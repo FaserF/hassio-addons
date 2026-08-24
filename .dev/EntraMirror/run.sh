@@ -772,6 +772,11 @@ else
 	bashio::log.info "Production Mode: Using existing/packaged version."
 fi
 
+# --- AUTO MIGRATION & PERSISTENCE ---
+# <TEMP_MIGRATION_HELPER:REMOVE_ON_RELEASE>
+bashio::app.auto_migrate_data "entramirror" || true
+# </TEMP_MIGRATION_HELPER:REMOVE_ON_RELEASE>
+
 # --- CREATE .ENV FILE FOR BACKEND ---
 bashio::log.info "Creating .env file for backend..."
 {

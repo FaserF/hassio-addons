@@ -16,6 +16,7 @@ ports:
 init: false
 map:
   - homeassistant_config:rw
+  - share:rw # <TEMP_MIGRATION_PERMISSION:REMOVE_ON_RELEASE>
 options:
   log_level: "info"
 schema:

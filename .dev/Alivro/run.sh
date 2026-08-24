@@ -877,6 +877,9 @@ fi
 
 # --- SETUP SYMLINKS FOR PERSISTENCE ---
 bashio::log.info "Setting up persistent storage..."
+# <TEMP_MIGRATION_HELPER:REMOVE_ON_RELEASE>
+bashio::app.auto_migrate_data "alivro" || true
+# </TEMP_MIGRATION_HELPER:REMOVE_ON_RELEASE>
 
 # Link uploads directory
 mkdir -p /app/backend/static
