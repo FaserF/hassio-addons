@@ -396,6 +396,8 @@
       loginStep.classList.add('hidden');
       btn.textContent = t('btn_reauth');
     }
+  }
+
   function startTwoFaCountdown(seconds) {
     let totalSeconds = seconds || 120;
     const countdownEl = document.getElementById('twofa-countdown');
