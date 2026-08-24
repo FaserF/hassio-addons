@@ -953,13 +953,15 @@ export function handleIncomingMessages(session) {
         if (msg.key.fromMe) {
           // Self-sent message: track as sent
           trackSent(session, senderDisplay, displayText);
-          // If message is in a 1:1 self/admin chat, also track as received so it appears in Inbound Queue and HA received sensor
-          const isToAdminPrimary = isAdmin(msg.key.remoteJid, session);
-          const isToAdminAlt = msg.key.remoteJidAlt
-            ? isAdmin(msg.key.remoteJidAlt, session)
-            : false;
-          const is1on1Chat = !msg.key.remoteJid.endsWith('@g.us');
-          if (isToAdminPrimary || isToAdminAlt || is1on1Chat) {
+          // If message is in a Note to Self / own account chat, also track as received so it appears in Inbound Queue and HA received sensor
+          const myId = session.sock?.user?.id ? normalizeJid(session.sock.user.id).split('@')[0] : '';
+          const myLid = session.sock?.user?.lid ? normalizeJid(session.sock.user.lid).split('@')[0] : '';
+          const myNum = session.stats?.my_number ? session.stats.my_number.replace(/\D/g, '') : '';
+          const targetDigits = (msg.key.remoteJid || '').split('@')[0].replace(/\D/g, '');
+          const isNoteToSelf =
+            !msg.key.remoteJid.endsWith('@g.us') &&
+            Boolean(targetDigits && (targetDigits === myNum || targetDigits === myId || targetDigits === myLid));
+          if (isNoteToSelf) {
             trackReceived(session, senderDisplay, displayText);
           }
         } else {
