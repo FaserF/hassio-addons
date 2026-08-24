@@ -187,26 +187,56 @@ export async function translateTextGatewayWithReason(
         );
         continue;
       }
-      try {
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(targetLang)}&dt=t&q=${encodeURIComponent(cleanText)}`;
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-          signal: AbortSignal.timeout(5000),
-        });
-        if (res.status === 429) {
-          cooldowns.set('google', Date.now() + 5 * 60 * 1000);
-          logger.warn('Google Translate rate limit (429) reached, initiating 5 min cooldown');
-          recordError('google', 'Rate limit (429) reached - 5 min cooldown active', targetLang);
-          attemptedReasons.push('Google Translate: Rate limited (429)');
-          continue;
-        }
-        if (res.ok) {
-          const data = await res.json();
-          if (data && Array.isArray(data[0])) {
-            const translated = data[0].map((item) => item[0]).join('');
-            if (translated && translated.trim()) {
-              const detected = data[2] || '?';
-              saveCache(translated.trim(), detected, 'google', 'Google Translate');
+
+      const googleEndpoints = [
+        `https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=${encodeURIComponent(targetLang)}&q=${encodeURIComponent(cleanText)}`,
+        `https://translate.googleapis.com/translate_a/single?client=dict-chrome-ex&sl=auto&tl=${encodeURIComponent(targetLang)}&dt=t&q=${encodeURIComponent(cleanText)}`,
+        `https://translate.google.com/translate_a/single?client=at&sl=auto&tl=${encodeURIComponent(targetLang)}&dt=t&q=${encodeURIComponent(cleanText)}`,
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(targetLang)}&dt=t&q=${encodeURIComponent(cleanText)}`,
+      ];
+
+      let googleSuccess = false;
+      let hit429 = false;
+
+      for (const url of googleEndpoints) {
+        try {
+          const res = await fetch(url, {
+            headers: {
+              'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+              Accept: '*/*',
+            },
+            signal: AbortSignal.timeout(5000),
+          });
+
+          if (res.status === 429) {
+            hit429 = true;
+            continue;
+          }
+
+          if (res.ok) {
+            const data = await res.json();
+            let translated = '';
+            let detected = '?';
+
+            if (Array.isArray(data) && typeof data[0] === 'string') {
+              // Format: ["Translated text", "de"]
+              translated = data[0].trim();
+              detected = data[1] || '?';
+            } else if (Array.isArray(data) && Array.isArray(data[0])) {
+              if (Array.isArray(data[0][0]) && typeof data[0][0][0] === 'string') {
+                // Format: [[["Translated text", "source", ...]], ...]
+                translated = data[0].map((item) => (Array.isArray(item) ? item[0] : '')).join('').trim();
+                detected = data[2] || '?';
+              } else if (typeof data[0][0] === 'string') {
+                // Format: [["Translated text", "de"]]
+                translated = data[0][0].trim();
+                detected = data[0][1] || data[2] || '?';
+              }
+            }
+
+            if (translated) {
+              saveCache(translated, detected, 'google', 'Google Translate');
               lastTranslationEvent = {
                 timestamp: Date.now(),
                 provider: 'google',
@@ -216,8 +246,9 @@ export async function translateTextGatewayWithReason(
                 targetLang,
                 reason: 'Translated via Google Translate API',
               };
+              googleSuccess = true;
               return {
-                translation: translated.trim(),
+                translation: translated,
                 sourceLang: detected,
                 detectedSource: detected,
                 provider: 'google',
@@ -226,16 +257,21 @@ export async function translateTextGatewayWithReason(
               };
             }
           }
-          recordError('google', 'Empty or malformed translation payload received', targetLang);
-          attemptedReasons.push('Google Translate: Malformed response format');
-        } else {
-          recordError('google', `HTTP ${res.status}: ${res.statusText}`, targetLang);
-          attemptedReasons.push(`Google Translate: HTTP ${res.status}`);
+        } catch (err) {
+          logger.debug({ err: err.message, url }, 'Google Translate endpoint failed, trying alternate endpoint');
         }
-      } catch (err) {
-        logger.debug({ err: err.message }, 'Google Translate request failed, trying fallback');
-        recordError('google', `Network error: ${err.message}`, targetLang);
-        attemptedReasons.push(`Google Translate: Network/Timeout (${err.message})`);
+      }
+
+      if (!googleSuccess) {
+        if (hit429) {
+          cooldowns.set('google', Date.now() + 5 * 60 * 1000);
+          logger.warn('All Google Translate endpoints rate limited, initiating 5 min cooldown');
+          recordError('google', 'Rate limit (429) reached - 5 min cooldown active', targetLang);
+          attemptedReasons.push('Google Translate: Rate limited (429)');
+        } else {
+          recordError('google', 'All Google Translate endpoints unreachable or returned invalid response', targetLang);
+          attemptedReasons.push('Google Translate: All endpoints failed');
+        }
       }
     }
 
@@ -580,9 +616,9 @@ export function getTranslationDiagnostics(groupConfig = {}, store = {}) {
   }
 
   // Find first available provider according to configured priority chain
-  let activeProvider = 'google';
-  let activeProviderName = 'Google Translate';
-  let selectionReason = 'Auto-Failover: Primary engine is active and healthy.';
+  activeProvider = 'google';
+  activeProviderName = 'Google Translate';
+  selectionReason = 'Auto-Failover: Primary engine is active and healthy.';
 
   for (const p of providersToTry) {
     if (p === 'aegisbot') {
