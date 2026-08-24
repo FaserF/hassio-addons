@@ -17,15 +17,11 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
 
-DEV_ADDONS = {
-    "aegisbot",
-    "solumati",
-    "alivro",
-    "antigravity",
-    "entramirror",
-    "wiki.js3",
-    "switchcraft",
-}
+import os
+
+# Import single source of truth for add-ons
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from addons_config import DEV_ADDONS, is_dev_addon
 
 
 def parse_version(version_str: str) -> tuple:

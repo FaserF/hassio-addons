@@ -109,7 +109,7 @@ gemini_api_key: 'AIzaSy...'
 
 This Add-on uses **`host_network: true`** by default.
 
-- **Port Usage**: The web interface listens on port `8000` (HTTP) and the backend API on port `8001` (Internal Uvicorn).
+- **Port Usage**: The web interface listens on port `8078` (HTTP) and the backend API on port `8079` (Internal Uvicorn).
 - **Ingress**: Fully supported directly in the Home Assistant sidebar.
 
 ## 📂 Folder Usage

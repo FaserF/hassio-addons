@@ -11,14 +11,14 @@ arch:
 init: false
 host_network: true
 ingress: true
-ingress_port: 8000
+ingress_port: 8078
 ingress_stream: true
 panel_icon: mdi:heart-pulse
 startup: services
 ports:
-  8000/tcp: 8000
+  8078/tcp: 8078
 ports_description:
-  8000/tcp: Web Interface (HTTP)
+  8078/tcp: Web Interface (HTTP)
 map:
   - homeassistant_config:rw
   - share:rw

@@ -943,7 +943,7 @@ elif ! python3 -c "import zeroconf" 2>/dev/null; then
 fi
 
 # Start Uvicorn in background
-python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --proxy-headers --forwarded-allow-ips="*" --log-level "$(echo "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" &
+python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8079 --proxy-headers --forwarded-allow-ips="*" --log-level "$(echo "$LOG_LEVEL" | tr '[:upper:]' '[:lower:]')" &
 BACKEND_PID=$!
 
 # --- NGINX START ---

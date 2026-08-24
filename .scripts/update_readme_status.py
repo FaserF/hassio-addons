@@ -36,15 +36,9 @@ if hasattr(sys.stdout, "reconfigure"):
 # Directories to exclude from scanning
 EXCLUDED_DIRS = {"__pycache__", "node_modules", ".git", ".github", ".scripts"}
 
-DEV_ADDONS = {
-    "aegisbot",
-    "solumati",
-    "alivro",
-    "antigravity",
-    "entramirror",
-    "wiki.js3",
-    "switchcraft",
-}
+# Import single source of truth for add-ons
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from addons_config import DEV_ADDONS, is_dev_addon
 
 
 def is_prerelease_version(version_str):

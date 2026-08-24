@@ -15,19 +15,13 @@ import subprocess
 import sys
 import time
 
-# Add-ons to skip (e.g., test add-ons or ones that shouldn't be released)
+# Import single source of truth for add-ons
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from addons_config import is_dev_addon
+
+# Additional add-ons to skip (e.g., test add-ons)
 SKIP_ADDONS = {
-    "homeassistant-test-instance",  # Test add-on, skip releases
-    "aegisbot",
-    "AegisBot",
-    "solumati",
-    "alivro",
-    "Alivro",
-    "antigravity",
-    "entramirror",
-    "EntraMirror",
-    "wiki.js3",
-    "switchcraft",
+    "homeassistant-test-instance",
 }
 
 
@@ -45,7 +39,7 @@ def get_all_addons():
             and not item.startswith("_")
             and os.path.exists(os.path.join(item_path, "config.yaml"))
         ):
-            if item not in SKIP_ADDONS:
+            if item not in SKIP_ADDONS and not is_dev_addon(item):
                 addons.append(item)
 
     # Unsupported addons
@@ -55,7 +49,7 @@ def get_all_addons():
             item_path = os.path.join(unsupported_dir, item)
             if os.path.isdir(item_path) and os.path.exists(os.path.join(item_path, "config.yaml")):
                 addon_path = f".unsupported/{item}"
-                if item not in SKIP_ADDONS:
+                if item not in SKIP_ADDONS and not is_dev_addon(item):
                     addons.append(addon_path)
 
     return sorted(addons)
