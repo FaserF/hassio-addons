@@ -45,8 +45,32 @@
       border-top: 1px solid rgba(255,255,255,0.06);
     }
     .status-item { font-size: 0.85rem; }
-    .status-label { color: var(--muted); margin-bottom: 0.25rem; }
+    .status-label {
+      color: var(--muted); margin-bottom: 0.25rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
     .status-value { font-weight: 600; color: #e2e8f0; }
+    .stats-subgrid {
+      margin-top: 0.9rem; padding-top: 0.75rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+    }
+    .stat-tile {
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 0.55rem 0.75rem;
+      display: flex; flex-direction: column; justify-content: space-between;
+      gap: 0.35rem;
+    }
+    .stat-tile-header {
+      display: flex; align-items: center; justify-content: space-between;
+      color: var(--muted); font-size: 0.75rem; font-weight: 500;
+    }
+    .stat-tile-value {
+      font-size: 0.92rem; font-weight: 600; color: #f8fafc;
+    }
     .info-banner {
       background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25);
       border-radius: 10px; padding: 1rem; font-size: 0.9rem;
@@ -186,26 +210,34 @@
           </div>
         </div>
       </div>
-      <div style="margin-top:0.9rem;padding-top:0.75rem;border-top:1px solid rgba(255,255,255,0.08);display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:0.75rem;font-size:0.8rem;">
-        <div>
-          <span style="color:var(--muted);" data-i18n="lbl_last_checked">Session Last Checked:</span>
-          <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_last_checked">Time since the continuous WebSocket keeper connection was last verified active.</span></span>
-          <b id="last-checked-time" style="color:#f8fafc;margin-left:0.35rem;">{{ last_checked_sec }}</b>
+      <div class="stats-subgrid">
+        <div class="stat-tile">
+          <div class="stat-tile-header">
+            <span data-i18n="lbl_last_checked">Session Check</span>
+            <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_last_checked">Time since the continuous WebSocket keeper connection was last verified active.</span></span>
+          </div>
+          <div class="stat-tile-value" id="last-checked-time">{{ last_checked_sec }}</div>
         </div>
-        <div>
-          <span style="color:var(--muted);" data-i18n="lbl_last_data">Last Data Live-Sync:</span>
-          <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_last_data">Time since the latest live data packet (portfolio, cash, or ticker price) arrived from Trade Republic.</span></span>
-          <b id="last-data-time" style="color:#f8fafc;margin-left:0.35rem;">{{ last_data_sec }}</b>
+        <div class="stat-tile">
+          <div class="stat-tile-header">
+            <span data-i18n="lbl_last_data">Live Data Sync</span>
+            <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_last_data">Time since the latest live data packet (portfolio, cash, or ticker price) arrived from Trade Republic.</span></span>
+          </div>
+          <div class="stat-tile-value" id="last-data-time">{{ last_data_sec }}</div>
         </div>
-        <div>
-          <span style="color:var(--muted);" data-i18n="lbl_last_token">Token Last Renewed:</span>
-          <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_last_token">Time since the web session JWT token was created or auto-renewed in background Chromium.</span></span>
-          <b id="last-token-time" style="color:#f8fafc;margin-left:0.35rem;">{{ last_token_sec }}</b>
+        <div class="stat-tile">
+          <div class="stat-tile-header">
+            <span data-i18n="lbl_last_token">Token Renewal</span>
+            <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_last_token">Time since the web session JWT token was created or auto-renewed in background Chromium.</span></span>
+          </div>
+          <div class="stat-tile-value" id="last-token-time">{{ last_token_sec }}</div>
         </div>
-        <div>
-          <span style="color:var(--muted);" data-i18n="lbl_last_login">Last In-App Login:</span>
-          <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_last_login">Initial timestamp when the smartphone 2FA approval was confirmed for this session.</span></span>
-          <b id="last-login-time" style="color:#f8fafc;margin-left:0.35rem;">{{ last_login_sec }}</b>
+        <div class="stat-tile">
+          <div class="stat-tile-header">
+            <span data-i18n="lbl_last_login">Last In-App Login</span>
+            <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_last_login">Initial timestamp when the smartphone 2FA approval was confirmed for this session.</span></span>
+          </div>
+          <div class="stat-tile-value" id="last-login-time">{{ last_login_sec }}</div>
         </div>
       </div>
     </div>

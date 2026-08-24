@@ -328,7 +328,7 @@ class TradeRepublicBrowserService:
             # New token appeared — verify it once via direct WS check
             is_valid = await verify_tr_token(token)
             if is_valid:
-                await self.save_session(token)
+                await self.save_session(token, is_new_login=True)
                 self._ws_keeper.start()
                 _LOGGER.info("App approval detected! Session saved and WS keeper restarted.")
                 break
