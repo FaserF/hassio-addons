@@ -105,9 +105,6 @@ RUN \
             # Setup Frontend \
             mkdir -p /app/frontend && \
             npm --prefix frontend install && \
-            sed -i "s|defineConfig({|defineConfig({ base: './',|g" frontend/vite.config.ts && \
-            # Verify sed modifications were applied \
-            grep -q "base: './" frontend/vite.config.ts || { echo "Failed to patch vite.config.ts"; exit 1; } && \
             npm --prefix frontend run build && \
             cp -r frontend/dist/* /app/frontend/ && \
             \
