@@ -211,7 +211,10 @@ class TRWebSocketKeeper:
                             from browser import browser_service
 
                             if browser_service and browser_service.cdp:
-                                _LOGGER.info("WS Keeper got 401 — triggering background Chromium session rotation (attempt %d/2)...", self._consecutive_401_count)
+                                _LOGGER.info(
+                                    "WS Keeper got 401 — triggering background Chromium session rotation (attempt %d/2)...",
+                                    self._consecutive_401_count,
+                                )
                                 await browser_service.auth_helper.inject_session_cookies(clean)
                                 await browser_service.cdp.send_cmd(
                                     "Page.navigate", {"url": "https://app.traderepublic.com"}
@@ -232,7 +235,9 @@ class TRWebSocketKeeper:
                         except Exception as rot_exc:  # noqa: BLE001
                             _LOGGER.debug("Chromium token recovery failed: %s", rot_exc)
                     else:
-                        _LOGGER.warning("WS Keeper: 401 token recovery exhausted (TR requires new in-app approval) — stopping reconnect loop")
+                        _LOGGER.warning(
+                            "WS Keeper: 401 token recovery exhausted (TR requires new in-app approval) — stopping reconnect loop"
+                        )
 
                     self.is_authenticated = False
                     self.last_error = f"Session expired or rejected by Trade Republic (HTTP 401: {first_exc}). Please re-authenticate."
@@ -343,7 +348,7 @@ class TRWebSocketKeeper:
             try:
                 net_size = float(pos.get("netSize", 0.0))
                 average_buy_in = float(pos.get("averageBuyIn", 0.0))
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 continue
 
             pos_invested = net_size * average_buy_in
@@ -416,7 +421,7 @@ class TRWebSocketKeeper:
         try:
             sub_id = int(sub_id_str)
             payload = json.loads(payload_str)
-        except (ValueError, json.JSONDecodeError, TypeError):
+        except ValueError, json.JSONDecodeError, TypeError:
             return
 
         # Check main subscriptions
@@ -451,7 +456,7 @@ class TRWebSocketKeeper:
                 if api_rate is not None:
                     try:
                         self.latest_data["api_interest_rate"] = float(api_rate)
-                    except (ValueError, TypeError):
+                    except ValueError, TypeError:
                         pass
                 self._recalculate_portfolio()
 
@@ -511,7 +516,7 @@ class TRWebSocketKeeper:
                         if p is not None:
                             try:
                                 return float(p)
-                            except (ValueError, TypeError):
+                            except ValueError, TypeError:
                                 pass
                     return None
 

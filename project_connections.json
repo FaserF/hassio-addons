@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-08-24T19:37:40.352966",
+  "timestamp": "2026-08-24T18:10:47.543926",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
@@ -444,10 +444,10 @@
     },
     "traderepublic": {
       "name": "Trade Republic Headless Browser",
-      "version": "1.0.0",
+      "version": "1.0.1-dev-20260824-2009-fdf7b78",
       "description": "Trade Republic Headless Browser & Session Provider (WAF Solver & Keep-Alive).",
       "arch": ["aarch64", "amd64"],
-      "image": "ghcr.io/faserf/hassio-addons-traderepublic-{arch}",
+      "image": "",
       "files": {
         "core": [
           "traderepublic/config.yaml",

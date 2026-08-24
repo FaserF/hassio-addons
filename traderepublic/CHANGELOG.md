@@ -3,10 +3,12 @@
 ## 1.0.1-dev-20260824-2009-fdf7b78 (2026-08-24)
 
 ### ✨ Features
+
 - link version pills to their respective GitHub repositories ([`15b1896a2`](https://github.com/FaserF/hassio-addons/commit/15b1896a27e4586ba8a7de68707b2dcfd9761bcc))
 - display local add-on and integration versions in UI footer ([`ad91e7ab5`](https://github.com/FaserF/hassio-addons/commit/ad91e7ab56c5c97bd3aafc04565f9354942d7965))
 
 ### 🐛 Bug Fixes
+
 - eliminate duplicate alert blocks and standardize README notice cleaning ([`fdf7b787f`](https://github.com/FaserF/hassio-addons/commit/fdf7b787f1450d3e372795a968a68b6b721181a4))
 - prevent session drop by shortening keepalive to 120s and auto-rotating tokens via Chromium on WebSocket 401 ([`e66900258`](https://github.com/FaserF/hassio-addons/commit/e66900258350fa7767f7c15dcaeaf5025425c323))
 - auto-recover fresh session token from Chromium on WebSocket 401 disconnect ([`e120c41a7`](https://github.com/FaserF/hassio-addons/commit/e120c41a7fbd53a0d6f46e4ece160b9bdf34316d))
@@ -16,7 +18,6 @@
 - resolve dynamic add-on version via supervisor API, format version tags ([`bfe0d66f2`](https://github.com/FaserF/hassio-addons/commit/bfe0d66f2cfe941cc9f53fa262b8a6082a26bd30))
 - restore missing step-login opening tags and remove duplicate footer versions ([`acaa8a66c`](https://github.com/FaserF/hassio-addons/commit/acaa8a66c3c4867162a60d9670d3da4723bab886))
 - restrict phone/pin input types, improve restart notification ([`dd594a6cb`](https://github.com/FaserF/hassio-addons/commit/dd594a6cbbdc5a93df23c1cafa67a7be261dc7f5))
-
 
 ## 1.0.0 (2026-08-24)
 
