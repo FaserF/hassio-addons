@@ -1469,7 +1469,7 @@
     "current_goodbye_msg": "Current goodbye message:\n\n{text}",
     "cmd_save_usage": "⚠️ Usage: `{prefix}save <notename> <content>`\nExample: `{prefix}save wifi Password123`",
     "note_saved_success": "✅ Saved note *#{name}*.",
-    "cmd_get_usage": "⚠️ Usage: `{prefix}get <notename>` or `#{notename}`\nExample: `{prefix}get wifi`\n💡 View all saved notes with `{prefix}notes`.",
+    "cmd_get_usage": "⚠️ Usage: `{prefix}get <notename>` or `#<notename>`\nExample: `{prefix}get wifi`\n💡 View all saved notes with `{prefix}notes`.",
     "notes_none_saved": "📝 No notes saved for this group.",
     "notes_list_header": "📝 *Saved Notes:*\n{notes}",
     "cmd_newfed_usage": "⚠️ Usage: `{prefix}newfed <name>`",

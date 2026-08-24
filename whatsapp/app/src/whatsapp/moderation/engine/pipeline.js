@@ -7,7 +7,12 @@ import {
 import { reply } from '../../actions.js';
 import { logger } from '../../../logger.js';
 import { checkSuspiciousName } from '../securityScanner.js';
-import { gt, recordTranslationMap, shouldSkipDuplicateTranslation } from './translations.js';
+import {
+  gt,
+  recordTranslationMap,
+  shouldSkipDuplicateTranslation,
+  recordRecentTranslation,
+} from './translations.js';
 import { executePenalty, issueUserWarning } from './penalties.js';
 import {
   findPendingCaptcha,
@@ -35,7 +40,9 @@ export async function handleModerationMessage(session, event) {
   const groupId = isGroup ? event.from || event.sender : event.sender;
   const config = getGroupModerationConfig(groupId);
 
-  const isTranslationActive = Boolean(config.translation?.enabled);
+  const isTranslationActive =
+    config.translation?.enabled !== false &&
+    Boolean(config.translation?.enabled || config.translation?.mode === 'auto');
   const isGroupConfigured = config.enabled || isTranslationActive || Boolean(config.stt_enabled);
   if (!store.global_enabled || !isGroupConfigured) {
     logger.debug('Skipping moderation: global_enabled is false or group features not configured');
@@ -521,10 +528,12 @@ export async function handleModerationMessage(session, event) {
             session,
             groupId,
             { text: `${header}\n\n"${transResult.translation}"${provBadge}` },
-            rawMsg
+            rawMsg,
+            { skipSpamGuard: true }
           );
           if (sentTransMsg?.key?.id && rawMsg?.key?.id) {
             recordTranslationMap(groupId, rawMsg.key.id, sentTransMsg.key.id, sentTransMsg.key);
+            recordRecentTranslation(groupId, text, targetLang);
           }
           logger.info(
             { groupId, src: srcCode, dst: dstCode },

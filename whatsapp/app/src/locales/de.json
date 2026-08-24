@@ -1469,7 +1469,7 @@
     "current_goodbye_msg": "Aktuelle Abschiedsnachricht:\n\n{text}",
     "cmd_save_usage": "⚠️ Verwendung: `{prefix}save <notizname> <inhalt>`\nBeispiel: `{prefix}save wlan Passwort123`",
     "note_saved_success": "✅ Notiz *#{name}* gespeichert.",
-    "cmd_get_usage": "⚠️ Verwendung: `{prefix}get <notizname>` oder `#{notizname}`\nBeispiel: `{prefix}get wlan`\n💡 Zeige alle gespeicherten Notizen mit `{prefix}notes` an.",
+    "cmd_get_usage": "⚠️ Verwendung: `{prefix}get <notizname>` oder `#<notizname>`\nBeispiel: `{prefix}get wlan`\n💡 Zeige alle gespeicherten Notizen mit `{prefix}notes` an.",
     "notes_none_saved": "📝 Keine Notizen für diese Gruppe gespeichert.",
     "notes_list_header": "📝 *Gespeicherte Notizen:*\n{notes}",
     "cmd_newfed_usage": "⚠️ Verwendung: `{prefix}newfed <name>`",

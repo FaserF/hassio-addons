@@ -45,13 +45,21 @@ export function shouldSkipDuplicateTranslation(groupId, text, targetLang = 'en',
   if (lastTime && now - lastTime < ttlMs) {
     return true;
   }
+  return false;
+}
+
+export function recordRecentTranslation(groupId, text, targetLang = 'en', ttlMs = 120000) {
+  if (!groupId || !text) return;
+  const normalized = text.trim().toLowerCase().replace(/\s+/g, ' ');
+  if (!normalized) return;
+  const key = `${groupId}:${targetLang}:${normalized}`;
+  const now = Date.now();
   _RECENT_TRANSLATIONS.set(key, now);
   if (_RECENT_TRANSLATIONS.size > 2000) {
     for (const [k, ts] of _RECENT_TRANSLATIONS.entries()) {
       if (now - ts > ttlMs) _RECENT_TRANSLATIONS.delete(k);
     }
   }
-  return false;
 }
 
 export function recordTranslationMap(groupId, sourceWaId, botWaId, botKey) {
