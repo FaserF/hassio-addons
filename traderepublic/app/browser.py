@@ -381,9 +381,12 @@ class TradeRepublicBrowserService:
                 # attempt to refresh the token from Chromium cookies if the keeper
                 # has detected an auth failure.
                 if self._ws_keeper.is_authenticated:
+                    import time
+
                     self.is_logged_in = True
+                    self.token_verified_at = time.time()
                     self.last_error = None
-                    self.status_message = "Everything is connected and running normally. Session renewed 24/7."
+                    self.status_message = "Everything is connected and running normally. Session renewed."
                     return self.session_token
 
                 # Keeper detected auth failure — try to extract and verify a fresh token from browser
@@ -461,6 +464,8 @@ class TradeRepublicBrowserService:
                 # Navigate Chromium in background to app.traderepublic.com so TR rotates/renews the session cookies.
                 if self.is_logged_in and self.session_token:
                     try:
+                        import time
+
                         _LOGGER.debug("Keepalive: refreshing web session via Chromium navigation")
                         await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com"})
                         await asyncio.sleep(4)
@@ -474,6 +479,9 @@ class TradeRepublicBrowserService:
                                     len(new_token),
                                 )
                                 await self.save_session(new_token)
+                        else:
+                            # Token confirmed fresh and valid via active page load
+                            self.last_token_update_time = time.time()
                     except Exception as renew_err:  # noqa: BLE001
                         _LOGGER.debug("Keepalive token rotation attempt: %s", renew_err)
 
