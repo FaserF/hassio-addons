@@ -28,7 +28,9 @@ async function saveGroupLocks() {
 }
 
 async function addBlacklistWord() {
-  const inp = document.getElementById('mod-blacklist-new');
+  const inp =
+    document.getElementById('mod-blacklist-input') ||
+    document.getElementById('mod-blacklist-new');
   if (!inp || !inp.value.trim() || !currentModGroup) return;
   const word = inp.value.trim();
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
@@ -41,7 +43,9 @@ async function addBlacklistWord() {
   await saveGroupConfig(groupConfig);
   selectModerationGroup(currentModGroup);
   setTimeout(() => {
-    const el = document.getElementById('mod-blacklist-new');
+    const el =
+      document.getElementById('mod-blacklist-input') ||
+      document.getElementById('mod-blacklist-new');
     if (el) el.focus();
   }, 50);
 }
