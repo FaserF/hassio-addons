@@ -1593,32 +1593,82 @@ function onCustomCmdTypeChange() {
 function _refreshAliasDropdown(config) {
   const aliasSelect = document.getElementById('mod-cmd-alias-target');
   if (!aliasSelect) return;
-  const builtins = [
-    'ping',
-    'help',
-    'id',
-    'rules',
-    'warn',
-    'warns',
-    'unwarn',
-    'kick',
-    'ban',
-    'mute',
-    'unmute',
-    'promote',
-    'demote',
-    'clear',
-    'report',
-    'notes',
-    'note',
-    'captcha',
-    'test',
-  ];
-  const prefix = config.commands?.prefix || '!';
-  const customCmds = (config.commands?.custom_commands || []).map((c) => c.command);
-  const allTargets = [...new Set([...builtins, ...customCmds])];
+  const builtins =
+    builtinCommandsCache && builtinCommandsCache.length > 0
+      ? builtinCommandsCache.map((c) => (typeof c === 'string' ? c : c.cmd))
+      : [
+          'ping',
+          'help',
+          'id',
+          'rules',
+          'info',
+          'adminlist',
+          'admins',
+          'approved',
+          'locktypes',
+          'report',
+          'notes',
+          'filters',
+          'translate',
+          'warn',
+          'unwarn',
+          'warns',
+          'kick',
+          'ban',
+          'tban',
+          'mute',
+          'tmute',
+          'unmute',
+          'del',
+          'delete',
+          'approve',
+          'unapprove',
+          'setrules',
+          'promote',
+          'demote',
+          'setwelcome',
+          'welcome',
+          'setgoodbye',
+          'goodbye',
+          'lock',
+          'unlock',
+          'locks',
+          'save',
+          'filter',
+          'stop',
+          'setlang',
+          'resetwarn',
+          'setwarnlimit',
+          'setwarnaction',
+          'whitelist',
+          'unwhitelist',
+          'whitelisted',
+          'scan',
+          'autotranslate',
+          'flood',
+          'newfed',
+          'joinfed',
+          'leavefed',
+          'fban',
+          'unfban',
+          'fedinfo',
+          'fedadmins',
+          'staff',
+          'reload',
+          'uptime',
+          'stats',
+          'diagnostics',
+          'restart',
+          'backup',
+          'ask',
+          'summary',
+          'summarize',
+        ];
+  const prefix = config?.commands?.prefix || '!';
+  const customCmds = (config?.commands?.custom_commands || []).map((c) => c.command);
+  const allTargets = [...new Set([...builtins, ...customCmds])].sort();
   aliasSelect.innerHTML =
-    `<option value="">— ${window.t('moderation.select_target')} —</option>` +
+    `<option value="">— ${window.t ? window.t('moderation.select_target') : 'select target'} —</option>` +
     allTargets
       .map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(prefix)}${escapeHtml(c)}</option>`)
       .join('');
