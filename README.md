@@ -37,9 +37,11 @@ Required for **in-development add-ons** (such as AegisBot, Alivro, Antigravity, 
 2. Or manually add in Home Assistant:
    - Navigate to **Settings** → **Add-ons** → **Add-on Store** → **⋮** → **Repositories**
    - Enter repository URL:
+
      ```text
      https://github.com/FaserF/hassio-addons#edge
      ```
+
    - Click **Add** and refresh the Add-on Store (3 dots → **Check for updates**).
    - Find the add-on under **FaserF's Home Assistant Apps (Edge)** and click **Install**.
 
@@ -48,11 +50,11 @@ Required for **in-development add-ons** (such as AegisBot, Alivro, Antigravity, 
 > This takes longer and uses more resources than pre-built images.
 > In-development add-ons may contain experimental features or undergo rapid changes.
 
-| Channel         | Included Add-ons                | Pre-built Images    | Update Speed | Stability       |
-| --------------- | ------------------------------- | ------------------- | ------------ | --------------- |
-| **Stable**      | Stable Releases only            | ✅ Yes              | Fast         | 🟢 High         |
-| **Edge**        | **All Add-ons** (Stable + In-Dev)| ❌ No (local build) | Slow         | 🟡 Medium       |
-| **Unsupported** | Archived & Deprecated only      | ❌ No (local build) | N/A          | 🔴 None         |
+| Channel         | Included Add-ons                  | Pre-built Images    | Update Speed | Stability |
+| --------------- | --------------------------------- | ------------------- | ------------ | --------- |
+| **Stable**      | Stable Releases only              | ✅ Yes              | Fast         | 🟢 High   |
+| **Edge**        | **All Add-ons** (Stable + In-Dev) | ❌ No (local build) | Slow         | 🟡 Medium |
+| **Unsupported** | Archived & Deprecated only        | ❌ No (local build) | N/A          | 🔴 None   |
 
 ## Apps List 📦
 

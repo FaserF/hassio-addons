@@ -185,7 +185,13 @@ def generate_file_tree() -> dict:
 
         valid_files = []
         for f in files:
-            if f in IGNORE_FILES or f.startswith(".") or f.endswith(".log") or "log" in f.lower() and f.endswith(".txt"):
+            if (
+                f in IGNORE_FILES
+                or f.startswith(".")
+                or f.endswith(".log")
+                or "log" in f.lower()
+                and f.endswith(".txt")
+            ):
                 continue
             ext = os.path.splitext(f)[1].lower()
             if ext in ALLOWED_EXTENSIONS or f in {"Dockerfile", "Makefile", "VERSION"}:
