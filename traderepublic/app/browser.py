@@ -469,7 +469,10 @@ class TradeRepublicBrowserService:
                             from core.verifier import verify_tr_token
 
                             if await verify_tr_token(new_token):
-                                _LOGGER.info("Keepalive: successfully renewed session token from Chromium (length: %s)", len(new_token))
+                                _LOGGER.info(
+                                    "Keepalive: successfully renewed session token from Chromium (length: %s)",
+                                    len(new_token),
+                                )
                                 await self.save_session(new_token)
                     except Exception as renew_err:  # noqa: BLE001
                         _LOGGER.debug("Keepalive token rotation attempt: %s", renew_err)

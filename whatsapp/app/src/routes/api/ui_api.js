@@ -64,7 +64,11 @@ export function registerUiApiRoutes(app) {
               jid = `${resolvedPn}@s.whatsapp.net`;
             }
           }
-          if (!jid || (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us') && !jid.endsWith('@lid'))) return;
+          if (
+            !jid ||
+            (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us') && !jid.endsWith('@lid'))
+          )
+            return;
 
           // Check if JID is an internal bot LID (starts with 1576... or length >= 14)
           const rawUser = jid.split('@')[0];
@@ -87,7 +91,12 @@ export function registerUiApiRoutes(app) {
             if (!contactNames.has(jid)) {
               contactNames.set(jid, msg.pushName);
             }
-          } else if (jid.endsWith('@g.us') && msg.key.participant && !msg.key.fromMe && msg.pushName) {
+          } else if (
+            jid.endsWith('@g.us') &&
+            msg.key.participant &&
+            !msg.key.fromMe &&
+            msg.pushName
+          ) {
             if (!contactNames.has(msg.key.participant)) {
               contactNames.set(msg.key.participant, msg.pushName);
             }
@@ -114,7 +123,8 @@ export function registerUiApiRoutes(app) {
                 jid = `${resolvedPn}@s.whatsapp.net`;
               }
             }
-            if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us') && !jid.endsWith('@lid')) continue;
+            if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us') && !jid.endsWith('@lid'))
+              continue;
             const rawUser = jid.split('@')[0];
             const digits = rawUser.replace(/\D/g, '');
             if (!jid.endsWith('@g.us') && digits.length >= 14 && digits.startsWith('1576')) {

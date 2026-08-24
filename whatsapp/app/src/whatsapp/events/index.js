@@ -954,13 +954,20 @@ export function handleIncomingMessages(session) {
           // Self-sent message: track as sent
           trackSent(session, senderDisplay, displayText);
           // If message is in a Note to Self / own account chat, also track as received so it appears in Inbound Queue and HA received sensor
-          const myId = session.sock?.user?.id ? normalizeJid(session.sock.user.id).split('@')[0] : '';
-          const myLid = session.sock?.user?.lid ? normalizeJid(session.sock.user.lid).split('@')[0] : '';
+          const myId = session.sock?.user?.id
+            ? normalizeJid(session.sock.user.id).split('@')[0]
+            : '';
+          const myLid = session.sock?.user?.lid
+            ? normalizeJid(session.sock.user.lid).split('@')[0]
+            : '';
           const myNum = session.stats?.my_number ? session.stats.my_number.replace(/\D/g, '') : '';
           const targetDigits = (msg.key.remoteJid || '').split('@')[0].replace(/\D/g, '');
           const isNoteToSelf =
             !msg.key.remoteJid.endsWith('@g.us') &&
-            Boolean(targetDigits && (targetDigits === myNum || targetDigits === myId || targetDigits === myLid));
+            Boolean(
+              targetDigits &&
+              (targetDigits === myNum || targetDigits === myId || targetDigits === myLid)
+            );
           if (isNoteToSelf) {
             trackReceived(session, senderDisplay, displayText);
           }
