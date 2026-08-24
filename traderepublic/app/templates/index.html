@@ -137,6 +137,26 @@
       visibility: visible; opacity: 1;
     }
     .hidden { display: none !important; }
+    .footer-versions {
+      margin-top: 1.75rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.25rem;
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    .footer-versions span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .footer-versions strong {
+      color: #94a3b8;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -343,6 +363,12 @@
   </div>
 
   <div id="result" style="margin-top:1.5rem;font-size:0.9rem;"></div>
+
+  <div class="footer-versions">
+    <span><span data-i18n="lbl_addon_version">Add-on</span>: <strong id="addon-ver-val">v{{ addon_version }}</strong></span>
+    <span>•</span>
+    <span><span data-i18n="lbl_integration_version">Integration</span>: <strong id="integration-ver-val">v{{ integration_version }}</strong></span>
+  </div>
 </div>
 
 <script>
@@ -671,6 +697,15 @@
       const loginEl = document.getElementById('last-login-time');
       if (loginEl && st.last_login_time) {
         loginEl.textContent = formatLastSync(Math.max(0, Math.floor(now - st.last_login_time)));
+      }
+
+      if (st.addon_version) {
+        const addonVerEl = document.getElementById('addon-ver-val');
+        if (addonVerEl) addonVerEl.textContent = 'v' + st.addon_version;
+      }
+      if (st.integration_version) {
+        const intVerEl = document.getElementById('integration-ver-val');
+        if (intVerEl) intVerEl.textContent = st.integration_version !== '—' ? 'v' + st.integration_version : '—';
       }
     } catch {}
   }, 3000);

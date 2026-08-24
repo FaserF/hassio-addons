@@ -74,5 +74,7 @@
   "tip_last_checked": "Zeitpunkt, an dem die aktive WebSocket-Verbindung zuletzt erfolgreich verifiziert wurde.",
   "tip_last_data": "Zeitpunkt des letzten empfangenen Live-Datenpakets (Portfolio, Cash oder Ticker-Kurse) von Trade Republic.",
   "tip_last_token": "Zeitpunkt, an dem der Web-Session JWT-Token zuletzt im Hintergrund-Chromium erneuert oder gespeichert wurde.",
-  "tip_last_login": "Ursprünglicher Zeitpunkt des erfolgreichen 2FA In-App Logins auf dem Smartphone."
+  "tip_last_login": "Ursprünglicher Zeitpunkt des erfolgreichen 2FA In-App Logins auf dem Smartphone.",
+  "lbl_addon_version": "Add-on",
+  "lbl_integration_version": "Integration"
 }

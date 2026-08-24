@@ -74,5 +74,7 @@
   "tip_last_checked": "Time since the continuous WebSocket keeper connection was last verified active.",
   "tip_last_data": "Time since the latest live data packet (portfolio, cash, or ticker price) arrived from Trade Republic.",
   "tip_last_token": "Time since the web session JWT token was created or auto-renewed in background Chromium.",
-  "tip_last_login": "Initial timestamp when the smartphone 2FA approval was confirmed for this session."
+  "tip_last_login": "Initial timestamp when the smartphone 2FA approval was confirmed for this session.",
+  "lbl_addon_version": "Add-on",
+  "lbl_integration_version": "Integration"
 }

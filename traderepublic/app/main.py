@@ -139,6 +139,44 @@ if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 
+def get_addon_version() -> str:
+    """Retrieve the current Trade Republic add-on version."""
+    env_ver = os.getenv("APP_VERSION")
+    if env_ver:
+        return env_ver.strip()
+    # Try reading config.yaml in add-on folder
+    for path in ["config.yaml", "/opt/traderepublic/config.yaml", "/config.yaml"]:
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        if line.startswith("version:"):
+                            return line.split(":", 1)[1].strip().strip('"').strip("'")
+            except Exception:  # noqa: BLE001
+                pass
+    return "0.1.0"
+
+
+def get_integration_version() -> str:
+    """Retrieve locally installed Trade Republic custom integration version."""
+    candidates = [
+        "/config/custom_components/traderepublic/manifest.json",
+        "custom_components/traderepublic/manifest.json",
+        "../ha-traderepublic/custom_components/traderepublic/manifest.json",
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    manifest = json.load(f)
+                    ver = manifest.get("version")
+                    if ver:
+                        return str(ver).strip()
+            except Exception:  # noqa: BLE001
+                pass
+    return "—"
+
+
 class LoginInitRequest(BaseModel):
     phone_number: str
     pin: str
@@ -227,6 +265,8 @@ async def get_index(request: Request):
             "last_interaction_type": browser_service.last_interaction_type,
             "last_interaction_details": browser_service.last_interaction_details,
             "request_counts_by_type": browser_service.request_counts_by_type,
+            "addon_version": get_addon_version(),
+            "integration_version": get_integration_version(),
             "all_i18n": json.dumps(all_i18n),
         },
     )
@@ -264,6 +304,8 @@ async def get_status():
         "last_interaction_type": browser_service.last_interaction_type,
         "last_interaction_details": browser_service.last_interaction_details,
         "request_counts_by_type": browser_service.request_counts_by_type,
+        "addon_version": get_addon_version(),
+        "integration_version": get_integration_version(),
     }
 
 
