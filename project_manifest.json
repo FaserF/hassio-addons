@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-08-24T13:08:58.179772",
+  "timestamp": "2026-08-24T15:20:25.632062",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -24,6 +24,21 @@
       "has_www": false,
       "has_admin": false,
       "has_changelog": true
+    },
+    {
+      "slug": "Alivro",
+      "name": "Alivro",
+      "version": "0.1.0",
+      "description": "Clinical AI-Powered Mental Health Companion for Depression, Burnout & Substance Harm Reduction.",
+      "arch": ["aarch64", "amd64"],
+      "image": "ghcr.io/faserf/hassio-addons-alivro-{arch}",
+      "has_dockerfile": true,
+      "has_run_sh": true,
+      "has_rootfs": true,
+      "has_translations": true,
+      "has_www": false,
+      "has_admin": false,
+      "has_changelog": false
     },
     {
       "slug": "EntraMirror",
@@ -476,7 +491,7 @@
       "has_changelog": true
     }
   ],
-  "addon_count": 31,
+  "addon_count": 32,
   "ai_instructions": {
     "navigation": [
       "Each addon lives in its own top-level directory named by its slug.",
@@ -558,6 +573,19 @@
     "apache2-minimal-mariadb/rootfs/etc/cont-init.d": ["apache2.sh"],
     "apache2-minimal-mariadb/rootfs/usr/bin": ["webserver_app_integration.sh"],
     "apache2-minimal-mariadb/rootfs/usr/lib/bashio": ["banner.sh"],
+    "Alivro": [
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml",
+      "nginx.conf",
+      "requirements.txt",
+      "run.sh"
+    ],
+    "Alivro/translations": ["de.yaml", "en.yaml"],
+    "Alivro/rootfs/usr/bin": ["aegisbot_integration.sh"],
+    "Alivro/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
     "pterodactyl-panel": [
       "CHANGELOG.md",
       "DOCS.md",
