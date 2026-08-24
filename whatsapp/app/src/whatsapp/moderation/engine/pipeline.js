@@ -492,7 +492,7 @@ export async function handleModerationMessage(session, event) {
                 targetLang,
               });
             })()
-          : await translateTextGatewayWithReason(text, targetLang, provider);
+          : await translateTextGatewayWithReason(text, targetLang, provider, config);
 
       if (
         transResult?.translation &&

@@ -315,7 +315,10 @@ export async function translateTextGatewayWithReason(
               !translated.toUpperCase().includes('QUERY LENGTH LIMIT EXCEEDED')
             ) {
               const detected =
-                data.matches?.[0]?.['created-by'] || data.responseData?.detectedLanguage || '?';
+                data.responseData?.detectedLanguage ||
+                data.matches?.[0]?.source ||
+                data.matches?.[0]?.['source-language'] ||
+                '?';
               saveCache(translated, detected, 'mymemory', 'MyMemory');
               lastTranslationEvent = {
                 timestamp: Date.now(),
@@ -554,51 +557,71 @@ export function getTranslationDiagnostics(groupConfig = {}, store = {}) {
     };
   }
 
-  if (configuredProvider === 'aegisbot') {
-    activeProvider = 'aegisbot';
-    activeProviderName = 'AegisBot Server (Local)';
-    selectionReason = hasAegisUrl
-      ? 'Manual Selection: Group is set to AegisBot Server (Local / Self-hosted).'
-      : 'AegisBot Selected: Warning — No AegisBot Server URL configured.';
-  } else if (configuredProvider === 'ai') {
-    activeProvider = 'ai';
-    activeProviderName = 'Gemini / OpenAI AI Model';
-    selectionReason = hasAiKey
-      ? 'Configured AI Provider: Using multimodal AI model with verified API key.'
-      : 'AI Provider Selected: Warning — No API key configured. Translation will fail until API key is set.';
-  } else if (configuredProvider === 'google') {
-    activeProvider = 'google';
-    activeProviderName = 'Google Translate';
-    selectionReason =
-      googleCooldown > now
-        ? `Manual Selection: Google Translate is selected, but currently in cooldown (${Math.ceil((googleCooldown - now) / 1000)}s remaining) due to rate-limiting (429).`
-        : 'Manual Selection: Group is explicitly set to Google Translate.';
-  } else if (configuredProvider === 'lingva') {
-    activeProvider = 'lingva';
-    activeProviderName = 'Lingva Translate';
-    selectionReason = 'Manual Selection: Group is explicitly set to Lingva Translate.';
-  } else if (configuredProvider === 'mymemory') {
-    activeProvider = 'mymemory';
-    activeProviderName = 'MyMemory';
-    selectionReason =
-      mymemoryCooldown > now
-        ? `Manual Selection: MyMemory is selected, but currently in cooldown (${Math.ceil((mymemoryCooldown - now) / 1000)}s remaining) due to rate-limiting (429).`
-        : 'Manual Selection: Group is explicitly set to MyMemory.';
+  const customPriority =
+    groupConfig?.translation?.engine_priority || store?.translation_engine_priority;
+
+  const providersToTry = [];
+  if (Array.isArray(customPriority) && customPriority.length > 0) {
+    for (const p of customPriority) {
+      if (p && !providersToTry.includes(p)) {
+        providersToTry.push(p);
+      }
+    }
+  } else if (configuredProvider && configuredProvider !== 'auto' && configuredProvider !== 'custom') {
+    providersToTry.push(configuredProvider);
   } else {
-    // auto
-    if (googleCooldown <= now) {
-      activeProvider = 'google';
-      activeProviderName = 'Google Translate';
-      selectionReason = 'Auto-Failover: Primary engine (Google Translate) is active and healthy.';
-    } else if (mymemoryCooldown <= now) {
+    if (hasAegisUrl) providersToTry.push('aegisbot');
+    providersToTry.push('google', 'lingva', 'mymemory');
+    if (hasAiKey) providersToTry.push('ai');
+  }
+
+  // Find first available provider according to configured priority chain
+  let activeProvider = 'google';
+  let activeProviderName = 'Google Translate';
+  let selectionReason = 'Auto-Failover: Primary engine is active and healthy.';
+
+  for (const p of providersToTry) {
+    if (p === 'aegisbot') {
+      if (hasAegisUrl) {
+        activeProvider = 'aegisbot';
+        activeProviderName = 'AegisBot Server (Local)';
+        selectionReason = configuredProvider === 'custom'
+          ? 'Custom Priority: AegisBot Server is top priority and available.'
+          : (configuredProvider === 'aegisbot' ? 'Manual Selection: Explicitly set to AegisBot Server.' : 'Auto-Failover: Local AegisBot Server is active.');
+        break;
+      }
+    } else if (p === 'google') {
+      if (googleCooldown <= now) {
+        activeProvider = 'google';
+        activeProviderName = 'Google Translate';
+        selectionReason = configuredProvider === 'custom'
+          ? 'Custom Priority: Google Translate is active and healthy.'
+          : 'Auto-Failover: Primary engine (Google Translate) is active and healthy.';
+        break;
+      }
+    } else if (p === 'lingva') {
       activeProvider = 'lingva';
       activeProviderName = 'Lingva Translate';
-      selectionReason = `Auto-Failover: Google Translate is rate-limited (cooldown: ${Math.ceil((googleCooldown - now) / 1000)}s remaining). Switched to Lingva Translate.`;
-    } else {
-      activeProvider = 'mymemory';
-      activeProviderName = 'MyMemory';
-      selectionReason =
-        'Auto-Failover: Primary & secondary engines unavailable. Switched to MyMemory.';
+      selectionReason = configuredProvider === 'custom'
+        ? 'Custom Priority: Switched to Lingva Translate.'
+        : `Auto-Failover: Higher-priority engines unavailable. Switched to Lingva Translate.`;
+      break;
+    } else if (p === 'mymemory') {
+      if (mymemoryCooldown <= now) {
+        activeProvider = 'mymemory';
+        activeProviderName = 'MyMemory';
+        selectionReason = configuredProvider === 'custom'
+          ? 'Custom Priority: Switched to MyMemory.'
+          : 'Auto-Failover: Higher-priority engines unavailable. Switched to MyMemory.';
+        break;
+      }
+    } else if (p === 'ai') {
+      if (hasAiKey) {
+        activeProvider = 'ai';
+        activeProviderName = 'Gemini / OpenAI AI Model';
+        selectionReason = 'Custom Priority: Using multimodal AI model with verified API key.';
+        break;
+      }
     }
   }
 
