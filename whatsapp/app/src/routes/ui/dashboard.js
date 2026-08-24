@@ -1721,21 +1721,8 @@ async function selectModerationGroup(groupId) {
     }
   }
 
-  // Use cached built-in commands (loaded once at startup in loadModerationConfig)
-  // Fall back to a live fetch only if cache is still empty
-  let builtinCommands = builtinCommandsCache;
-  if (builtinCommands.length === 0) {
-    try {
-      const res = await fetch(basePath + 'api/moderation/commands');
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-        builtinCommandsCache = json.data;
-        builtinCommands = builtinCommandsCache;
-      }
-    } catch (err) {
-      console.warn('Failed to fetch dynamic commands list:', err);
-    }
-  }
+  // Dynamically load commands from centralized getter (single source of truth)
+  const builtinCommands = await getBuiltinCommands();
 
   // Commands Config UI
   const cmdsEnabled = document.getElementById('mod-cmds-enabled');
@@ -2416,80 +2403,28 @@ function onCustomCmdTypeChange() {
   }
 }
 
-function _refreshAliasDropdown(config) {
+async function getBuiltinCommands() {
+  if (builtinCommandsCache && builtinCommandsCache.length > 0) {
+    return builtinCommandsCache;
+  }
+  try {
+    const res = await fetch((typeof basePath !== 'undefined' ? basePath : '') + 'api/moderation/commands');
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+      builtinCommandsCache = json.data;
+      return builtinCommandsCache;
+    }
+  } catch (err) {
+    console.warn('Failed to load dynamic commands list:', err);
+  }
+  return [];
+}
+
+async function _refreshAliasDropdown(config) {
   const aliasSelect = document.getElementById('mod-cmd-alias-target');
   if (!aliasSelect) return;
-  const builtins =
-    builtinCommandsCache && builtinCommandsCache.length > 0
-      ? builtinCommandsCache.map((c) => (typeof c === 'string' ? c : c.cmd))
-      : [
-          'ping',
-          'help',
-          'id',
-          'rules',
-          'info',
-          'adminlist',
-          'admins',
-          'approved',
-          'locktypes',
-          'report',
-          'notes',
-          'filters',
-          'translate',
-          'warn',
-          'unwarn',
-          'warns',
-          'kick',
-          'ban',
-          'tban',
-          'mute',
-          'tmute',
-          'unmute',
-          'del',
-          'delete',
-          'approve',
-          'unapprove',
-          'setrules',
-          'promote',
-          'demote',
-          'setwelcome',
-          'welcome',
-          'setgoodbye',
-          'goodbye',
-          'lock',
-          'unlock',
-          'locks',
-          'save',
-          'filter',
-          'stop',
-          'setlang',
-          'resetwarn',
-          'setwarnlimit',
-          'setwarnaction',
-          'whitelist',
-          'unwhitelist',
-          'whitelisted',
-          'scan',
-          'autotranslate',
-          'flood',
-          'newfed',
-          'joinfed',
-          'leavefed',
-          'fban',
-          'unfban',
-          'fedinfo',
-          'fedadmins',
-          'staff',
-          'reload',
-          'uptime',
-          'stats',
-          'diagnostics',
-          'restart',
-          'backup',
-          'ask',
-          'summary',
-          'summarize',
-        ];
+  const cmds = await getBuiltinCommands();
+  const builtins = cmds.map((c) => (typeof c === 'string' ? c : c.cmd));
   const prefix = config?.commands?.prefix || '!';
   const customCmds = (config?.commands?.custom_commands || []).map((c) => c.command);
   const allTargets = [...new Set([...builtins, ...customCmds])].sort();
@@ -2739,22 +2674,8 @@ async function generateGroupTestCommandsModal() {
   const config = modStoreCache?.groups?.[currentModGroup] || {};
   const prefix = config.commands?.prefix || '!';
 
-  // Use cached commands or fetch with basePath
-  let commandsList = typeof builtinCommandsCache !== 'undefined' ? builtinCommandsCache : [];
-  if (!commandsList || commandsList.length === 0) {
-    try {
-      const res = await fetch(
-        (typeof basePath !== 'undefined' ? basePath : '') + 'api/moderation/commands'
-      );
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
-        commandsList = json.data;
-      }
-    } catch (_e) {
-      /* fallback */
-    }
-  }
-
+  // Use dynamic command registry via centralized getter
+  const commandsList = typeof getBuiltinCommands === 'function' ? await getBuiltinCommands() : (builtinCommandsCache || []);
   const disabledCmds = new Set(config.commands?.disabled_commands || []);
   const activeCmds = commandsList.filter((c) => !disabledCmds.has(c.cmd));
 

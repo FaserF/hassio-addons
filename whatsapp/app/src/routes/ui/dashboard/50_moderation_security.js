@@ -134,22 +134,8 @@ async function generateGroupTestCommandsModal() {
   const config = modStoreCache?.groups?.[currentModGroup] || {};
   const prefix = config.commands?.prefix || '!';
 
-  // Use cached commands or fetch with basePath
-  let commandsList = typeof builtinCommandsCache !== 'undefined' ? builtinCommandsCache : [];
-  if (!commandsList || commandsList.length === 0) {
-    try {
-      const res = await fetch(
-        (typeof basePath !== 'undefined' ? basePath : '') + 'api/moderation/commands'
-      );
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
-        commandsList = json.data;
-      }
-    } catch (_e) {
-      /* fallback */
-    }
-  }
-
+  // Use dynamic command registry via centralized getter
+  const commandsList = typeof getBuiltinCommands === 'function' ? await getBuiltinCommands() : (builtinCommandsCache || []);
   const disabledCmds = new Set(config.commands?.disabled_commands || []);
   const activeCmds = commandsList.filter((c) => !disabledCmds.has(c.cmd));
 
