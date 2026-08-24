@@ -19,9 +19,6 @@ To actually send messages and automate WhatsApp, you need the **WhatsApp Custom 
 
 - **[Official Documentation & Examples](https://faserf.github.io/ha-whatsapp/)**: Comprehensive guide on how to use the `notify` service, send buttons, polls, images, and creating bot automations.
 
-
-
-
 ### 🗝️ Native Control Commands
 
 Control your addon via WhatsApp!
@@ -49,10 +46,6 @@ Full-featured group moderation, anti-raid shield, and bot command engine (Rose &
 - **Prefix-based Commands**: Configure prefix per group (default `!`). Includes 37 group commands (`!help`, `!warn`, `!kick`, `!tban`, `!mute`, `!tmute`, `!promote`, `!demote`, `!approve`, `!save`, `!filter`, `!translate`, etc.). Supports custom command modes (Auto Reply, HA/Webhook forwarding, Command Aliases).
 - **Content Locks**: Lock images, videos, voice, docs, stickers, URLs, invites, polls, contacts, locations, forwarded messages, or RTL text (`!lock`, `!unlock`).
 - **Automation & AI**: Captchas (Private DM / Group resolution & Web UI status overview), welcome/goodbye greetings with departure reasons, configurable user name addressing priorities, word blacklists, anti-flood, anti-raid, Multi-AI provider support (OpenAI & Gemini), AI FAQ responder, AI Intent & Scam Detection (phishing/crypto protection), AI rules interpreter (`!rules <question>`), AI sentiment toxicity moderation, and AI translation (`!translate`).
-
-
-
-
 
 ## ⚠️ Anti-Ban & Safety Guidelines
 

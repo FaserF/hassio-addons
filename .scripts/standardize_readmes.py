@@ -140,8 +140,15 @@ def clean_existing_content(content):
     content = re.sub(r"^(?:<{7}|={7}|>{7})[^\n]*$", "", content, flags=re.MULTILINE)
 
     # Pre-strip all alert/notice blocks (> [!CAUTION], > [!WARNING], etc.)
-    content = re.sub(r">\s*\[!(?:CAUTION|WARNING|NOTE|TIP|IMPORTANT)\][\s\S]*?(?=\n\n\S|\n##|\Z)", "", content, flags=re.IGNORECASE)
-    content = re.sub(r">\s*\*\*.*?(?:Beta|Experimental|Development|UNSUPPORTED).*?\*\*[\s\S]*?(?=\n\n\S|\n##|\Z)", "", content, flags=re.IGNORECASE)
+    content = re.sub(
+        r">\s*\[!(?:CAUTION|WARNING|NOTE|TIP|IMPORTANT)\][\s\S]*?(?=\n\n\S|\n##|\Z)", "", content, flags=re.IGNORECASE
+    )
+    content = re.sub(
+        r">\s*\*\*.*?(?:Beta|Experimental|Development|UNSUPPORTED).*?\*\*[\s\S]*?(?=\n\n\S|\n##|\Z)",
+        "",
+        content,
+        flags=re.IGNORECASE,
+    )
     content = re.sub(r"^##\s*(?:📖\s*)?About\s*$", "", content, flags=re.MULTILINE | re.IGNORECASE)
 
     lines = content.splitlines()
