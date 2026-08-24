@@ -281,8 +281,8 @@ jobs:
             for App in $CHANGED_AppS; do
               if [ -f "$App/config.yaml" ]; then
                 echo ""
-                echo "📝 Bumping $App..."
-                python3 .scripts/bump_version.py "$App" patch --dev --changelog 2>/dev/null || echo "⚠️ Skipping $App"
+                echo "📝 Bumping $App with auto-generated dev changelog..."
+                python3 .scripts/bump_version.py "$App" patch --dev --changelog || echo "⚠️ Skipping $App"
               fi
             done
           fi
@@ -290,7 +290,7 @@ jobs:
           # Restore previous edge files for UNCHANGED Apps
           if [ -n "$VERSIONS_FILE" ] && [ -f "$VERSIONS_FILE" ] && [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
             echo ""
-            echo "🔄 Restoring edge config files for unchanged Apps..."
+            echo "🔄 Restoring edge config and changelog files for unchanged Apps..."
 
             for App in $ALL_AppS; do
               # Skip if this App was changed (already bumped above)
@@ -298,10 +298,13 @@ jobs:
                 continue
               fi
 
-              # Checkout config.yaml (and README if needed) from origin/edge for unchanged apps
+              # Checkout config.yaml and CHANGELOG.md from origin/edge for unchanged apps
               if git rev-parse --verify "origin/edge:$App/config.yaml" >/dev/null 2>&1; then
                 echo "  📌 Checkout edge config for $App"
                 git checkout origin/edge -- "$App/config.yaml" 2>/dev/null || true
+              fi
+              if git rev-parse --verify "origin/edge:$App/CHANGELOG.md" >/dev/null 2>&1; then
+                git checkout origin/edge -- "$App/CHANGELOG.md" 2>/dev/null || true
               fi
             done
           fi
