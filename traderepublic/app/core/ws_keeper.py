@@ -185,6 +185,7 @@ class TRWebSocketKeeper:
             headers = {
                 "User-Agent": _USER_AGENT,
                 "Origin": "https://app.traderepublic.com",
+                "Authorization": f"Bearer {clean}",
                 "Cookie": f"tr_session={clean}; tr_session_id={clean}; sessionToken={clean}",
             }
 
@@ -198,37 +199,14 @@ class TRWebSocketKeeper:
                     close_timeout=5,
                 )
             except Exception as first_exc:
+                if attempt < 2:
+                    await asyncio.sleep(2**attempt)
+                    continue
+                _LOGGER.warning("WS Keeper: connection error: %s", first_exc)
                 if "401" in str(first_exc) or getattr(first_exc, "status_code", None) == 401:
-                    auth_headers = {
-                        "User-Agent": _USER_AGENT,
-                        "Origin": "https://app.traderepublic.com",
-                        "Authorization": f"Bearer {clean}",
-                        "Cookie": headers["Cookie"],
-                    }
-                    try:
-                        self._ws = await websockets.connect(
-                            _TR_WS_URL,
-                            ssl=ssl_ctx,
-                            additional_headers=auth_headers,
-                            ping_interval=20,
-                            ping_timeout=20,
-                            close_timeout=5,
-                        )
-                    except Exception as second_exc:
-                        if attempt < 2:
-                            await asyncio.sleep(2**attempt)
-                            continue
-                        _LOGGER.warning(
-                            "WS Keeper: TR rejected token (HTTP 401) [first: %s, second: %s] — stopping until new token",
-                            first_exc,
-                            second_exc,
-                        )
-                        self.is_authenticated = False
-                        self.last_error = f"Session expired or rejected by Trade Republic (HTTP 401: {second_exc}). Please re-authenticate."
-                        return False
-                else:
-                    _LOGGER.warning("WS Keeper: connection error: %s", first_exc)
-                    return False
+                    self.is_authenticated = False
+                    self.last_error = f"Session expired or rejected by Trade Republic (HTTP 401: {first_exc}). Please re-authenticate."
+                return False
 
             # Handshake
             handshake = {**_HANDSHAKE_PAYLOAD, "token": clean}

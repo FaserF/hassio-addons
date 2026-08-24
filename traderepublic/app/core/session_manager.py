@@ -46,8 +46,8 @@ class SessionManager:
             "phone_number": phone or existing.get("phone_number"),
             "updated_at": time.time(),
             "last_login_time": login_time or existing.get("last_login_time") or time.time(),
-            "last_logout_time": logout_time or existing.get("last_logout_time"),
-            "last_logout_reason": logout_reason or existing.get("last_logout_reason"),
+            "last_logout_time": logout_time,
+            "last_logout_reason": logout_reason,
             "last_session_duration": duration_seconds or existing.get("last_session_duration"),
         }
         try:

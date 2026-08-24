@@ -142,19 +142,17 @@ class TradeRepublicBrowserService:
                 _LOGGER.warning("Startup validation: saved session token rejected by TR (401) — marking expired")
                 import time
 
-                # If we don't have a recorded logout time or duration from previous runtime, compute it now
-                if not self.last_logout_time:
-                    logout_now = time.time()
-                    dur = (logout_now - self.last_login_time) if self.last_login_time else None
-                    self.last_logout_time = logout_now
-                    self.last_logout_reason = "Add-on Restart / Update"
-                    if dur is not None:
-                        self.last_session_duration = dur
-                    self.session_manager.record_logout(
-                        self.last_logout_reason,
-                        self.last_session_duration,
-                        logout_time=self.last_logout_time,
-                    )
+                logout_now = time.time()
+                dur = (logout_now - self.last_login_time) if self.last_login_time else self.last_session_duration
+                self.last_logout_time = logout_now
+                self.last_logout_reason = "Add-on Restart / Update"
+                if dur is not None:
+                    self.last_session_duration = dur
+                self.session_manager.record_logout(
+                    self.last_logout_reason,
+                    self.last_session_duration,
+                    logout_time=self.last_logout_time,
+                )
                 self.is_logged_in = False
                 self.status_message = (
                     "Stored session token expired due to Add-on Restart / Update. Please re-authenticate."
@@ -202,7 +200,12 @@ class TradeRepublicBrowserService:
                 self.last_error = None
                 _LOGGER.info("Loaded session token from disk — keeper will verify connection shortly")
 
-    async def save_session(self, token: str, phone: Optional[str] = None) -> None:
+    async def save_session(
+        self,
+        token: str,
+        phone: Optional[str] = None,
+        is_new_login: bool = False,
+    ) -> None:
         import time
 
         if not token:
@@ -214,7 +217,8 @@ class TradeRepublicBrowserService:
             self.phone_number = phone
         self.is_logged_in = True
         self.last_token_update_time = time.time()
-        self.last_login_time = time.time()
+        if is_new_login or not self.last_login_time:
+            self.last_login_time = time.time()
         self.last_logout_time = None
         self.last_logout_reason = None
         self.status_message = "Everything is connected and running normally. Re-login is only required if your session expires or if you experience connection issues."
@@ -358,7 +362,7 @@ class TradeRepublicBrowserService:
                         # Keeper is stopped during login — use one-off verifier
                         is_valid = await verify_tr_token(token)
                         if is_valid:
-                            await self.save_session(token)
+                            await self.save_session(token, is_new_login=True)
                             self._ws_keeper.start()
                             return {
                                 "success": True,
