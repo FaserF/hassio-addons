@@ -66,5 +66,13 @@
   "js_page_reload": "Page will reload in 1s...",
   "js_req_error": "Request error: ",
   "js_session_valid": "Session token is valid and active!",
-  "js_session_expired": "Session token has expired or is invalid."
+  "js_session_expired": "Session token has expired or is invalid.",
+  "tip_phone": "Configured Trade Republic telephone number associated with this active session.",
+  "tip_session_status": "Current authentication state with Trade Republic WebSocket servers.",
+  "tip_ha_interaction": "Time elapsed since Home Assistant last queried data or synced session tokens with this Add-on.",
+  "tip_health": "Detailed breakdown of total API queries processed by type (Live portfolio data vs Session sync).",
+  "tip_last_checked": "Time since the continuous WebSocket keeper connection was last verified active.",
+  "tip_last_data": "Time since the latest live data packet (portfolio, cash, or ticker price) arrived from Trade Republic.",
+  "tip_last_token": "Time since the web session JWT token was created or auto-renewed in background Chromium.",
+  "tip_last_login": "Initial timestamp when the smartphone 2FA approval was confirmed for this session."
 }

@@ -81,6 +81,37 @@
       border: 1px solid var(--border); cursor: pointer; transition: background 0.15s, color 0.15s;
     }
     .lang-btn.active, .lang-btn:hover { background: var(--accent); color: #fff; }
+    .info-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 15px; height: 15px; border-radius: 50%;
+      background: rgba(255,255,255,0.12); color: #94a3b8;
+      font-size: 0.68rem; font-family: monospace; font-weight: bold;
+      cursor: help; margin-left: 0.35rem; position: relative;
+      user-select: none; line-height: 1; vertical-align: middle;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .info-btn:hover {
+      background: var(--accent); color: #ffffff; border-color: var(--accent);
+    }
+    .info-btn .tooltip-text {
+      visibility: hidden; opacity: 0;
+      width: 210px; background-color: #0f172a; color: #e2e8f0;
+      text-align: left; border-radius: 6px; padding: 0.5rem 0.65rem;
+      position: absolute; z-index: 100; bottom: 135%; left: 50%;
+      transform: translateX(-50%); font-size: 0.73rem; line-height: 1.35;
+      font-weight: normal; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.15);
+      transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
+      pointer-events: none; white-space: normal;
+    }
+    .info-btn .tooltip-text::after {
+      content: ""; position: absolute; top: 100%; left: 50%;
+      margin-left: -5px; border-width: 5px; border-style: solid;
+      border-color: #0f172a transparent transparent transparent;
+    }
+    .info-btn:hover .tooltip-text {
+      visibility: visible; opacity: 1;
+    }
     .hidden { display: none !important; }
   </style>
 </head>
@@ -110,15 +141,24 @@
       <div style="font-size:0.85rem;color:#94a3b8;margin-top:0.4rem;" id="status-msg" data-i18n="status_ok">{{ status_message }}</div>
       <div class="status-grid">
         <div class="status-item">
-          <div class="status-label" data-i18n="lbl_phone">Account Phone</div>
+          <div class="status-label">
+            <span data-i18n="lbl_phone">Account Phone</span>
+            <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_phone">Configured Trade Republic telephone number associated with this active session.</span></span>
+          </div>
           <div class="status-value">{{ phone_number }}</div>
         </div>
         <div class="status-item">
-          <div class="status-label" data-i18n="lbl_session_status">Session Status</div>
+          <div class="status-label">
+            <span data-i18n="lbl_session_status">Session Status</span>
+            <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_session_status">Current authentication state with Trade Republic WebSocket servers.</span></span>
+          </div>
           <div class="status-value" style="color:#4ade80;" data-i18n="session_authenticated">Authenticated</div>
         </div>
         <div class="status-item">
-          <div class="status-label" data-i18n="lbl_ha_interaction">Home Assistant Interaction</div>
+          <div class="status-label">
+            <span data-i18n="lbl_ha_interaction">Home Assistant Interaction</span>
+            <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_ha_interaction">Time elapsed since Home Assistant last queried data or synced session tokens with this Add-on.</span></span>
+          </div>
           <div class="status-value" style="color:#60a5fa;" id="ha-sync-val">
             <span id="ha-sync-time">{{ last_sync }}</span> (<span id="ha-req-count">{{ requests_count }}</span> <span data-i18n="queries">queries</span>)
           </div>
@@ -135,7 +175,10 @@
           </div>
         </div>
         <div class="status-item">
-          <div class="status-label" data-i18n="lbl_health">Integration Health</div>
+          <div class="status-label">
+            <span data-i18n="lbl_health">Integration Health</span>
+            <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_health">Detailed breakdown of total API queries processed by type (Live portfolio data vs Session sync).</span></span>
+          </div>
           <div class="status-value" style="color:#4ade80;" data-i18n="health_ok">✓ Healthy &amp; Operational</div>
           <div style="font-size:0.75rem;color:#94a3b8;margin-top:0.25rem;">
             <span data-i18n="lbl_data_count">Data</span>: <b id="ha-data-count">{{ request_counts_by_type.get('data', 0) }}</b> |
@@ -146,18 +189,22 @@
       <div style="margin-top:0.9rem;padding-top:0.75rem;border-top:1px solid rgba(255,255,255,0.08);display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:0.75rem;font-size:0.8rem;">
         <div>
           <span style="color:var(--muted);" data-i18n="lbl_last_checked">Session Last Checked:</span>
+          <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_last_checked">Time since the continuous WebSocket keeper connection was last verified active.</span></span>
           <b id="last-checked-time" style="color:#f8fafc;margin-left:0.35rem;">{{ last_checked_sec }}</b>
         </div>
         <div>
           <span style="color:var(--muted);" data-i18n="lbl_last_data">Last Data Live-Sync:</span>
+          <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_last_data">Time since the latest live data packet (portfolio, cash, or ticker price) arrived from Trade Republic.</span></span>
           <b id="last-data-time" style="color:#f8fafc;margin-left:0.35rem;">{{ last_data_sec }}</b>
         </div>
         <div>
           <span style="color:var(--muted);" data-i18n="lbl_last_token">Token Last Renewed:</span>
+          <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_last_token">Time since the web session JWT token was created or auto-renewed in background Chromium.</span></span>
           <b id="last-token-time" style="color:#f8fafc;margin-left:0.35rem;">{{ last_token_sec }}</b>
         </div>
         <div>
           <span style="color:var(--muted);" data-i18n="lbl_last_login">Last In-App Login:</span>
+          <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_last_login">Initial timestamp when the smartphone 2FA approval was confirmed for this session.</span></span>
           <b id="last-login-time" style="color:#f8fafc;margin-left:0.35rem;">{{ last_login_sec }}</b>
         </div>
       </div>

@@ -66,5 +66,13 @@
   "js_page_reload": "Seite wird in 1 s neu geladen...",
   "js_req_error": "Anfragefehler: ",
   "js_session_valid": "Session-Token ist gültig und aktiv!",
-  "js_session_expired": "Session-Token ist abgelaufen oder ungültig."
+  "js_session_expired": "Session-Token ist abgelaufen oder ungültig.",
+  "tip_phone": "Konfigurierte Trade Republic Telefonnummer, die dieser aktiven Sitzung zugeordnet ist.",
+  "tip_session_status": "Aktueller Authentifizierungsstatus gegenüber den Trade Republic WebSocket-Servern.",
+  "tip_ha_interaction": "Vergangene Zeit seit der letzten Daten- oder Session-Abfrage durch die Home Assistant Integration.",
+  "tip_health": "Aufschlüsselung der verarbeiteten API-Abfragen nach Typ (Live-Portfoliodaten vs. Session-Token-Sync).",
+  "tip_last_checked": "Zeitpunkt, an dem die aktive WebSocket-Verbindung zuletzt erfolgreich verifiziert wurde.",
+  "tip_last_data": "Zeitpunkt des letzten empfangenen Live-Datenpakets (Portfolio, Cash oder Ticker-Kurse) von Trade Republic.",
+  "tip_last_token": "Zeitpunkt, an dem der Web-Session JWT-Token zuletzt im Hintergrund-Chromium erneuert oder gespeichert wurde.",
+  "tip_last_login": "Ursprünglicher Zeitpunkt des erfolgreichen 2FA In-App Logins auf dem Smartphone."
 }
