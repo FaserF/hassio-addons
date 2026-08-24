@@ -244,6 +244,17 @@ fi
 
 bashio::app.print_banner
 
+# Export dynamically detected add-on version from bashio/supervisor
+if ! RUN_VERSION=$(bashio::app.version 2>/dev/null); then
+    if ! RUN_VERSION=$(bashio::addon.version 2>/dev/null); then
+        RUN_VERSION=""
+    fi
+fi
+if [ -n "$RUN_VERSION" ] && [ "$RUN_VERSION" != "unknown" ]; then
+    export ADDON_VERSION="$RUN_VERSION"
+    export APP_VERSION="$RUN_VERSION"
+fi
+
 cd /opt/traderepublic || exit 1
 export PORT=8095
 export DATA_DIR="/data"

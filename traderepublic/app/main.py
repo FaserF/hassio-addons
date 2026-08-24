@@ -140,13 +140,8 @@ if os.path.exists(static_dir):
 
 
 def get_addon_version() -> str:
-    """Retrieve the current Trade Republic add-on version dynamically."""
-    # 1. Environment variable if injected
-    env_ver = os.getenv("APP_VERSION") or os.getenv("ADDON_VERSION")
-    if env_ver and env_ver not in ("0.1.0", "unknown"):
-        return env_ver.strip()
-
-    # 2. Check Home Assistant Supervisor API
+    """Retrieve the current Trade Republic add-on version dynamically from Supervisor."""
+    # 1. Check Home Assistant Supervisor API (Single Source of Truth for installed add-on version)
     supervisor_token = os.getenv("SUPERVISOR_TOKEN")
     if supervisor_token:
         try:
@@ -160,12 +155,22 @@ def get_addon_version() -> str:
                 if resp.status == 200:
                     data = json.loads(resp.read().decode("utf-8"))
                     v = (data.get("data") or {}).get("version")
-                    if v:
+                    if v and str(v).strip() not in ("unknown", "0.1.0", ""):
                         return str(v).strip()
         except Exception:  # noqa: BLE001
             pass
 
-    # 3. Read config.yaml in add-on directory
+    # 2. Check dynamically injected ADDON_VERSION (from run script / Supervisor)
+    dynamic_ver = os.getenv("ADDON_VERSION")
+    if dynamic_ver and dynamic_ver.strip() not in ("unknown", "0.1.0", "1.0.0", ""):
+        return dynamic_ver.strip()
+
+    # 3. Environment variable APP_VERSION (if not default base fallback)
+    env_ver = os.getenv("APP_VERSION")
+    if env_ver and env_ver.strip() not in ("unknown", "0.1.0", "1.0.0", ""):
+        return env_ver.strip()
+
+    # 4. Read config.yaml in add-on directory
     for path in [
         "/opt/traderepublic/config.yaml",
         "config.yaml",
@@ -177,11 +182,13 @@ def get_addon_version() -> str:
                 with open(path, "r", encoding="utf-8") as f:
                     for line in f:
                         if line.startswith("version:"):
-                            return line.split(":", 1)[1].strip().strip('"').strip("'")
+                            parsed = line.split(":", 1)[1].strip().strip('"').strip("'")
+                            if parsed and parsed != "1.0.0":
+                                return parsed
             except Exception:  # noqa: BLE001
                 pass
 
-    return env_ver.strip() if env_ver else "dev"
+    return env_ver.strip() if env_ver else (dynamic_ver.strip() if dynamic_ver else "dev")
 
 
 def get_integration_version() -> str:
