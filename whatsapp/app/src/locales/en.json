@@ -463,7 +463,26 @@
     },
     "filters": {
       "title": "Auto-Responder & FAQ Filters",
-      "desc": "Trigger automatic replies or FAQ hints on specific keywords."
+      "desc": "Trigger automatic replies, emoji reactions, or attachments on specific keywords.",
+      "trigger_label": "Trigger / Keyword",
+      "action_type_label": "Action Type",
+      "reaction_label": "Emoji Reaction (Optional)",
+      "response_label": "Response Text / FAQ Content",
+      "response_ph": "Enter response text (e.g. Our Wi-Fi password is: 12345678)...",
+      "media_label": "Media Type",
+      "media_text": "💬 Text Only",
+      "media_sticker": "🎨 Sticker (WebP)",
+      "media_gif": "🎬 GIF Video",
+      "media_url_label": "Sticker / GIF URL",
+      "attachments_toggle": "Advanced Attachments (File / Poll)",
+      "file_url_label": "File URL (PDF/Document)",
+      "file_name_label": "File Name",
+      "poll_title": "Interactive Poll",
+      "poll_question_label": "Poll Question",
+      "poll_question_ph": "Was this helpful?",
+      "add_poll_option": "Add Option",
+      "active_rules_title": "Configured Filter Rules",
+      "no_rules": "No filter rules configured for this group yet."
     },
     "flood": {
       "title": "Flood Protection",

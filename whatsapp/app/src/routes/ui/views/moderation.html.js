@@ -337,41 +337,97 @@ export default () => `
                     <div id="mod-subpanel-filters" class="mod-subpanel" style="display:none;">
                         <div class="mod-feature-header">
                             <div class="mod-feature-icon-wrap mod-color-info"><i class="fas fa-robot"></i></div>
-                            <div><div class="mod-feature-title" data-i18n="moderation.filters.title">Auto-Responder &amp; FAQ Filters</div><div class="mod-feature-desc" data-i18n="moderation.filters.desc">Trigger automatic replies, emoji reactions, stickers, GIFs, document attachments, or interactive polls on specific keywords.</div></div>
+                            <div>
+                                <div class="mod-feature-title" data-i18n="moderation.filters.title">Auto-Responder &amp; FAQ Filters</div>
+                                <div class="mod-feature-desc" data-i18n="moderation.filters.desc">Trigger automatic replies, emoji reactions, stickers, GIFs, document attachments, or interactive polls on specific keywords.</div>
+                            </div>
                         </div>
-                        <div class="mod-add-row" style="display:flex; flex-direction:column; gap:10px; padding:14px; background:var(--card-bg); border:1px solid var(--border-color); border-radius:8px; margin-bottom:14px;">
-                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                                <input type="text" id="mod-filter-trigger" class="mod-input mod-input-sm" placeholder="Trigger (e.g. !help, rules)" data-i18n-placeholder="moderation.filter_trigger_ph" style="width:160px;">
-                                <select id="mod-filter-type" class="mod-select mod-select-sm" onchange="onFilterTypeChange()"><option value="reply" data-i18n="moderation.filter_type_reply">Direct Reply</option><option value="faq" data-i18n="moderation.filter_type_faq">FAQ Hint 💡</option></select>
-                                <select id="mod-filter-media-type" class="mod-select mod-select-sm" onchange="onFilterMediaTypeChange()"><option value="text">💬 Text Only</option><option value="sticker">🎨 Sticker (WebP)</option><option value="gif">🎬 GIF Video</option></select>
-                                <input type="text" id="mod-filter-reaction" class="mod-input mod-input-sm" placeholder="Emoji Reaction (e.g. 👍)" style="width:170px;" maxlength="4">
-                            </div>
-                            <div style="display:flex; gap:8px; align-items:center;">
-                                <input type="text" id="mod-filter-response" class="mod-input mod-input-sm" placeholder="Response text or FAQ answer" data-i18n-placeholder="moderation.filter_response_ph" style="flex:1;">
-                            </div>
-                            <div id="mod-filter-media-wrap" style="display:none; gap:8px; align-items:center;">
-                                <input type="text" id="mod-filter-media-url" class="mod-input mod-input-sm" placeholder="Sticker/GIF URL (e.g. https://.../sticker.webp)" style="flex:1;">
-                            </div>
-                            <div id="mod-filter-file-wrap" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                                <input type="text" id="mod-filter-file-url" class="mod-input mod-input-sm" placeholder="📎 Optional File/Document URL (https://.../handbook.pdf)" style="flex:2; min-width:200px;">
-                                <input type="text" id="mod-filter-file-name" class="mod-input mod-input-sm" placeholder="File Name (e.g. Handbook.pdf)" style="flex:1; min-width:140px;">
-                            </div>
-                            <div id="mod-filter-poll-wrap" style="display:flex; flex-direction:column; gap:6px; background:rgba(0,0,0,0.1); padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <span style="font-size:11px; font-weight:600; color:var(--text-muted);"><i class="fas fa-poll"></i> Optional Poll Attachment</span>
-                                    <button type="button" class="btn btn-secondary btn-sm" style="font-size:10px; padding:2px 6px;" onclick="addFilterPollOptionInput()"><i class="fas fa-plus"></i> Add Option</button>
+
+                        <!-- Filter Creation Card -->
+                        <div class="mod-feature-block" style="margin-bottom:16px;">
+                            <div class="mod-two-col" style="margin-bottom:12px;">
+                                <div>
+                                    <label class="mod-field-label" data-i18n="moderation.filters.trigger_label">Trigger / Keyword</label>
+                                    <input type="text" id="mod-filter-trigger" class="mod-input" placeholder="Trigger (e.g. wlan, !help)" data-i18n-placeholder="moderation.filter_trigger_ph">
                                 </div>
-                                <input type="text" id="mod-filter-poll-q" class="mod-input mod-input-sm" placeholder="Poll Question (e.g. Was this helpful?)">
-                                <div id="mod-filter-poll-options-list" style="display:flex; flex-direction:column; gap:4px;">
-                                    <input type="text" class="mod-input mod-input-sm mod-filter-poll-opt" placeholder="Option 1">
-                                    <input type="text" class="mod-input mod-input-sm mod-filter-poll-opt" placeholder="Option 2">
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                                    <div>
+                                        <label class="mod-field-label" data-i18n="moderation.filters.action_type_label">Action Type</label>
+                                        <select id="mod-filter-type" class="mod-select" onchange="onFilterTypeChange()">
+                                            <option value="reply" selected data-i18n="moderation.filter_type_reply">Direct Reply</option>
+                                            <option value="faq" data-i18n="moderation.filter_type_faq">FAQ Hint 💡</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="mod-field-label" data-i18n="moderation.filters.media_label">Media Type</label>
+                                        <select id="mod-filter-media-type" class="mod-select" onchange="onFilterMediaTypeChange()">
+                                            <option value="text" selected data-i18n="moderation.filters.media_text">💬 Text Only</option>
+                                            <option value="sticker" data-i18n="moderation.filters.media_sticker">🎨 Sticker (WebP)</option>
+                                            <option value="gif" data-i18n="moderation.filters.media_gif">🎬 GIF Video</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
+
+                            <div style="margin-bottom:12px;">
+                                <label class="mod-field-label" data-i18n="moderation.filters.response_label">Response Text / FAQ Content</label>
+                                <textarea id="mod-filter-response" class="mod-textarea" rows="2" placeholder="Response text or FAQ answer..." data-i18n-placeholder="moderation.filters.response_ph" style="min-height:54px;"></textarea>
+                            </div>
+
+                            <div id="mod-filter-media-wrap" style="display:none; margin-bottom:12px;">
+                                <label class="mod-field-label" data-i18n="moderation.filters.media_url_label">Sticker / GIF URL</label>
+                                <input type="text" id="mod-filter-media-url" class="mod-input" placeholder="https://.../sticker.webp">
+                            </div>
+
+                            <div style="margin-bottom:12px;">
+                                <label class="mod-field-label" data-i18n="moderation.filters.reaction_label">Emoji Reaction (Optional)</label>
+                                <input type="text" id="mod-filter-reaction" class="mod-input" placeholder="e.g. 👍 or 💡" style="max-width:160px;" maxlength="4">
+                            </div>
+
+                            <!-- Optional Attachments Accordion -->
+                            <details style="background:rgba(0,0,0,0.1); border:1px solid var(--border-color); border-radius:6px; padding:8px 12px; margin-bottom:14px;">
+                                <summary style="font-size:12px; font-weight:600; color:var(--text-muted); cursor:pointer; user-select:none;">
+                                    <i class="fas fa-paperclip" style="margin-right:4px;"></i> <span data-i18n="moderation.filters.attachments_toggle">Advanced Attachments (File / Poll)</span>
+                                </summary>
+                                <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px; padding-top:8px; border-top:1px solid var(--border-color);">
+                                    <div class="mod-two-col">
+                                        <div>
+                                            <label class="mod-field-label" data-i18n="moderation.filters.file_url_label">File URL (PDF/Document)</label>
+                                            <input type="text" id="mod-filter-file-url" class="mod-input" placeholder="https://.../handbook.pdf">
+                                        </div>
+                                        <div>
+                                            <label class="mod-field-label" data-i18n="moderation.filters.file_name_label">File Name</label>
+                                            <input type="text" id="mod-filter-file-name" class="mod-input" placeholder="Handbook.pdf">
+                                        </div>
+                                    </div>
+
+                                    <div style="background:var(--card-bg); padding:10px; border-radius:6px; border:1px solid var(--border-color);">
+                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                            <span class="mod-field-label" style="margin:0;" data-i18n="moderation.filters.poll_title"><i class="fas fa-poll"></i> Interactive Poll</span>
+                                            <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px; padding:2px 8px;" onclick="addFilterPollOptionInput()">
+                                                <i class="fas fa-plus"></i> <span data-i18n="moderation.filters.add_poll_option">Add Option</span>
+                                            </button>
+                                        </div>
+                                        <input type="text" id="mod-filter-poll-q" class="mod-input" placeholder="Poll Question (e.g. Was this helpful?)" data-i18n-placeholder="moderation.filters.poll_question_ph" style="margin-bottom:6px;">
+                                        <div id="mod-filter-poll-options-list" style="display:flex; flex-direction:column; gap:4px;">
+                                            <input type="text" class="mod-input mod-input-sm mod-filter-poll-opt" placeholder="Option 1">
+                                            <input type="text" class="mod-input mod-input-sm mod-filter-poll-opt" placeholder="Option 2">
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
                             <div style="display:flex; justify-content:flex-end;">
                                 <button class="btn btn-primary btn-sm" onclick="addFilterRule()"><i class="fas fa-plus"></i> <span data-i18n="moderation.add_rule">Add Rule</span></button>
                             </div>
                         </div>
-                        <div id="mod-filters-list" class="mod-list-container" style="margin-bottom:12px;"></div>
+
+                        <!-- Configured Rules Section -->
+                        <div style="margin-top:16px;">
+                            <p class="mod-section-label" style="margin-bottom:8px;"><i class="fas fa-list-check"></i> <span data-i18n="moderation.filters.active_rules_title">Configured Filter Rules</span></p>
+                            <div id="mod-filters-list" class="mod-list-container" style="margin-bottom:12px;"></div>
+                        </div>
+
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupFilters()"><i class="fas fa-save"></i> <span data-i18n="moderation.save_filters">Save Filters</span></button></div>
                     </div>
 

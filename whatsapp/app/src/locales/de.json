@@ -463,7 +463,26 @@
     },
     "filters": {
       "title": "Auto-Responder & FAQ-Filter",
-      "desc": "Löse automatische Antworten oder FAQ-Hinweise bei bestimmten Stichwörtern aus."
+      "desc": "Löse automatische Antworten, Emoji-Reaktionen oder Dateianhänge bei bestimmten Stichwörtern aus.",
+      "trigger_label": "Auslöser / Stichwort",
+      "action_type_label": "Aktionstyp",
+      "reaction_label": "Emoji-Reaktion (Optional)",
+      "response_label": "Antworttext / FAQ-Inhalt",
+      "response_ph": "Antworttext eingeben (z. B. Unser WLAN-Passwort lautet: 12345678)...",
+      "media_label": "Medien-Typ",
+      "media_text": "💬 Nur Text",
+      "media_sticker": "🎨 Sticker (WebP)",
+      "media_gif": "🎬 GIF Video",
+      "media_url_label": "Sticker / GIF URL",
+      "attachments_toggle": "Erweiterte Anhänge (Datei / Umfrage)",
+      "file_url_label": "Datei-URL (PDF/Dokument)",
+      "file_name_label": "Dateiname",
+      "poll_title": "Interaktive Umfrage",
+      "poll_question_label": "Umfrage-Frage",
+      "poll_question_ph": "War diese Antwort hilfreich?",
+      "add_poll_option": "Option hinzufügen",
+      "active_rules_title": "Konfigurierte Filterregeln",
+      "no_rules": "Noch keine Filterregeln für diese Gruppe konfiguriert."
     },
     "flood": {
       "title": "Spam-Schutz (Flood Protection)",
