@@ -44,6 +44,12 @@ IGNORE_FILES = {
     ".DS_Store",
     "project_manifest.json",
     "project_connections.json",
+    "build_log.txt",
+    "compliance.log",
+    "compliance_report.txt",
+    "compliance_final.txt",
+    "report.json",
+    "markdown_report.txt",
 }
 
 ALLOWED_EXTENSIONS = {
@@ -179,7 +185,7 @@ def generate_file_tree() -> dict:
 
         valid_files = []
         for f in files:
-            if f in IGNORE_FILES or f.startswith("."):
+            if f in IGNORE_FILES or f.startswith(".") or f.endswith(".log") or "log" in f.lower() and f.endswith(".txt"):
                 continue
             ext = os.path.splitext(f)[1].lower()
             if ext in ALLOWED_EXTENSIONS or f in {"Dockerfile", "Makefile", "VERSION"}:
