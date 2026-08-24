@@ -37,6 +37,9 @@ Desktop.ini
 
 # Logs
 *.log
+*.log.txt
+build_log.txt
+*build_log*.txt
 compliance.log
 *output.txt
 markdown_report.txt
