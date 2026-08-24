@@ -204,36 +204,38 @@ class TRWebSocketKeeper:
                     continue
                 _LOGGER.warning("WS Keeper: connection error: %s", first_exc)
                 if "401" in str(first_exc) or getattr(first_exc, "status_code", None) == 401:
-                    # Before marking permanently expired, attempt token refresh via background Chromium
-                    try:
-                        from browser import browser_service
+                    # Attempt token refresh via background Chromium (max 2 consecutive attempts)
+                    if getattr(self, "_consecutive_401_count", 0) < 2:
+                        self._consecutive_401_count = getattr(self, "_consecutive_401_count", 0) + 1
+                        try:
+                            from browser import browser_service
 
-                        if browser_service and browser_service.cdp:
-                            _LOGGER.info("WS Keeper got 401 — triggering background Chromium session rotation...")
-                            await browser_service.auth_helper.inject_session_cookies(clean)
-                            await browser_service.cdp.send_cmd(
-                                "Page.navigate", {"url": "https://app.traderepublic.com"}
-                            )
-                            await asyncio.sleep(6)
-                            new_tok = await browser_service.auth_helper.extract_token_from_cookies()
-                            if new_tok and new_tok != clean:
-                                from core.verifier import verify_tr_token
+                            if browser_service and browser_service.cdp:
+                                _LOGGER.info("WS Keeper got 401 — triggering background Chromium session rotation (attempt %d/2)...", self._consecutive_401_count)
+                                await browser_service.auth_helper.inject_session_cookies(clean)
+                                await browser_service.cdp.send_cmd(
+                                    "Page.navigate", {"url": "https://app.traderepublic.com"}
+                                )
+                                await asyncio.sleep(5)
+                                new_tok = await browser_service.auth_helper.extract_token_from_cookies()
+                                if new_tok and new_tok != clean:
+                                    from core.verifier import verify_tr_token
 
-                                if await verify_tr_token(new_tok):
-                                    _LOGGER.info(
-                                        "WS Keeper: recovered fresh valid session token from Chromium! Reconnecting..."
-                                    )
-                                    await browser_service.save_session(new_tok)
-                                    self._reconnect_delay = _RECONNECT_DELAY_MIN
-                                    return False  # Main loop will immediately retry with new saved token
-                    except Exception as rot_exc:  # noqa: BLE001
-                        _LOGGER.debug("Chromium token recovery failed: %s", rot_exc)
+                                    if await verify_tr_token(new_tok):
+                                        _LOGGER.info(
+                                            "WS Keeper: recovered fresh valid session token from Chromium! Reconnecting..."
+                                        )
+                                        self._consecutive_401_count = 0
+                                        await browser_service.save_session(new_tok)
+                                        self._reconnect_delay = _RECONNECT_DELAY_MIN
+                                        return False  # Main loop will immediately retry with new saved token
+                        except Exception as rot_exc:  # noqa: BLE001
+                            _LOGGER.debug("Chromium token recovery failed: %s", rot_exc)
+                    else:
+                        _LOGGER.warning("WS Keeper: 401 token recovery exhausted (TR requires new in-app approval) — stopping reconnect loop")
 
-                    # Do NOT kill the reconnection loop permanently on first 401; wait and retry via browser
                     self.is_authenticated = False
-                    self.last_error = (
-                        f"Session expired or rejected by Trade Republic (HTTP 401: {first_exc}). Re-authenticating..."
-                    )
+                    self.last_error = f"Session expired or rejected by Trade Republic (HTTP 401: {first_exc}). Please re-authenticate."
                 return False
 
             # Handshake
@@ -341,7 +343,7 @@ class TRWebSocketKeeper:
             try:
                 net_size = float(pos.get("netSize", 0.0))
                 average_buy_in = float(pos.get("averageBuyIn", 0.0))
-            except ValueError, TypeError:
+            except (ValueError, TypeError):
                 continue
 
             pos_invested = net_size * average_buy_in
@@ -414,7 +416,7 @@ class TRWebSocketKeeper:
         try:
             sub_id = int(sub_id_str)
             payload = json.loads(payload_str)
-        except ValueError, json.JSONDecodeError, TypeError:
+        except (ValueError, json.JSONDecodeError, TypeError):
             return
 
         # Check main subscriptions
@@ -449,7 +451,7 @@ class TRWebSocketKeeper:
                 if api_rate is not None:
                     try:
                         self.latest_data["api_interest_rate"] = float(api_rate)
-                    except ValueError, TypeError:
+                    except (ValueError, TypeError):
                         pass
                 self._recalculate_portfolio()
 
@@ -509,7 +511,7 @@ class TRWebSocketKeeper:
                         if p is not None:
                             try:
                                 return float(p)
-                            except ValueError, TypeError:
+                            except (ValueError, TypeError):
                                 pass
                     return None
 
@@ -579,6 +581,12 @@ class TRWebSocketKeeper:
 
             connected = await self._connect()
             if not connected:
+                if not self.is_authenticated and getattr(self, "_consecutive_401_count", 0) >= 2:
+                    _LOGGER.info(
+                        "WS Keeper: stopping reconnection loop after 401 token refresh attempts failed — awaiting re-login"
+                    )
+                    self._running = False
+                    return
                 delay = min(self._reconnect_delay, _RECONNECT_DELAY_MAX)
                 _LOGGER.debug("WS Keeper: reconnecting in %.0f s", delay)
                 self._reconnect_delay = min(self._reconnect_delay * 1.5, _RECONNECT_DELAY_MAX)

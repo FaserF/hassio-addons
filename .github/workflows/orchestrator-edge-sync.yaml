@@ -7,6 +7,16 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+      - ".unsupported/**"
+      - ".github/**"
+      - "docs/**"
+      - "tests/**"
+      - "*.md"
+      - "**/*.md"
+      - "LICENSE*"
+      - "project_manifest.json"
+      - "project_connections.json"
   workflow_dispatch:
     inputs:
       app:
