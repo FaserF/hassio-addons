@@ -11,9 +11,6 @@ on:
       - ".dev/**"
       - ".github/workflows/orchestrator-dev-sync.yaml"
       - ".scripts/prepare_dev_branch.py"
-    paths-ignore:
-      - ".dev/**/*.md"
-      - ".dev/**/CHANGELOG.md"
   workflow_dispatch:
 
 env:

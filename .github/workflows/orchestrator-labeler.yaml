@@ -160,6 +160,16 @@ jobs:
                     }
                 }
 
+                // Track In-Development Apps (Label individually + add dev label)
+                if (rootDir === '.dev' && parts.length > 2) {
+                    const devApp = parts[1];
+                    if (!BLOCKLIST.includes(devApp.toLowerCase()) && fs.existsSync(path.join('.', '.dev', devApp, 'config.yaml'))) {
+                        labelsToAdd.add(`App/${devApp}`);
+                        labelsToAdd.add('dev');
+                        console.log(`  -> Added as in-development App: ${devApp}`);
+                    }
+                }
+
                 // 3a. Detect Version Bumps in config.yaml
                 if (file.filename.endsWith('config.yaml') && file.patch) {
                     // Check if version line was modified
@@ -168,6 +178,8 @@ jobs:
                         // Determine which App
                         let AppName = rootDir;
                         if (rootDir === '.unsupported' && parts.length > 2) {
+                            AppName = parts[1];
+                        } else if (rootDir === '.dev' && parts.length > 2) {
                             AppName = parts[1];
                         }
 
@@ -183,6 +195,14 @@ jobs:
                                 isNewApp = false;
                             } catch {
                                 // File doesn't exist in base branch, so it's a new App
+                                isNewApp = true;
+                            }
+                        } else if (rootDir === '.dev' && parts.length > 2) {
+                            // For in-dev Apps, check if the App exists in base branch
+                            try {
+                                execSync(`git cat-file -e origin/${baseRef}:.dev/${AppName}/config.yaml`, { stdio: 'pipe' });
+                                isNewApp = false;
+                            } catch {
                                 isNewApp = true;
                             }
                         } else {
@@ -208,6 +228,7 @@ jobs:
                 const isNewApp = !baseApps.includes(rootDir) &&
                                    !BLOCKLIST.includes(rootDir.toLowerCase()) &&
                                    rootDir !== '.unsupported' &&
+                                   rootDir !== '.dev' &&
                                    validAppPattern.test(rootDir) &&
                                    tracking.hasConfig &&
                                    fs.existsSync(path.join(rootDir, 'config.yaml'));
@@ -380,6 +401,15 @@ jobs:
             if (hasUnsupportedChanges) {
                 finalLabels.push('unsupported');
                 console.log("Added 'unsupported' label");
+            }
+
+            // In-Development App detection
+            const hasDevChanges = changedFiles.some(f =>
+                f.filename.startsWith('.dev/')
+            );
+            if (hasDevChanges) {
+                finalLabels.push('dev');
+                console.log("Added 'dev' label");
             }
 
             // Remove duplicates

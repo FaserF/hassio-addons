@@ -205,10 +205,10 @@ jobs:
                       continue
                   fi
 
-                  # Check unsupported
-                  if [[ "$App" == .unsupported/* ]] || [[ "$App" == .unsupported* ]]; then
-                    echo "❌ Error: .unsupported Apps cannot be built via this workflow"
-                    echo "   .unsupported Apps are built locally from the unsupported branch"
+                  # Check unsupported and in-development
+                  if [[ "$App" == .unsupported/* ]] || [[ "$App" == .unsupported* ]] || [[ "$App" == .dev/* ]] || [[ "$App" == .dev* ]]; then
+                    echo "❌ Error: .unsupported and .dev Apps cannot be released as pre-built stable images"
+                    echo "   They are built locally from their respective branches (unsupported/dev/edge)"
                     echo "   Skipping $App"
                     continue
                   fi
@@ -232,9 +232,9 @@ jobs:
               CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
 
               for file in $CHANGED_FILES; do
-                # Skip .unsupported Apps
-                if [[ "$file" == .unsupported/* ]]; then
-                  echo "⏭️ Skipping .unsupported App: $file (built locally from unsupported branch)"
+                # Skip .unsupported and .dev Apps
+                if [[ "$file" == .unsupported/* ]] || [[ "$file" == .dev/* ]]; then
+                  echo "⏭️ Skipping .unsupported/.dev App: $file"
                   continue
                 fi
 
@@ -395,9 +395,9 @@ jobs:
               echo "🔍 Base image update - releasing all affected Apps (excluding .unsupported)"
               # Find all Apps with changed Dockerfile or build.yaml
               for file in $CHANGED; do
-                # Skip .unsupported Apps - they are built locally from unsupported branch
-                if [[ "$file" =~ ^\.unsupported/ ]]; then
-                  echo "  ⏭️ Skipping .unsupported App: $file"
+                # Skip .unsupported and .dev Apps
+                if [[ "$file" =~ ^\.unsupported/ ]] || [[ "$file" =~ ^\.dev/ ]]; then
+                  echo "  ⏭️ Skipping .unsupported/.dev App: $file"
                   continue
                 fi
 
@@ -426,8 +426,8 @@ jobs:
 
               # Loop through changed files to detect affected Apps
               for file in $CHANGED; do
-                 # Skip .unsupported (already handled at top level, but for safety in loop)
-                 if [[ "$file" == .unsupported/* ]]; then
+                 # Skip .unsupported and .dev
+                 if [[ "$file" == .unsupported/* ]] || [[ "$file" == .dev/* ]]; then
                     continue
                  fi
 
