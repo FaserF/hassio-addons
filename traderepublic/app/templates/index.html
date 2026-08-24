@@ -676,56 +676,49 @@
 
       const syncEl = document.getElementById('ha-sync-time');
       if (syncEl) {
-        const rawSec = {{ last_sync_sec | tojson
-      }
-    };
-    syncEl.textContent = formatLastSync(rawSec);
+        const rawSec = {{ last_sync_sec | tojson }};
+        syncEl.textContent = formatLastSync(rawSec);
       }
 
-    const checkEl = document.getElementById('last-checked-time');
-    if (checkEl) {
-      const rawCheckSec = {{ last_checked_sec | tojson
-    }};
-    checkEl.textContent = formatLastSync(rawCheckSec);
+      const checkEl = document.getElementById('last-checked-time');
+      if (checkEl) {
+        const rawCheckSec = {{ last_checked_sec | tojson }};
+        checkEl.textContent = formatLastSync(rawCheckSec);
       }
 
-    const dataEl = document.getElementById('last-data-time');
-    if (dataEl) {
-      const rawDataSec = {{ last_data_sec | tojson
-    }};
-    dataEl.textContent = formatLastSync(rawDataSec);
+      const dataEl = document.getElementById('last-data-time');
+      if (dataEl) {
+        const rawDataSec = {{ last_data_sec | tojson }};
+        dataEl.textContent = formatLastSync(rawDataSec);
       }
 
-    const tokenEl = document.getElementById('last-token-time');
-    if (tokenEl) {
-      const rawTokSec = {{ last_token_sec | tojson
-    }};
-    tokenEl.textContent = formatLastSync(rawTokSec);
+      const tokenEl = document.getElementById('last-token-time');
+      if (tokenEl) {
+        const rawTokSec = {{ last_token_sec | tojson }};
+        tokenEl.textContent = formatLastSync(rawTokSec);
       }
 
-    const loginEl = document.getElementById('last-login-time');
-    if (loginEl) {
-      const rawLoginSec = {{ last_login_sec | tojson
-    }};
-    loginEl.textContent = formatLastSync(rawLoginSec);
+      const loginEl = document.getElementById('last-login-time');
+      if (loginEl) {
+        const rawLoginSec = {{ last_login_sec | tojson }};
+        loginEl.textContent = formatLastSync(rawLoginSec);
       }
 
-    const logoutSinceEl = document.getElementById('logout-since-val');
-    if (logoutSinceEl) {
-      const rawLogoutSec = {{ last_logout_sec | tojson
-    }};
-    if (rawLogoutSec !== null) {
-      logoutSinceEl.textContent = formatLastSync(rawLogoutSec);
-    } else {
-      logoutSinceEl.textContent = t('just_now');
-    }
+      const logoutSinceEl = document.getElementById('logout-since-val');
+      if (logoutSinceEl) {
+        const rawLogoutSec = {{ last_logout_sec | tojson }};
+        if (rawLogoutSec !== null) {
+          logoutSinceEl.textContent = formatLastSync(rawLogoutSec);
+        } else {
+          logoutSinceEl.textContent = t('just_now');
+        }
       }
 
-    const langEnBtn = document.getElementById('lang-en');
-    const langDeBtn = document.getElementById('lang-de');
-    if (langEnBtn) langEnBtn.classList.toggle('active', currentLang === 'en');
-    if (langDeBtn) langDeBtn.classList.toggle('active', currentLang === 'de');
-    document.documentElement.lang = currentLang;
+      const langEnBtn = document.getElementById('lang-en');
+      const langDeBtn = document.getElementById('lang-de');
+      if (langEnBtn) langEnBtn.classList.toggle('active', currentLang === 'en');
+      if (langDeBtn) langDeBtn.classList.toggle('active', currentLang === 'de');
+      document.documentElement.lang = currentLang;
     }
 
     async function setLang(lang) {
@@ -741,13 +734,12 @@
       translations = await loadTranslations(currentLang);
       applyTranslations();
 
-      const inProgress = {{ login_in_progress | tojson
-    }};
-    const remainingSec = {{ login_remaining_sec | tojson }} || 0;
-    if (inProgress && remainingSec > 0) {
-      startTwoFaCountdown(remainingSec);
-    }
-    }) ();
+      const inProgress = {{ login_in_progress | tojson }};
+      const remainingSec = {{ login_remaining_sec | tojson }} || 0;
+      if (inProgress && remainingSec > 0) {
+        startTwoFaCountdown(remainingSec);
+      }
+    })();
 
     // ── UI Logic ──────────────────────────────────────────────────────────
     let pollTimer = null;
