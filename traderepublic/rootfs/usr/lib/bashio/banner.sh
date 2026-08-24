@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/usr/bin/with-contenv bashio
 # Shared library for displaying App banners
-# shellcheck disable=SC1091,SC2155
+
 # shellcheck shell=bash
 
 bashio::app.print_banner() {
@@ -64,18 +64,23 @@ bashio::app.print_banner() {
 		) &
 	fi
 
-	# Version Checks
+	# Version Checks with granular early development detection
 	if [[ "$App_version" == *"dev"* ]]; then
 		bashio::log.warning "⚠️  You are running a Development Build ($App_version)!"
 		bashio::log.warning "⚠️  This version may be unstable and contain bugs."
 	elif [[ "$App_version" =~ ^0\.[01]\. ]]; then
+		# 0.0.X or 0.1.X = Early development, might not have stable release
 		bashio::log.warning "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 		bashio::log.warning "⚠️  EARLY DEVELOPMENT VERSION ($App_version)"
 		bashio::log.warning "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 		bashio::log.warning "This App is in early development and may not have a"
 		bashio::log.warning "stable release yet. Installation might fail!"
+		bashio::log.warning ""
+		bashio::log.warning "💡 If installation fails, try the EDGE branch instead:"
+		bashio::log.warning "   Add repository: https://github.com/FaserF/hassio-addons#edge"
 		bashio::log.warning "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	elif [[ "$App_version" =~ ^0\. ]]; then
+		# 0.2.X and above = Beta, but more stable
 		bashio::log.info "🚧  You are running a BETA version ($App_version)."
 	fi
 
