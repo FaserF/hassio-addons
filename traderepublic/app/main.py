@@ -140,14 +140,35 @@ if os.path.exists(static_dir):
 
 
 def get_addon_version() -> str:
-    """Retrieve the current Trade Republic add-on version."""
-    env_ver = os.getenv("APP_VERSION")
-    if env_ver:
+    """Retrieve the current Trade Republic add-on version dynamically."""
+    # 1. Environment variable if injected
+    env_ver = os.getenv("APP_VERSION") or os.getenv("ADDON_VERSION")
+    if env_ver and env_ver not in ("0.1.0", "unknown"):
         return env_ver.strip()
-    # Try reading config.yaml in add-on folder
+
+    # 2. Check Home Assistant Supervisor API
+    supervisor_token = os.getenv("SUPERVISOR_TOKEN")
+    if supervisor_token:
+        try:
+            import urllib.request
+
+            req = urllib.request.Request(
+                "http://supervisor/addons/self/info",
+                headers={"Authorization": f"Bearer {supervisor_token}"},
+            )
+            with urllib.request.urlopen(req, timeout=1.5) as resp:
+                if resp.status == 200:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    v = (data.get("data") or {}).get("version")
+                    if v:
+                        return str(v).strip()
+        except Exception:  # noqa: BLE001
+            pass
+
+    # 3. Read config.yaml in add-on directory
     for path in [
-        "config.yaml",
         "/opt/traderepublic/config.yaml",
+        "config.yaml",
         "/config.yaml",
         os.path.join(os.path.dirname(__file__), "..", "config.yaml"),
     ]:
@@ -159,7 +180,8 @@ def get_addon_version() -> str:
                             return line.split(":", 1)[1].strip().strip('"').strip("'")
             except Exception:  # noqa: BLE001
                 pass
-    return "0.1.0"
+
+    return env_ver.strip() if env_ver else "dev"
 
 
 def get_integration_version() -> str:

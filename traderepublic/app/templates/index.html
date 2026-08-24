@@ -160,8 +160,8 @@
     <div>
       <h1 class="title">📈 <span data-i18n="title">Trade Republic Session Provider</span></h1>
       <div class="version-pills">
-        <span class="version-tag"><span data-i18n="lbl_addon_version">Add-on</span>: <strong style="color:#cbd5e1;" id="hdr-addon-ver">v{{ addon_version }}</strong></span>
-        <span class="version-tag"><span data-i18n="lbl_integration_version">Integration</span>: <strong style="color:#cbd5e1;" id="hdr-int-ver">v{{ integration_version }}</strong></span>
+        <span class="version-tag"><span data-i18n="lbl_addon_version">Add-on</span>: <strong style="color:#cbd5e1;" id="hdr-addon-ver">{% if addon_version and addon_version != '—' %}{% if not addon_version.startswith('v') %}v{% endif %}{{ addon_version }}{% else %}—{% endif %}</strong></span>
+        <span class="version-tag"><span data-i18n="lbl_integration_version">Integration</span>: <strong style="color:#cbd5e1;" id="hdr-int-ver">{% if integration_version and integration_version != '—' %}{% if not integration_version.startswith('v') %}v{% endif %}{{ integration_version }}{% else %}—{% endif %}</strong></span>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:0.75rem;">
@@ -719,13 +719,14 @@
       }
 
       if (st.addon_version) {
+        const aVal = st.addon_version !== '—' ? (st.addon_version.startsWith('v') ? st.addon_version : 'v' + st.addon_version) : '—';
         const hdrAddonEl = document.getElementById('hdr-addon-ver');
-        if (hdrAddonEl) hdrAddonEl.textContent = 'v' + st.addon_version;
+        if (hdrAddonEl) hdrAddonEl.textContent = aVal;
       }
       if (st.integration_version) {
-        const val = st.integration_version !== '—' ? 'v' + st.integration_version : '—';
+        const iVal = st.integration_version !== '—' ? (st.integration_version.startsWith('v') ? st.integration_version : 'v' + st.integration_version) : '—';
         const hdrIntEl = document.getElementById('hdr-int-ver');
-        if (hdrIntEl) hdrIntEl.textContent = val;
+        if (hdrIntEl) hdrIntEl.textContent = iVal;
       }
     } catch {}
   }, 3000);
