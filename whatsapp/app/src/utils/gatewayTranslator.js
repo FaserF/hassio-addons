@@ -120,8 +120,9 @@ export async function translateTextGatewayWithReason(
         continue;
       }
 
+      let cleanUrl = '';
       try {
-        let cleanUrl = String(aegisUrl).trim();
+        cleanUrl = String(aegisUrl).trim();
         while (cleanUrl.endsWith('/')) {
           cleanUrl = cleanUrl.slice(0, -1);
         }

@@ -1133,7 +1133,9 @@ export function handleIncomingMessages(session) {
           mediaUrl,
           mediaPath,
           mediaType
-        );
+        ).catch((syncErr) => {
+          logger.warn({ error: syncErr.message }, 'Failed to sync WhatsApp message to Telegram');
+        });
 
         logger.info(
           {
