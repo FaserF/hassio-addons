@@ -7,7 +7,7 @@ aiosqlite==0.22.1
 pydantic==2.13.4
 pydantic-settings==2.15.0
 python-multipart==0.0.32
-msal==1.37.0
+msal==1.38.0
 python-jose[cryptography]==3.5.0
 PyJWT==2.13.0
 httpx==0.28.1
