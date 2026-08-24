@@ -178,7 +178,10 @@ export async function translateTextGatewayWithReason(
           attemptedReasons.push(`AegisBot Server: HTTP ${res.status}`);
         }
       } catch (err) {
-        logger.warn({ error: err.message, cleanUrl }, 'AegisBot translation request failed, trying next fallback');
+        logger.warn(
+          { error: err.message, cleanUrl },
+          'AegisBot translation request failed, trying next fallback'
+        );
         recordError('aegisbot', `Network error: ${err.message}`, targetLang);
         attemptedReasons.push(`AegisBot Server: Error (${err.message})`);
       }
