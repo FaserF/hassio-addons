@@ -113,17 +113,18 @@ jobs:
             # Skip if it's workflow, documentation, test or repository metadata
             if [[ "$file" == .github/* ]] || \
                [[ "$file" == .unsupported/* ]] || \
+               [[ "$file" == .scripts/* ]] || \
                [[ "$file" == docs/* ]] || \
                [[ "$file" == tests/* ]] || \
                [[ "$file" == *.md ]] || \
                [[ "$file" == */*.md ]] || \
                [[ "$file" == */*/*.md ]] || \
                [[ "$file" == LICENSE* ]] || \
-               [[ "$file" == .* ]] || \
+               [[ "$file" == .* && "$file" != .dev/* ]] || \
                [[ "$file" == project_*.json ]]; then
               continue
             else
-              # Found a functional add-on file modification
+              # Found a functional add-on file modification (root add-on or .dev add-on)
               ONLY_WORKFLOWS=false
               break
             fi
