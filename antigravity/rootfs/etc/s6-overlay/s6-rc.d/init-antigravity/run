@@ -1,5 +1,6 @@
 #!/command/with-contenv bashio
-# shellcheck disable=SC1091
+# shellcheck shell=bash
+# shellcheck disable=SC1091,SC2155
 set -e
 
 bashio::log.info "Initializing Google Antigravity Addon..."
