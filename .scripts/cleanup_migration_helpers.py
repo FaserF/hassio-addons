@@ -7,7 +7,6 @@ import argparse
 import os
 import re
 
-
 BLOCK_PATTERN = re.compile(
     r"[ \t]*# <TEMP_MIGRATION_HELPER:REMOVE_ON_RELEASE>.*?[ \t]*# </TEMP_MIGRATION_HELPER:REMOVE_ON_RELEASE>\r?\n?",
     re.DOTALL,
@@ -17,7 +16,6 @@ LINE_PATTERN = re.compile(
     r"^.*?[ \t]*# <TEMP_MIGRATION_PERMISSION:REMOVE_ON_RELEASE>.*$\r?\n?",
     re.MULTILINE,
 )
-
 
 
 def clean_source_content(content: str) -> tuple[str, bool]:

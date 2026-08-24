@@ -79,4 +79,3 @@ bashio::app.auto_migrate_data() {
 	fi
 }
 # </TEMP_MIGRATION_HELPER:REMOVE_ON_RELEASE>
-
