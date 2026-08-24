@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-08-24T15:20:29.546382",
+  "timestamp": "2026-08-24T15:50:17.859642",
   "connections": {
     "AegisBot": {
       "name": "AegisBot",
@@ -39,11 +39,12 @@
           "Alivro/Dockerfile",
           "Alivro/run.sh",
           "Alivro/build.yaml",
+          "Alivro/CHANGELOG.md",
           "Alivro/README.md",
           "Alivro/DOCS.md"
         ],
         "rootfs": [
-          "Alivro/rootfs/usr/bin/aegisbot_integration.sh",
+          "Alivro/rootfs/usr/bin/alivro_integration.sh",
           "Alivro/rootfs/usr/lib/bashio/app.sh",
           "Alivro/rootfs/usr/lib/bashio/banner.sh"
         ],

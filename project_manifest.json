@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-08-24T15:20:25.632062",
+  "timestamp": "2026-08-24T15:50:10.765358",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -38,7 +38,7 @@
       "has_translations": true,
       "has_www": false,
       "has_admin": false,
-      "has_changelog": false
+      "has_changelog": true
     },
     {
       "slug": "EntraMirror",
@@ -574,6 +574,7 @@
     "apache2-minimal-mariadb/rootfs/usr/bin": ["webserver_app_integration.sh"],
     "apache2-minimal-mariadb/rootfs/usr/lib/bashio": ["banner.sh"],
     "Alivro": [
+      "CHANGELOG.md",
       "DOCS.md",
       "Dockerfile",
       "README.md",
@@ -584,7 +585,7 @@
       "run.sh"
     ],
     "Alivro/translations": ["de.yaml", "en.yaml"],
-    "Alivro/rootfs/usr/bin": ["aegisbot_integration.sh"],
+    "Alivro/rootfs/usr/bin": ["alivro_integration.sh"],
     "Alivro/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
     "pterodactyl-panel": [
       "CHANGELOG.md",
