@@ -94,17 +94,20 @@ class TradeRepublicBrowserService:
 
             await self._load_saved_session()
             if self.session_token:
-                # Navigate Chromium to establish browser session and solve WAF challenge
+                # Pre-Keeper Token Refresh:
+                # Navigate Chromium to establish browser session and rotate/renew token before WS connect.
                 try:
+                    _LOGGER.info("Startup: navigating to app.traderepublic.com to rotate session token...")
+                    await self.auth_helper.inject_session_cookies(self.session_token)
                     await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com"})
-                    await asyncio.sleep(4)
-                    # Attempt extracting refreshed token if Chromium was renewed on page load
+                    await asyncio.sleep(5)
+
                     refreshed = await self.auth_helper.extract_token_from_cookies()
-                    if refreshed and refreshed != self.session_token:
+                    if refreshed:
                         from core.verifier import verify_tr_token
 
                         if await verify_tr_token(refreshed):
-                            _LOGGER.info("Startup: Extracted refreshed session token from browser navigation")
+                            _LOGGER.info("Startup: successfully validated/rotated session token from Chromium")
                             await self.save_session(refreshed)
                 except Exception as nav_err:  # noqa: BLE001
                     _LOGGER.debug("Startup navigation info: %s", nav_err)
