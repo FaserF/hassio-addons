@@ -15,7 +15,7 @@ export function bindStore(session, ev) {
       }
       if (msg.key.remoteJid) {
         session.chatCache?.set(msg.key.remoteJid, true);
-        if (msg.pushName && session.contactCache) {
+        if (!msg.key.fromMe && msg.pushName && session.contactCache) {
           const existingContact = session.contactCache.get(msg.key.remoteJid) || {
             id: msg.key.remoteJid,
           };

@@ -2,7 +2,7 @@ import { uiAuthMiddleware, anyAuthMiddleware, apiLimiter } from '../../middlewar
 import { getSession, sanitizeSessionId, sessions } from '../../session.js';
 import { getMessageText, asyncHandler } from './helpers.js';
 import { getJid } from '../../utils/jid.js';
-import { resolveCanonicalUserKey } from '../../utils/security.js';
+import { resolveCanonicalUserKey, isSameUser, isMessageForJid } from '../../utils/security.js';
 
 export function registerUiApiRoutes(app) {
   app.get(
@@ -55,10 +55,18 @@ export function registerUiApiRoutes(app) {
         messages.forEach((msg) => {
           if (!msg.key || !msg.key.remoteJid) return;
           let jid = msg.key.remoteJid;
-          if (!jid || jid.endsWith('@lid')) return;
-          if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us')) return;
+          if (jid.endsWith('@lid') && msg.key.remoteJidAlt?.endsWith('@s.whatsapp.net')) {
+            jid = msg.key.remoteJidAlt;
+          }
+          if (jid.endsWith('@lid')) {
+            const resolvedPn = resolveCanonicalUserKey(jid, session);
+            if (resolvedPn && !resolvedPn.startsWith('1576')) {
+              jid = `${resolvedPn}@s.whatsapp.net`;
+            }
+          }
+          if (!jid || (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us') && !jid.endsWith('@lid'))) return;
 
-          // Check if JID is an internal LID (starts with 1576... or length >= 14)
+          // Check if JID is an internal bot LID (starts with 1576... or length >= 14)
           const rawUser = jid.split('@')[0];
           const digits = rawUser.replace(/\D/g, '');
           if (!jid.endsWith('@g.us') && digits.length >= 14 && digits.startsWith('1576')) {
@@ -74,10 +82,12 @@ export function registerUiApiRoutes(app) {
           const msgTime = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
           const previewText = getMessageText(msg);
 
-          // Collect pushName for contact if present
-          if (!jid.endsWith('@g.us') && msg.pushName) {
-            contactNames.set(jid, msg.pushName);
-          } else if (jid.endsWith('@g.us') && msg.key.participant && msg.pushName) {
+          // Collect pushName for contact if present (only for incoming messages to prevent owner's pushName overwriting contact)
+          if (!jid.endsWith('@g.us') && !msg.key.fromMe && msg.pushName) {
+            if (!contactNames.has(jid)) {
+              contactNames.set(jid, msg.pushName);
+            }
+          } else if (jid.endsWith('@g.us') && msg.key.participant && !msg.key.fromMe && msg.pushName) {
             if (!contactNames.has(msg.key.participant)) {
               contactNames.set(msg.key.participant, msg.pushName);
             }
@@ -97,8 +107,14 @@ export function registerUiApiRoutes(app) {
         // Also incorporate chats from session.chatCache that might not have stored messages yet
         if (session.chatCache) {
           for (let jid of session.chatCache.keys()) {
-            if (!jid || jid.endsWith('@lid')) continue;
-            if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us')) continue;
+            if (!jid) continue;
+            if (jid.endsWith('@lid')) {
+              const resolvedPn = resolveCanonicalUserKey(jid, session);
+              if (resolvedPn && !resolvedPn.startsWith('1576')) {
+                jid = `${resolvedPn}@s.whatsapp.net`;
+              }
+            }
+            if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@g.us') && !jid.endsWith('@lid')) continue;
             const rawUser = jid.split('@')[0];
             const digits = rawUser.replace(/\D/g, '');
             if (!jid.endsWith('@g.us') && digits.length >= 14 && digits.startsWith('1576')) {
@@ -184,7 +200,7 @@ export function registerUiApiRoutes(app) {
       if (!session || !session.messageStore) return res.json([]);
 
       const messages = Array.from(session.messageStore.values())
-        .filter((msg) => msg.key && msg.key.remoteJid === targetJid)
+        .filter((msg) => isMessageForJid(msg, targetJid, session))
         .map((msg) => {
           const timestamp = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
           const text = getMessageText(msg);
@@ -506,8 +522,9 @@ export function registerUiApiRoutes(app) {
       const jid = req.query.jid;
       const q = (req.query.q || '').toLowerCase().trim();
       if (!jid || !q) return res.json([]);
+      if (!session || !session.messageStore) return res.json([]);
       const results = Array.from(session.messageStore.values())
-        .filter((msg) => msg.key?.remoteJid === jid)
+        .filter((msg) => isMessageForJid(msg, jid, session))
         .filter((msg) => {
           const t = getMessageText(msg) || '';
           return t.toLowerCase().includes(q);
@@ -609,25 +626,40 @@ export function registerUiApiRoutes(app) {
         } else {
           let displayName = jid.split('@')[0];
           let username = null;
-          if (session.contactCache && session.contactCache.has(jid)) {
-            const c = session.contactCache.get(jid);
-            displayName = c.name || c.notify || displayName;
-            username = c.notify || c.verifiedName || null;
-            info.status = c.status || '';
+          let matchedContact = null;
+          if (session.contactCache) {
+            matchedContact = session.contactCache.get(jid);
+            if (!matchedContact) {
+              for (const c of session.contactCache.values()) {
+                if (c.id && isSameUser(c.id, jid, session)) {
+                  matchedContact = c;
+                  break;
+                }
+              }
+            }
+          }
+          if (matchedContact) {
+            displayName = matchedContact.name || matchedContact.notify || displayName;
+            username = matchedContact.notify || matchedContact.verifiedName || null;
+            info.status = matchedContact.status || '';
           }
           if (session.messageStore) {
             const lastWithPushName = Array.from(session.messageStore.values()).find(
-              (m) => m.key?.remoteJid === jid && m.pushName
+              (m) => isMessageForJid(m, jid, session) && !m.key?.fromMe && m.pushName
             );
             if (lastWithPushName) {
               username = username || lastWithPushName.pushName;
               if (displayName === jid.split('@')[0]) displayName = lastWithPushName.pushName;
             }
           }
+          const canonical = resolveCanonicalUserKey(jid, session);
+          if (displayName === jid.split('@')[0] && canonical && canonical !== jid.split('@')[0]) {
+            displayName = canonical;
+          }
           info.name = displayName;
           info.username = username;
-          const phoneDigits = jid.split('@')[0].replace(/\D/g, '');
-          info.phone = phoneDigits ? `+${phoneDigits}` : null;
+          const phoneDigits = (canonical || jid.split('@')[0]).replace(/\D/g, '');
+          info.phone = phoneDigits && !phoneDigits.startsWith('1576') ? `+${phoneDigits}` : null;
           if (session.sock) {
             try {
               const st = await session.sock.fetchStatus(jid);

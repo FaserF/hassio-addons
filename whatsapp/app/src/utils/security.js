@@ -152,6 +152,18 @@ export function generateMessageID() {
 }
 
 /**
+ * Matches a message against a target JID, resolving LIDs, remoteJidAlt, and aliases.
+ */
+export function isMessageForJid(msg, targetJid, session = null) {
+  if (!msg?.key || !targetJid) return false;
+  const remoteJid = msg.key.remoteJid;
+  if (!remoteJid) return false;
+  if (remoteJid === targetJid) return true;
+  if (msg.key.remoteJidAlt && msg.key.remoteJidAlt === targetJid) return true;
+  return isSameUser(remoteJid, targetJid, session);
+}
+
+/**
  * Checks if two JIDs/User IDs represent the exact same person,
  * resolving LID <-> PN aliases via contactCache and session data.
  */

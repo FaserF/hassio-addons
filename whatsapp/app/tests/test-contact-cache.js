@@ -145,6 +145,62 @@ assert(
   'isAdmin rejects non-admin number'
 );
 
+// Test 5: isMessageForJid & LID 1:1 Chat Matching
+import { isMessageForJid } from '../src/utils/security.js';
+
+const mockDmSession = {
+  sock: {
+    user: { id: '491701111111:0@s.whatsapp.net', lid: '111111111111111@lid' },
+  },
+  stats: {
+    my_number: '491701111111',
+  },
+  contactCache: new Map([
+    [
+      '491702222222@s.whatsapp.net',
+      { id: '491702222222@s.whatsapp.net', lid: '222222222222222@lid', name: 'Alice' },
+    ],
+  ]),
+};
+
+const msgExact = { key: { remoteJid: '491702222222@s.whatsapp.net', id: '1' } };
+const msgLidWithAlt = {
+  key: {
+    remoteJid: '222222222222222@lid',
+    remoteJidAlt: '491702222222@s.whatsapp.net',
+    id: '2',
+  },
+};
+const msgLidWithoutAlt = {
+  key: {
+    remoteJid: '222222222222222@lid',
+    id: '3',
+  },
+};
+const msgOther = {
+  key: {
+    remoteJid: '491703333333@s.whatsapp.net',
+    id: '4',
+  },
+};
+
+assert(
+  isMessageForJid(msgExact, '491702222222@s.whatsapp.net', mockDmSession) === true,
+  'isMessageForJid matches exact remoteJid'
+);
+assert(
+  isMessageForJid(msgLidWithAlt, '491702222222@s.whatsapp.net', mockDmSession) === true,
+  'isMessageForJid matches via remoteJidAlt'
+);
+assert(
+  isMessageForJid(msgLidWithoutAlt, '491702222222@s.whatsapp.net', mockDmSession) === true,
+  'isMessageForJid matches via contactCache LID mapping'
+);
+assert(
+  isMessageForJid(msgOther, '491702222222@s.whatsapp.net', mockDmSession) === false,
+  'isMessageForJid rejects unrelated JID'
+);
+
 console.log('='.repeat(50));
 if (failed) {
   console.error('❌ TESTS FAILED');
