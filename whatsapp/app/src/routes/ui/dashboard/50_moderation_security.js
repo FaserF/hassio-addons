@@ -29,8 +29,7 @@ async function saveGroupLocks() {
 
 async function addBlacklistWord() {
   const inp =
-    document.getElementById('mod-blacklist-input') ||
-    document.getElementById('mod-blacklist-new');
+    document.getElementById('mod-blacklist-input') || document.getElementById('mod-blacklist-new');
   if (!inp || !inp.value.trim() || !currentModGroup) return;
   const word = inp.value.trim();
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
@@ -135,7 +134,10 @@ async function generateGroupTestCommandsModal() {
   const prefix = config.commands?.prefix || '!';
 
   // Use dynamic command registry via centralized getter
-  const commandsList = typeof getBuiltinCommands === 'function' ? await getBuiltinCommands() : (builtinCommandsCache || []);
+  const commandsList =
+    typeof getBuiltinCommands === 'function'
+      ? await getBuiltinCommands()
+      : builtinCommandsCache || [];
   const disabledCmds = new Set(config.commands?.disabled_commands || []);
   const activeCmds = commandsList.filter((c) => !disabledCmds.has(c.cmd));
 

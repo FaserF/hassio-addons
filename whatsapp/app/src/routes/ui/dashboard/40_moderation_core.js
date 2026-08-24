@@ -1582,7 +1582,9 @@ async function getBuiltinCommands() {
     return builtinCommandsCache;
   }
   try {
-    const res = await fetch((typeof basePath !== 'undefined' ? basePath : '') + 'api/moderation/commands');
+    const res = await fetch(
+      (typeof basePath !== 'undefined' ? basePath : '') + 'api/moderation/commands'
+    );
     const json = await res.json();
     if (json.success && Array.isArray(json.data) && json.data.length > 0) {
       builtinCommandsCache = json.data;

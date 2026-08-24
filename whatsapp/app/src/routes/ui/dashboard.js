@@ -2408,7 +2408,9 @@ async function getBuiltinCommands() {
     return builtinCommandsCache;
   }
   try {
-    const res = await fetch((typeof basePath !== 'undefined' ? basePath : '') + 'api/moderation/commands');
+    const res = await fetch(
+      (typeof basePath !== 'undefined' ? basePath : '') + 'api/moderation/commands'
+    );
     const json = await res.json();
     if (json.success && Array.isArray(json.data) && json.data.length > 0) {
       builtinCommandsCache = json.data;
@@ -2576,8 +2578,7 @@ async function saveGroupLocks() {
 
 async function addBlacklistWord() {
   const inp =
-    document.getElementById('mod-blacklist-input') ||
-    document.getElementById('mod-blacklist-new');
+    document.getElementById('mod-blacklist-input') || document.getElementById('mod-blacklist-new');
   if (!inp || !inp.value.trim() || !currentModGroup) return;
   const word = inp.value.trim();
   const groupConfig = modStoreCache?.groups?.[currentModGroup] || {};
@@ -2675,7 +2676,10 @@ async function generateGroupTestCommandsModal() {
   const prefix = config.commands?.prefix || '!';
 
   // Use dynamic command registry via centralized getter
-  const commandsList = typeof getBuiltinCommands === 'function' ? await getBuiltinCommands() : (builtinCommandsCache || []);
+  const commandsList =
+    typeof getBuiltinCommands === 'function'
+      ? await getBuiltinCommands()
+      : builtinCommandsCache || [];
   const disabledCmds = new Set(config.commands?.disabled_commands || []);
   const activeCmds = commandsList.filter((c) => !disabledCmds.has(c.cmd));
 
