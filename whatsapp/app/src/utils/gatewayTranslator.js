@@ -226,7 +226,10 @@ export async function translateTextGatewayWithReason(
             } else if (Array.isArray(data) && Array.isArray(data[0])) {
               if (Array.isArray(data[0][0]) && typeof data[0][0][0] === 'string') {
                 // Format: [[["Translated text", "source", ...]], ...]
-                translated = data[0].map((item) => (Array.isArray(item) ? item[0] : '')).join('').trim();
+                translated = data[0]
+                  .map((item) => (Array.isArray(item) ? item[0] : ''))
+                  .join('')
+                  .trim();
                 detected = data[2] || '?';
               } else if (typeof data[0][0] === 'string') {
                 // Format: [["Translated text", "de"]]
@@ -258,7 +261,10 @@ export async function translateTextGatewayWithReason(
             }
           }
         } catch (err) {
-          logger.debug({ err: err.message, url }, 'Google Translate endpoint failed, trying alternate endpoint');
+          logger.debug(
+            { err: err.message, url },
+            'Google Translate endpoint failed, trying alternate endpoint'
+          );
         }
       }
 
@@ -269,7 +275,11 @@ export async function translateTextGatewayWithReason(
           recordError('google', 'Rate limit (429) reached - 5 min cooldown active', targetLang);
           attemptedReasons.push('Google Translate: Rate limited (429)');
         } else {
-          recordError('google', 'All Google Translate endpoints unreachable or returned invalid response', targetLang);
+          recordError(
+            'google',
+            'All Google Translate endpoints unreachable or returned invalid response',
+            targetLang
+          );
           attemptedReasons.push('Google Translate: All endpoints failed');
         }
       }
