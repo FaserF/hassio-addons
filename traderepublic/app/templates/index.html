@@ -351,8 +351,16 @@
       border-radius: 4px;
       padding: 0.15rem 0.45rem;
       color: #94a3b8;
+      text-decoration: none;
       word-break: break-all;
       max-width: 100%;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .version-tag:hover {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: rgba(59, 130, 246, 0.35);
+      color: #93c5fd;
     }
   </style>
 </head>
@@ -363,13 +371,12 @@
       <div style="flex:1;min-width:0;margin-right:0.75rem;">
         <h1 class="title">📈 <span data-i18n="title">Trade Republic Session Provider</span></h1>
         <div class="version-pills">
-          <span class="version-tag"><span data-i18n="lbl_addon_version">Add-on</span>: <strong style="color:#cbd5e1;"
-              id="hdr-addon-ver">{% if addon_version and addon_version != '-' %}{% if not addon_version.startswith('v')
-              %}v{% endif %}{{ addon_version }}{% else %}-{% endif %}</strong></span>
-          <span class="version-tag"><span data-i18n="lbl_integration_version">Integration</span>: <strong
-              style="color:#cbd5e1;" id="hdr-int-ver">{% if integration_version and integration_version != '-' %}{% if
-              not integration_version.startswith('v') %}v{% endif %}{{ integration_version }}{% else %}-{% endif
-              %}</strong></span>
+          <a class="version-tag" id="addon-ver-link" href="https://github.com/FaserF/hassio-addons/tree/master/traderepublic" target="_blank" rel="noopener noreferrer">
+            <span data-i18n="lbl_addon_version">Add-on</span>: <strong style="color:#cbd5e1;" id="hdr-addon-ver">{% if addon_version and addon_version != '—' %}{% if not addon_version.startswith('v') %}v{% endif %}{{ addon_version }}{% else %}—{% endif %}</strong>
+          </a>
+          <a class="version-tag" id="integration-ver-link" href="https://github.com/FaserF/ha-traderepublic" target="_blank" rel="noopener noreferrer">
+            <span data-i18n="lbl_integration_version">Integration</span>: <strong style="color:#cbd5e1;" id="hdr-int-ver">{% if integration_version and integration_version != '—' %}{% if not integration_version.startswith('v') %}v{% endif %}{{ integration_version }}{% else %}—{% endif %}</strong>
+          </a>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
