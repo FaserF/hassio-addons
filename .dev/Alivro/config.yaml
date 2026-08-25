@@ -15,8 +15,9 @@ ingress_port: 8078
 ingress_stream: true
 panel_icon: mdi:heart-pulse
 startup: services
-discovery:
-  - alivro
+# discovery:
+#   # Temporary disabled until custom integration 'alivro' is created
+#   - alivro
 ports:
   8078/tcp: 8078
 ports_description:
