@@ -421,21 +421,27 @@ class TradeRepublicBrowserService:
                     self.status_message = "Everything is connected and running normally. Session renewed."
                     return self.session_token
 
-                # Keeper detected auth failure — try to extract and verify a fresh token from browser
-                _LOGGER.info("WS Keeper not authenticated — attempting token extraction from Chromium")
-                browser_token = await self.auth_helper.extract_token_from_cookies()
-                if browser_token and browser_token != self.session_token:
-                    from core.verifier import verify_tr_token
+                # Keeper detected auth failure — actively navigate Chromium to refresh cookies
+                _LOGGER.info("WS Keeper not authenticated — actively rotating session in Chromium...")
+                try:
+                    if self.session_token:
+                        await self.auth_helper.inject_session_cookies(self.session_token)
+                    await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com"})
+                    await asyncio.sleep(5)
+                    browser_token = await self.auth_helper.extract_token_from_cookies()
+                    if browser_token and browser_token != self.session_token:
+                        from core.verifier import verify_tr_token
 
-                    is_valid = await verify_tr_token(browser_token)
-                    if is_valid:
-                        _LOGGER.info("Extracted and verified new token from Chromium cookies, updating session")
-                        await self.save_session(browser_token)
-                        self._ws_keeper.start()
-                        return browser_token
-                    _LOGGER.warning("Extracted token from Chromium cookies is invalid or rejected")
+                        is_valid = await verify_tr_token(browser_token)
+                        if is_valid:
+                            _LOGGER.info("Extracted and verified new token from Chromium cookies, updating session")
+                            await self.save_session(browser_token)
+                            return browser_token
+                        _LOGGER.warning("Extracted token from Chromium cookies is invalid or rejected")
+                except Exception as rot_e:
+                    _LOGGER.debug("Active rotation in refresh_session failed: %s", rot_e)
 
-                # If keeper explicitly got a 401, mark session as expired
+                # If keeper explicitly got a 401 and rotation failed, mark session as expired
                 if self._ws_keeper.last_error and "401" in self._ws_keeper.last_error:
                     if self.is_logged_in or not self.last_logout_time:
                         import time
