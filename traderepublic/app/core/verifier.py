@@ -23,29 +23,14 @@ async def verify_tr_token(token: str) -> bool:
         headers = {
             "User-Agent": USER_AGENT,
             "Origin": "https://app.traderepublic.com",
+            "Authorization": f"Bearer {clean_token}",
             "Cookie": f"tr_session={clean_token}; tr_session_id={clean_token}; sessionToken={clean_token}",
         }
-        try:
-            ws = await websockets.connect(
-                "wss://api.traderepublic.com",
-                ssl=ssl_ctx,
-                additional_headers=headers,
-            )
-        except Exception as first_exc:
-            if clean_token and ("401" in str(first_exc) or getattr(first_exc, "status_code", None) == 401):
-                auth_headers = {
-                    "User-Agent": headers["User-Agent"],
-                    "Origin": headers["Origin"],
-                    "Authorization": f"Bearer {clean_token}",
-                    "Cookie": headers["Cookie"],
-                }
-                ws = await websockets.connect(
-                    "wss://api.traderepublic.com",
-                    ssl=ssl_ctx,
-                    additional_headers=auth_headers,
-                )
-            else:
-                raise
+        ws = await websockets.connect(
+            "wss://api.traderepublic.com",
+            ssl=ssl_ctx,
+            additional_headers=headers,
+        )
 
         try:
             async with asyncio.timeout(6):

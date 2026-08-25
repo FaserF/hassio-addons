@@ -50,7 +50,10 @@ class TradeRepublicBrowserService:
         self.login_started_at: Optional[float] = None
 
         # Persistent WebSocket keeper — one connection, always alive
-        self._ws_keeper = TRWebSocketKeeper(token_factory=lambda: self.session_token)
+        self._ws_keeper = TRWebSocketKeeper(
+            token_factory=lambda: self.session_token,
+            on_token_refresh=self._on_ws_token_refresh,
+        )
 
     @property
     def is_logged_in(self) -> bool:
@@ -231,6 +234,28 @@ class TradeRepublicBrowserService:
         await self.auth_helper.inject_session_cookies(clean_tok)
         # Tell keeper about the new token so it reconnects if previously stopped
         self._ws_keeper.update_token(clean_tok)
+
+    async def _on_ws_token_refresh(self) -> Optional[str]:
+        """Attempt immediate browser navigation and token extraction when WS gets 401."""
+        if not self.cdp:
+            return None
+        try:
+            _LOGGER.info("Browser Service: rotating token via Chromium on WS 401...")
+            if self.session_token:
+                await self.auth_helper.inject_session_cookies(self.session_token)
+            await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com"})
+            await asyncio.sleep(5)
+            new_token = await self.auth_helper.extract_token_from_cookies()
+            if new_token and new_token != self.session_token:
+                from core.verifier import verify_tr_token
+
+                if await verify_tr_token(new_token):
+                    _LOGGER.info("Browser Service: successfully extracted and verified rotated token")
+                    await self.save_session(new_token)
+                    return new_token
+        except Exception as e:
+            _LOGGER.debug("Browser Service: token rotation error: %s", e)
+        return None
 
     async def start_login(self, phone: str, pin: str) -> Dict[str, Any]:
         """Navigate and input credentials via CDP + direct API fallback with AWS WAF token."""
@@ -469,7 +494,7 @@ class TradeRepublicBrowserService:
                 # Active token auto-renewal:
                 # Trade Republic Web JWTs expire after ~60 minutes unless refreshed via the web app.
                 # Navigate Chromium in background to app.traderepublic.com so TR rotates/renews the session cookies.
-                if self.is_logged_in and self.session_token:
+                if self.session_token:
                     try:
                         import time
 
