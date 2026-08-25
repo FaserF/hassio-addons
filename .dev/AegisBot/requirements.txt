@@ -8,7 +8,7 @@ bcrypt==5.0.0
 python-multipart==0.0.32
 httpx==0.28.1
 aiogram==3.30.0
-websockets==17.0.1
+websockets==16.1.1
 python-dotenv==1.2.3
 psycopg2-binary==2.9.12
 alembic==1.19.1
