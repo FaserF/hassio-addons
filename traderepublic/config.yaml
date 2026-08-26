@@ -16,7 +16,7 @@ panel_icon: mdi:finance
 panel_title: "Trade Republic"
 options:
   log_level: "info"
-  keep_alive_interval: 600
+  keep_alive_interval: 60
   cache_retention_hours: 12
   auto_install_integration: true
   github_token: ""
