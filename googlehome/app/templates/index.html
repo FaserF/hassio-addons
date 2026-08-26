@@ -880,6 +880,8 @@
       }
     }
 
+    let authPollingInterval = null;
+
     async function submitAuth(e) {
       e.preventDefault();
       const btn = document.getElementById('submitBtn');
@@ -891,7 +893,7 @@
         const password = document.getElementById('passwordInput').value;
         const token = showAdvanced ? document.getElementById('tokenInput').value : '';
 
-        const res = await fetch(rootPath + '/api/login', {
+        const res = await fetch(rootPath + '/api/auth/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: email, password: password, token: token })
@@ -901,20 +903,118 @@
         if (res.ok && data.success) {
           showToast(currentDict.auth_success || '✓ Master Token successfully generated!');
           setTimeout(() => window.location.reload(), 1000);
+        } else if (res.ok && data.requires_2fa) {
+          start2FAPolling();
         } else {
-          const detail = data.detail || 'Authentication failed';
-          if (detail === '2FA_REQUIRED' || detail.includes('BadAuthentication') || detail.includes('NeedsBrowser')) {
-            show2FAModal();
-          } else {
-            showErrorModal(currentDict.modal_error_title || 'Authentication Error', detail);
-          }
+          showErrorModal(currentDict.modal_error_title || 'Authentication Error', data.detail || 'Authentication failed');
+          btn.disabled = false;
+          btn.innerHTML = currentDict.btn_submit || '🚀 Connect Google Account';
         }
       } catch (err) {
         showErrorModal('Connection Error', (currentDict.conn_error || 'Connection error: ') + err);
-      } finally {
         btn.disabled = false;
         btn.innerHTML = currentDict.btn_submit || '🚀 Connect Google Account';
       }
+    }
+
+    function start2FAPolling() {
+      showInteractive2FAModal();
+      if (authPollingInterval) clearInterval(authPollingInterval);
+      authPollingInterval = setInterval(async () => {
+        try {
+          const res = await fetch(rootPath + '/api/auth/status');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.is_logged_in && data.master_token) {
+              clearInterval(authPollingInterval);
+              closeModal();
+              showToast(currentDict.auth_success || '✓ Master Token successfully generated!');
+              setTimeout(() => window.location.reload(), 1000);
+              return;
+            }
+
+            if (!data.in_progress && data.error) {
+              clearInterval(authPollingInterval);
+              showErrorModal('Authentication Failed', data.error);
+              const btn = document.getElementById('submitBtn');
+              if (btn) { btn.disabled = false; btn.innerHTML = currentDict.btn_submit || '🚀 Connect Google Account'; }
+              return;
+            }
+
+            if (data.in_progress) {
+              update2FAUI(data.step, data.two_factor);
+            }
+          }
+        } catch (e) {}
+      }, 1500);
+    }
+
+    function showInteractive2FAModal() {
+      const title = currentDict.prompt_number_title || '📱 Check your Smartphone';
+      const body = `
+        <div id="interactive2FABody" style="text-align:center;padding:1rem 0;">
+          <div style="font-size:2rem;margin-bottom:0.75rem;">⏳</div>
+          <div style="font-size:0.95rem;color:#cbd5e1;">${currentDict.processing || 'Authenticating with Google in background browser...'}</div>
+        </div>
+      `;
+      const footer = `<button class="btn-action" onclick="cancel2FA()">${currentDict.btn_cancel_2fa || 'Cancel'}</button>`;
+      openModal(title, body, footer);
+    }
+
+    function update2FAUI(step, twoFactor) {
+      const bodyEl = document.getElementById('interactive2FABody');
+      if (!bodyEl) return;
+
+      if (step === '2fa_prompt') {
+        const num = (twoFactor && twoFactor.number) ? twoFactor.number : '';
+        bodyEl.innerHTML = `
+          <div style="font-size:0.95rem;color:#cbd5e1;margin-bottom:1rem;">
+            ${currentDict.prompt_number_desc || 'Google sent a security prompt. Select and tap the matching number on your phone:'}
+          </div>
+          <div style="display:inline-block;background:linear-gradient(135deg, #1e3a8a, #2563eb);color:#ffffff;font-size:2.8rem;font-weight:800;padding:0.75rem 2rem;border-radius:16px;box-shadow:0 0 25px rgba(37,99,235,0.5);letter-spacing:2px;margin-bottom:1rem;">
+            ${num || '✓'}
+          </div>
+          <div style="font-size:0.8rem;color:#94a3b8;">${twoFactor.text || 'Waiting for phone confirmation...'}</div>
+        `;
+      } else if (step === '2fa_code') {
+        bodyEl.innerHTML = `
+          <div style="font-size:0.95rem;color:#cbd5e1;margin-bottom:1rem;">
+            ${currentDict.prompt_code_desc || 'Enter the 6-digit security code received via SMS or Authenticator App:'}
+          </div>
+          <form onsubmit="submit2FACode(event)" style="display:flex;flex-direction:column;align-items:center;gap:0.75rem;">
+            <input type="text" id="twoFactorCodeInput" placeholder="${currentDict.code_placeholder || '123456'}" maxlength="8" autofocus style="font-size:1.5rem;text-align:center;letter-spacing:4px;width:200px;padding:0.5rem;border-radius:8px;background:#0b0f19;border:1px solid #2563eb;color:#ffffff;" required>
+            <button type="submit" class="btn-action" style="background:#2563eb;color:#fff;padding:0.6rem 1.5rem;">${currentDict.btn_submit_code || '✓ Verify Code'}</button>
+          </form>
+        `;
+      } else if (step === 'exchanging') {
+        bodyEl.innerHTML = `
+          <div style="font-size:2rem;margin-bottom:0.75rem;">✨</div>
+          <div style="font-size:0.95rem;color:#4ade80;">${currentDict.exchanging_token || 'Generating & Saving Master Token...'}</div>
+        `;
+      }
+    }
+
+    async function submit2FACode(e) {
+      e.preventDefault();
+      const codeInput = document.getElementById('twoFactorCodeInput');
+      if (!codeInput || !codeInput.value) return;
+      try {
+        await fetch(rootPath + '/api/auth/2fa', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: codeInput.value })
+        });
+      } catch (err) {}
+    }
+
+    async function cancel2FA() {
+      if (authPollingInterval) clearInterval(authPollingInterval);
+      try {
+        await fetch(rootPath + '/api/auth/cancel', { method: 'POST' });
+      } catch (e) {}
+      closeModal();
+      const btn = document.getElementById('submitBtn');
+      if (btn) { btn.disabled = false; btn.innerHTML = currentDict.btn_submit || '🚀 Connect Google Account'; }
     }
 
     // Live background polling every 5s for stats

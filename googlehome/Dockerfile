@@ -11,7 +11,7 @@ ENV APP_UNSUPPORTED="false"
 
 # 1. Install Alpine packages
 # hadolint ignore=DL3018
-RUN apk add --no-cache python3 py3-pip ca-certificates curl jq "dos2unix~=7.5"
+RUN apk add --no-cache python3 py3-pip chromium ttf-freefont ca-certificates curl jq "dos2unix~=7.5"
 
 # 2. Set workdir
 WORKDIR /opt/googlehome
@@ -20,7 +20,7 @@ WORKDIR /opt/googlehome
 COPY . .
 
 # 4. Install Python dependencies
-RUN python3 -m pip install --no-cache-dir --break-system-packages fastapi uvicorn jinja2 gpsoauth glocaltokens aiohttp
+RUN python3 -m pip install --no-cache-dir --break-system-packages fastapi uvicorn jinja2 gpsoauth glocaltokens aiohttp websockets
 
 # 5. Move rootfs to root & fix line endings
 RUN if [ -d "rootfs" ]; then cp -rv rootfs/* /; find /etc/s6-overlay -type f -exec dos2unix {} \;; find /etc/s6-overlay -name run -exec chmod +x {} \;; find /etc/s6-overlay -name finish -exec chmod +x {} \;; find /usr/lib/bashio -type f -exec dos2unix {} \; 2>/dev/null || true; fi

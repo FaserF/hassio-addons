@@ -59,6 +59,14 @@
   "btn_confirm_logout": "Ja, Token zurücksetzen",
   "btn_cancel": "Abbrechen",
   "toast_copied": "✓ Master-Token in die Zwischenablage kopiert!",
+  "prompt_number_title": "📱 Smartphone überprüfen",
+  "prompt_number_desc": "Google hat eine Bestätigung gesendet. Wähle die folgende Zahl auf deinem Smartphone aus:",
+  "prompt_code_title": "🔐 2-Faktor Bestätigungscode eingeben",
+  "prompt_code_desc": "Gib den 6-stelligen Sicherheitscode aus deiner SMS oder Authenticator-App ein:",
+  "code_placeholder": "123456",
+  "btn_submit_code": "✓ Code bestätigen",
+  "btn_cancel_2fa": "Abbrechen",
+  "exchanging_token": "⏳ Master-Token wird erzeugt & gespeichert...",
   "error": "Fehler: ",
   "conn_error": "Verbindungsfehler: "
 }

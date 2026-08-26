@@ -191,6 +191,7 @@ async def require_auth(
 async def lifespan(app: FastAPI):
     _LOGGER.info("Starting Google Home Token Hub...")
     asyncio.create_task(register_supervisor_discovery())
+    asyncio.create_task(browser_service.start_chromium())
     yield
 
 
@@ -317,6 +318,32 @@ async def get_index(request: Request):
     )
 
 
+try:
+    from .core.browser_service import GoogleHomeBrowserService
+except ImportError:
+    from core.browser_service import GoogleHomeBrowserService
+
+browser_service = GoogleHomeBrowserService()
+
+
+def on_token_acquired(email: str, master_token: str) -> None:
+    state.email = email
+    state.master_token = master_token
+    state.status = "Google Account & 2FA successfully linked"
+    state.last_error = None
+    state.record_interaction("login", "Headless 2FA login successful")
+    state.save()
+
+
+browser_service.set_on_success_callback(on_token_acquired)
+
+
+class TwoFactorRequest(BaseModel):
+    code: str
+
+
+@app.post("/api/auth/start")
+@app.post("/api/v1/auth/start")
 @app.post("/api/login", dependencies=[Security(require_auth)])
 @app.post("/api/v1/login", dependencies=[Security(require_auth)])
 async def post_login(req: LoginRequest):
@@ -328,13 +355,8 @@ async def post_login(req: LoginRequest):
         raise HTTPException(status_code=400, detail="Email is required")
 
     if raw_token.startswith("aas_et/"):
-        state.email = email
-        state.master_token = raw_token
-        state.status = "Master Token active and linked"
-        state.last_error = None
-        state.record_interaction("login", "Direct Master Token provided")
-        state.save()
-        return {"success": True, "master_token": raw_token}
+        on_token_acquired(email, raw_token)
+        return {"success": True, "master_token": raw_token, "step": "success"}
 
     if raw_token:
         if raw_token.startswith("oauth_token="):
@@ -345,13 +367,8 @@ async def post_login(req: LoginRequest):
             res = exchange_token(email, raw_token, "android-701ab861a7be")
             if "Token" in res:
                 master_token = res["Token"]
-                state.email = email
-                state.master_token = master_token
-                state.status = "Token successfully exchanged & linked"
-                state.last_error = None
-                state.record_interaction("login", "OAuth Token exchanged successfully")
-                state.save()
-                return {"success": True, "master_token": master_token}
+                on_token_acquired(email, master_token)
+                return {"success": True, "master_token": master_token, "step": "success"}
             else:
                 err_msg = res.get("Error", "Unknown")
                 state.last_error = f"Google Token error: {err_msg}"
@@ -365,40 +382,58 @@ async def post_login(req: LoginRequest):
             raise HTTPException(status_code=500, detail=f"Error: {err}")
 
     if password:
+        # 1. Fast path: try direct master login (works instantly for App Passwords)
         try:
             from gpsoauth import perform_master_login
 
             res = perform_master_login(email, password, "android-701ab861a7be")
             if "Token" in res:
                 master_token = res["Token"]
-                state.email = email
-                state.master_token = master_token
-                state.status = "Google Account successfully linked"
-                state.last_error = None
-                state.record_interaction("login", "App Password / Password login successful")
-                state.save()
-                return {"success": True, "master_token": master_token}
-            else:
-                err_code = str(res.get("Error", "BadAuthentication"))
-                if err_code in ("BadAuthentication", "NeedsBrowser"):
-                    state.last_error = "2FA_REQUIRED"
-                elif err_code == "CaptchaRequired":
-                    state.last_error = "CAPTCHA_REQUIRED"
-                elif err_code == "DeviceManagementRequiredOrSyncDisabled":
-                    state.last_error = "DEVICE_MANAGEMENT_REQUIRED"
-                else:
-                    state.last_error = f"Google login error: {err_code}"
+                on_token_acquired(email, master_token)
+                return {"success": True, "master_token": master_token, "step": "success"}
+        except Exception:
+            pass
 
-                state.record_interaction("login", f"Failed: {err_code}")
-                raise HTTPException(status_code=400, detail=state.last_error)
-        except HTTPException:
-            raise
-        except Exception as err:
-            state.last_error = str(err)
-            state.record_interaction("login", f"Exception: {err}")
-            raise HTTPException(status_code=500, detail=f"Error: {err}")
+        # 2. Automated 2FA path: launch headless browser for EmbeddedSetup
+        await browser_service.start_auth_flow(email, password)
+        return {
+            "success": False,
+            "requires_2fa": True,
+            "step": browser_service.auth_step,
+            "message": "Automated 2FA login started in background browser",
+        }
 
     raise HTTPException(status_code=400, detail="Please provide either a password or a token")
+
+
+@app.get("/api/auth/status")
+@app.get("/api/v1/auth/status")
+async def get_auth_status():
+    return {
+        "in_progress": browser_service.auth_in_progress,
+        "step": browser_service.auth_step,
+        "error": browser_service.auth_error,
+        "two_factor": browser_service.two_factor_data,
+        "is_logged_in": bool(state.master_token),
+        "email": state.email,
+        "master_token": state.master_token,
+    }
+
+
+@app.post("/api/auth/2fa")
+@app.post("/api/v1/auth/2fa")
+async def post_auth_2fa(req: TwoFactorRequest):
+    if not browser_service.auth_in_progress:
+        raise HTTPException(status_code=400, detail="No active authentication in progress")
+    res = await browser_service.submit_2fa_code(req.code)
+    return {"success": res, "step": browser_service.auth_step}
+
+
+@app.post("/api/auth/cancel")
+@app.post("/api/v1/auth/cancel")
+async def post_auth_cancel():
+    await browser_service.cancel_auth()
+    return {"success": True}
 
 
 @app.get("/api/v1/session", dependencies=[Security(require_auth)])

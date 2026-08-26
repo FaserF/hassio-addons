@@ -59,6 +59,14 @@
   "btn_confirm_logout": "Yes, Reset Token",
   "btn_cancel": "Cancel",
   "toast_copied": "✓ Master Token copied to clipboard!",
+  "prompt_number_title": "📱 Check your Smartphone",
+  "prompt_number_desc": "Google sent a security prompt. Select and tap the matching number on your phone:",
+  "prompt_code_title": "🔐 Enter 2-Factor Verification Code",
+  "prompt_code_desc": "Enter the 6-digit security code received via SMS or Authenticator App:",
+  "code_placeholder": "123456",
+  "btn_submit_code": "✓ Verify Code",
+  "btn_cancel_2fa": "Cancel",
+  "exchanging_token": "⏳ Generating & Saving Master Token...",
   "error": "Error: ",
   "conn_error": "Connection error: "
 }
