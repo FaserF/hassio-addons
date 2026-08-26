@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,11 +11,15 @@
       --card-inner: #0f172a;
       --text: #f8fafc;
       --muted: #94a3b8;
-      --accent: #3b82f6;
-      --accent-hover: #2563eb;
+      --accent: #4285f4;
+      --accent-hover: #3367d6;
       --success: #22c55e;
       --danger: #ef4444;
       --border: #223049;
+      --google-red: #ea4335;
+      --google-yellow: #fbbc05;
+      --google-green: #34a853;
+      --google-blue: #4285f4;
     }
 
     body {
@@ -32,7 +36,7 @@
 
     .container {
       width: 100%;
-      max-width: 620px;
+      max-width: 640px;
       background: var(--card);
       border-radius: 16px;
       padding: 2rem;
@@ -57,6 +61,17 @@
       gap: 0.6rem;
       margin: 0;
     }
+
+    .google-dots {
+      display: inline-flex;
+      gap: 3px;
+      align-items: center;
+    }
+    .g-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+    .g-blue { background: var(--google-blue); }
+    .g-red { background: var(--google-red); }
+    .g-yellow { background: var(--google-yellow); }
+    .g-green { background: var(--google-green); }
 
     .badge {
       display: inline-flex;
@@ -97,50 +112,155 @@
       border-top: 1px solid rgba(255, 255, 255, 0.06);
     }
 
+    .status-item {
+      font-size: 0.85rem;
+    }
+
     .status-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
       color: var(--muted);
       margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.82rem;
     }
 
-    .status-val {
-      font-size: 0.95rem;
+    .status-value {
       font-weight: 600;
+      color: #e2e8f0;
     }
 
-    .guide-box {
-      background: rgba(59, 130, 246, 0.08);
-      border: 1px solid rgba(59, 130, 246, 0.2);
+    .token-box {
+      margin-top: 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+
+    .token-display {
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #93c5fd;
+      word-break: break-all;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      margin: 0.5rem 0;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: #1e293b;
+      color: #cbd5e1;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-action:hover { background: #334155; color: #fff; }
+    .btn-action.btn-danger { border-color: rgba(239, 68, 68, 0.4); color: #fca5a5; }
+    .btn-action.btn-danger:hover { background: rgba(239, 68, 68, 0.2); }
+
+    .guide-card {
+      background: var(--card-inner);
       border-radius: 12px;
-      padding: 1rem;
+      padding: 1.25rem;
+      border: 1px solid var(--border);
       margin-bottom: 1.5rem;
-      font-size: 0.9rem;
-      line-height: 1.5;
     }
 
-    .input-group {
-      margin-bottom: 1.2rem;
+    .guide-step {
+      margin-top: 0.75rem;
+      padding-left: 0.65rem;
+      border-left: 2px solid var(--google-blue);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .guide-step-title {
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 0.2rem;
+    }
+
+    .guide-step-desc {
+      color: var(--muted);
+      font-size: 0.83rem;
+    }
+
+    .guide-note {
+      font-size: 0.78rem;
+      color: var(--google-yellow);
+      margin-top: 0.25rem;
+    }
+
+    .auth-card {
+      background: var(--card-inner);
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 8px;
+      background: #1e293b;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
     }
 
     label {
       display: block;
-      margin-bottom: 0.5rem;
       font-size: 0.85rem;
-      font-weight: 500;
-      color: var(--muted);
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 0.4rem;
     }
 
     input {
       width: 100%;
-      background: var(--card-inner);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
       box-sizing: border-box;
+      padding: 0.7rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #0b0f19;
+      color: #f8fafc;
+      font-size: 0.9rem;
+      font-family: inherit;
       outline: none;
       transition: border-color 0.2s;
     }
@@ -149,129 +269,440 @@
       border-color: var(--accent);
     }
 
-    .btn {
+    .btn-submit {
       width: 100%;
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 0.85rem;
+      padding: 0.75rem;
       border-radius: 8px;
-      font-size: 1rem;
+      border: none;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      transition: background 0.2s;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 0.5rem;
     }
 
-    .btn:hover {
+    .btn-submit:hover {
       background: var(--accent-hover);
     }
 
-    .btn:disabled {
+    .btn-submit:disabled {
       opacity: 0.6;
       cursor: not-allowed;
     }
 
-    .token-display {
-      word-break: break-all;
-      font-family: monospace;
-      font-size: 0.8rem;
-      background: #000;
-      padding: 0.75rem;
+    .version-pills {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      color: #64748b;
+      margin-top: 0.4rem;
+    }
+
+    .version-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      padding: 0.2rem 0.5rem;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .version-tag:hover {
+      background: rgba(66, 133, 244, 0.15);
+      border-color: rgba(66, 133, 244, 0.35);
+      color: #93c5fd;
+    }
+
+    .lang-switcher {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+    }
+
+    .lang-btn {
+      width: auto;
+      padding: 0.2rem 0.65rem;
+      font-size: 0.78rem;
+      font-weight: 600;
       border-radius: 6px;
-      color: #38bdf8;
-      margin-top: 0.5rem;
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .lang-btn.active, .lang-btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .info-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      font-size: 0.68rem;
+      font-family: monospace;
+      font-weight: bold;
+      cursor: help;
+      position: relative;
+      user-select: none;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .info-btn:hover {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .info-btn .tooltip-text {
+      visibility: hidden;
+      opacity: 0;
+      width: 220px;
+      background-color: #0f172a;
+      color: #e2e8f0;
+      text-align: left;
+      border-radius: 6px;
+      padding: 0.5rem 0.65rem;
+      position: absolute;
+      z-index: 100;
+      bottom: 135%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.73rem;
+      line-height: 1.35;
+      font-weight: normal;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.15);
+      transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
+      pointer-events: none;
+    }
+
+    .info-btn .tooltip-text::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #0f172a transparent transparent transparent;
+    }
+
+    .info-btn:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 600px) {
+      body { padding: 0.75rem 0.5rem; }
+      .container { padding: 1.25rem 1rem; border-radius: 12px; }
+      .header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+      .status-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1 class="title">🏠 Google Home Hub</h1>
-      <span class="badge {% if is_logged_in %}badge-success{% else %}badge-danger{% endif %}">
-        {% if is_logged_in %}● Verbunden{% else %}○ Nicht verbunden{% endif %}
-      </span>
+      <div style="flex:1;min-width:0;margin-right:0.75rem;">
+        <h1 class="title">
+          <span class="google-dots">
+            <span class="g-dot g-blue"></span>
+            <span class="g-dot g-red"></span>
+            <span class="g-dot g-yellow"></span>
+            <span class="g-dot g-green"></span>
+          </span>
+          <span data-i18n="title">Google Home Token Hub</span>
+        </h1>
+        <div class="version-pills">
+          <a class="version-tag" href="https://github.com/FaserF/hassio-addons/tree/master/googlehome" target="_blank" rel="noopener noreferrer">
+            <span data-i18n="lbl_addon_version">Add-on</span>: <strong style="color:#cbd5e1;">{% if addon_version and addon_version != '—' %}{% if not addon_version.startswith('v') %}v{% endif %}{{ addon_version }}{% else %}—{% endif %}</strong>
+          </a>
+          <a class="version-tag" href="https://github.com/FaserF/ha-googlehome" target="_blank" rel="noopener noreferrer">
+            <span data-i18n="lbl_integration_version">Integration</span>: <strong style="color:#cbd5e1;">{% if integration_version and integration_version != '—' %}{% if not integration_version.startswith('v') %}v{% endif %}{{ integration_version }}{% else %}—{% endif %}</strong>
+          </a>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-shrink:0;">
+        <div class="lang-switcher">
+          <button class="lang-btn" id="lang-en" onclick="setLang('en')">EN</button>
+          <button class="lang-btn" id="lang-de" onclick="setLang('de')">DE</button>
+        </div>
+        {% if is_logged_in and not last_error %}
+        <span class="badge badge-success" data-i18n="connected">● Connected</span>
+        {% else %}
+        <span class="badge badge-danger" data-i18n="action_required">● Action Required</span>
+        {% endif %}
+      </div>
     </div>
 
-    <div class="status-card">
-      <div class="status-label">Status</div>
-      <div class="status-val">{{ status }}</div>
-
-      {% if is_logged_in %}
+    {% if is_logged_in and not last_error %}
+    <div class="status-card" id="status-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-weight:600;font-size:1rem;color:#4ade80;" data-i18n="integration_ready">✓ Integration Ready</div>
+        <span style="font-size:0.8rem;color:var(--muted);" data-i18n="live_active">Ready for Local Polling</span>
+      </div>
+      <div style="font-size:0.85rem;color:#94a3b8;margin-top:0.4rem;" data-i18n="status_ok">{{ status }}</div>
       <div class="status-grid">
-        <div>
-          <div class="status-label">Google Konto</div>
-          <div class="status-val">{{ email }}</div>
+        <div class="status-item">
+          <div class="status-label">
+            <span data-i18n="lbl_account">Google Account</span>
+            <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_account">Configured Google email address associated with your Google Home devices.</span></span>
+          </div>
+          <div class="status-value">{{ email }}</div>
         </div>
-        <div>
-          <div class="status-label">Integration</div>
-          <div class="status-val" style="color: var(--success);">Bereit zur Kopplung</div>
+        <div class="status-item">
+          <div class="status-label">
+            <span data-i18n="lbl_session_status">Token Status</span>
+            <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_session_status">Current authentication state of the Google Master Token.</span></span>
+          </div>
+          <div class="status-value" style="color:#4ade80;" data-i18n="session_authenticated">Authenticated</div>
+        </div>
+        <div class="status-item">
+          <div class="status-label">
+            <span data-i18n="lbl_ha_interaction">Home Assistant Interaction</span>
+            <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_ha_interaction">Time elapsed since Home Assistant last queried this Token Hub.</span></span>
+          </div>
+          <div class="status-value" style="color:#60a5fa;" id="ha-sync-val">
+            <span id="ha-sync-time">{{ last_sync }}</span> (<span id="ha-req-count">{{ requests_count }}</span> <span data-i18n="queries">queries</span>)
+          </div>
+          <div style="font-size:0.75rem;color:#94a3b8;margin-top:0.25rem;">
+            {{ last_interaction_details }}
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-label">
+            <span data-i18n="lbl_health">Integration Health</span>
+            <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_health">Operational status of the Token Hub.</span></span>
+          </div>
+          <div class="status-value" style="color:#4ade80;" data-i18n="health_ok">✓ Healthy & Operational</div>
+          <div style="font-size:0.75rem;color:#94a3b8;margin-top:0.25rem;">
+            <span data-i18n="lbl_session_count">Session</span>: <b id="ha-session-count">{{ request_counts_by_type.get('session', 0) }}</b> |
+            <span data-i18n="lbl_login_count">Logins</span>: <b id="ha-login-count">{{ request_counts_by_type.get('login', 0) }}</b>
+          </div>
         </div>
       </div>
-      <div style="margin-top: 1rem;">
-        <div class="status-label">Aktiver Master Token</div>
-        <div class="token-display">{{ master_token }}</div>
+
+      <div class="token-box">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:0.8rem;font-weight:600;color:#94a3b8;" data-i18n="active_master_token">Active Master Token</span>
+          <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_master_token">Permanent master token generated from Google OAuth exchange.</span></span>
+        </div>
+        <div class="token-display" id="tokenPreview">{{ master_token[:15] }}...{{ master_token[-10:] if master_token|length > 25 else '' }}</div>
+        <div class="action-row">
+          <button class="btn-action" onclick="copyToken()" id="btnCopy" data-i18n="btn_copy">📋 Copy Token</button>
+          <button class="btn-action btn-danger" onclick="resetToken()" data-i18n="btn_reset">🔄 Reset Token / Logout</button>
+        </div>
       </div>
-      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="guide-card">
+      <div style="font-weight:700;font-size:0.95rem;color:#e2e8f0;margin-bottom:0.5rem;" data-i18n="guide_title">✨ Automatic Google Login:</div>
+      <div class="guide-step">
+        <div class="guide-step-title" data-i18n="step1_title">1. Enter Credentials</div>
+        <div class="guide-step-desc" data-i18n="step1_desc">Enter your Google Account Email and Password (or 16-character App Password) below.</div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step-title" data-i18n="step2_title">2. Automatic Token Generation</div>
+        <div class="guide-step-desc" data-i18n="step2_desc">The Token Hub securely authenticates with Google and extracts your Master Token (aas_et/...) automatically in the background.</div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-step-title" data-i18n="step3_title">3. Instant Discovery in Home Assistant</div>
+        <div class="guide-step-desc" data-i18n="step3_desc">Home Assistant automatically connects with the Token Hub and imports all your Google Home speakers and devices.</div>
+      </div>
     </div>
 
-    <div class="guide-box">
-      <strong>🔑 Schnell-Anleitung:</strong><br>
-      1. Öffne <a href="https://accounts.google.com/EmbeddedSetup" target="_blank" style="color: #60a5fa; text-decoration: underline;">accounts.google.com/EmbeddedSetup</a> im Browser und melde dich an.<br>
-      2. Drücke <strong>F12</strong> &rarr; <strong>Anwendung / Speicher</strong> &rarr; <strong>Cookies</strong> &rarr; <code>oauth_token</code> kopieren.<br>
-      3. E-Mail & Token unten einfügen. Fertig!
-    </div>
+    <div class="auth-card">
+      <form id="authForm" onsubmit="submitAuth(event)">
+        <div class="form-group">
+          <label data-i18n="email_label">Google Account Email</label>
+          <input type="email" id="emailInput" value="{{ email }}" required placeholder="name@gmail.com">
+        </div>
 
-    <form id="authForm" onsubmit="submitAuth(event)">
-      <div class="input-group">
-        <label>Google E-Mail-Adresse</label>
-        <input type="email" id="email" value="{{ email }}" required placeholder="name@gmail.com">
-      </div>
-      <div class="input-group">
-        <label>Web OAuth Token oder App-Passwort</label>
-        <input type="text" id="token" placeholder="oauth2_4/... oder aas_et/...">
-      </div>
-      <button type="submit" class="btn" id="submitBtn">
-        🚀 Token generieren & speichern
-      </button>
-    </form>
+        <div class="form-group" id="pwdGroup">
+          <label data-i18n="password_label">Google Password or App Password</label>
+          <input type="password" id="passwordInput" placeholder="••••••••••••••••">
+        </div>
+
+        <div class="form-group hidden" id="tokenGroup">
+          <label data-i18n="token_label">Manual Web OAuth Token (oauth2_4/...) or Master Token (aas_et/...)</label>
+          <input type="text" id="tokenInput" placeholder="oauth2_4/... or aas_et/...">
+        </div>
+
+        <div style="margin-bottom: 1rem; text-align: right;">
+          <a href="javascript:void(0)" onclick="toggleAdvanced()" id="toggleAdvBtn" style="font-size: 0.78rem; color: #94a3b8; text-decoration: underline;" data-i18n="opt_show_adv">⚙️ Advanced: Manual Token Entry (Optional)</a>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn" data-i18n="btn_submit">
+          🚀 Connect Google Account
+        </button>
+      </form>
+    </div>
   </div>
 
   <script>
     const rootPath = '{{ root_path }}';
+    const fullToken = '{{ master_token }}';
+    let showAdvanced = false;
+    let currentDict = {};
+
+    function getSelectedLang() {
+      const stored = localStorage.getItem('gh_token_hub_lang');
+      if (stored) return stored;
+      const userLang = (navigator.language || navigator.userLanguage || 'en').substring(0, 2).toLowerCase();
+      return (userLang === 'de') ? 'de' : 'en';
+    }
+
+    async function setLang(lang) {
+      localStorage.setItem('gh_token_hub_lang', lang);
+      document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+      document.getElementById('lang-de').classList.toggle('active', lang === 'de');
+      await loadI18n(lang);
+    }
+
+    async function loadI18n(lang) {
+      try {
+        const res = await fetch(rootPath + '/static/i18n/' + lang + '.json');
+        if (res.ok) {
+          currentDict = await res.json();
+        } else {
+          const fallback = await fetch(rootPath + '/static/i18n/en.json');
+          currentDict = await fallback.json();
+        }
+      } catch (e) {
+        console.warn('Could not load i18n:', e);
+      }
+      applyI18n();
+    }
+
+    function applyI18n() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (currentDict[key]) {
+          el.innerHTML = currentDict[key];
+        }
+      });
+      updateAdvButtonText();
+    }
+
+    function toggleAdvanced() {
+      showAdvanced = !showAdvanced;
+      document.getElementById('tokenGroup').classList.toggle('hidden', !showAdvanced);
+      updateAdvButtonText();
+    }
+
+    function updateAdvButtonText() {
+      const btn = document.getElementById('toggleAdvBtn');
+      if (!btn) return;
+      btn.innerHTML = showAdvanced
+        ? (currentDict.opt_hide_adv || '⚙️ Hide Advanced Options')
+        : (currentDict.opt_show_adv || '⚙️ Advanced: Manual Token Entry (Optional)');
+    }
+
+    async function copyToken() {
+      if (!fullToken) return;
+      try {
+        await navigator.clipboard.writeText(fullToken);
+        const btn = document.getElementById('btnCopy');
+        btn.innerHTML = currentDict.btn_copied || '✓ Copied!';
+        setTimeout(() => {
+          btn.innerHTML = currentDict.btn_copy || '📋 Copy Token';
+        }, 2000);
+      } catch (e) {
+        prompt('Copy token:', fullToken);
+      }
+    }
+
+    async function resetToken() {
+      if (!confirm(currentDict.logout_confirm || 'Are you sure you want to remove the stored Master Token?')) {
+        return;
+      }
+      try {
+        const res = await fetch(rootPath + '/api/logout', { method: 'POST' });
+        if (res.ok) {
+          window.location.reload();
+        }
+      } catch (e) {
+        alert('Error resetting session: ' + e);
+      }
+    }
 
     async function submitAuth(e) {
       e.preventDefault();
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
-      btn.innerText = '⏳ Verarbeite Authentifizierung...';
+      btn.innerHTML = currentDict.processing || '⏳ Processing...';
 
       try {
-        const email = document.getElementById('email').value;
-        const token = document.getElementById('token').value;
+        const email = document.getElementById('emailInput').value;
+        const password = document.getElementById('passwordInput').value;
+        const token = showAdvanced ? document.getElementById('tokenInput').value : '';
 
         const res = await fetch(rootPath + '/api/login', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({email: email, token: token})
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, password: password, token: token })
         });
 
         const data = await res.json();
         if (res.ok && data.success) {
           window.location.reload();
         } else {
-          alert('Fehler: ' + (data.detail || 'Authentifizierung fehlgeschlagen'));
+          alert((currentDict.error || 'Error: ') + (data.detail || 'Authentication failed'));
         }
       } catch (err) {
-        alert('Verbindungsfehler: ' + err);
+        alert((currentDict.conn_error || 'Connection error: ') + err);
       } finally {
         btn.disabled = false;
-        btn.innerText = '🚀 Token generieren & speichern';
+        btn.innerHTML = currentDict.btn_submit || '🚀 Connect Google Account';
       }
     }
+
+    // Live background polling every 5s for stats
+    setInterval(async () => {
+      try {
+        const res = await fetch(rootPath + '/api/status');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.last_sync_time) {
+            const diff = Math.floor(Date.now() / 1000 - data.last_sync_time);
+            const timeEl = document.getElementById('ha-sync-time');
+            if (timeEl) {
+              timeEl.innerText = diff < 5 ? 'Just now' : (diff < 60 ? diff + 's ago' : Math.floor(diff / 60) + 'm ago');
+            }
+          }
+          const reqEl = document.getElementById('ha-req-count');
+          if (reqEl && data.requests_count !== undefined) reqEl.innerText = data.requests_count;
+          const sessEl = document.getElementById('ha-session-count');
+          if (sessEl && data.request_counts_by_type) sessEl.innerText = data.request_counts_by_type.session || 0;
+          const loginEl = document.getElementById('ha-login-count');
+          if (loginEl && data.request_counts_by_type) loginEl.innerText = data.request_counts_by_type.login || 0;
+        }
+      } catch (e) {}
+    }, 5000);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const initialLang = getSelectedLang();
+      const btnLang = document.getElementById('lang-' + initialLang);
+      if (btnLang) btnLang.classList.add('active');
+      loadI18n(initialLang);
+    });
   </script>
 </body>
 </html>

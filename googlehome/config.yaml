@@ -12,7 +12,7 @@ discovery:
   - googlehome
 map:
   - homeassistant_config:rw
-panel_icon: mdi:google-home
+panel_icon: mdi:google-assistant
 panel_title: "Google Home"
 options:
   log_level: "info"
