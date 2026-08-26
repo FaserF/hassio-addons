@@ -38,7 +38,7 @@ EXCLUDED_DIRS = {"__pycache__", "node_modules", ".git", ".github", ".scripts"}
 
 # Import single source of truth for add-ons
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from addons_config import DEV_ADDONS, is_dev_addon
+from addons_config import DEV_ADDONS
 
 
 def is_prerelease_version(version_str):

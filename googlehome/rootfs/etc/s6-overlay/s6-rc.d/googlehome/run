@@ -1,0 +1,19 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# shellcheck disable=SC1091
+
+SCRIPTS_DIR="/etc/s6-overlay/s6-rc.d/googlehome/scripts"
+
+if [ -f "$SCRIPTS_DIR/00-env.sh" ]; then
+    source "$SCRIPTS_DIR/00-env.sh"
+fi
+
+if [ -f "$SCRIPTS_DIR/10-integration.sh" ]; then
+    source "$SCRIPTS_DIR/10-integration.sh"
+fi
+
+cd /opt/googlehome || exit 1
+export PORT=8195
+export DATA_DIR="/data"
+
+exec python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8195

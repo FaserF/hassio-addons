@@ -40,7 +40,6 @@ from addons_config import (
     DEV_ADDONS,
     DEV_NOTICE,
     check_dev_addons_version_warnings,
-    is_dev_addon,
 )
 
 WEBSERVER_INTEGRATION_NOTICE = """

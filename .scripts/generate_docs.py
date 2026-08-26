@@ -22,7 +22,7 @@ import os
 
 # Import single source of truth for add-ons
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from addons_config import DEV_ADDONS, is_dev_addon
+from addons_config import DEV_ADDONS
 
 # Enhanced emoji/category detection
 ICON_MAP = {

@@ -47,6 +47,7 @@ body:
         - bentopdf
         - er-dashboard
         - dbf
+        - googlehome
         - homeassistant-test-instance
         - imapsync
         - komodo

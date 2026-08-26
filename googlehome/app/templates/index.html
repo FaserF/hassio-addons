@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Home Token Hub</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: #151e2e;
+      --card-inner: #0f172a;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --border: #223049;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2rem 1rem;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 620px;
+      background: var(--card);
+      border-radius: 16px;
+      padding: 2rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin: 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .badge-success {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .badge-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .status-card {
+      background: var(--card-inner);
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .status-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .status-val {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .guide-box {
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .input-group {
+      margin-bottom: 1.2rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    input {
+      width: 100%;
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.85rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .token-display {
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 0.8rem;
+      background: #000;
+      padding: 0.75rem;
+      border-radius: 6px;
+      color: #38bdf8;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">🏠 Google Home Hub</h1>
+      <span class="badge {% if is_logged_in %}badge-success{% else %}badge-danger{% endif %}">
+        {% if is_logged_in %}● Verbunden{% else %}○ Nicht verbunden{% endif %}
+      </span>
+    </div>
+
+    <div class="status-card">
+      <div class="status-label">Status</div>
+      <div class="status-val">{{ status }}</div>
+
+      {% if is_logged_in %}
+      <div class="status-grid">
+        <div>
+          <div class="status-label">Google Konto</div>
+          <div class="status-val">{{ email }}</div>
+        </div>
+        <div>
+          <div class="status-label">Integration</div>
+          <div class="status-val" style="color: var(--success);">Bereit zur Kopplung</div>
+        </div>
+      </div>
+      <div style="margin-top: 1rem;">
+        <div class="status-label">Aktiver Master Token</div>
+        <div class="token-display">{{ master_token }}</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="guide-box">
+      <strong>🔑 Schnell-Anleitung:</strong><br>
+      1. Öffne <a href="https://accounts.google.com/EmbeddedSetup" target="_blank" style="color: #60a5fa; text-decoration: underline;">accounts.google.com/EmbeddedSetup</a> im Browser und melde dich an.<br>
+      2. Drücke <strong>F12</strong> &rarr; <strong>Anwendung / Speicher</strong> &rarr; <strong>Cookies</strong> &rarr; <code>oauth_token</code> kopieren.<br>
+      3. E-Mail & Token unten einfügen. Fertig!
+    </div>
+
+    <form id="authForm" onsubmit="submitAuth(event)">
+      <div class="input-group">
+        <label>Google E-Mail-Adresse</label>
+        <input type="email" id="email" value="{{ email }}" required placeholder="name@gmail.com">
+      </div>
+      <div class="input-group">
+        <label>Web OAuth Token oder App-Passwort</label>
+        <input type="text" id="token" placeholder="oauth2_4/... oder aas_et/...">
+      </div>
+      <button type="submit" class="btn" id="submitBtn">
+        🚀 Token generieren & speichern
+      </button>
+    </form>
+  </div>
+
+  <script>
+    const rootPath = '{{ root_path }}';
+
+    async function submitAuth(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerText = '⏳ Verarbeite Authentifizierung...';
+
+      try {
+        const email = document.getElementById('email').value;
+        const token = document.getElementById('token').value;
+
+        const res = await fetch(rootPath + '/api/login', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({email: email, token: token})
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          window.location.reload();
+        } else {
+          alert('Fehler: ' + (data.detail || 'Authentifizierung fehlgeschlagen'));
+        }
+      } catch (err) {
+        alert('Verbindungsfehler: ' + err);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = '🚀 Token generieren & speichern';
+      }
+    }
+  </script>
+</body>
+</html>

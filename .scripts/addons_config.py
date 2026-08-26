@@ -13,6 +13,7 @@ DEV_ADDONS: Set[str] = {
     "entramirror",
     "wiki.js3",
     "switchcraft",
+    "googlehome",
 }
 
 UNSUPPORTED_ADDONS: Set[str] = {
