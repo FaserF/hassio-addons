@@ -26,3 +26,14 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages fastapi uvicor
 RUN if [ -d "rootfs" ]; then cp -rv rootfs/* /; find /etc/s6-overlay -type f -exec dos2unix {} \;; find /etc/s6-overlay -name run -exec chmod +x {} \;; find /etc/s6-overlay -name finish -exec chmod +x {} \;; find /usr/lib/bashio -type f -exec dos2unix {} \; 2>/dev/null || true; fi
 
 EXPOSE 8195
+
+# Labels
+LABEL org.opencontainers.image.title="Google Home Token Hub"
+LABEL org.opencontainers.image.description="Google Home Master Token Generator & Ingress Authentication Hub for Home Assistant."
+LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Apps"
+LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/FaserF/ha-googlehome"
+LABEL org.opencontainers.image.source="https://github.com/FaserF/ha-googlehome"
+LABEL org.opencontainers.image.documentation="https://github.com/FaserF/ha-googlehome/blob/master/googlehome/README.md"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"

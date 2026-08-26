@@ -18,19 +18,20 @@
 > While the Home Assistant add-on wrapper itself may be functional, the underlying upstream software is either in an early development stage or hosted within a private repository.
 >
 > ### 📦 How to Install via Edge Channel
+>
 > 1. Click to add the Edge repository:
 >    [![Add Edge Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23edge)
 > 2. Or manually add repository in Home Assistant (**Settings** → **Add-ons** → **Add-on Store** → **⋮** → **Repositories**):
+>
 >    ```text
 >    https://github.com/FaserF/hassio-addons#edge
 >    ```
+>
 > 3. Refresh the Add-on Store (⋮ → **Check for updates**), find this add-on under **FaserF's Home Assistant Apps (Edge)**, and click **Install**.
 
 ---
 
 ## 📖 About
-
-This Home Assistant Add-on facilitates seamless authentication and permanent Master Token extraction for the [**ha-googlehome Home Assistant Integration**](https://github.com/FaserF/ha-googlehome).
 
 ## ✨ Features
 
@@ -39,11 +40,10 @@ This Home Assistant Add-on facilitates seamless authentication and permanent Mas
 - 🔌 **Supervisor Auto-Discovery:** Seamless zero-touch handshake with the [Google Home Integration](https://github.com/FaserF/ha-googlehome).
 - 📦 **Auto-Install & Updates:** Automatically installs and keeps the `ha-googlehome` custom integration up to date in Home Assistant.
 
----
-
 ## 🔗 Related Integration
 
 This add-on works together with the **[ha-googlehome Home Assistant Custom Integration](https://github.com/FaserF/ha-googlehome)**:
+
 - [ha-googlehome on GitHub](https://github.com/FaserF/ha-googlehome)
 - Provides 100% local control, alarms, timers, volume, Do Not Disturb, and Night Mode entities.
 
@@ -51,10 +51,19 @@ This add-on works together with the **[ha-googlehome Home Assistant Custom Integ
 
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in the Home Assistant Add-on dashboard.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
+
+### Options
 
 ```yaml
-log_level: info
 auto_install_integration: true
-github_token: ""
+github_token: ''
+log_level: info
 ```
+
+---
+
+## 👨‍💻 Credits & License
+
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.

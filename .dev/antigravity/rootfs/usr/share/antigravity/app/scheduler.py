@@ -170,9 +170,7 @@ class DynamicScheduler:
                 (
                     "FAST (3m)"
                     if self.is_fast_polling
-                    else "IDLE (60m)"
-                    if self.current_interval >= self.idle_interval
-                    else "BASE (30m)"
+                    else "IDLE (60m)" if self.current_interval >= self.idle_interval else "BASE (30m)"
                 ),
             )
 
