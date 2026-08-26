@@ -406,7 +406,141 @@
       opacity: 1;
     }
 
-    .hidden { display: none !important; }
+    /* Modal & Toast Custom UI */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 1rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+      transform: scale(0.95);
+      transition: transform 0.2s;
+    }
+    .modal-overlay.active .modal-content {
+      transform: scale(1);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0;
+    }
+    .modal-body {
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: #cbd5e1;
+    }
+    .modal-card-opt {
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem;
+      margin-top: 0.75rem;
+    }
+    .modal-card-opt h4 {
+      margin: 0 0 0.35rem 0;
+      font-size: 0.9rem;
+      color: #e2e8f0;
+    }
+    .modal-card-opt p {
+      margin: 0;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .btn-modal-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--accent);
+      color: #fff;
+      padding: 0.5rem 0.85rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+      transition: background 0.15s;
+    }
+    .btn-modal-link:hover {
+      background: var(--accent-hover);
+    }
+    .btn-modal-link.btn-secondary {
+      background: #1e293b;
+      border: 1px solid var(--border);
+      color: #cbd5e1;
+    }
+    .btn-modal-link.btn-secondary:hover {
+      background: #334155;
+      color: #fff;
+    }
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .toast {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      animation: slideIn 0.3s forwards;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
 
     @media (max-width: 600px) {
       body { padding: 0.75rem 0.5rem; }
@@ -556,6 +690,30 @@
     </div>
   </div>
 
+  <!-- Custom Modal Dialog -->
+  <div class="modal-overlay" id="customModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">
+          <span class="google-dots">
+            <span class="g-dot g-blue"></span>
+            <span class="g-dot g-red"></span>
+            <span class="g-dot g-yellow"></span>
+            <span class="g-dot g-green"></span>
+          </span>
+          <span id="modalTitleText">Notification</span>
+        </h3>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer" id="modalFooter">
+        <button class="btn-action" onclick="closeModal()" id="modalCloseBtn" data-i18n="btn_close">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
   <script>
     const rootPath = '{{ root_path }}';
     const fullToken = '{{ master_token }}';
@@ -615,31 +773,110 @@
         : (currentDict.opt_show_adv || '⚙️ Advanced: Manual Token Entry (Optional)');
     }
 
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = msg;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function openModal(title, bodyHtml, footerHtml = '') {
+      document.getElementById('modalTitleText').innerHTML = title;
+      document.getElementById('modalBody').innerHTML = bodyHtml;
+      if (footerHtml) {
+        document.getElementById('modalFooter').innerHTML = footerHtml;
+      } else {
+        document.getElementById('modalFooter').innerHTML = '<button class="btn-action" onclick="closeModal()">' + (currentDict.btn_close || 'Got it') + '</button>';
+      }
+      document.getElementById('customModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('customModal').classList.remove('active');
+    }
+
+    function show2FAModal() {
+      const title = currentDict.modal_2fa_title || '🔐 2-Factor Authentication (2FA) Notice';
+      const body = `
+        <p style="margin-top:0;">${currentDict.modal_2fa_intro || 'Google blocks standard passwords when 2-Factor Authentication (2FA) is enabled. Please choose one of the two options below:'}</p>
+        
+        <div class="modal-card-opt">
+          <h4>${currentDict.modal_2fa_opt1_title || 'Option 1: Google App Password (Recommended)'}</h4>
+          <p>${currentDict.modal_2fa_opt1_desc || 'Generate a 16-character App Password in your Google Account and paste it into the password field above.'}</p>
+          <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" class="btn-modal-link">
+            ${currentDict.btn_create_app_pw || '🔑 Open App Passwords Settings'} &rarr;
+          </a>
+        </div>
+
+        <div class="modal-card-opt">
+          <h4>${currentDict.modal_2fa_opt2_title || 'Option 2: 30-Second Web OAuth Token'}</h4>
+          <p>${currentDict.modal_2fa_opt2_desc || 'Log in at accounts.google.com/EmbeddedSetup, confirm 2FA, copy the oauth_token cookie via F12, and paste it under Advanced options.'}</p>
+          <a href="https://accounts.google.com/EmbeddedSetup" target="_blank" rel="noopener noreferrer" class="btn-modal-link btn-secondary" onclick="enableAndFocusToken()">
+            ${currentDict.btn_open_embedded || '🌐 Open Google Embedded Setup'} &rarr;
+          </a>
+        </div>
+      `;
+      openModal(title, body);
+    }
+
+    function enableAndFocusToken() {
+      if (!showAdvanced) toggleAdvanced();
+      closeModal();
+      setTimeout(() => {
+        const input = document.getElementById('tokenInput');
+        if (input) input.focus();
+      }, 300);
+    }
+
+    function showErrorModal(title, message) {
+      const body = `<p style="margin-top:0;color:#fca5a5;">${message}</p>`;
+      openModal(title || (currentDict.modal_error_title || 'Notice'), body);
+    }
+
+    function showConfirmResetModal() {
+      const title = currentDict.modal_logout_title || 'Confirm Session Reset';
+      const body = `<p style="margin-top:0;">${currentDict.modal_logout_body || 'Are you sure you want to remove the stored Google Master Token?'}</p>`;
+      const footer = `
+        <button class="btn-action" onclick="closeModal()">${currentDict.btn_cancel || 'Cancel'}</button>
+        <button class="btn-action btn-danger" onclick="executeResetToken()">${currentDict.btn_confirm_logout || 'Yes, Reset Token'}</button>
+      `;
+      openModal(title, body, footer);
+    }
+
     async function copyToken() {
       if (!fullToken) return;
       try {
         await navigator.clipboard.writeText(fullToken);
+        showToast(currentDict.toast_copied || '✓ Master Token copied to clipboard!');
         const btn = document.getElementById('btnCopy');
         btn.innerHTML = currentDict.btn_copied || '✓ Copied!';
         setTimeout(() => {
           btn.innerHTML = currentDict.btn_copy || '📋 Copy Token';
         }, 2000);
       } catch (e) {
-        prompt('Copy token:', fullToken);
+        showErrorModal('Copy Token', '<textarea style="width:100%;background:#0b0f19;color:#93c5fd;padding:0.5rem;border-radius:6px;border:1px solid #223049;" rows="3" readonly>' + fullToken + '</textarea>');
       }
     }
 
-    async function resetToken() {
-      if (!confirm(currentDict.logout_confirm || 'Are you sure you want to remove the stored Master Token?')) {
-        return;
-      }
+    function resetToken() {
+      showConfirmResetModal();
+    }
+
+    async function executeResetToken() {
+      closeModal();
       try {
         const res = await fetch(rootPath + '/api/logout', { method: 'POST' });
         if (res.ok) {
           window.location.reload();
         }
       } catch (e) {
-        alert('Error resetting session: ' + e);
+        showErrorModal('Reset Error', 'Error resetting session: ' + e);
       }
     }
 
@@ -647,7 +884,7 @@
       e.preventDefault();
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
-      btn.innerHTML = currentDict.processing || '⏳ Processing...';
+      btn.innerHTML = currentDict.processing || '⏳ Authenticating with Google...';
 
       try {
         const email = document.getElementById('emailInput').value;
@@ -662,12 +899,18 @@
 
         const data = await res.json();
         if (res.ok && data.success) {
-          window.location.reload();
+          showToast(currentDict.auth_success || '✓ Master Token successfully generated!');
+          setTimeout(() => window.location.reload(), 1000);
         } else {
-          alert((currentDict.error || 'Error: ') + (data.detail || 'Authentication failed'));
+          const detail = data.detail || 'Authentication failed';
+          if (detail === '2FA_REQUIRED' || detail.includes('BadAuthentication') || detail.includes('NeedsBrowser')) {
+            show2FAModal();
+          } else {
+            showErrorModal(currentDict.modal_error_title || 'Authentication Error', detail);
+          }
         }
       } catch (err) {
-        alert((currentDict.conn_error || 'Connection error: ') + err);
+        showErrorModal('Connection Error', (currentDict.conn_error || 'Connection error: ') + err);
       } finally {
         btn.disabled = false;
         btn.innerHTML = currentDict.btn_submit || '🚀 Connect Google Account';

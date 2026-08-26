@@ -373,15 +373,23 @@ async def post_login(req: LoginRequest):
                 master_token = res["Token"]
                 state.email = email
                 state.master_token = master_token
-                state.status = "App Password successfully linked"
+                state.status = "Google Account successfully linked"
                 state.last_error = None
-                state.record_interaction("login", "App Password login successful")
+                state.record_interaction("login", "App Password / Password login successful")
                 state.save()
                 return {"success": True, "master_token": master_token}
             else:
-                err_msg = res.get("Error", "BadAuthentication")
-                state.last_error = f"Google login error: {err_msg}"
-                state.record_interaction("login", f"Failed: {err_msg}")
+                err_code = str(res.get("Error", "BadAuthentication"))
+                if err_code in ("BadAuthentication", "NeedsBrowser"):
+                    state.last_error = "2FA_REQUIRED"
+                elif err_code == "CaptchaRequired":
+                    state.last_error = "CAPTCHA_REQUIRED"
+                elif err_code == "DeviceManagementRequiredOrSyncDisabled":
+                    state.last_error = "DEVICE_MANAGEMENT_REQUIRED"
+                else:
+                    state.last_error = f"Google login error: {err_code}"
+
+                state.record_interaction("login", f"Failed: {err_code}")
                 raise HTTPException(status_code=400, detail=state.last_error)
         except HTTPException:
             raise
@@ -390,7 +398,7 @@ async def post_login(req: LoginRequest):
             state.record_interaction("login", f"Exception: {err}")
             raise HTTPException(status_code=500, detail=f"Error: {err}")
 
-    raise HTTPException(status_code=400, detail="Please provide either a token or an app password")
+    raise HTTPException(status_code=400, detail="Please provide either a password or a token")
 
 
 @app.get("/api/v1/session", dependencies=[Security(require_auth)])
