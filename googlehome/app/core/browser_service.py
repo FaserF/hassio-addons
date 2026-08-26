@@ -43,15 +43,29 @@ class GoogleHomeBrowserService:
         if not os.path.exists(chromium_bin):
             chromium_bin = "chromium"
 
+        # Log Chromium stderr to a file so we can diagnose startup failures
+        log_path = os.path.join(DATA_DIR, "chromium_stderr.log")
+        chromium_log = open(log_path, "w")  # noqa: WPS515
+
         cmd = [
             chromium_bin,
-            "--headless=new",
+            "--headless",  # Use classic headless (not =new) for Alpine/musl compatibility
             f"--remote-debugging-port={CDP_PORT}",
             f"--user-data-dir={user_data_dir}",
             "--no-sandbox",
             "--disable-setuid-sandbox",
             "--disable-dev-shm-usage",
             "--disable-gpu",
+            "--disable-software-rasterizer",
+            "--disable-extensions",
+            "--disable-background-networking",
+            "--disable-default-apps",
+            "--disable-sync",
+            "--disable-translate",
+            "--metrics-recording-only",
+            "--mute-audio",
+            "--no-first-run",
+            "--safebrowsing-disable-auto-update",
             "--disable-blink-features=AutomationControlled",
             f"--user-agent={USER_AGENT}",
             "about:blank",
@@ -59,12 +73,12 @@ class GoogleHomeBrowserService:
 
         try:
             _LOGGER.info("Launching headless Chromium via CDP (%s)...", chromium_bin)
-            self.proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            ready = await self.cdp.wait_for_ready(timeout=15.0)
+            self.proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=chromium_log)
+            ready = await self.cdp.wait_for_ready(timeout=20.0)
             if ready:
                 _LOGGER.info("Chromium CDP ready on port %d", CDP_PORT)
             else:
-                _LOGGER.warning("Chromium CDP was not ready within 15s")
+                _LOGGER.warning("Chromium CDP was not ready within 20s – check %s", log_path)
         except Exception as err:
             _LOGGER.warning("Could not start Chromium process: %s", err)
 
@@ -133,26 +147,48 @@ class GoogleHomeBrowserService:
 
             self.auth_step = "navigating"
             _LOGGER.info("Navigating to Google EmbeddedSetup...")
-            await self.cdp.send_cmd(
+            nav_result = await self.cdp.send_cmd(
                 "Page.navigate",
                 {"url": "https://accounts.google.com/EmbeddedSetup/identifier?flowName=EmbeddedSetupAndroid"},
             )
+            _LOGGER.info("Page.navigate result: %s", nav_result)
 
-            # Wait for page readyState=complete (up to 15s)
-            for _ in range(30):
+            # Wait for page readyState=complete (up to 20s)
+            for i in range(40):
                 rs = await self.cdp.send_cmd(
                     "Runtime.evaluate",
                     {"expression": "document.readyState", "returnByValue": True},
                 )
-                if rs and rs.get("value") == "complete":
+                state = rs.get("value") if rs else None
+                if state == "complete":
+                    _LOGGER.info("Page readyState=complete after %ds", i // 2)
                     break
                 await asyncio.sleep(0.5)
-            await asyncio.sleep(1.5)
+
+            # Extra wait for JS to execute (Google SPA takes time)
+            await asyncio.sleep(3.0)
 
             url_res = await self.cdp.send_cmd(
                 "Runtime.evaluate", {"expression": "window.location.href", "returnByValue": True}
             )
-            _LOGGER.info("Loaded URL: %s", url_res.get("value") if url_res else "unknown")
+            title_res = await self.cdp.send_cmd(
+                "Runtime.evaluate", {"expression": "document.title", "returnByValue": True}
+            )
+            _LOGGER.info(
+                "Loaded URL: %s | Title: %s",
+                url_res.get("value") if url_res else "?",
+                title_res.get("value") if title_res else "?",
+            )
+
+            # Log first 300 chars of body text for diagnosis
+            body_res = await self.cdp.send_cmd(
+                "Runtime.evaluate",
+                {
+                    "expression": "document.body ? document.body.innerText.substring(0,300) : 'NO_BODY'",
+                    "returnByValue": True,
+                },
+            )
+            _LOGGER.info("Page body preview: %s", body_res.get("value") if body_res else "none")
 
             _debug_inputs = r"""
             (() => {

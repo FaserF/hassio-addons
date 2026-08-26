@@ -445,6 +445,20 @@ async def post_auth_cancel():
     return {"success": True}
 
 
+@app.get("/api/debug/chromium-log")
+async def get_chromium_log():
+    """Return last 100 lines of Chromium stderr log for diagnosis."""
+    log_path = os.path.join(DATA_DIR, "chromium_stderr.log")
+    if not os.path.exists(log_path):
+        return {"lines": [], "message": "No Chromium log file yet"}
+    try:
+        with open(log_path, "r", errors="replace") as f:
+            lines = f.readlines()
+        return {"lines": lines[-100:], "total_lines": len(lines)}
+    except Exception as err:
+        return {"error": str(err)}
+
+
 @app.get("/api/v1/session", dependencies=[Security(require_auth)])
 @app.get("/api/session", dependencies=[Security(require_auth)])
 async def get_session():
