@@ -721,6 +721,7 @@
     const fullToken = '{{ master_token }}';
     let showAdvanced = false;
     let currentDict = {};
+    let authPollingInterval = null;
 
     function getSelectedLang() {
       const stored = localStorage.getItem('gh_token_hub_lang');
