@@ -349,11 +349,11 @@
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 4px;
-      padding: 0.15rem 0.45rem;
+      padding: 0.2rem 0.5rem;
       color: #94a3b8;
       text-decoration: none;
-      word-break: break-all;
-      max-width: 100%;
+      word-break: normal;
+      white-space: nowrap;
       transition: background 0.15s, border-color 0.15s, color 0.15s;
     }
 
@@ -361,6 +361,69 @@
       background: rgba(59, 130, 246, 0.15);
       border-color: rgba(59, 130, 246, 0.35);
       color: #93c5fd;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 0.75rem 0.5rem;
+      }
+
+      .container {
+        padding: 1.25rem 1rem;
+        border-radius: 12px;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+
+      .header > div:first-child {
+        margin-right: 0 !important;
+        width: 100%;
+      }
+
+      .header > div:last-child {
+        width: 100%;
+        justify-content: space-between !important;
+      }
+
+      .title {
+        font-size: 1.15rem;
+      }
+
+      .version-pills {
+        margin-top: 0.5rem;
+        gap: 0.35rem;
+      }
+
+      .version-tag {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.4rem;
+      }
+
+      .status-grid {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+      }
+
+      .stats-subgrid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+
+      .info-btn .tooltip-text {
+        width: 180px;
+        left: auto;
+        right: -10px;
+        transform: none;
+      }
+
+      .info-btn .tooltip-text::after {
+        left: auto;
+        right: 15px;
+      }
     }
   </style>
 </head>

@@ -42,12 +42,12 @@ options:
   log_level: info # Default value
 
 schema:
-  log_level?: list(trace|debug|info|notice|warning|error|fatal)
+  log_level: list(trace|debug|info|notice|warning|error|fatal)?
 ```
 
 **Important:**
 
-- Use `?` suffix to mark as optional (`log_level?:`)
+- Use `?` suffix on the type to mark as optional (`log_level: list(...)?`)
 - Use `list()` for dropdown selection, NOT `match()`
 - Provide sensible default (`info` recommended)
 
@@ -138,7 +138,7 @@ sed -i "s|error_log .*|error_log /var/log/nginx/error.log ${nginx_log_level};|" 
 ## Checklist for New Apps
 
 - [ ] Add `log_level` to `options` with default value (`info`)
-- [ ] Add `log_level?:` to `schema` with validator
+- [ ] Add `log_level` to `schema` with validator (e.g. `log_level: list(...)?:`)
 - [ ] Use `list()` validator, not `match()`
 - [ ] Implement error handling when fetching log_level
 - [ ] Log warning message if fallback is used

@@ -439,7 +439,11 @@
     {
       "description": "Restrict websockets to <17.0.0 for AegisBot due to google-genai dependency compatibility",
       "matchDepNames": ["websockets"],
-      "matchFileNames": ["aegisbot/requirements.txt", "AegisBot/backend/requirements.txt"],
+      "matchFileNames": [
+        ".dev/AegisBot/requirements.txt",
+        "aegisbot/requirements.txt",
+        "AegisBot/backend/requirements.txt"
+      ],
       "allowedVersions": "<17.0.0"
     },
     {
