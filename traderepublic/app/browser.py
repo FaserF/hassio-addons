@@ -505,8 +505,17 @@ class TradeRepublicBrowserService:
                         import time
 
                         _LOGGER.debug("Keepalive: refreshing web session via Chromium navigation")
+                        await self.auth_helper.inject_session_cookies(self.session_token)
                         await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com"})
-                        await asyncio.sleep(4)
+                        await asyncio.sleep(6)
+                        # Trigger lightweight interaction to ensure web frontend issues cookie rotation
+                        await self.cdp.send_cmd(
+                            "Runtime.evaluate",
+                            {
+                                "expression": "window.dispatchEvent(new Event('focus')); window.dispatchEvent(new Event('mousemove'));"
+                            },
+                        )
+                        await asyncio.sleep(2)
                         new_token = await self.auth_helper.extract_token_from_cookies()
                         if new_token and new_token != self.session_token:
                             from core.verifier import verify_tr_token
