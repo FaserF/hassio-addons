@@ -351,16 +351,25 @@ async def post_login(req: LoginRequest):
     raw_token = (req.token or "").strip()
     password = (req.password or "").strip()
 
-    if not email:
-        raise HTTPException(status_code=400, detail="Email is required")
-
-    if raw_token.startswith("aas_et/"):
-        on_token_acquired(email, raw_token)
-        return {"success": True, "master_token": raw_token, "step": "success"}
+    if not email or "@" not in email or "." not in email:
+        raise HTTPException(
+            status_code=400,
+            detail="Please enter a valid Google email address (e.g. name@gmail.com).",
+        )
 
     if raw_token:
         if raw_token.startswith("oauth_token="):
             raw_token = raw_token.split("oauth_token=")[1].split(";")[0].strip()
+        if not raw_token.startswith("aas_et/") and not raw_token.startswith("oauth2_4/"):
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid token format. The token must start with 'aas_et/' (Master Token) or 'oauth2_4/' (Web OAuth Token).",
+            )
+
+        if raw_token.startswith("aas_et/"):
+            on_token_acquired(email, raw_token)
+            return {"success": True, "master_token": raw_token, "step": "success"}
+
         try:
             from gpsoauth import exchange_token
 

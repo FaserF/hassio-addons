@@ -3,7 +3,7 @@ import logging
 import os
 import subprocess
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from .cdp import CDPClient
 from .constants import CDP_PORT, DATA_DIR, USER_AGENT
@@ -18,16 +18,14 @@ class GoogleHomeBrowserService:
         self.cdp = CDPClient(CDP_PORT)
         self.proc: Optional[subprocess.Popen] = None
         self.auth_in_progress: bool = False
-        self.auth_step: str = (
-            "idle"  # idle, starting, filling_email, filling_password, 2fa_prompt, 2fa_code, exchanging, success, error
-        )
+        self.auth_step: str = "idle"
         self.auth_error: Optional[str] = None
         self.two_factor_data: Dict[str, Any] = {}
         self._auth_task: Optional[asyncio.Task] = None
         self._target_email: Optional[str] = None
-        self._on_success_callback = None
+        self._on_success_callback: Optional[Callable[[str, str], None]] = None
 
-    def set_on_success_callback(self, cb) -> None:
+    def set_on_success_callback(self, cb: Callable[[str, str], None]) -> None:
         """Set callback to invoke when token is acquired."""
         self._on_success_callback = cb
 
@@ -89,21 +87,23 @@ class GoogleHomeBrowserService:
     async def submit_2fa_code(self, code: str) -> bool:
         """Submit 2FA verification code (SMS or TOTP)."""
         clean_code = code.strip()
+        _LOGGER.info("Submitting 2FA verification code to Google...")
         script = f"""
         (() => {{
-            const inputs = document.querySelectorAll('input[type="tel"], input[name="Pin"], #idvPin, #totpPin, input[name="totpPin"], input[autocomplete="one-time-code"]');
+            const inputs = document.querySelectorAll('input[type="tel"], input[type="text"], input[name="Pin"], #idvPin, #totpPin, input[name="totpPin"], input[autocomplete="one-time-code"]');
             for (const input of inputs) {{
                 if (input && input.offsetParent !== null) {{
+                    input.focus();
                     input.value = '{clean_code}';
                     input.dispatchEvent(new Event('input', {{ bubbles: true }}));
                     input.dispatchEvent(new Event('change', {{ bubbles: true }}));
                     break;
                 }}
             }}
-            const btns = document.querySelectorAll('button, div[role="button"], input[type="submit"]');
+            const btns = document.querySelectorAll('#idvPreregisteredPhoneNext button, #totpNext button, button[type="button"], button[type="submit"], div[role="button"]');
             for (const b of btns) {{
                 const text = (b.innerText || b.value || '').toLowerCase();
-                if (text.includes('next') || text.includes('weiter') || text.includes('submit') || text.includes('verify') || text.includes('bestätigen')) {{
+                if (text.includes('next') || text.includes('weiter') || text.includes('submit') || text.includes('verify') || text.includes('bestätigen') || text.includes('senden')) {{
                     b.click();
                     return true;
                 }}
@@ -127,70 +127,119 @@ class GoogleHomeBrowserService:
         """Internal async sequence for Google login."""
         try:
             self.auth_step = "navigating"
+            _LOGGER.info("Navigating to Google EmbeddedSetup...")
             await self.cdp.send_cmd("Page.navigate", {"url": "https://accounts.google.com/EmbeddedSetup"})
-            await asyncio.sleep(2.5)
+            await asyncio.sleep(3.0)
 
-            # Fill Email
+            # 1. Fill Email
             self.auth_step = "filling_email"
+            _LOGGER.info("Filling email: %s", email)
             fill_email_script = f"""
             (() => {{
                 const el = document.querySelector('input[type="email"], #identifierId, input[name="identifier"]');
                 if (el) {{
+                    el.focus();
                     el.value = '{email}';
                     el.dispatchEvent(new Event('input', {{ bubbles: true }}));
                     el.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                    const nextBtn = document.querySelector('#identifierNext, button, div[role="button"]');
-                    if (nextBtn) nextBtn.click();
-                    return true;
+                    const nextBtn = document.querySelector('#identifierNext button, #identifierNext, button[type="button"], div[role="button"]');
+                    if (nextBtn) {{
+                        nextBtn.click();
+                        return true;
+                    }}
                 }}
                 return false;
             }})();
             """
-            for _ in range(10):
+            filled_email = False
+            for _ in range(12):
                 res = await self.cdp.send_cmd(
                     "Runtime.evaluate", {"expression": fill_email_script, "returnByValue": True}
                 )
                 if res and res.get("value"):
+                    filled_email = True
                     break
                 await asyncio.sleep(0.5)
 
-            await asyncio.sleep(2.5)
+            if not filled_email:
+                _LOGGER.warning("Could not find email input field on Google signin page")
 
-            # Fill Password
+            await asyncio.sleep(3.0)
+
+            # Check for email errors
+            email_err = await self._check_page_error()
+            if email_err:
+                self.auth_step = "error"
+                self.auth_error = f"Google email error: {email_err}"
+                self.auth_in_progress = False
+                _LOGGER.error("Google rejected email: %s", email_err)
+                return
+
+            # 2. Fill Password
             self.auth_step = "filling_password"
+            _LOGGER.info("Filling password...")
             fill_pwd_script = f"""
             (() => {{
-                const el = document.querySelector('input[type="password"], input[name="Passwd"]');
+                const el = document.querySelector('input[type="password"], input[name="Passwd"], input[name="password"]');
                 if (el) {{
+                    el.focus();
                     el.value = '{password}';
                     el.dispatchEvent(new Event('input', {{ bubbles: true }}));
                     el.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                    const nextBtn = document.querySelector('#passwordNext, button, div[role="button"]');
-                    if (nextBtn) nextBtn.click();
-                    return true;
+                    const nextBtn = document.querySelector('#passwordNext button, #passwordNext, button[type="button"], div[role="button"]');
+                    if (nextBtn) {{
+                        nextBtn.click();
+                        return true;
+                    }}
                 }}
                 return false;
             }})();
             """
-            for _ in range(10):
+            filled_pwd = False
+            for _ in range(12):
                 res = await self.cdp.send_cmd(
                     "Runtime.evaluate", {"expression": fill_pwd_script, "returnByValue": True}
                 )
                 if res and res.get("value"):
+                    filled_pwd = True
                     break
                 await asyncio.sleep(0.5)
 
-            await asyncio.sleep(3.0)
+            if not filled_pwd:
+                _LOGGER.warning("Could not find password input field on Google signin page")
 
-            # Monitor loop for 2FA or cookie completion (up to 120s)
+            await asyncio.sleep(3.5)
+
+            # Check for password errors
+            pwd_err = await self._check_page_error()
+            if pwd_err:
+                self.auth_step = "error"
+                self.auth_error = f"Google password error: {pwd_err}"
+                self.auth_in_progress = False
+                _LOGGER.error("Google rejected password: %s", pwd_err)
+                return
+
+            # 3. Monitor Loop for 2FA or cookie completion (up to 120s)
             deadline = time.monotonic() + 120
             while time.monotonic() < deadline:
+                # Check for completion cookie
                 oauth_token = await self._extract_oauth_cookie()
                 if oauth_token:
                     self.auth_step = "exchanging"
+                    _LOGGER.info("Extracted oauth_token cookie from browser, exchanging...")
                     await self._complete_token_exchange(email, oauth_token)
                     return
 
+                # Check for on-page errors
+                page_err = await self._check_page_error()
+                if page_err and "challenge" not in page_err.lower() and "verify" not in page_err.lower():
+                    self.auth_step = "error"
+                    self.auth_error = f"Google authentication error: {page_err}"
+                    self.auth_in_progress = False
+                    _LOGGER.error("Google page error during 2FA: %s", page_err)
+                    return
+
+                # Detect 2FA Challenge
                 challenge = await self._detect_2fa_challenge()
                 if challenge:
                     ctype = challenge.get("type")
@@ -218,34 +267,65 @@ class GoogleHomeBrowserService:
             self.auth_error = str(err)
             self.auth_in_progress = False
 
+    async def _check_page_error(self) -> Optional[str]:
+        """Check for Google error elements in DOM."""
+        check_err_script = r"""
+        (() => {
+            const err = document.querySelector('div[aria-live="assertive"], div[jsname="B1fBne"], span[jsslot]');
+            if (err && err.innerText && err.innerText.trim().length > 3) {
+                return err.innerText.trim();
+            }
+            return null;
+        })();
+        """
+        res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": check_err_script, "returnByValue": True})
+        if res and isinstance(res.get("value"), str):
+            val = res["value"].strip()
+            if len(val) > 3:
+                return val
+        return None
+
     async def _detect_2fa_challenge(self) -> Optional[Dict[str, Any]]:
         """Scan DOM for Google 2FA challenge markers."""
         check_script = r"""
         (() => {
             const bodyText = document.body ? document.body.innerText : '';
 
-            const numberEl = document.querySelector('div[data-challengeinfo], div[jsname="r4nke"]');
-            if (numberEl && numberEl.innerText && numberEl.innerText.trim().length <= 3) {
-                return { type: 'prompt', number: numberEl.innerText.trim(), text: bodyText.substring(0, 200) };
+            // 1. Phone Prompt (Number tap)
+            const numberEl = document.querySelector('div[data-challengeinfo], div[jsname="r4nke"], span[jsname="V67aGc"], div.hK3Xcf');
+            if (numberEl && numberEl.innerText && /^\d{1,3}$/.test(numberEl.innerText.trim())) {
+                return { type: 'prompt', number: numberEl.innerText.trim(), text: bodyText.substring(0, 300) };
             }
 
-            const match = bodyText.match(/(?:tippe|tap|number|zahl)\s*(?:auf|on)?\s*(\d{1,3})/i);
+            const match = bodyText.match(/(?:tippe|tap|number|zahl|select)\s*(?:auf|on)?\s*[:\s]*(\d{1,3})/i);
             if (match) {
-                return { type: 'prompt', number: match[1], text: bodyText.substring(0, 200) };
+                return { type: 'prompt', number: match[1], text: bodyText.substring(0, 300) };
             }
 
-            const smsInput = document.querySelector('input[type="tel"], input[name="Pin"], #idvPin');
+            // 2. SMS / Phone code
+            const smsInput = document.querySelector('input[type="tel"], input[name="Pin"], #idvPin, #idvanyphonecollectNext input');
             if (smsInput && smsInput.offsetParent !== null) {
-                return { type: 'sms', title: 'SMS Verification', text: bodyText.substring(0, 200) };
+                return { type: 'sms', title: 'SMS Verification', text: bodyText.substring(0, 300) };
             }
 
-            const totpInput = document.querySelector('#totpPin, input[name="totpPin"]');
+            // 3. Authenticator App (TOTP)
+            const totpInput = document.querySelector('#totpPin, input[name="totpPin"], input[autocomplete="one-time-code"]');
             if (totpInput && totpInput.offsetParent !== null) {
-                return { type: 'totp', title: 'Authenticator App', text: bodyText.substring(0, 200) };
+                return { type: 'totp', title: 'Authenticator App', text: bodyText.substring(0, 300) };
+            }
+
+            // 4. Passkey / Security Key prompt - if "Try another way" exists, click it!
+            const btns = document.querySelectorAll('button, div[role="button"], a');
+            for (const el of btns) {
+                const t = (el.innerText || '').toLowerCase();
+                if (t.includes('try another way') || t.includes('andere option') || t.includes('andere methode')) {
+                    el.click();
+                    break;
+                }
             }
 
             if (window.location.href.includes('challenge') || window.location.href.includes('signin/v2')) {
-                return { type: 'general', title: 'Google Security Check', text: bodyText.substring(0, 200) };
+                return { type: 'general', title: 'Google Security Verification', text: bodyText.substring(0, 300) };
             }
 
             return null;
@@ -286,7 +366,7 @@ class GoogleHomeBrowserService:
             else:
                 err_code = res.get("Error", "ExchangeFailed")
                 self.auth_step = "error"
-                self.auth_error = f"Google exchange error: {err_code}"
+                self.auth_error = f"Google token exchange error: {err_code}"
                 self.auth_in_progress = False
         except Exception as err:
             _LOGGER.exception("Token exchange failed: %s", err)

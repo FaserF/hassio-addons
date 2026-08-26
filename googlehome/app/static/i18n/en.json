@@ -67,6 +67,9 @@
   "btn_submit_code": "✓ Verify Code",
   "btn_cancel_2fa": "Cancel",
   "exchanging_token": "⏳ Generating & Saving Master Token...",
+  "val_email_invalid": "Please enter a valid Google email address (e.g. name@gmail.com).",
+  "val_password_missing": "Please enter your Google password or App Password.",
+  "val_token_invalid": "Invalid token format. The token must start with 'aas_et/' (Master Token) or 'oauth2_4/' (Web OAuth Token).",
   "error": "Error: ",
   "conn_error": "Connection error: "
 }

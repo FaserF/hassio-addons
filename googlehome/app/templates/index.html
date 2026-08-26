@@ -406,6 +406,8 @@
       opacity: 1;
     }
 
+    .hidden { display: none !important; }
+
     /* Modal & Toast Custom UI */
     .modal-overlay {
       position: fixed;
@@ -674,7 +676,7 @@
           <input type="password" id="passwordInput" placeholder="••••••••••••••••">
         </div>
 
-        <div class="form-group hidden" id="tokenGroup">
+        <div class="form-group hidden" id="tokenGroup" style="display: none;">
           <label data-i18n="token_label">Manual Web OAuth Token (oauth2_4/...) or Master Token (aas_et/...)</label>
           <input type="text" id="tokenInput" placeholder="oauth2_4/... or aas_et/...">
         </div>
@@ -751,6 +753,7 @@
 
     function applyI18n() {
       document.querySelectorAll('[data-i18n]').forEach(el => {
+        if (el.id === 'toggleAdvBtn') return;
         const key = el.getAttribute('data-i18n');
         if (currentDict[key]) {
           el.innerHTML = currentDict[key];
@@ -761,7 +764,11 @@
 
     function toggleAdvanced() {
       showAdvanced = !showAdvanced;
-      document.getElementById('tokenGroup').classList.toggle('hidden', !showAdvanced);
+      const el = document.getElementById('tokenGroup');
+      if (el) {
+        el.classList.toggle('hidden', !showAdvanced);
+        el.style.display = showAdvanced ? 'block' : 'none';
+      }
       updateAdvButtonText();
     }
 
@@ -769,7 +776,7 @@
       const btn = document.getElementById('toggleAdvBtn');
       if (!btn) return;
       btn.innerHTML = showAdvanced
-        ? (currentDict.opt_hide_adv || '⚙️ Hide Advanced Options')
+        ? (currentDict.opt_hide_adv || '⚙️ Hide Advanced Token Entry')
         : (currentDict.opt_show_adv || '⚙️ Advanced: Manual Token Entry (Optional)');
     }
 
@@ -826,7 +833,13 @@
     }
 
     function enableAndFocusToken() {
-      if (!showAdvanced) toggleAdvanced();
+      showAdvanced = true;
+      const el = document.getElementById('tokenGroup');
+      if (el) {
+        el.classList.remove('hidden');
+        el.style.display = 'block';
+      }
+      updateAdvButtonText();
       closeModal();
       setTimeout(() => {
         const input = document.getElementById('tokenInput');
@@ -880,19 +893,39 @@
       }
     }
 
-    let authPollingInterval = null;
-
     async function submitAuth(e) {
       e.preventDefault();
+      const email = (document.getElementById('emailInput').value || '').trim();
+      const password = (document.getElementById('passwordInput').value || '').trim();
+      const token = showAdvanced ? (document.getElementById('tokenInput').value || '').trim() : '';
+
+      // Validate Email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        showErrorModal(currentDict.modal_error_title || 'Input Validation', currentDict.val_email_invalid || 'Please enter a valid Google email address.');
+        return;
+      }
+
+      // If token is provided, validate token format
+      if (token) {
+        let cleanToken = token;
+        if (cleanToken.startsWith('oauth_token=')) {
+          cleanToken = cleanToken.split('oauth_token=')[1].split(';')[0].trim();
+        }
+        if (!cleanToken.startsWith('aas_et/') && !cleanToken.startsWith('oauth2_4/')) {
+          showErrorModal(currentDict.modal_error_title || 'Input Validation', currentDict.val_token_invalid || "Invalid token format. The token must start with 'aas_et/' (Master Token) or 'oauth2_4/' (OAuth Token).");
+          return;
+        }
+      } else if (!password) {
+        showErrorModal(currentDict.modal_error_title || 'Input Validation', currentDict.val_password_missing || 'Please enter your Google password or App Password.');
+        return;
+      }
+
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
       btn.innerHTML = currentDict.processing || '⏳ Authenticating with Google...';
 
       try {
-        const email = document.getElementById('emailInput').value;
-        const password = document.getElementById('passwordInput').value;
-        const token = showAdvanced ? document.getElementById('tokenInput').value : '';
-
         const res = await fetch(rootPath + '/api/auth/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -965,7 +998,22 @@
       const bodyEl = document.getElementById('interactive2FABody');
       if (!bodyEl) return;
 
-      if (step === '2fa_prompt') {
+      if (step === 'navigating') {
+        bodyEl.innerHTML = `
+          <div style="font-size:2rem;margin-bottom:0.75rem;">🌐</div>
+          <div style="font-size:0.95rem;color:#cbd5e1;">Connecting to Google Authentication...</div>
+        `;
+      } else if (step === 'filling_email') {
+        bodyEl.innerHTML = `
+          <div style="font-size:2rem;margin-bottom:0.75rem;">📧</div>
+          <div style="font-size:0.95rem;color:#cbd5e1;">Entering Google Account Email...</div>
+        `;
+      } else if (step === 'filling_password') {
+        bodyEl.innerHTML = `
+          <div style="font-size:2rem;margin-bottom:0.75rem;">🔑</div>
+          <div style="font-size:0.95rem;color:#cbd5e1;">Verifying password...</div>
+        `;
+      } else if (step === '2fa_prompt') {
         const num = (twoFactor && twoFactor.number) ? twoFactor.number : '';
         bodyEl.innerHTML = `
           <div style="font-size:0.95rem;color:#cbd5e1;margin-bottom:1rem;">
@@ -985,6 +1033,12 @@
             <input type="text" id="twoFactorCodeInput" placeholder="${currentDict.code_placeholder || '123456'}" maxlength="8" autofocus style="font-size:1.5rem;text-align:center;letter-spacing:4px;width:200px;padding:0.5rem;border-radius:8px;background:#0b0f19;border:1px solid #2563eb;color:#ffffff;" required>
             <button type="submit" class="btn-action" style="background:#2563eb;color:#fff;padding:0.6rem 1.5rem;">${currentDict.btn_submit_code || '✓ Verify Code'}</button>
           </form>
+        `;
+      } else if (step === '2fa_general') {
+        bodyEl.innerHTML = `
+          <div style="font-size:2rem;margin-bottom:0.75rem;">📱</div>
+          <div style="font-size:0.95rem;color:#cbd5e1;margin-bottom:0.5rem;">Google Security Prompt Active</div>
+          <div style="font-size:0.85rem;color:#94a3b8;">Please tap 'Yes' on your smartphone or confirm the security prompt.</div>
         `;
       } else if (step === 'exchanging') {
         bodyEl.innerHTML = `
