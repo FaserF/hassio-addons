@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-08-26T10:51:46.962173",
+  "timestamp": "2026-08-26T11:08:14.429336",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -989,6 +989,7 @@
     ],
     "googlehome/app": ["main.py"],
     "googlehome/app/templates": ["index.html"],
+    "googlehome/app/core": ["__init__.py", "browser_service.py", "cdp.py", "constants.py"],
     "googlehome/app/static/i18n": ["de.json", "en.json"],
     "googlehome/translations": ["de.yaml", "en.yaml"],
     "googlehome/rootfs/etc/s6-overlay/s6-rc.d/googlehome/scripts": [
