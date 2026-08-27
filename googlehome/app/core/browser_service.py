@@ -143,29 +143,45 @@ class GoogleHomeBrowserService:
     async def _run_auth_sequence(self, email: str, password: str) -> None:
         """Internal async sequence for Google EmbeddedSetup login."""
         try:
+            # Enable domains on the initial blank page
             await self.cdp.send_cmd("Network.enable", {})
+            await self.cdp.send_cmd("Runtime.enable", {})
+            await self.cdp.send_cmd("Page.enable", {})
 
             self.auth_step = "navigating"
             _LOGGER.info("Navigating to Google EmbeddedSetup...")
             nav_result = await self.cdp.send_cmd(
                 "Page.navigate",
                 {"url": "https://accounts.google.com/EmbeddedSetup/identifier?flowName=EmbeddedSetupAndroid"},
+                timeout=30.0,
             )
             _LOGGER.info("Page.navigate result: %s", nav_result)
 
-            # Wait for page readyState=complete (up to 20s)
-            for i in range(40):
+            # After navigation, reconnect WebSocket to the new page target
+            # (Chromium may switch the active page context)
+            await asyncio.sleep(2.0)
+            reconnected = await self.cdp.reconnect_to_active_page()
+            _LOGGER.info("CDP reconnect after navigate: %s", reconnected)
+
+            # Re-enable domains on the new page
+            await self.cdp.send_cmd("Network.enable", {})
+            await self.cdp.send_cmd("Runtime.enable", {})
+
+            # Wait for page readyState=complete (up to 25s)
+            for i in range(50):
                 rs = await self.cdp.send_cmd(
                     "Runtime.evaluate",
                     {"expression": "document.readyState", "returnByValue": True},
+                    timeout=5.0,
                 )
                 state = rs.get("value") if rs else None
+                _LOGGER.debug("readyState[%d]: %s", i, state)
                 if state == "complete":
-                    _LOGGER.info("Page readyState=complete after %ds", i // 2)
+                    _LOGGER.info("Page readyState=complete after %.1fs", i * 0.5)
                     break
                 await asyncio.sleep(0.5)
 
-            # Extra wait for JS to execute (Google SPA takes time)
+            # Extra wait for JS/SPA to render
             await asyncio.sleep(3.0)
 
             url_res = await self.cdp.send_cmd(
