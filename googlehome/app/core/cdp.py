@@ -76,9 +76,23 @@ class CDPClient:
                     fut.cancel()
             self._pending.clear()
 
+    def _is_ws_open(self) -> bool:
+        """Check whether the active WebSocket connection is open (compatible with websockets <14 and >=14)."""
+        if self._ws is None:
+            return False
+        # websockets >= 14 State enum check
+        if hasattr(self._ws, "state"):
+            return str(self._ws.state).endswith("OPEN") or getattr(self._ws.state, "name", "") == "OPEN"
+        # Legacy websockets < 14 check
+        if hasattr(self._ws, "closed"):
+            return not self._ws.closed
+        if hasattr(self._ws, "open"):
+            return bool(self._ws.open)
+        return True
+
     async def _ensure_connected(self) -> bool:
         """Ensure we have an active WebSocket connection to Chromium."""
-        if self._ws is not None and not self._ws.closed:
+        if self._is_ws_open():
             return True
 
         ws_url = await self._get_page_ws_url()
@@ -141,7 +155,7 @@ class CDPClient:
     async def reconnect_to_active_page(self) -> bool:
         """Force reconnect to the current active page (useful after navigation)."""
         # Close existing connection
-        if self._ws and not self._ws.closed:
+        if self._is_ws_open():
             try:
                 await self._ws.close()
             except Exception:
