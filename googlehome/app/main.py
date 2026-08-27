@@ -207,7 +207,7 @@ async def register_supervisor_discovery() -> None:
         "Content-Type": "application/json",
     }
     payload = {
-        "service": "googlehome",
+        "service": "google_home",
         "config": {
             "host": "googlehome",
             "port": port,
