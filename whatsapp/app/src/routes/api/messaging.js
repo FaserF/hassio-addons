@@ -849,7 +849,9 @@ export function registerMessagingRoutes(app) {
         const jid = getJid(number);
         const lastMessages = getLastMessagesForChat(session, jid);
         if (!lastMessages.length) {
-          return res.status(409).json({ detail: 'No known messages in message store for this chat to clear range' });
+          return res
+            .status(409)
+            .json({ detail: 'No known messages in message store for this chat to clear range' });
         }
         await session.sock.chatModify({ clear: true, lastMessages }, jid);
         res.json({ status: 'cleared', jid });
@@ -874,7 +876,9 @@ export function registerMessagingRoutes(app) {
         const jid = getJid(number);
         const lastMessages = getLastMessagesForChat(session, jid);
         if (!lastMessages.length) {
-          return res.status(409).json({ detail: 'No known messages in message store for this chat to delete range' });
+          return res
+            .status(409)
+            .json({ detail: 'No known messages in message store for this chat to delete range' });
         }
         await session.sock.chatModify({ delete: true, lastMessages }, jid);
         res.json({ status: 'deleted', jid });

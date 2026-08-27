@@ -91,10 +91,7 @@ export function getLastMessagesForChat(session, jid) {
       (remoteJid.toLowerCase() === normalizedJid ||
         remoteJid.split('@')[0] === normalizedJid.split('@')[0])
     ) {
-      if (
-        !latest ||
-        Number(msg.messageTimestamp || 0) > Number(latest.messageTimestamp || 0)
-      ) {
+      if (!latest || Number(msg.messageTimestamp || 0) > Number(latest.messageTimestamp || 0)) {
         latest = msg;
       }
     }
@@ -123,4 +120,3 @@ export const asyncHandler = (fn) => (req, res, next) => {
     }
   });
 };
-
