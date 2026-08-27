@@ -79,6 +79,41 @@ export function getMessageText(msg) {
   );
 }
 
+export function getLastMessagesForChat(session, jid) {
+  if (!session?.messageStore || !jid) return [];
+  const normalizedJid = String(jid).toLowerCase();
+  let latest = null;
+
+  for (const msg of session.messageStore.values()) {
+    const remoteJid = msg.key?.remoteJid;
+    if (
+      remoteJid &&
+      (remoteJid.toLowerCase() === normalizedJid ||
+        remoteJid.split('@')[0] === normalizedJid.split('@')[0])
+    ) {
+      if (
+        !latest ||
+        Number(msg.messageTimestamp || 0) > Number(latest.messageTimestamp || 0)
+      ) {
+        latest = msg;
+      }
+    }
+  }
+
+  if (latest && latest.key?.id && latest.key?.remoteJid) {
+    const rawTs = Number(latest.messageTimestamp?.low || latest.messageTimestamp || 0);
+    const validTs = !isNaN(rawTs) && rawTs > 0 ? rawTs : Math.floor(Date.now() / 1000);
+    return [
+      {
+        key: latest.key,
+        messageTimestamp: validTs,
+      },
+    ];
+  }
+
+  return [];
+}
+
 export const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch((err) => {
     const errMsg = String(err?.message || err || 'Unknown error');
@@ -88,3 +123,4 @@ export const asyncHandler = (fn) => (req, res, next) => {
     }
   });
 };
+

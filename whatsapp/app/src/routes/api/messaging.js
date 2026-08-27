@@ -5,7 +5,7 @@ import { getReqSession } from '../../session.js';
 import { getJid } from '../../utils/jid.js';
 import { trackSent } from '../../whatsapp/actions.js';
 import { getQuotedMessage } from '../../whatsapp/events/index.js';
-import { ensureConnected, asyncHandler } from './helpers.js';
+import { ensureConnected, asyncHandler, getLastMessagesForChat } from './helpers.js';
 import { generateMessageID } from '../../utils/security.js';
 import {
   syncWhatsAppDeleteToTelegram,
@@ -739,7 +739,8 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
-        await session.sock.chatModify({ archive: true }, jid);
+        const lastMessages = getLastMessagesForChat(session, jid);
+        await session.sock.chatModify({ archive: true, lastMessages }, jid);
         res.json({ status: 'archived', jid });
       } catch (err) {
         res.status(500).json({ detail: err.message });
@@ -760,7 +761,8 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
-        await session.sock.chatModify({ archive: false }, jid);
+        const lastMessages = getLastMessagesForChat(session, jid);
+        await session.sock.chatModify({ archive: false, lastMessages }, jid);
         res.json({ status: 'unarchived', jid });
       } catch (err) {
         res.status(500).json({ detail: err.message });
@@ -823,7 +825,8 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
-        await session.sock.chatModify({ markRead: false }, jid);
+        const lastMessages = getLastMessagesForChat(session, jid);
+        await session.sock.chatModify({ markRead: false, lastMessages }, jid);
         res.json({ status: 'marked_unread', jid });
       } catch (err) {
         res.status(500).json({ detail: err.message });
@@ -844,7 +847,11 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
-        await session.sock.chatModify({ clear: { messages: [] } }, jid);
+        const lastMessages = getLastMessagesForChat(session, jid);
+        if (!lastMessages.length) {
+          return res.status(409).json({ detail: 'No known messages in message store for this chat to clear range' });
+        }
+        await session.sock.chatModify({ clear: true, lastMessages }, jid);
         res.json({ status: 'cleared', jid });
       } catch (err) {
         res.status(500).json({ detail: err.message });
@@ -865,7 +872,11 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
-        await session.sock.chatModify({ delete: true }, jid);
+        const lastMessages = getLastMessagesForChat(session, jid);
+        if (!lastMessages.length) {
+          return res.status(409).json({ detail: 'No known messages in message store for this chat to delete range' });
+        }
+        await session.sock.chatModify({ delete: true, lastMessages }, jid);
         res.json({ status: 'deleted', jid });
       } catch (err) {
         res.status(500).json({ detail: err.message });
