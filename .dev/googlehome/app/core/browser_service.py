@@ -151,27 +151,15 @@ class GoogleHomeBrowserService:
             self.auth_step = "navigating"
             _LOGGER.info("Navigating to Google EmbeddedSetup...")
 
-            # Set a real Android User-Agent so Google serves the EmbeddedSetup
-            # login form instead of the generic welcome/landing page
+            # Set Android User-Agent before navigation
             await self.cdp.send_cmd(
                 "Network.setUserAgentOverride",
-                {
-                    "userAgent": (
-                        "Mozilla/5.0 (Linux; Android 10; Pixel 3) "
-                        "AppleWebKit/537.36 (KHTML, like Gecko) "
-                        "Chrome/91.0.4472.77 Mobile Safari/537.36"
-                    )
-                },
+                {"userAgent": USER_AGENT},
             )
 
             nav_result = await self.cdp.send_cmd(
                 "Page.navigate",
-                {
-                    "url": (
-                        "https://accounts.google.com/EmbeddedSetup/identifier"
-                        "?flowName=EmbeddedSetupAndroid&flowEntry=ServiceLogin"
-                    )
-                },
+                {"url": "https://accounts.google.com/EmbeddedSetup?source=android"},
                 timeout=30.0,
             )
             _LOGGER.info("Page.navigate result: %s", nav_result)
