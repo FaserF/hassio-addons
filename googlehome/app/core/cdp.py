@@ -64,7 +64,17 @@ class CDPClient:
                     if msg_id and msg_id in self._pending:
                         fut = self._pending.pop(msg_id)
                         if not fut.done():
-                            fut.set_result(data.get("result"))
+                            res = data.get("result")
+                            # If this is Runtime.evaluate or similar with a nested 'result' object:
+                            if (
+                                isinstance(res, dict)
+                                and "result" in res
+                                and isinstance(res["result"], dict)
+                                and "type" in res["result"]
+                            ):
+                                fut.set_result(res["result"])
+                            else:
+                                fut.set_result(res)
                 except Exception:
                     pass
         except Exception as e:
