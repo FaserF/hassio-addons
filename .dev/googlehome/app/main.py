@@ -382,13 +382,14 @@ async def post_login(req: LoginRequest):
                 err_msg = res.get("Error", "Unknown")
                 state.last_error = f"Google Token error: {err_msg}"
                 state.record_interaction("login", f"Failed: {err_msg}")
-                raise HTTPException(status_code=400, detail=state.last_error)
+                raise HTTPException(status_code=400, detail="Google rejected token exchange. Please verify your token.")
         except HTTPException:
             raise
         except Exception as err:
-            state.last_error = str(err)
-            state.record_interaction("login", f"Exception: {err}")
-            raise HTTPException(status_code=500, detail=f"Error: {err}")
+            _LOGGER.exception("Unexpected error exchanging token: %s", err)
+            state.last_error = "Internal error during token exchange"
+            state.record_interaction("login", "Internal token exchange exception")
+            raise HTTPException(status_code=500, detail="An internal error occurred during token exchange.")
 
     if password:
         # 1. Fast path: try direct master login (works instantly for App Passwords)
@@ -456,7 +457,8 @@ async def get_chromium_log():
             lines = f.readlines()
         return {"lines": lines[-100:], "total_lines": len(lines)}
     except Exception as err:
-        return {"error": str(err)}
+        _LOGGER.warning("Could not read Chromium stderr log: %s", err)
+        return {"error": "Failed to read Chromium log file"}
 
 
 @app.get("/api/v1/session", dependencies=[Security(require_auth)])
