@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.2
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.3
 ARG TARGETARCH
 # hadolint ignore=DL3006
 
