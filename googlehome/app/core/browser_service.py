@@ -152,7 +152,7 @@ class GoogleHomeBrowserService:
             _LOGGER.info("Navigating to Google EmbeddedSetup...")
             nav_result = await self.cdp.send_cmd(
                 "Page.navigate",
-                {"url": "https://accounts.google.com/EmbeddedSetup/identifier?flowName=EmbeddedSetupAndroid"},
+                {"url": "https://accounts.google.com/EmbeddedSetup"},
                 timeout=30.0,
             )
             _LOGGER.info("Page.navigate result: %s", nav_result)
