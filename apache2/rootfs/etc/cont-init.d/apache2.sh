@@ -13,6 +13,7 @@ phpini=$(bashio::config 'php_ini')
 username=$(bashio::config 'username')
 password=$(bashio::config 'password')
 default_conf=$(bashio::config 'default_conf')
+default_ssl_conf=$(bashio::config 'default_ssl_conf')
 if ! log_level=$(bashio::config 'log_level') || [ -z "$log_level" ]; then
 	bashio::log.warning "Failed to fetch log_level configuration. Using default: info"
 	log_level="info"
