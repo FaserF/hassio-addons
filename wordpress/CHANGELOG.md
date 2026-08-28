@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.4.3 (2026-08-28)
+
+### ✨ Features
+- move in-development add-ons to .dev/ directory to hide from stable repository in Home Assistant ([`2e804917`](https://github.com/FaserF/hassio-addons/commit/2e8049174658ea37ac75009502669b59c49f2404))
+
+### 🐛 Bug Fixes
+- migrate user bundles from s6-rc.d to user-bundles.d to fix deprecation warning ([`73156ded`](https://github.com/FaserF/hassio-addons/commit/73156ded6152ca7cab2e34950ec95461dd4fb4dd))
+- eliminate duplicate alert blocks and standardize README notice cleaning ([`fdf7b787`](https://github.com/FaserF/hassio-addons/commit/fdf7b787f1450d3e372795a968a68b6b721181a4))
+- regenerate accurate changelogs for all addons and fix release commit matching in bump_version.py ([`b667eef9`](https://github.com/FaserF/hassio-addons/commit/b667eef9f23c882efd02c11535c2ea4c9bbad5f5))
+
+### 📦 Dependencies
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.3](https://github.com/hassio-addons/addon-base/releases/tag/21.0.3) ([`00265df2`](https://github.com/FaserF/hassio-addons/commit/00265df231b32c916e0470852ef907b2d942b8d4))
+
+### 🔧 Configuration
+- deactivate dev sync workflow, delete local dev branch, and point in-dev notices exclusively to Edge channel ([`eb3f45de`](https://github.com/FaserF/hassio-addons/commit/eb3f45de16d3e72806094cff745bd3a727ae3ef8))
+
+### 📝 Documentation
+- ci: integrate in-development add-ons blacklist across workflows, scripts and README generators ([`6f5b41cc`](https://github.com/FaserF/hassio-addons/commit/6f5b41cc98d3fc3592543b75ad72bd7a4f331825))
+
+### 🚀 Other
+- Standardize log_level configuration and handling across all add-ons ([`7ddda206`](https://github.com/FaserF/hassio-addons/commit/7ddda206529ef9453a58d36af03969ed975a8e66))
+
+
 ## 0.4.2 (2026-08-19)
 
 ### ✨ Features
