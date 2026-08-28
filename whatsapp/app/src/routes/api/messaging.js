@@ -175,24 +175,35 @@ export function registerMessagingRoutes(app) {
         const connected = await ensureConnected(session);
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
-        // Normalise the start timestamp: prefer startTime, fall back to date
+        // Normalise the start and end dates for Baileys (expects Date objects for startDate and endDate)
         const rawStart = startTime ?? date;
-        const rawEnd = endTime;
+        const parseDate = (val) => {
+          if (!val) return undefined;
+          if (typeof val === 'number') {
+            // Check if unix timestamp in seconds (< 10000000000) or milliseconds
+            return new Date(val < 10000000000 ? val * 1000 : val);
+          }
+          const d = new Date(val);
+          return isNaN(d.getTime()) ? undefined : d;
+        };
+
+        const startDate = parseDate(rawStart) || new Date();
+        const endDate = parseDate(endTime);
 
         const jid = getJid(number);
         const sentMsg = await session.sock.sendMessage(jid, {
           event: {
             name,
             description: description || '',
-            startTime: rawStart ? Math.floor(new Date(rawStart).getTime() / 1000) : undefined,
-            endTime: rawEnd ? Math.floor(new Date(rawEnd).getTime() / 1000) : undefined,
+            startDate,
+            endDate,
             location: location
               ? typeof location === 'string'
                 ? { name: location }
                 : location
               : undefined,
             joinLink: joinLink || undefined,
-            isCanceled: isCanceled ?? undefined,
+            isCancelled: isCanceled ?? false,
             expiration: expiration ?? undefined,
           },
         });
