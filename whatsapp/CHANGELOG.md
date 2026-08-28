@@ -1,5 +1,36 @@
 # Changelog
 
+## 2.1.3 (2026-08-28)
+
+### ✨ Features
+- fix translation mode detection, duplicate caching, and skip spam guard on translation replies ([`dec2b1f4`](https://github.com/FaserF/hassio-addons/commit/dec2b1f49c5d7ed23e1e6a9a079acd5613e61d0a))
+- log and record error when AegisBot translation fails before falling back ([`d7ae18d1`](https://github.com/FaserF/hassio-addons/commit/d7ae18d1ab45b44c4441d6031c5ec3e3a70d7f11))
+- add resilient multi-endpoint failover for Google Translate ([`223a7d8a`](https://github.com/FaserF/hassio-addons/commit/223a7d8ab8d7c1a40ba46665ea4fbc5ffe3ca776))
+
+### 🐛 Bug Fixes
+- include connected flag and dynamic my_number in /stats ([`42cee3b7`](https://github.com/FaserF/hassio-addons/commit/42cee3b71fc91a2cb1dd743b9f61b15e6a321171))
+- provide valid lastMessages range for Baileys 7 clear, delete, archive and unarchive mutations ([`b1d605dc`](https://github.com/FaserF/hassio-addons/commit/b1d605dc3c0ca4a1a99f6b3e56d60f00ded9a977))
+- migrate user bundles from s6-rc.d to user-bundles.d to fix deprecation warning ([`73156ded`](https://github.com/FaserF/hassio-addons/commit/73156ded6152ca7cab2e34950ec95461dd4fb4dd))
+- eliminate duplicate alert blocks and standardize README notice cleaning ([`fdf7b787`](https://github.com/FaserF/hassio-addons/commit/fdf7b787f1450d3e372795a968a68b6b721181a4))
+- send X-API-Key alongside Authorization header to AegisBot ([`b1e3287c`](https://github.com/FaserF/hassio-addons/commit/b1e3287cdf330cb3b5d0e4683414372261488c5d))
+- declare cleanUrl in outer scope and handle async errors in syncWhatsAppToTelegram ([`2e89074f`](https://github.com/FaserF/hassio-addons/commit/2e89074f4b2d2c8f53cdfdd93767f1a7feae7f1a))
+- correctly extract detected source language from MyMemory API ([`cb3be623`](https://github.com/FaserF/hassio-addons/commit/cb3be62316f503b888b4570b0b6b653f56332c83))
+- dynamically populate all commands in alias target dropdown from registry ([`32114207`](https://github.com/FaserF/hassio-addons/commit/32114207230ed18eb4ae202d2a6d1b9822f31f97))
+- resolve element ID mismatch in addBlacklistWord handler ([`f8e17b0e`](https://github.com/FaserF/hassio-addons/commit/f8e17b0e9c23eb65e060507b10a00332db51064e))
+- prevent 1:1 outgoing messages from tracking as received in gateway queue ([`1663f9af`](https://github.com/FaserF/hassio-addons/commit/1663f9af088c56337e600cf111b190da1ceb15ca))
+- resolve LID-addressed 1:1 chats and guard pushName collection (#1007) ([`7e87ede0`](https://github.com/FaserF/hassio-addons/commit/7e87ede0ef2c93257579ec1b1331a2a12332d41c))
+- fix lowercase link to services.html ([`82c3a503`](https://github.com/FaserF/hassio-addons/commit/82c3a503d6ee39e4ebdae6295b5fcf0a4a5014cd))
+
+### 📦 Dependencies
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.3](https://github.com/hassio-addons/addon-base/releases/tag/21.0.3) ([`00265df2`](https://github.com/FaserF/hassio-addons/commit/00265df231b32c916e0470852ef907b2d942b8d4))
+- ⬆️ Update dependency eslint to v10.9.1 (#1014) ([`c08b8702`](https://github.com/FaserF/hassio-addons/commit/c08b87021c762eaefeae5f6b86b2bec755268141))
+
+### 🎨 Style
+- remove all hardcoded command lists and use centralized async getBuiltinCommands ([`7b5740b3`](https://github.com/FaserF/hassio-addons/commit/7b5740b30332f1405cf985b42c335ea974285b63))
+- unify offline catchup with central missed_messages recovery and remove redundant UI setting ([`a92e243a`](https://github.com/FaserF/hassio-addons/commit/a92e243a07246b87098f041f86fc4fe898156d4c))
+- redesign moderation filter panel with clean card layout and accordion attachments ([`d669745c`](https://github.com/FaserF/hassio-addons/commit/d669745cd22826daf643a29875dbc76c9c7723d8))
+
+
 ## 2.1.2 (2026-08-22)
 
 ### 🐛 Bug Fixes
