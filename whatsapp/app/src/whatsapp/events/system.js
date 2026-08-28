@@ -118,6 +118,12 @@ export async function monitorHACore(session) {
     clearInterval(session.haMonitorInterval);
   }
 
+  // If running in standalone Docker without HA Supervisor, skip HA Core supervisor API polling
+  if (!process.env.SUPERVISOR_TOKEN) {
+    logger.debug('ℹ️ Standalone Docker container detected (no SUPERVISOR_TOKEN). Skipping HA Core polling.');
+    return;
+  }
+
   session.haMonitorInterval = setInterval(async () => {
     // Only force refresh if HA is currently offline (to detect restoration quickly)
     // Otherwise use cached versions (15m TTL) to minimize Supervisor API noise.
