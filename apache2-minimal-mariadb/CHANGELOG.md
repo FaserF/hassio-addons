@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.4.7 (2026-08-28)
+
+### ✨ Features
+- add missing default_ssl_conf assignment in cont-init scripts (#1026) ([`e4ebc965`](https://github.com/FaserF/hassio-addons/commit/e4ebc9657cfacb3aca871973db9c2223bd76db17))
+
+
 ## 3.4.6 (2026-08-28)
 
 ### 🐛 Bug Fixes
