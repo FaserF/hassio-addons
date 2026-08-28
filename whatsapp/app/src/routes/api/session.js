@@ -101,11 +101,21 @@ export function registerSessionRoutes(app) {
       const session = getReqSession(req);
       const phoneNumber = req.body?.phone_number;
       if (!phoneNumber) return res.status(400).json({ error: 'phone_number required' });
-      if (session.isConnected) return res.json({ status: 'already_connected' });
+      if (session.isConnected) {
+        return res.json({
+          status: 'already_connected',
+          connected: true,
+          my_number: session.stats?.my_number || session.sock?.user?.id?.split(':')[0] || null,
+        });
+      }
       if (!session.sock) return res.status(500).json({ error: 'Socket not initialized' });
 
       try {
-        const code = await session.sock.requestPairingCode(phoneNumber.replace(/[^0-9]/g, ''));
+        const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
+        if (!cleanPhone || cleanPhone.length < 6) {
+          return res.status(400).json({ error: 'Invalid phone number format' });
+        }
+        const code = await session.sock.requestPairingCode(cleanPhone);
         res.json({ status: 'pairing_code_generated', code });
       } catch (err) {
         res.status(500).json({ error: err.message });
@@ -153,7 +163,14 @@ export function registerSessionRoutes(app) {
   app.get('/stats', apiLimiter, anyAuthMiddleware, (req, res) => {
     try {
       const session = getReqSession(req);
-      res.json(session.stats);
+      const isConnected = Boolean(session.isConnected);
+      res.json({
+        ...session.stats,
+        connected: isConnected,
+        isConnected,
+        isConnecting: Boolean(session.isConnecting),
+        my_number: session.stats?.my_number || session.sock?.user?.id?.split(':')[0] || null,
+      });
     } catch (err) {
       res.status(500).json({ detail: err.message });
     }
