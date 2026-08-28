@@ -16,7 +16,7 @@ ENV APP_UNSUPPORTED="false"
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.0.0"
+ENV APP_VERSION="1.0.1"
 ENV APP_NAME="Trade Republic Headless Browser"
 ENV APP_SLUG="traderepublic"
 ENV APP_UNSUPPORTED="false"
