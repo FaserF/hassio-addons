@@ -2,7 +2,12 @@ import { uiAuthMiddleware, anyAuthMiddleware, apiLimiter } from '../../middlewar
 import { getSession, sanitizeSessionId, sessions } from '../../session.js';
 import { getMessageText, asyncHandler } from './helpers.js';
 import { getJid } from '../../utils/jid.js';
-import { resolveCanonicalUserKey, isSameUser, isMessageForJid } from '../../utils/security.js';
+import {
+  resolveCanonicalUserKey,
+  isSameUser,
+  isMessageForJid,
+  normalizeJid,
+} from '../../utils/security.js';
 
 export function registerUiApiRoutes(app) {
   app.get(
@@ -48,7 +53,22 @@ export function registerUiApiRoutes(app) {
         if (session.contactCache) {
           for (const [cId, contact] of session.contactCache.entries()) {
             const cName = contact.name || contact.notify || contact.verifiedName;
-            if (cName) contactNames.set(cId, cName);
+            if (cName) {
+              contactNames.set(cId, cName);
+              if (contact.lid) {
+                contactNames.set(contact.lid, cName);
+                const lidNorm = normalizeJid(contact.lid);
+                if (lidNorm) contactNames.set(lidNorm, cName);
+              }
+              const digits = (contact.id || cId || '').split('@')[0].replace(/\D/g, '');
+              if (digits && !digits.startsWith('1576')) {
+                contactNames.set(`${digits}@s.whatsapp.net`, cName);
+              }
+              const phoneDigits = (contact.phoneNumber || '').replace(/\D/g, '');
+              if (phoneDigits) {
+                contactNames.set(`${phoneDigits}@s.whatsapp.net`, cName);
+              }
+            }
           }
         }
 
@@ -180,6 +200,18 @@ export function registerUiApiRoutes(app) {
               }
             } else if (contactNames.has(c.jid)) {
               c.name = contactNames.get(c.jid);
+            } else {
+              const norm = normalizeJid(c.jid);
+              if (contactNames.has(norm)) {
+                c.name = contactNames.get(norm);
+              } else {
+                const canonicalPn = resolveCanonicalUserKey(c.jid, session);
+                if (canonicalPn && contactNames.has(`${canonicalPn}@s.whatsapp.net`)) {
+                  c.name = contactNames.get(`${canonicalPn}@s.whatsapp.net`);
+                } else if (canonicalPn && canonicalPn !== c.jid.split('@')[0]) {
+                  c.name = canonicalPn;
+                }
+              }
             }
             return c;
           })
