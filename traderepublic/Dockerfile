@@ -35,7 +35,6 @@ RUN \
         curl \
         jq \
         "dos2unix~=7.5" && \
-
     echo "ALPINE_VERSION=$(cat /etc/alpine-release 2>/dev/null || echo unknown)" >> /etc/environment
 
 # 2. Set workdir

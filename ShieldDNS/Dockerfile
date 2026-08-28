@@ -28,10 +28,10 @@ RUN apk add --no-cache curl \
     && rm coredns.tgz
 
 # --- STAGE 2: BUILD SHIELDDNS ADMIN ---
-FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS admin-build
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS admin-build
 ARG TARGETARCH
 # renovate: datasource=github-releases depName=FaserF/ShieldDNS
-ARG SHIELDDNS_VERSION="1.8.0"
+ARG SHIELDDNS_VERSION="1.10.5"
 WORKDIR /app
 RUN apk add --no-cache curl \
     && curl -L "https://github.com/FaserF/ShieldDNS/archive/refs/tags/v${SHIELDDNS_VERSION}.tar.gz" -o source.tar.gz \
