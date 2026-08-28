@@ -3,11 +3,13 @@
 ## 2.1.3 (2026-08-28)
 
 ### ✨ Features
+
 - fix translation mode detection, duplicate caching, and skip spam guard on translation replies ([`dec2b1f4`](https://github.com/FaserF/hassio-addons/commit/dec2b1f49c5d7ed23e1e6a9a079acd5613e61d0a))
 - log and record error when AegisBot translation fails before falling back ([`d7ae18d1`](https://github.com/FaserF/hassio-addons/commit/d7ae18d1ab45b44c4441d6031c5ec3e3a70d7f11))
 - add resilient multi-endpoint failover for Google Translate ([`223a7d8a`](https://github.com/FaserF/hassio-addons/commit/223a7d8ab8d7c1a40ba46665ea4fbc5ffe3ca776))
 
 ### 🐛 Bug Fixes
+
 - include connected flag and dynamic my_number in /stats ([`42cee3b7`](https://github.com/FaserF/hassio-addons/commit/42cee3b71fc91a2cb1dd743b9f61b15e6a321171))
 - provide valid lastMessages range for Baileys 7 clear, delete, archive and unarchive mutations ([`b1d605dc`](https://github.com/FaserF/hassio-addons/commit/b1d605dc3c0ca4a1a99f6b3e56d60f00ded9a977))
 - migrate user bundles from s6-rc.d to user-bundles.d to fix deprecation warning ([`73156ded`](https://github.com/FaserF/hassio-addons/commit/73156ded6152ca7cab2e34950ec95461dd4fb4dd))
@@ -22,14 +24,15 @@
 - fix lowercase link to services.html ([`82c3a503`](https://github.com/FaserF/hassio-addons/commit/82c3a503d6ee39e4ebdae6295b5fcf0a4a5014cd))
 
 ### 📦 Dependencies
+
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.3](https://github.com/hassio-addons/addon-base/releases/tag/21.0.3) ([`00265df2`](https://github.com/FaserF/hassio-addons/commit/00265df231b32c916e0470852ef907b2d942b8d4))
 - ⬆️ Update dependency eslint to v10.9.1 (#1014) ([`c08b8702`](https://github.com/FaserF/hassio-addons/commit/c08b87021c762eaefeae5f6b86b2bec755268141))
 
 ### 🎨 Style
+
 - remove all hardcoded command lists and use centralized async getBuiltinCommands ([`7b5740b3`](https://github.com/FaserF/hassio-addons/commit/7b5740b30332f1405cf985b42c335ea974285b63))
 - unify offline catchup with central missed_messages recovery and remove redundant UI setting ([`a92e243a`](https://github.com/FaserF/hassio-addons/commit/a92e243a07246b87098f041f86fc4fe898156d4c))
 - redesign moderation filter panel with clean card layout and accordion attachments ([`d669745c`](https://github.com/FaserF/hassio-addons/commit/d669745cd22826daf643a29875dbc76c9c7723d8))
-
 
 ## 2.1.2 (2026-08-22)
 

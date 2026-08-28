@@ -3,15 +3,17 @@
 ## 1.0.2 (2026-08-28)
 
 ### 🐛 Bug Fixes
+
 - regenerate accurate changelogs for all addons and fix release commit matching in bump_version.py ([`b667eef9`](https://github.com/FaserF/hassio-addons/commit/b667eef9f23c882efd02c11535c2ea4c9bbad5f5))
 
 ### 📦 Dependencies
+
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.3](https://github.com/hassio-addons/addon-base/releases/tag/21.0.3) ([`00265df2`](https://github.com/FaserF/hassio-addons/commit/00265df231b32c916e0470852ef907b2d942b8d4))
 - ⬆️ Update ghcr.io/home-assistant/home-assistant Docker tag to v[2026.8.3](https://github.com/home-assistant/core/releases/tag/2026.8.3) (#1005) ([`8af7254f`](https://github.com/FaserF/hassio-addons/commit/8af7254f9d471475a8d6b84e275fd943eb486046))
 
 ### 🚀 Other
-- Standardize log_level configuration and handling across all add-ons ([`7ddda206`](https://github.com/FaserF/hassio-addons/commit/7ddda206529ef9453a58d36af03969ed975a8e66))
 
+- Standardize log_level configuration and handling across all add-ons ([`7ddda206`](https://github.com/FaserF/hassio-addons/commit/7ddda206529ef9453a58d36af03969ed975a8e66))
 
 ## 1.0.1 (2026-08-19)
 
