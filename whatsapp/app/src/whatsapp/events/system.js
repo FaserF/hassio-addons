@@ -120,7 +120,9 @@ export async function monitorHACore(session) {
 
   // If running in standalone Docker without HA Supervisor, skip HA Core supervisor API polling
   if (!process.env.SUPERVISOR_TOKEN) {
-    logger.debug('ℹ️ Standalone Docker container detected (no SUPERVISOR_TOKEN). Skipping HA Core polling.');
+    logger.debug(
+      'ℹ️ Standalone Docker container detected (no SUPERVISOR_TOKEN). Skipping HA Core polling.'
+    );
     return;
   }
 
