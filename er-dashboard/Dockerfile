@@ -23,7 +23,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1 \
     PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.4.8"
+ENV APP_VERSION="1.4.9"
 ENV APP_NAME="ER-Startseite (Dashboard)"
 ENV APP_SLUG="er-dashboard"
 ENV APP_UNSUPPORTED="false"
