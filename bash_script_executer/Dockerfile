@@ -6,7 +6,7 @@ ARG BUILD_DATE="unknown"
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.5.2"
+ENV APP_VERSION="2.5.3"
 ENV APP_NAME="Bash Script Executer"
 ENV APP_SLUG="bashscriptexecuter"
 ENV APP_UNSUPPORTED="false"
