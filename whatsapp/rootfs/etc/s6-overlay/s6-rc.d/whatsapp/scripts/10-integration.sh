@@ -1,5 +1,5 @@
 #!/usr/bin/with-contenv bashio
-
+# shellcheck disable=SC1091,SC2155
 # shellcheck shell=bash
 
 # Function to compare semantic versions

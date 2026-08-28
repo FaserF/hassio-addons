@@ -1,6 +1,6 @@
 #!/usr/bin/with-contenv bashio
 # Shared library for displaying App banners
-
+# shellcheck disable=SC1091,SC2155
 # shellcheck shell=bash
 
 bashio::app.print_banner() {

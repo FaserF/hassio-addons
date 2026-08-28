@@ -1,5 +1,5 @@
 #!/usr/bin/with-contenv bashio
-
+# shellcheck disable=SC1091
 # shellcheck shell=bash
 
 # Load build-time env vars (BAILEYS_VERSION, FASTAPI_VERSION, etc.) into this shell

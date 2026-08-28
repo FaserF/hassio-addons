@@ -386,10 +386,13 @@ jobs:
           if ! grep -q supervisor_ready=true "$GITHUB_OUTPUT" 2>/dev/null; then
             echo "❌ Supervisor failed to start"
             {
-              echo "::group::Internal Supervisor Logs"
+              echo "::group::Internal Supervisor Logs (Full)"
               docker exec ha-supervisor-test cat /tmp/supervisor.log 2>/dev/null || \
                 (docker cp ha-supervisor-test:/tmp/supervisor.log /tmp/supervisor-crash.log 2>/dev/null && cat /tmp/supervisor-crash.log) || \
                 echo "No internal logs found"
+              echo "::endgroup::"
+              echo "::group::Internal Supervisor Log (Last 100 lines)"
+              docker exec ha-supervisor-test tail -n 100 /tmp/supervisor.log 2>/dev/null || true
               echo "::endgroup::"
               echo "::group::Docker-in-Docker Daemon Status"
               timeout 10s docker exec ha-supervisor-test docker info 2>&1 || echo "Docker daemon not reachable"

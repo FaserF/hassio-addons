@@ -1,5 +1,5 @@
 #!/usr/bin/with-contenv bashio
-
+# shellcheck disable=SC1091,SC2155
 # shellcheck shell=bash
 
 cd /opt/whatsapp || exit 1

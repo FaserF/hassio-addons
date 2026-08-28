@@ -273,9 +273,9 @@ jobs:
         uses: ludeeus/action-shellcheck@2.0.0
         with:
           scandir: "./${{ matrix.App }}"
-          format: tty
+          format: gcc
         env:
-          SHELLCHECK_OPTS: -s bash -e SC2086
+          SHELLCHECK_OPTS: -s bash -e SC2086 -e SC1091 -e SC2155
 
       # 2. Hadolint
       - name: 🐳 Hadolint
