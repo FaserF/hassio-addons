@@ -523,7 +523,6 @@ class TradeRepublicBrowserService:
                         except Exception as renew_err:  # noqa: BLE001
                             _LOGGER.debug("Keepalive token rotation attempt: %s", renew_err)
 
-
                 # Sync keeper auth state into service state
                 _LOGGER.debug("Keepalive: syncing ws_keeper state (authenticated=%s)", self._ws_keeper.is_authenticated)
                 await self.refresh_session()

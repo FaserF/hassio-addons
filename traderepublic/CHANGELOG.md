@@ -3,6 +3,7 @@
 ## 1.1.2 (2026-08-29)
 
 ### 🐛 Bug Fixes
+
 - comprehensive token extraction across getAllCookies and all storage objects ([`e0eef449`](https://github.com/FaserF/hassio-addons/commit/e0eef449dbc17286891a4df6ec01b8d56ee95cb7))
 - remove duplicate Enter and form submit events in login script ([`60e70ef4`](https://github.com/FaserF/hassio-addons/commit/60e70ef44c107be16c002e2573f6246b996753a1))
 - preserve actual disconnect reason and avoid false restart reason ([`b90857a1`](https://github.com/FaserF/hassio-addons/commit/b90857a1b0bb562a1a74d1fd2fc78010f69caff2))
@@ -10,8 +11,8 @@
 - update 2FA text to in-app approval, prevent unauthenticated log spamming and fix WAF header flow (#1039) ([`5a397fc6`](https://github.com/FaserF/hassio-addons/commit/5a397fc6aeec33d39a35e3c54ed37eca14cbf848))
 
 ### 📦 Dependencies
-- Update to ShieldDNS 1.10.5 & golang 1.27 ([`4b6e31ad`](https://github.com/FaserF/hassio-addons/commit/4b6e31ad0453bbb90e9f85d7f56959e835e78f1d))
 
+- Update to ShieldDNS 1.10.5 & golang 1.27 ([`4b6e31ad`](https://github.com/FaserF/hassio-addons/commit/4b6e31ad0453bbb90e9f85d7f56959e835e78f1d))
 
 ## 1.0.1-dev-20260824-2009-fdf7b78 (2026-08-24)
 

@@ -80,4 +80,3 @@ class SessionManager:
                 json.dump(existing, f, indent=2)
         except Exception as e:
             _LOGGER.debug("Failed to record logout: %s", e)
-
