@@ -1,5 +1,5 @@
 name: "Trade Republic Headless Browser"
-version: "1.0.1"
+version: "1.1.2"
 slug: "traderepublic"
 image: ghcr.io/faserf/hassio-addons-traderepublic-{arch}
 description: "Trade Republic Headless Browser & Session Provider (WAF Solver & Keep-Alive)."
