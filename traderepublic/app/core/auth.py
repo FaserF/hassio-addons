@@ -106,7 +106,13 @@ class AuthHelper:
                     for cookie in res["cookies"]:
                         cname = cookie.get("name", "").lower()
                         val = str(cookie.get("value", "")).strip().strip('"').strip("'")
-                        if any(k in cname for k in ("tr_session", "sessiontoken", "session_token", "auth_token", "tr_refresh")) and len(val) > 15:
+                        if (
+                            any(
+                                k in cname
+                                for k in ("tr_session", "sessiontoken", "session_token", "auth_token", "tr_refresh")
+                            )
+                            and len(val) > 15
+                        ):
                             return val
             except Exception:  # noqa: BLE001
                 pass
