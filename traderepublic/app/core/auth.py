@@ -96,11 +96,17 @@ class AuthHelper:
             res = await self.cdp.send_cmd(cdp_method, params)
             if res and "cookies" in res:
                 for cookie in res["cookies"]:
-                    cname = cookie.get("name", "")
-                    if cname in ("tr_session", "sessionToken", "tr_session_id", "auth_token"):
+                    cname = cookie.get("name", "").lower()
+                    val = cookie.get("value", "")
+                    if val and (val.startswith("eyJ") or len(val) > 40):
+                        if any(k in cname for k in ("session", "token", "auth", "tr_")):
+                            return val.strip().strip('"').strip("'")
+                for cookie in res["cookies"]:
+                    cname = cookie.get("name", "").lower()
+                    if cname in ("tr_session", "sessiontoken", "tr_session_id", "auth_token", "tr_refresh"):
                         token = cookie.get("value")
-                        if token and (token.startswith("eyJ") or len(token) > 40):
-                            return token
+                        if token and len(token) > 20:
+                            return token.strip().strip('"').strip("'")
 
         # 2. Check localStorage & sessionStorage
         storage_script = """
@@ -110,13 +116,14 @@ class AuthHelper:
                     const k = localStorage.key(i);
                     const v = localStorage.getItem(k);
                     if (v && typeof v === 'string') {
-                        if (k === 'sessionToken' || k === 'tr_session' || k.includes('session') || k.includes('auth')) {
+                        if (k === 'sessionToken' || k === 'tr_session' || k.includes('session') || k.includes('auth') || k.includes('token')) {
                             try {
                                 const parsed = JSON.parse(v);
                                 if (typeof parsed === 'string' && (parsed.startsWith('eyJ') || parsed.length > 30)) return parsed;
                                 if (parsed && typeof parsed === 'object') {
                                     if (parsed.sessionToken) return parsed.sessionToken;
                                     if (parsed.token) return parsed.token;
+                                    if (parsed.refreshToken) return parsed.refreshToken;
                                 }
                             } catch(e) {}
                             if (v.startsWith('eyJ') || v.length > 30) return v;
@@ -141,8 +148,17 @@ class AuthHelper:
         # 3. Check document.cookie via Runtime evaluation
         eval_script = """
         (() => {
-            const match = document.cookie.match(/(?:tr_session|sessionToken)=([^;]+)/);
-            if (match && match[1] && (match[1].startsWith('eyJ') || match[1].length > 30)) return match[1];
+            const cookies = document.cookie.split(';');
+            for (let c of cookies) {
+                const parts = c.trim().split('=');
+                if (parts.length >= 2) {
+                    const name = parts[0].toLowerCase();
+                    const val = parts.slice(1).join('=');
+                    if (val.startsWith('eyJ') || ((name.includes('session') || name.includes('token') || name.includes('tr_')) && val.length > 30)) {
+                        return val;
+                    }
+                }
+            }
             return null;
         })()
         """
@@ -179,12 +195,15 @@ class AuthHelper:
                 input.focus();
                 const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
                 nativeSetter.call(input, "{clean_phone}");
-                input.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                input.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
+                input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
                 input.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
                 input.dispatchEvent(new KeyboardEvent('keyup', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
                 const btn = Array.from(document.querySelectorAll('button')).find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Continue') || b.textContent.includes('Anmelden'))));
-                if (btn) btn.click();
+                if (btn) {{
+                    btn.disabled = false;
+                    btn.click();
+                }}
                 return true;
             }}
             return false;
@@ -201,12 +220,18 @@ class AuthHelper:
                 input.focus();
                 const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
                 nativeSetter.call(input, "{clean_pin}");
-                input.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                input.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
+                input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
                 input.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
                 input.dispatchEvent(new KeyboardEvent('keyup', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
                 const btn = Array.from(document.querySelectorAll('button')).find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Anmelden') || b.textContent.includes('Login') || b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Submit'))));
-                if (btn) btn.click();
+                if (btn) {{
+                    btn.disabled = false;
+                    btn.click();
+                }}
+                if (input.form) {{
+                    input.form.dispatchEvent(new Event('submit', {{ bubbles: true, cancelable: true }}));
+                }}
                 return true;
             }}
             return false;
