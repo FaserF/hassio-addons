@@ -246,7 +246,11 @@ class AuthHelper:
                     elif resp.status in (400, 401):
                         try:
                             err_data = json.loads(resp_text)
-                            if "errors" in err_data and isinstance(err_data["errors"], list) and len(err_data["errors"]) > 0:
+                            if (
+                                "errors" in err_data
+                                and isinstance(err_data["errors"], list)
+                                and len(err_data["errors"]) > 0
+                            ):
                                 first_err = err_data["errors"][0]
                                 err_code = first_err.get("errorCode", "")
                                 err_msg = first_err.get("errorMessage", "")
