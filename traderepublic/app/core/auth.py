@@ -251,8 +251,7 @@ class AuthHelper:
 
         return {
             "success": True,
-            "message": dom_err_text
-            or "Credentials submitted. Please confirm in your Trade Republic smartphone app.",
+            "message": dom_err_text or "Credentials submitted. Please confirm in your Trade Republic smartphone app.",
         }
 
     async def submit_2fa_code(self, clean_code: str) -> None:
