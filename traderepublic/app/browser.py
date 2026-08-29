@@ -96,24 +96,6 @@ class TradeRepublicBrowserService:
                 _LOGGER.warning("Chromium CDP not ready within 20s — proceeding anyway")
 
             await self._load_saved_session()
-            if self.session_token:
-                # Pre-Keeper Token Refresh:
-                # Navigate Chromium to establish browser session and rotate/renew token before WS connect.
-                try:
-                    _LOGGER.info("Startup: navigating to app.traderepublic.com to rotate session token...")
-                    await self.auth_helper.inject_session_cookies(self.session_token)
-                    await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com"})
-                    await asyncio.sleep(5)
-
-                    refreshed = await self.auth_helper.extract_token_from_cookies()
-                    if refreshed:
-                        from core.verifier import verify_tr_token
-
-                        if await verify_tr_token(refreshed):
-                            _LOGGER.info("Startup: successfully validated/rotated session token from Chromium")
-                            await self.save_session(refreshed)
-                except Exception as nav_err:  # noqa: BLE001
-                    _LOGGER.debug("Startup navigation info: %s", nav_err)
 
             # Start persistent WS keeper and Chromium watchdog
             self._ws_keeper.start()
@@ -146,15 +128,12 @@ class TradeRepublicBrowserService:
                 import time
 
                 logout_now = time.time()
-                dur = (logout_now - self.last_login_time) if self.last_login_time else self.last_session_duration
-                self.last_logout_time = self.last_logout_time or logout_now
-                # Keep previously recorded reason if already present, otherwise record actual error
-                if not self.last_logout_reason:
-                    self.last_logout_reason = (
-                        self._ws_keeper.last_error or "Session expired or rejected by Trade Republic (HTTP 401)"
-                    )
-                if dur is not None and not self.last_session_duration:
-                    self.last_session_duration = dur
+                dur = (logout_now - self.last_login_time) if self.last_login_time else None
+                self.last_logout_time = logout_now
+                self.last_logout_reason = (
+                    self._ws_keeper.last_error or "Session expired or rejected by Trade Republic (HTTP 401)"
+                )
+                self.last_session_duration = dur
                 self.session_manager.record_logout(
                     self.last_logout_reason,
                     self.last_session_duration,
@@ -226,12 +205,16 @@ class TradeRepublicBrowserService:
             self.last_login_time = time.time()
         self.last_logout_time = None
         self.last_logout_reason = None
+        self.last_session_duration = None
         self.status_message = "Everything is connected and running normally. Re-login is only required if your session expires or if you experience connection issues."
         self.last_error = None
         self.session_manager.save(
             clean_tok,
             self.phone_number,
             login_time=self.last_login_time,
+            logout_time=None,
+            logout_reason=None,
+            duration_seconds=None,
         )
         await self.auth_helper.inject_session_cookies(clean_tok)
         # Tell keeper about the new token so it reconnects if previously stopped
@@ -501,38 +484,45 @@ class TradeRepublicBrowserService:
                         _LOGGER.warning("Chromium CDP not ready after restart within 20s")
                 # Active token auto-renewal:
                 # Trade Republic Web JWTs expire after ~60 minutes unless refreshed via the web app.
-                # Navigate Chromium in background to app.traderepublic.com so TR rotates/renews the session cookies.
+                # Only perform Chromium web refresh if the token has aged (>30m) or if keeper lost auth.
                 if self.session_token:
-                    try:
-                        import time
+                    import time
 
-                        _LOGGER.debug("Keepalive: refreshing web session via Chromium navigation")
-                        await self.auth_helper.inject_session_cookies(self.session_token)
-                        await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com"})
-                        await asyncio.sleep(6)
-                        # Trigger lightweight interaction to ensure web frontend issues cookie rotation
-                        await self.cdp.send_cmd(
-                            "Runtime.evaluate",
-                            {
-                                "expression": "window.dispatchEvent(new Event('focus')); window.dispatchEvent(new Event('mousemove'));"
-                            },
-                        )
-                        await asyncio.sleep(2)
-                        new_token = await self.auth_helper.extract_token_from_cookies()
-                        if new_token and new_token != self.session_token:
-                            from core.verifier import verify_tr_token
+                    token_age = time.time() - (self.last_token_update_time or self.last_login_time or 0)
+                    needs_refresh = (not self._ws_keeper.is_authenticated) or (token_age > 1800)
+                    if needs_refresh:
+                        try:
+                            _LOGGER.debug(
+                                "Keepalive: refreshing web session via Chromium navigation (token age: %ss)",
+                                int(token_age),
+                            )
+                            await self.auth_helper.inject_session_cookies(self.session_token)
+                            await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com"})
+                            await asyncio.sleep(6)
+                            # Trigger lightweight interaction to ensure web frontend issues cookie rotation
+                            await self.cdp.send_cmd(
+                                "Runtime.evaluate",
+                                {
+                                    "expression": "window.dispatchEvent(new Event('focus')); window.dispatchEvent(new Event('mousemove'));"
+                                },
+                            )
+                            await asyncio.sleep(2)
+                            new_token = await self.auth_helper.extract_token_from_cookies()
+                            if new_token and new_token != self.session_token:
+                                from core.verifier import verify_tr_token
 
-                            if await verify_tr_token(new_token):
-                                _LOGGER.info(
-                                    "Keepalive: successfully renewed session token from Chromium (length: %s)",
-                                    len(new_token),
-                                )
-                                await self.save_session(new_token)
-                        else:
-                            # Token confirmed fresh and valid via active page load
-                            self.last_token_update_time = time.time()
-                    except Exception as renew_err:  # noqa: BLE001
-                        _LOGGER.debug("Keepalive token rotation attempt: %s", renew_err)
+                                if await verify_tr_token(new_token):
+                                    _LOGGER.info(
+                                        "Keepalive: successfully renewed session token from Chromium (length: %s)",
+                                        len(new_token),
+                                    )
+                                    await self.save_session(new_token)
+                            else:
+                                # Token confirmed fresh and valid via active page load
+                                self.last_token_update_time = time.time()
+                        except Exception as renew_err:  # noqa: BLE001
+                            _LOGGER.debug("Keepalive token rotation attempt: %s", renew_err)
+
 
                 # Sync keeper auth state into service state
                 _LOGGER.debug("Keepalive: syncing ws_keeper state (authenticated=%s)", self._ws_keeper.is_authenticated)

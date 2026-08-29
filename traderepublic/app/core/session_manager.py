@@ -48,7 +48,7 @@ class SessionManager:
             "last_login_time": login_time or existing.get("last_login_time") or time.time(),
             "last_logout_time": logout_time,
             "last_logout_reason": logout_reason,
-            "last_session_duration": duration_seconds or existing.get("last_session_duration"),
+            "last_session_duration": duration_seconds,
         }
         try:
             with open(self.file_path, "w", encoding="utf-8") as f:
@@ -65,12 +65,19 @@ class SessionManager:
     ) -> None:
         """Record session termination details to disk."""
         existing = self.load()
-        existing["last_logout_time"] = logout_time or existing.get("last_logout_time") or time.time()
+        now = time.time()
+        logout_t = logout_time or now
+        existing["last_logout_time"] = logout_t
         existing["last_logout_reason"] = reason
         if duration_seconds is not None:
             existing["last_session_duration"] = duration_seconds
+        else:
+            login_t = existing.get("last_login_time")
+            if login_t:
+                existing["last_session_duration"] = max(0.0, logout_t - float(login_t))
         try:
             with open(self.file_path, "w", encoding="utf-8") as f:
                 json.dump(existing, f, indent=2)
         except Exception as e:
             _LOGGER.debug("Failed to record logout: %s", e)
+
