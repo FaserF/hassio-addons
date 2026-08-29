@@ -654,8 +654,8 @@
         <div class="alert alert-info">
           <b data-i18n="twofa_title">Approval Required:</b><br>
           <span data-i18n="twofa_step1">1. Open the Trade Republic app on your phone and tap Confirm.</span><br>
-          <span data-i18n="twofa_step2">2. If you received an SMS code instead, enter it below.</span><br>
-          <span data-i18n="twofa_step3">3. Click Check App Approval / Submit Code.</span>
+          <span data-i18n="twofa_step2">2. Once approved on your phone, click 'Check In-App Approval' below.</span><br>
+          <span data-i18n="twofa_step3">3. Your session will be transferred and kept alive permanently.</span>
           <div
             style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
             <span data-i18n="twofa_timer" style="font-size:0.85rem;color:#cbd5e1;">Time remaining to confirm:</span>
@@ -663,13 +663,7 @@
               style="font-family:monospace;font-weight:700;font-size:1.1rem;color:#fbbf24;">02:00</span>
           </div>
         </div>
-        <div class="form-group">
-          <label for="code" data-i18n="lbl_2fa_code">2FA Verification Code (optional for in-app approval)</label>
-          <input type="text" id="code" data-i18n-ph="code_placeholder"
-            placeholder="1234 (leave empty for in-app approval)" autofocus />
-        </div>
-        <button type="submit" style="background:#22c55e;" data-i18n="btn_check_2fa">✓ Check App Approval / Submit
-          Code</button>
+        <button type="submit" style="background:#22c55e;" data-i18n="btn_check_2fa">✓ Check In-App Approval</button>
       </form>
     </div>
 
@@ -907,9 +901,10 @@
     }
 
     async function submit2FA() {
-      const code = (document.getElementById('code').value || '').trim();
+      const codeEl = document.getElementById('code');
+      const code = codeEl ? (codeEl.value || '').trim() : '';
       const resEl = document.getElementById('result');
-      resEl.innerHTML = '<span style="color:#60a5fa;">' + (code ? t('js_verifying') : t('js_checking_app')) + '</span>';
+      resEl.innerHTML = '<span style="color:#60a5fa;">' + t('js_checking_app') + '</span>';
       try {
         const res = await fetch('./api/v1/login/verify', {
           method: 'POST',

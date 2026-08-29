@@ -197,8 +197,6 @@ class AuthHelper:
                 nativeSetter.call(input, "{clean_phone}");
                 input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
                 input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
-                input.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
-                input.dispatchEvent(new KeyboardEvent('keyup', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
                 const btn = Array.from(document.querySelectorAll('button')).find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Continue') || b.textContent.includes('Anmelden'))));
                 if (btn) {{
                     btn.disabled = false;
@@ -222,15 +220,10 @@ class AuthHelper:
                 nativeSetter.call(input, "{clean_pin}");
                 input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
                 input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
-                input.dispatchEvent(new KeyboardEvent('keydown', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
-                input.dispatchEvent(new KeyboardEvent('keyup', {{ key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }}));
                 const btn = Array.from(document.querySelectorAll('button')).find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Anmelden') || b.textContent.includes('Login') || b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Submit'))));
                 if (btn) {{
                     btn.disabled = false;
                     btn.click();
-                }}
-                if (input.form) {{
-                    input.form.dispatchEvent(new Event('submit', {{ bubbles: true, cancelable: true }}));
                 }}
                 return true;
             }}
