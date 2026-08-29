@@ -147,9 +147,11 @@ class TradeRepublicBrowserService:
 
                 logout_now = time.time()
                 dur = (logout_now - self.last_login_time) if self.last_login_time else self.last_session_duration
-                self.last_logout_time = logout_now
-                self.last_logout_reason = "Add-on Restart / Update"
-                if dur is not None:
+                self.last_logout_time = self.last_logout_time or logout_now
+                # Keep previously recorded reason if already present, otherwise record actual error
+                if not self.last_logout_reason:
+                    self.last_logout_reason = self._ws_keeper.last_error or "Session expired or rejected by Trade Republic (HTTP 401)"
+                if dur is not None and not self.last_session_duration:
                     self.last_session_duration = dur
                 self.session_manager.record_logout(
                     self.last_logout_reason,
@@ -158,9 +160,9 @@ class TradeRepublicBrowserService:
                 )
                 self.is_logged_in = False
                 self.status_message = (
-                    "Stored session token expired due to Add-on Restart / Update. Please re-authenticate."
+                    "Stored session token expired. Please re-authenticate."
                 )
-                self.last_error = self.last_logout_reason or "Add-on Restart / Update"
+                self.last_error = self.last_logout_reason
 
     async def verify_token_validity(self, token: str) -> bool:
         """Check token validity via the keeper's persistent connection state.

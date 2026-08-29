@@ -239,59 +239,6 @@ class AuthHelper:
         """
         await self.cdp.send_cmd("Runtime.evaluate", {"expression": pin_script, "returnByValue": True})
 
-        # Direct API Request (optional supplementary trigger with WAF token)
-        api_feedback_msg = None
-        try:
-            waf_token = await self.get_waf_token()
-            if waf_token:
-                headers = {
-                    "Content-Type": "application/json",
-                    "User-Agent": USER_AGENT,
-                    "Origin": "https://app.traderepublic.com",
-                    "Referer": "https://app.traderepublic.com/login",
-                    "X-aws-waf-token": waf_token,
-                }
-                async with (
-                    aiohttp.ClientSession() as session,
-                    session.post(
-                        "https://api.traderepublic.com/api/v2/auth/web/login",
-                        json={"phoneNumber": clean_phone, "pin": clean_pin},
-                        headers=headers,
-                        timeout=aiohttp.ClientTimeout(total=5),
-                    ) as resp,
-                ):
-                    resp_text = await resp.text()
-                    _LOGGER.info("Trade Republic Auth API response [HTTP %s]: %s", resp.status, resp_text)
-                    if resp.status == 200:
-                        data = json.loads(resp_text)
-                        api_feedback_msg = (
-                            f"Push notification dispatched (Process ID: {data.get('processId', 'active')}). "
-                            "Please confirm in Trade Republic app."
-                        )
-                    elif resp.status in (400, 401):
-                        try:
-                            err_data = json.loads(resp_text)
-                            if (
-                                "errors" in err_data
-                                and isinstance(err_data["errors"], list)
-                                and len(err_data["errors"]) > 0
-                            ):
-                                first_err = err_data["errors"][0]
-                                err_code = first_err.get("errorCode", "")
-                                err_msg = first_err.get("errorMessage", "")
-                                if err_code == "NUMBER_INVALID":
-                                    api_feedback_msg = "Invalid phone number or country code format."
-                                elif err_code == "PIN_INVALID":
-                                    api_feedback_msg = "Invalid PIN. Please check your PIN."
-                                elif err_code not in ("MISSING_REQUIRED_HEADER", "BAD_REQUEST"):
-                                    api_feedback_msg = f"{err_code}: {err_msg}" if err_msg else err_code
-                        except Exception:
-                            pass
-            else:
-                _LOGGER.debug("No AWS WAF token available yet — relying on Chromium DOM login form submission")
-        except Exception as api_err:  # noqa: BLE001
-            _LOGGER.debug("Direct Auth API attempt info: %s", api_err)
-
         dom_error_script = """
         (() => {
             const errEl = document.querySelector('[role="alert"], [data-testid="error-message"], .error, .alert');
@@ -305,7 +252,6 @@ class AuthHelper:
         return {
             "success": True,
             "message": dom_err_text
-            or api_feedback_msg
             or "Credentials submitted. Please confirm in your Trade Republic smartphone app.",
         }
 
