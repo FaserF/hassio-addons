@@ -92,23 +92,26 @@ class AuthHelper:
                 },
             ),
             ("Storage.getCookies", {}),
+            ("Network.getAllCookies", {}),
         ]:
-            res = await self.cdp.send_cmd(cdp_method, params)
-            if res and "cookies" in res:
-                for cookie in res["cookies"]:
-                    cname = cookie.get("name", "").lower()
-                    val = cookie.get("value", "")
-                    if val and (val.startswith("eyJ") or len(val) > 40):
-                        if any(k in cname for k in ("session", "token", "auth", "tr_")):
-                            return val.strip().strip('"').strip("'")
-                for cookie in res["cookies"]:
-                    cname = cookie.get("name", "").lower()
-                    if cname in ("tr_session", "sessiontoken", "tr_session_id", "auth_token", "tr_refresh"):
-                        token = cookie.get("value")
-                        if token and len(token) > 20:
-                            return token.strip().strip('"').strip("'")
+            try:
+                res = await self.cdp.send_cmd(cdp_method, params)
+                if res and "cookies" in res:
+                    # Pass 1: explicit JWT tokens
+                    for cookie in res["cookies"]:
+                        val = str(cookie.get("value", "")).strip().strip('"').strip("'")
+                        if val.startswith("eyJ") and len(val) > 40:
+                            return val
+                    # Pass 2: known TR session names
+                    for cookie in res["cookies"]:
+                        cname = cookie.get("name", "").lower()
+                        val = str(cookie.get("value", "")).strip().strip('"').strip("'")
+                        if any(k in cname for k in ("tr_session", "sessiontoken", "session_token", "auth_token", "tr_refresh")) and len(val) > 15:
+                            return val
+            except Exception:  # noqa: BLE001
+                pass
 
-        # 2. Check localStorage & sessionStorage
+        # 2. Check localStorage & sessionStorage (all keys)
         storage_script = """
         (() => {
             try {
@@ -116,24 +119,26 @@ class AuthHelper:
                     const k = localStorage.key(i);
                     const v = localStorage.getItem(k);
                     if (v && typeof v === 'string') {
-                        if (k === 'sessionToken' || k === 'tr_session' || k.includes('session') || k.includes('auth') || k.includes('token')) {
-                            try {
-                                const parsed = JSON.parse(v);
-                                if (typeof parsed === 'string' && (parsed.startsWith('eyJ') || parsed.length > 30)) return parsed;
-                                if (parsed && typeof parsed === 'object') {
-                                    if (parsed.sessionToken) return parsed.sessionToken;
-                                    if (parsed.token) return parsed.token;
-                                    if (parsed.refreshToken) return parsed.refreshToken;
+                        if (v.startsWith('eyJ') && v.length > 40) return v;
+                        try {
+                            const parsed = JSON.parse(v);
+                            if (typeof parsed === 'string' && parsed.startsWith('eyJ')) return parsed;
+                            if (parsed && typeof parsed === 'object') {
+                                for (let prop of ['sessionToken', 'token', 'refreshToken', 'accessToken', 'tr_session', 'jwt']) {
+                                    if (parsed[prop] && typeof parsed[prop] === 'string' && (parsed[prop].startsWith('eyJ') || parsed[prop].length > 20)) {
+                                        return parsed[prop];
+                                    }
                                 }
-                            } catch(e) {}
-                            if (v.startsWith('eyJ') || v.length > 30) return v;
-                        }
+                            }
+                        } catch(e) {}
                     }
                 }
                 for (let i = 0; i < sessionStorage.length; i++) {
                     const k = sessionStorage.key(i);
                     const v = sessionStorage.getItem(k);
-                    if (v && typeof v === 'string' && (v.startsWith('eyJ') || v.length > 30)) return v;
+                    if (v && typeof v === 'string') {
+                        if (v.startsWith('eyJ') && v.length > 40) return v;
+                    }
                 }
             } catch(e) {}
             return null;
@@ -142,7 +147,7 @@ class AuthHelper:
         storage_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": storage_script, "returnByValue": True})
         if storage_res and isinstance(storage_res, dict):
             val = storage_res.get("result", {}).get("value")
-            if val and isinstance(val, str) and (val.startswith("eyJ") or len(val) > 30):
+            if val and isinstance(val, str) and (val.startswith("eyJ") or len(val) > 20):
                 return val.strip().strip('"').strip("'")
 
         # 3. Check document.cookie via Runtime evaluation
@@ -153,8 +158,8 @@ class AuthHelper:
                 const parts = c.trim().split('=');
                 if (parts.length >= 2) {
                     const name = parts[0].toLowerCase();
-                    const val = parts.slice(1).join('=');
-                    if (val.startsWith('eyJ') || ((name.includes('session') || name.includes('token') || name.includes('tr_')) && val.length > 30)) {
+                    const val = parts.slice(1).join('=').trim().replace(/^["']|["']$/g, '');
+                    if (val.startsWith('eyJ') || ((name.includes('session') || name.includes('token') || name.includes('tr_')) && val.length > 20)) {
                         return val;
                     }
                 }
@@ -165,7 +170,7 @@ class AuthHelper:
         eval_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": eval_script, "returnByValue": True})
         if eval_res and isinstance(eval_res, dict):
             val = eval_res.get("result", {}).get("value")
-            if val and isinstance(val, str) and (val.startswith("eyJ") or len(val) > 30):
+            if val and isinstance(val, str) and (val.startswith("eyJ") or len(val) > 20):
                 return val.strip().strip('"').strip("'")
 
         return None
