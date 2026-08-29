@@ -236,6 +236,24 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
   }
 
   try {
+    const store = (await import('./moderation/store.js')).loadModerationStore();
+    const effectiveGemini = resolveEffectiveGeminiKey(store.gemini_api_key || config.ai?.api_key);
+    const effectiveOpenAI = resolveEffectiveOpenAIKey(config.ai?.openai_api_key);
+    const geminiKey = effectiveGemini?.key || null;
+    const openAiKey = effectiveOpenAI?.key || null;
+    const aegisbotUrl = config.stt_aegisbot_url || store.aegisbot_url || process.env.AEGISBOT_URL;
+    const hasAnyConfig = Boolean(geminiKey || openAiKey || aegisbotUrl);
+
+    // If no STT engine or API key is configured at all, record diagnostic and exit silently without spamming user
+    if (!hasAnyConfig) {
+      const sttEngine = config.stt_engine || 'auto';
+      const noKeyReason =
+        'No STT engine or API key configured. Voice note transcription skipped silently.';
+      recordSttError(sttEngine, noKeyReason, groupId);
+      logger.debug({ groupId, sttEngine }, noKeyReason);
+      return false;
+    }
+
     // 1. Download media stream from WhatsApp (Baileys)
     const stream = await downloadMediaMessage(
       rawMsg,
@@ -246,8 +264,6 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
         reuploadRequest: session.sock?.updateMediaMessage,
       }
     );
-
-    const store = (await import('./moderation/store.js')).loadModerationStore();
     const config = getGroupModerationConfig(groupId) || {};
     const { t: translate } = await import('../locales/loader.js');
     const groupLang = config.language || 'en';
@@ -273,11 +289,6 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     }
 
     // 2. Perform STT transcription using AegisBot Server, Gemini Multimodal Audio API, or OpenAI Whisper API
-    const effectiveGemini = resolveEffectiveGeminiKey(store.gemini_api_key || config.ai?.api_key);
-    const effectiveOpenAI = resolveEffectiveOpenAIKey(config.ai?.openai_api_key);
-    const geminiKey = effectiveGemini?.key || null;
-    const openAiKey = effectiveOpenAI?.key || null;
-    const aegisbotUrl = config.stt_aegisbot_url || store.aegisbot_url || process.env.AEGISBOT_URL;
     const aegisbotKey =
       config.stt_aegisbot_key || store.aegisbot_api_key || process.env.AEGISBOT_API_KEY || '';
 
@@ -289,21 +300,10 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
     const errorsCaptured = [];
     let usedEngine = 'unknown';
 
-    const hasAnyConfig = geminiKey || openAiKey || aegisbotUrl;
-
     const explicitSttLang = config.stt_language || config.stt?.language || 'auto';
 
-    if (!hasAnyConfig) {
-      if (sttEngine === 'auto') {
-        failureReason =
-          'No STT engine configured. Please configure an AegisBot Server URL, or configure a Gemini/OpenAI API key (or enable the Google Generative AI integration in Home Assistant).';
-      } else {
-        failureReason = `Configuration missing for STT engine "${sttEngine}". Please configure in settings or Home Assistant.`;
-      }
-      recordSttError(sttEngine, failureReason, groupId);
-    } else {
-      // 1. Try AegisBot Server (Local Self-Hosted Faster-Whisper with universal auto-detection)
-      if (sttEngine === 'aegisbot' || (sttEngine === 'auto' && aegisbotUrl)) {
+    // 1. Try AegisBot Server (Local Self-Hosted Faster-Whisper with universal auto-detection)
+    if (sttEngine === 'aegisbot' || (sttEngine === 'auto' && aegisbotUrl)) {
         usedEngine = 'aegisbot';
         try {
           let targetBaseUrl = String(aegisbotUrl || 'http://localhost:8000').trim();
@@ -513,7 +513,6 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           recordSttError('openai', detailedError, groupId);
         }
       }
-    }
 
     const SILENCE_PATTERNS = [
       /^\[blank_audio\]$/i,

@@ -124,6 +124,8 @@ export function getDefaultGroupConfig() {
       clean_welcome: false,
     },
     stt_enabled: false, // Speech-to-Text auto transcription toggle (default: false)
+    stt_allow_private_chats: false, // Speech-to-Text in private 1:1 chats (default: false)
+    allow_private_chats: false, // Legacy fallback toggle (default: false)
     verified_users: {}, // userId -> { verified: boolean, timestamp: number, mode: 'auto' | 'manual' }
     warnings: {
       max_warnings: 3,
