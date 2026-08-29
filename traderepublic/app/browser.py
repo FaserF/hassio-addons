@@ -422,7 +422,7 @@ class TradeRepublicBrowserService:
                     return self.session_token
 
                 # Keeper detected auth failure — actively navigate Chromium to refresh cookies
-                _LOGGER.info("WS Keeper not authenticated — actively rotating session in Chromium...")
+                _LOGGER.debug("WS Keeper not authenticated — actively rotating session in Chromium...")
                 try:
                     if self.session_token:
                         await self.auth_helper.inject_session_cookies(self.session_token)
@@ -437,7 +437,7 @@ class TradeRepublicBrowserService:
                             _LOGGER.info("Extracted and verified new token from Chromium cookies, updating session")
                             await self.save_session(browser_token)
                             return browser_token
-                        _LOGGER.warning("Extracted token from Chromium cookies is invalid or rejected")
+                        _LOGGER.debug("Extracted token from Chromium cookies is invalid or rejected")
                 except Exception as rot_e:
                     _LOGGER.debug("Active rotation in refresh_session failed: %s", rot_e)
 
