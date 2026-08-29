@@ -304,215 +304,215 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
 
     // 1. Try AegisBot Server (Local Self-Hosted Faster-Whisper with universal auto-detection)
     if (sttEngine === 'aegisbot' || (sttEngine === 'auto' && aegisbotUrl)) {
-        usedEngine = 'aegisbot';
-        try {
-          let targetBaseUrl = String(aegisbotUrl || 'http://localhost:8000').trim();
-          while (targetBaseUrl.endsWith('/')) {
-            targetBaseUrl = targetBaseUrl.slice(0, -1);
-          }
-          const endpoint = `${targetBaseUrl}/api/v1/ai/transcribe`;
-
-          const formData = new Blob([stream], { type: 'audio/ogg' });
-          const body = new FormData();
-          body.append('file', formData, 'voice.ogg');
-          if (explicitSttLang && explicitSttLang !== 'auto') {
-            body.append('language', explicitSttLang);
-          }
-
-          const headers = {};
-          if (aegisbotKey) {
-            headers['Authorization'] = `Bearer ${aegisbotKey}`;
-            headers['X-API-Key'] = aegisbotKey;
-          }
-
-          // Allow up to 10 minutes (600s) timeout for long audio messages (>10 min)
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 600000);
-
-          const res = await fetch(endpoint, {
-            method: 'POST',
-            headers,
-            body,
-            signal: controller.signal,
-          });
-          clearTimeout(timeoutId);
-
-          if (res.ok) {
-            const data = await res.json();
-            if (data.success && data.text) {
-              transcribedText = data.text.trim();
-              if (data.language) detectedLang = data.language;
-              if (data.engine) usedSubEngine = data.engine;
-            } else if (data.text) {
-              transcribedText = data.text.trim();
-              if (data.language) detectedLang = data.language;
-              if (data.engine) usedSubEngine = data.engine;
-            } else {
-              // Build rich diagnostic message from structured AegisBot error response
-              let errMsg = data.error || gt('bot_replies.stt_err_aegisbot_empty');
-              if (data.details && typeof data.details === 'object') {
-                const engineLines = Object.entries(data.details)
-                  .map(([eng, reason]) => `  • ${eng}: ${reason}`)
-                  .join('\n');
-                errMsg = `${errMsg}\n\n*Engine diagnostics:*\n${engineLines}`;
-              }
-              if (data.recommendation) {
-                errMsg += `\n\n*Recommendation:* ${data.recommendation}`;
-              }
-              if (data.status) {
-                errMsg = `[${data.status}] ${errMsg}`;
-              }
-              errorsCaptured.push(errMsg);
-              recordSttError('aegisbot', data.error || 'transcription_failed', groupId);
-            }
-          } else if (res.status === 401 || res.status === 403) {
-            const errMsg = gt('bot_replies.stt_err_aegisbot_auth', { status: res.status });
-            errorsCaptured.push(errMsg);
-            recordSttError(
-              'aegisbot',
-              `Authentication failed / Invalid token (HTTP ${res.status})`,
-              groupId
-            );
-          } else if (res.status === 404) {
-            const errMsg = gt('bot_replies.stt_err_aegisbot_not_found');
-            errorsCaptured.push(errMsg);
-            recordSttError('aegisbot', 'Endpoint not found (HTTP 404)', groupId);
-          } else if (res.status >= 500) {
-            const errMsg = gt('bot_replies.stt_err_aegisbot_server_error', { status: res.status });
-            errorsCaptured.push(errMsg);
-            recordSttError('aegisbot', `Internal server error (HTTP ${res.status})`, groupId);
-          } else {
-            const errMsg = gt('bot_replies.stt_err_aegisbot_http_error', { status: res.status });
-            errorsCaptured.push(errMsg);
-            recordSttError('aegisbot', `HTTP error ${res.status}`, groupId);
-          }
-        } catch (e) {
-          logger.debug({ error: e.message, cause: e.cause }, 'AegisBot STT network failure');
-          const detailedError = formatNetworkError(e, gt);
-          const errMsg = gt('bot_replies.stt_err_aegisbot_network', { error: detailedError });
-          errorsCaptured.push(errMsg);
-          recordSttError('aegisbot', detailedError, groupId);
+      usedEngine = 'aegisbot';
+      try {
+        let targetBaseUrl = String(aegisbotUrl || 'http://localhost:8000').trim();
+        while (targetBaseUrl.endsWith('/')) {
+          targetBaseUrl = targetBaseUrl.slice(0, -1);
         }
-      }
+        const endpoint = `${targetBaseUrl}/api/v1/ai/transcribe`;
 
-      // 2. Try Gemini 1.5 Multimodal Audio API (Multilingual prompt & auto-detection)
-      if (!transcribedText && (sttEngine === 'gemini' || (sttEngine === 'auto' && geminiKey))) {
-        usedEngine = 'gemini';
-        try {
-          const gKey = geminiKey;
-          const base64Audio = stream.toString('base64');
-          const promptText = gt('bot_replies.stt_prompt_text');
-          const geminiModel = config.ai?.model || 'gemini-1.5-flash';
-          const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${gKey}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [
-                  {
-                    parts: [
-                      { text: promptText },
-                      {
-                        inline_data: {
-                          mime_type: 'audio/ogg',
-                          data: base64Audio,
-                        },
-                      },
-                    ],
-                  },
-                ],
-              }),
+        const formData = new Blob([stream], { type: 'audio/ogg' });
+        const body = new FormData();
+        body.append('file', formData, 'voice.ogg');
+        if (explicitSttLang && explicitSttLang !== 'auto') {
+          body.append('language', explicitSttLang);
+        }
+
+        const headers = {};
+        if (aegisbotKey) {
+          headers['Authorization'] = `Bearer ${aegisbotKey}`;
+          headers['X-API-Key'] = aegisbotKey;
+        }
+
+        // Allow up to 10 minutes (600s) timeout for long audio messages (>10 min)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 600000);
+
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers,
+          body,
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.text) {
+            transcribedText = data.text.trim();
+            if (data.language) detectedLang = data.language;
+            if (data.engine) usedSubEngine = data.engine;
+          } else if (data.text) {
+            transcribedText = data.text.trim();
+            if (data.language) detectedLang = data.language;
+            if (data.engine) usedSubEngine = data.engine;
+          } else {
+            // Build rich diagnostic message from structured AegisBot error response
+            let errMsg = data.error || gt('bot_replies.stt_err_aegisbot_empty');
+            if (data.details && typeof data.details === 'object') {
+              const engineLines = Object.entries(data.details)
+                .map(([eng, reason]) => `  • ${eng}: ${reason}`)
+                .join('\n');
+              errMsg = `${errMsg}\n\n*Engine diagnostics:*\n${engineLines}`;
             }
+            if (data.recommendation) {
+              errMsg += `\n\n*Recommendation:* ${data.recommendation}`;
+            }
+            if (data.status) {
+              errMsg = `[${data.status}] ${errMsg}`;
+            }
+            errorsCaptured.push(errMsg);
+            recordSttError('aegisbot', data.error || 'transcription_failed', groupId);
+          }
+        } else if (res.status === 401 || res.status === 403) {
+          const errMsg = gt('bot_replies.stt_err_aegisbot_auth', { status: res.status });
+          errorsCaptured.push(errMsg);
+          recordSttError(
+            'aegisbot',
+            `Authentication failed / Invalid token (HTTP ${res.status})`,
+            groupId
           );
-          if (res.ok) {
-            const data = await res.json();
-            transcribedText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-            if (transcribedText) {
-              usedSubEngine = geminiModel;
-              if (explicitSttLang && explicitSttLang !== 'auto') {
-                detectedLang = explicitSttLang;
-              } else {
-                detectedLang = detectLanguageHeuristic(transcribedText);
-              }
-            } else {
-              const errMsg = gt('bot_replies.stt_err_gemini_empty');
-              errorsCaptured.push(errMsg);
-              recordSttError('gemini', errMsg, groupId);
-            }
-          } else if (res.status === 429) {
-            const errMsg = gt('bot_replies.stt_err_gemini_rate_limit');
-            errorsCaptured.push(errMsg);
-            recordSttError('gemini', 'Rate limit exceeded (HTTP 429)', groupId);
-          } else if (res.status === 401 || res.status === 403) {
-            const errMsg = gt('bot_replies.stt_err_gemini_auth');
-            errorsCaptured.push(errMsg);
-            recordSttError('gemini', `Authentication error (HTTP ${res.status})`, groupId);
-          } else {
-            const errMsg = gt('bot_replies.stt_err_gemini_http_error', { status: res.status });
-            errorsCaptured.push(errMsg);
-            recordSttError('gemini', `HTTP error ${res.status}`, groupId);
-          }
-        } catch (e) {
-          logger.debug({ error: e.message, cause: e.cause }, 'Gemini STT network failure');
-          const detailedError = formatNetworkError(e, gt);
-          const errMsg = gt('bot_replies.stt_err_gemini_network', { error: detailedError });
+        } else if (res.status === 404) {
+          const errMsg = gt('bot_replies.stt_err_aegisbot_not_found');
           errorsCaptured.push(errMsg);
-          recordSttError('gemini', detailedError, groupId);
+          recordSttError('aegisbot', 'Endpoint not found (HTTP 404)', groupId);
+        } else if (res.status >= 500) {
+          const errMsg = gt('bot_replies.stt_err_aegisbot_server_error', { status: res.status });
+          errorsCaptured.push(errMsg);
+          recordSttError('aegisbot', `Internal server error (HTTP ${res.status})`, groupId);
+        } else {
+          const errMsg = gt('bot_replies.stt_err_aegisbot_http_error', { status: res.status });
+          errorsCaptured.push(errMsg);
+          recordSttError('aegisbot', `HTTP error ${res.status}`, groupId);
         }
+      } catch (e) {
+        logger.debug({ error: e.message, cause: e.cause }, 'AegisBot STT network failure');
+        const detailedError = formatNetworkError(e, gt);
+        const errMsg = gt('bot_replies.stt_err_aegisbot_network', { error: detailedError });
+        errorsCaptured.push(errMsg);
+        recordSttError('aegisbot', detailedError, groupId);
       }
+    }
 
-      // 3. Try OpenAI Whisper API (Multilingual auto-detection)
-      if (!transcribedText && (sttEngine === 'openai' || (sttEngine === 'auto' && openAiKey))) {
-        usedEngine = 'openai';
-        try {
-          const oaKey = openAiKey;
-          const formData = new Blob([stream], { type: 'audio/ogg' });
-          const body = new FormData();
-          body.append('file', formData, 'audio.ogg');
-          body.append('model', 'whisper-1');
-          body.append('response_format', 'verbose_json');
-          if (explicitSttLang && explicitSttLang !== 'auto') {
-            body.append('language', explicitSttLang);
-          }
-
-          const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    // 2. Try Gemini 1.5 Multimodal Audio API (Multilingual prompt & auto-detection)
+    if (!transcribedText && (sttEngine === 'gemini' || (sttEngine === 'auto' && geminiKey))) {
+      usedEngine = 'gemini';
+      try {
+        const gKey = geminiKey;
+        const base64Audio = stream.toString('base64');
+        const promptText = gt('bot_replies.stt_prompt_text');
+        const geminiModel = config.ai?.model || 'gemini-1.5-flash';
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${gKey}`,
+          {
             method: 'POST',
-            headers: { Authorization: `Bearer ${oaKey}` },
-            body,
-          });
-          if (res.ok) {
-            const data = await res.json();
-            transcribedText = data.text?.trim();
-            if (transcribedText) {
-              usedSubEngine = 'whisper-1';
-              if (data.language) detectedLang = data.language;
-            } else {
-              const errMsg = gt('bot_replies.stt_err_whisper_empty');
-              errorsCaptured.push(errMsg);
-              recordSttError('openai', errMsg, groupId);
-            }
-          } else if (res.status === 429) {
-            const errMsg = gt('bot_replies.stt_err_whisper_rate_limit');
-            errorsCaptured.push(errMsg);
-            recordSttError('openai', 'Rate limit exceeded (HTTP 429)', groupId);
-          } else if (res.status === 401) {
-            const errMsg = gt('bot_replies.stt_err_whisper_auth');
-            errorsCaptured.push(errMsg);
-            recordSttError('openai', 'Invalid API key (HTTP 401)', groupId);
-          } else {
-            const errMsg = gt('bot_replies.stt_err_whisper_http_error', { status: res.status });
-            errorsCaptured.push(errMsg);
-            recordSttError('openai', `HTTP error ${res.status}`, groupId);
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [
+                    { text: promptText },
+                    {
+                      inline_data: {
+                        mime_type: 'audio/ogg',
+                        data: base64Audio,
+                      },
+                    },
+                  ],
+                },
+              ],
+            }),
           }
-        } catch (e) {
-          logger.debug({ error: e.message, cause: e.cause }, 'Whisper STT network failure');
-          const detailedError = formatNetworkError(e, gt);
-          const errMsg = gt('bot_replies.stt_err_whisper_network', { error: detailedError });
+        );
+        if (res.ok) {
+          const data = await res.json();
+          transcribedText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          if (transcribedText) {
+            usedSubEngine = geminiModel;
+            if (explicitSttLang && explicitSttLang !== 'auto') {
+              detectedLang = explicitSttLang;
+            } else {
+              detectedLang = detectLanguageHeuristic(transcribedText);
+            }
+          } else {
+            const errMsg = gt('bot_replies.stt_err_gemini_empty');
+            errorsCaptured.push(errMsg);
+            recordSttError('gemini', errMsg, groupId);
+          }
+        } else if (res.status === 429) {
+          const errMsg = gt('bot_replies.stt_err_gemini_rate_limit');
           errorsCaptured.push(errMsg);
-          recordSttError('openai', detailedError, groupId);
+          recordSttError('gemini', 'Rate limit exceeded (HTTP 429)', groupId);
+        } else if (res.status === 401 || res.status === 403) {
+          const errMsg = gt('bot_replies.stt_err_gemini_auth');
+          errorsCaptured.push(errMsg);
+          recordSttError('gemini', `Authentication error (HTTP ${res.status})`, groupId);
+        } else {
+          const errMsg = gt('bot_replies.stt_err_gemini_http_error', { status: res.status });
+          errorsCaptured.push(errMsg);
+          recordSttError('gemini', `HTTP error ${res.status}`, groupId);
         }
+      } catch (e) {
+        logger.debug({ error: e.message, cause: e.cause }, 'Gemini STT network failure');
+        const detailedError = formatNetworkError(e, gt);
+        const errMsg = gt('bot_replies.stt_err_gemini_network', { error: detailedError });
+        errorsCaptured.push(errMsg);
+        recordSttError('gemini', detailedError, groupId);
       }
+    }
+
+    // 3. Try OpenAI Whisper API (Multilingual auto-detection)
+    if (!transcribedText && (sttEngine === 'openai' || (sttEngine === 'auto' && openAiKey))) {
+      usedEngine = 'openai';
+      try {
+        const oaKey = openAiKey;
+        const formData = new Blob([stream], { type: 'audio/ogg' });
+        const body = new FormData();
+        body.append('file', formData, 'audio.ogg');
+        body.append('model', 'whisper-1');
+        body.append('response_format', 'verbose_json');
+        if (explicitSttLang && explicitSttLang !== 'auto') {
+          body.append('language', explicitSttLang);
+        }
+
+        const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${oaKey}` },
+          body,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          transcribedText = data.text?.trim();
+          if (transcribedText) {
+            usedSubEngine = 'whisper-1';
+            if (data.language) detectedLang = data.language;
+          } else {
+            const errMsg = gt('bot_replies.stt_err_whisper_empty');
+            errorsCaptured.push(errMsg);
+            recordSttError('openai', errMsg, groupId);
+          }
+        } else if (res.status === 429) {
+          const errMsg = gt('bot_replies.stt_err_whisper_rate_limit');
+          errorsCaptured.push(errMsg);
+          recordSttError('openai', 'Rate limit exceeded (HTTP 429)', groupId);
+        } else if (res.status === 401) {
+          const errMsg = gt('bot_replies.stt_err_whisper_auth');
+          errorsCaptured.push(errMsg);
+          recordSttError('openai', 'Invalid API key (HTTP 401)', groupId);
+        } else {
+          const errMsg = gt('bot_replies.stt_err_whisper_http_error', { status: res.status });
+          errorsCaptured.push(errMsg);
+          recordSttError('openai', `HTTP error ${res.status}`, groupId);
+        }
+      } catch (e) {
+        logger.debug({ error: e.message, cause: e.cause }, 'Whisper STT network failure');
+        const detailedError = formatNetworkError(e, gt);
+        const errMsg = gt('bot_replies.stt_err_whisper_network', { error: detailedError });
+        errorsCaptured.push(errMsg);
+        recordSttError('openai', detailedError, groupId);
+      }
+    }
 
     const SILENCE_PATTERNS = [
       /^\[blank_audio\]$/i,
