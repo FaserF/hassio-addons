@@ -26,4 +26,4 @@ Pillow==12.3.0
 openai==3.6.0
 jinja2==3.1.6
 SpeechRecognition==3.17.0
-zeroconf==0.151.2
+zeroconf==0.151.3
