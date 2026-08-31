@@ -198,50 +198,52 @@ class AuthHelper:
         phone_script = f"""
         (() => {{
             const input = document.querySelector('input[name="phoneNumber"], input[type="tel"], input[autocomplete="tel"], input');
-            if (input) {{
-                input.focus();
-                const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                nativeSetter.call(input, "{clean_phone}");
-                input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
-                input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
-                input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter' }}));
+            if (!input) return {{ ok: false, stage: 'phone', reason: 'input_not_found' }};
+            input.focus();
+            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+            nativeSetter.call(input, "{clean_phone}");
+            input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
+            input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
+            input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter' }}));
 
-                const btn = Array.from(document.querySelectorAll('button')).find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Continue') || b.textContent.includes('Anmelden'))));
-                if (btn) {{
-                    btn.disabled = false;
-                    btn.click();
-                }}
-                return true;
+            const btns = Array.from(document.querySelectorAll('button'));
+            const btn = btns.find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Continue') || b.textContent.includes('Anmelden'))));
+            if (btn) {{
+                btn.disabled = false;
+                btn.click();
+                return {{ ok: true, stage: 'phone', clicked: true }};
             }}
-            return false;
+            return {{ ok: true, stage: 'phone', clicked: false }};
         }})()
         """
-        await self.cdp.send_cmd("Runtime.evaluate", {"expression": phone_script})
+        phone_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": phone_script, "returnByValue": True})
+        _LOGGER.info("CDP Phone step result: %s", phone_res)
         await asyncio.sleep(3.0)
 
         # PIN Input & Submit
         pin_script = f"""
         (() => {{
             const input = document.querySelector('input[type="password"], input[name="pin"], input[name="password"], input[inputmode="numeric"]');
-            if (input) {{
-                input.focus();
-                const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                nativeSetter.call(input, "{clean_pin}");
-                input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
-                input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
-                input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter' }}));
+            if (!input) return {{ ok: false, stage: 'pin', reason: 'input_not_found' }};
+            input.focus();
+            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+            nativeSetter.call(input, "{clean_pin}");
+            input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
+            input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
+            input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter' }}));
 
-                const btn = Array.from(document.querySelectorAll('button')).find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Anmelden') || b.textContent.includes('Login') || b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Submit'))));
-                if (btn) {{
-                    btn.disabled = false;
-                    btn.click();
-                }}
-                return true;
+            const btns = Array.from(document.querySelectorAll('button'));
+            const btn = btns.find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Anmelden') || b.textContent.includes('Login') || b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Submit'))));
+            if (btn) {{
+                btn.disabled = false;
+                btn.click();
+                return {{ ok: true, stage: 'pin', clicked: true }};
             }}
-            return false;
+            return {{ ok: true, stage: 'pin', clicked: false }};
         }})()
         """
-        await self.cdp.send_cmd("Runtime.evaluate", {"expression": pin_script, "returnByValue": True})
+        pin_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": pin_script, "returnByValue": True})
+        _LOGGER.info("CDP PIN step result: %s", pin_res)
 
         dom_error_script = """
         (() => {
@@ -252,6 +254,8 @@ class AuthHelper:
         """
         dom_err = await self.cdp.send_cmd("Runtime.evaluate", {"expression": dom_error_script, "returnByValue": True})
         dom_err_text = dom_err and dom_err.get("result", {}).get("value")
+        if dom_err_text:
+            _LOGGER.warning("CDP DOM error detected: %s", dom_err_text)
 
         return {
             "success": True,
