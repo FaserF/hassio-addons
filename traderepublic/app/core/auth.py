@@ -1,12 +1,8 @@
 import asyncio
-import json
 import logging
 from typing import Any, Dict, Optional
 
-import aiohttp
-
 from .cdp import CDPClient
-from .constants import USER_AGENT
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -9,7 +9,7 @@ from typing import Any, Optional
 import aiohttp
 from browser import browser_service
 from fastapi import FastAPI, HTTPException, Request, Security
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from fastapi.security.api_key import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -365,7 +365,13 @@ async def get_session():
     browser_service.last_interaction_details = "Home Assistant synchronized session token"
     browser_service.request_counts_by_type["session"] += 1
     if not browser_service.session_token:
-        return JSONResponse(status_code=404, content={"error": "No active session token available"})
+        return {
+            "session_token": None,
+            "phone_number": browser_service.phone_number,
+            "is_logged_in": False,
+            "token_verified": False,
+            "token_verified_at": None,
+        }
     return {
         "session_token": browser_service.session_token,
         "phone_number": browser_service.phone_number,
