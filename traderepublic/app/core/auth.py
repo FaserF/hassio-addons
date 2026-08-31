@@ -194,7 +194,7 @@ class AuthHelper:
         await self.cdp.send_cmd("Runtime.evaluate", {"expression": banner_script})
         await asyncio.sleep(1)
 
-        # Phone Number
+        # Phone Number Input & Submit
         phone_script = f"""
         (() => {{
             const input = document.querySelector('input[name="phoneNumber"], input[type="tel"], input[autocomplete="tel"], input');
@@ -204,6 +204,8 @@ class AuthHelper:
                 nativeSetter.call(input, "{clean_phone}");
                 input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
                 input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
+                input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter' }}));
+
                 const btn = Array.from(document.querySelectorAll('button')).find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Continue') || b.textContent.includes('Anmelden'))));
                 if (btn) {{
                     btn.disabled = false;
@@ -215,18 +217,20 @@ class AuthHelper:
         }})()
         """
         await self.cdp.send_cmd("Runtime.evaluate", {"expression": phone_script})
-        await asyncio.sleep(2.5)
+        await asyncio.sleep(3.0)
 
-        # PIN
+        # PIN Input & Submit
         pin_script = f"""
         (() => {{
-            const input = document.querySelector('input[type="password"], input[name="pin"], input[name="password"]');
+            const input = document.querySelector('input[type="password"], input[name="pin"], input[name="password"], input[inputmode="numeric"]');
             if (input) {{
                 input.focus();
                 const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
                 nativeSetter.call(input, "{clean_pin}");
                 input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
                 input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
+                input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter' }}));
+
                 const btn = Array.from(document.querySelectorAll('button')).find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Anmelden') || b.textContent.includes('Login') || b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Submit'))));
                 if (btn) {{
                     btn.disabled = false;
@@ -259,17 +263,38 @@ class AuthHelper:
         if clean_code:
             code_script = f"""
             (() => {{
-                const otp = document.querySelector('input[name="code"], input[type="number"], input[autocomplete="one-time-code"], input[data-testid="otp-input"]');
-                if (otp) {{
-                    otp.focus();
-                    otp.value = "{clean_code}";
-                    otp.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                    otp.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                    const btn = document.querySelector('button[type="submit"], button[data-testid="login-submit-button"]');
-                    if (btn) btn.click();
-                    return true;
+                // Try single input (e.g. name="code" or inputmode="numeric")
+                const singleOtp = document.querySelector('input[name="code"], input[type="number"], input[autocomplete="one-time-code"], input[data-testid="otp-input"], input[type="tel"]');
+                if (singleOtp) {{
+                    singleOtp.focus();
+                    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+                    nativeSetter.call(singleOtp, "{clean_code}");
+                    singleOtp.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
+                    singleOtp.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
                 }}
-                return false;
+
+                // Try multi-box OTP input (e.g. 4 separate single-character inputs)
+                const multiInputs = Array.from(document.querySelectorAll('input[maxlength="1"], input[data-index]'));
+                if (multiInputs.length >= 4) {{
+                    for (let i = 0; i < 4; i++) {{
+                        const char = "{clean_code}"[i] || '';
+                        const inp = multiInputs[i];
+                        if (inp && char) {{
+                            inp.focus();
+                            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+                            nativeSetter.call(inp, char);
+                            inp.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
+                            inp.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
+                        }}
+                    }}
+                }}
+
+                const btn = Array.from(document.querySelectorAll('button')).find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Weiter') || b.textContent.includes('Confirm') || b.textContent.includes('Bestätigen') || b.textContent.includes('Next'))));
+                if (btn) {{
+                    btn.disabled = false;
+                    btn.click();
+                }}
+                return true;
             }})()
             """
             await self.cdp.send_cmd("Runtime.evaluate", {"expression": code_script})
