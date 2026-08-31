@@ -372,11 +372,16 @@ async def get_session():
             "token_verified": False,
             "token_verified_at": None,
         }
+    # Use ws_keeper.is_authenticated as the ground truth.
+    # browser_service.is_logged_in can be optimistically True for up to 15 s after
+    # startup (before startup_validation fires) even when the stored token is expired.
+    # This prevents the HA integration from picking up an expired token as valid.
+    token_confirmed = browser_service._ws_keeper.is_authenticated
     return {
         "session_token": browser_service.session_token,
         "phone_number": browser_service.phone_number,
-        "is_logged_in": browser_service.is_logged_in,
-        "token_verified": bool(browser_service.token_verified_at),
+        "is_logged_in": token_confirmed,
+        "token_verified": token_confirmed,
         "token_verified_at": browser_service.token_verified_at,
     }
 

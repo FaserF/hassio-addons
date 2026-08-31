@@ -353,6 +353,13 @@ class TradeRepublicBrowserService:
                         "error": "Authentication request expired (2 minutes exceeded). Please start a new login.",
                     }
 
+                # Build invalid-token blacklist — same approach as _poll_for_app_approval.
+                # Prevents re-verifying the old (expired) cookie token that Chromium may
+                # still serve from its profile cache after execute_login navigation.
+                invalid_tokens: set[str] = set()
+                if getattr(self, "_last_invalidated_token", None):
+                    invalid_tokens.add(self._last_invalidated_token)
+
                 clean_code = (code or "").strip()
                 if clean_code:
                     await self.auth_helper.submit_2fa_code(clean_code)
@@ -360,17 +367,21 @@ class TradeRepublicBrowserService:
                 for _ in range(6):
                     await asyncio.sleep(1.5)
                     token = await self.auth_helper.extract_token_from_cookies()
-                    if token:
-                        # Keeper is stopped during login — use one-off verifier
-                        is_valid = await verify_tr_token(token)
-                        if is_valid:
-                            await self.save_session(token, is_new_login=True)
-                            self._ws_keeper.start()
-                            return {
-                                "success": True,
-                                "session_token": token,
-                                "message": "Login successful! Session token active.",
-                            }
+                    if not token or token in invalid_tokens:
+                        continue
+                    # Keeper is stopped during login — use one-off verifier
+                    is_valid = await verify_tr_token(token)
+                    if is_valid:
+                        await self.save_session(token, is_new_login=True)
+                        self._ws_keeper.start()
+                        return {
+                            "success": True,
+                            "session_token": token,
+                            "message": "Login successful! Session token active.",
+                        }
+                    else:
+                        # Token present but rejected — blacklist so we don't re-check it
+                        invalid_tokens.add(token)
 
                 if clean_code:
                     return {"success": False, "error": "2FA code submitted. Verification in progress or invalid code."}
@@ -398,11 +409,15 @@ class TradeRepublicBrowserService:
                     self.status_message = "Everything is connected and running normally. Session renewed."
                     return self.session_token
 
+                # No session token means either logged out or login in progress —
+                # do NOT attempt Chromium navigation or TR network calls.
+                if not self.session_token:
+                    return None
+
                 # Keeper detected auth failure — actively navigate Chromium to refresh cookies
                 _LOGGER.debug("WS Keeper not authenticated — actively rotating session in Chromium...")
                 try:
-                    if self.session_token:
-                        await self.auth_helper.inject_session_cookies(self.session_token)
+                    await self.auth_helper.inject_session_cookies(self.session_token)
                     await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com"})
                     await asyncio.sleep(5)
                     browser_token = await self.auth_helper.extract_token_from_cookies()
