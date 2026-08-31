@@ -206,10 +206,21 @@ class AuthHelper:
             input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
             input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter' }}));
 
+            // Method 1: Form submit
+            if (input.form) {{
+                try {{
+                    input.form.requestSubmit();
+                    return {{ ok: true, stage: 'phone', method: 'form_requestSubmit' }};
+                }} catch(e) {{}}
+            }}
+
+            // Method 2: Button Click
             const btns = Array.from(document.querySelectorAll('button'));
             const btn = btns.find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Continue') || b.textContent.includes('Anmelden'))));
             if (btn) {{
                 btn.disabled = false;
+                btn.dispatchEvent(new MouseEvent('mousedown', {{ bubbles: true, cancelable: true, view: window }}));
+                btn.dispatchEvent(new MouseEvent('mouseup', {{ bubbles: true, cancelable: true, view: window }}));
                 btn.click();
                 return {{ ok: true, stage: 'phone', clicked: true }};
             }}
@@ -232,10 +243,21 @@ class AuthHelper:
             input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
             input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter' }}));
 
+            // Method 1: Form submit
+            if (input.form) {{
+                try {{
+                    input.form.requestSubmit();
+                    return {{ ok: true, stage: 'pin', method: 'form_requestSubmit' }};
+                }} catch(e) {{}}
+            }}
+
+            // Method 2: Button Click
             const btns = Array.from(document.querySelectorAll('button'));
             const btn = btns.find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Anmelden') || b.textContent.includes('Login') || b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Submit'))));
             if (btn) {{
                 btn.disabled = false;
+                btn.dispatchEvent(new MouseEvent('mousedown', {{ bubbles: true, cancelable: true, view: window }}));
+                btn.dispatchEvent(new MouseEvent('mouseup', {{ bubbles: true, cancelable: true, view: window }}));
                 btn.click();
                 return {{ ok: true, stage: 'pin', clicked: true }};
             }}
