@@ -146,24 +146,16 @@ class TradeRepublicBrowserService:
     async def verify_token_validity(self, token: str) -> bool:
         """Check token validity via the keeper's persistent connection state.
 
-        We no longer open a new WebSocket just to verify — instead we rely on
-        the keeper's connection state. If the keeper is connected and authenticated,
-        the token is valid. This avoids the repeated open/close pattern that
-        caused TR to detect bot activity and invalidate sessions.
+        We do NOT open a new WebSocket to verify — instead we rely on the keeper's
+        connection state. If the keeper is connected and authenticated, the token is valid.
+        This avoids the repeated open/close pattern that caused TR to detect bot activity.
         """
         if not token:
             return False
         if self._ws_keeper.is_authenticated:
             self.token_verified_at = time.time()
             return True
-        # Keeper not yet connected or rejected — fall back to one-off check
-        # only on startup (when keeper hasn't had time to connect yet)
-        from core.verifier import verify_tr_token
-
-        is_valid = await verify_tr_token(token)
-        if is_valid:
-            self.token_verified_at = time.time()
-        return is_valid
+        return False
 
     async def _load_saved_session(self) -> None:
         data = self.session_manager.load()
@@ -482,46 +474,59 @@ class TradeRepublicBrowserService:
                     ready = await self.cdp.wait_for_ready(timeout=20.0)
                     if not ready:
                         _LOGGER.warning("Chromium CDP not ready after restart within 20s")
+
+                # ── Anti-spam guard ─────────────────────────────────────────
+                # If there is no session token or the user has explicitly logged
+                # out / is waiting for re-auth, do NOT attempt any TR network
+                # activity. The ws_keeper is already stopped in this state.
+                if not self.session_token or self._is_logged_in_override is False:
+                    _LOGGER.debug("Keepalive: no active session — skipping TR network activity")
+                    continue
+
                 # Active token auto-renewal:
                 # Trade Republic Web JWTs expire after ~60 minutes unless refreshed via the web app.
                 # Only perform Chromium web refresh if the token has aged (>30m) or if keeper lost auth.
-                if self.session_token:
-                    import time
+                import time
 
-                    token_age = time.time() - (self.last_token_update_time or self.last_login_time or 0)
-                    needs_refresh = (not self._ws_keeper.is_authenticated) or (token_age > 1800)
-                    if needs_refresh:
-                        try:
-                            _LOGGER.debug(
-                                "Keepalive: refreshing web session via Chromium navigation (token age: %ss)",
-                                int(token_age),
-                            )
-                            await self.auth_helper.inject_session_cookies(self.session_token)
-                            await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com"})
-                            await asyncio.sleep(6)
-                            # Trigger lightweight interaction to ensure web frontend issues cookie rotation
-                            await self.cdp.send_cmd(
-                                "Runtime.evaluate",
-                                {
-                                    "expression": "window.dispatchEvent(new Event('focus')); window.dispatchEvent(new Event('mousemove'));"
-                                },
-                            )
-                            await asyncio.sleep(2)
-                            new_token = await self.auth_helper.extract_token_from_cookies()
-                            if new_token and new_token != self.session_token:
-                                from core.verifier import verify_tr_token
+                token_age = time.time() - (self.last_token_update_time or self.last_login_time or 0)
+                # Only rotate if keeper is NOT authenticated AND we have a token that was previously valid
+                needs_refresh = (not self._ws_keeper.is_authenticated) and self.last_login_time is not None
+                # Also rotate if token is stale (>30 min) even when keeper is connected
+                if not needs_refresh and token_age > 1800:
+                    needs_refresh = True
 
-                                if await verify_tr_token(new_token):
-                                    _LOGGER.info(
-                                        "Keepalive: successfully renewed session token from Chromium (length: %s)",
-                                        len(new_token),
-                                    )
-                                    await self.save_session(new_token)
-                            else:
-                                # Token confirmed fresh and valid via active page load
-                                self.last_token_update_time = time.time()
-                        except Exception as renew_err:  # noqa: BLE001
-                            _LOGGER.debug("Keepalive token rotation attempt: %s", renew_err)
+                if needs_refresh:
+                    try:
+                        _LOGGER.debug(
+                            "Keepalive: refreshing web session via Chromium navigation (token age: %ss)",
+                            int(token_age),
+                        )
+                        await self.auth_helper.inject_session_cookies(self.session_token)
+                        await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com"})
+                        await asyncio.sleep(6)
+                        # Trigger lightweight interaction to ensure web frontend issues cookie rotation
+                        await self.cdp.send_cmd(
+                            "Runtime.evaluate",
+                            {
+                                "expression": "window.dispatchEvent(new Event('focus')); window.dispatchEvent(new Event('mousemove'));"
+                            },
+                        )
+                        await asyncio.sleep(2)
+                        new_token = await self.auth_helper.extract_token_from_cookies()
+                        if new_token and new_token != self.session_token:
+                            from core.verifier import verify_tr_token
+
+                            if await verify_tr_token(new_token):
+                                _LOGGER.info(
+                                    "Keepalive: successfully renewed session token from Chromium (length: %s)",
+                                    len(new_token),
+                                )
+                                await self.save_session(new_token)
+                        else:
+                            # Token confirmed fresh and valid via active page load
+                            self.last_token_update_time = time.time()
+                    except Exception as renew_err:  # noqa: BLE001
+                        _LOGGER.debug("Keepalive token rotation attempt: %s", renew_err)
 
                 # Sync keeper auth state into service state
                 _LOGGER.debug("Keepalive: syncing ws_keeper state (authenticated=%s)", self._ws_keeper.is_authenticated)

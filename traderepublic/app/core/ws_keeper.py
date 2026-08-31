@@ -578,6 +578,10 @@ class TRWebSocketKeeper:
 
             connected = await self._connect()
             if not connected:
+                if not self._running:
+                    # _connect() set _running=False on 401 — stop immediately, do NOT retry
+                    _LOGGER.debug("WS Keeper: stopped (auth rejected). Awaiting re-login.")
+                    return
                 delay = min(self._reconnect_delay, _RECONNECT_DELAY_MAX)
                 _LOGGER.debug("WS Keeper: reconnecting in %.0f s", delay)
                 self._reconnect_delay = min(self._reconnect_delay * 1.5, _RECONNECT_DELAY_MAX)
@@ -598,4 +602,7 @@ class TRWebSocketKeeper:
                     await asyncio.sleep(self._reconnect_delay)
                     self._reconnect_delay = min(self._reconnect_delay * 1.5, _RECONNECT_DELAY_MAX)
                 else:
-                    await asyncio.sleep(30)
+                    # Auth lost during an active session — stop and await new token
+                    _LOGGER.warning("WS Keeper: auth lost during session — stopping. Awaiting re-login.")
+                    self._running = False
+                    return
