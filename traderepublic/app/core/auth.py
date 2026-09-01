@@ -267,6 +267,39 @@ class AuthHelper:
         pin_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": pin_script, "returnByValue": True})
         _LOGGER.info("CDP PIN step result: %s", pin_res)
 
+        # Wait for TR's React app to fire its login API call, then capture the response.
+        # This reveals whether AWS WAF is blocking the request or TR accepted/rejected it.
+        await asyncio.sleep(4.0)
+
+        network_spy_script = """
+        (() => {
+            // Collect all performance resource entries for TR API calls made after submit
+            const entries = performance.getEntriesByType('resource').filter(e =>
+                e.name.includes('api.traderepublic.com') || e.name.includes('auth') || e.name.includes('login')
+            );
+            return JSON.stringify(entries.map(e => ({
+                url: e.name,
+                duration: Math.round(e.duration),
+                transferSize: e.transferSize
+            })).slice(-10));
+        })()
+        """
+        spy_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": network_spy_script, "returnByValue": True})
+        network_calls = spy_res and spy_res.get("result", {}).get("value")
+        if network_calls:
+            _LOGGER.info("TR network calls after submit: %s", network_calls)
+        else:
+            _LOGGER.warning(
+                "No TR network calls detected after form submit — WAF may have blocked the request or React did not fire"
+            )
+
+        # Check current page URL (TR redirects away from /login on success)
+        url_res = await self.cdp.send_cmd(
+            "Runtime.evaluate", {"expression": "window.location.href", "returnByValue": True}
+        )
+        current_url = url_res and url_res.get("result", {}).get("value", "unknown")
+        _LOGGER.info("Page URL after PIN submit: %s", current_url)
+
         dom_error_script = """
         (() => {
             const errEl = document.querySelector('[role="alert"], [data-testid="error-message"], .error, .alert');
