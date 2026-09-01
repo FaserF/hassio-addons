@@ -127,21 +127,23 @@ class TradeRepublicBrowserService:
                 _LOGGER.warning("Startup validation: saved session token rejected by TR (401) — marking expired")
                 import time
 
-                logout_now = time.time()
-                dur = (logout_now - self.last_login_time) if self.last_login_time else None
-                self.last_logout_time = logout_now
-                self.last_logout_reason = (
-                    self._ws_keeper.last_error or "Session expired or rejected by Trade Republic (HTTP 401)"
-                )
-                self.last_session_duration = dur
-                self.session_manager.record_logout(
-                    self.last_logout_reason,
-                    self.last_session_duration,
-                    logout_time=self.last_logout_time,
-                )
+                # Only record a new logout event if we don't already have one from disk
+                if not self.last_logout_time:
+                    logout_now = time.time()
+                    dur = (logout_now - self.last_login_time) if self.last_login_time else None
+                    self.last_logout_time = logout_now
+                    self.last_session_duration = dur
+                    self.last_logout_reason = (
+                        self._ws_keeper.last_error or "Session expired or rejected by Trade Republic (HTTP 401)"
+                    )
+                    self.session_manager.record_logout(
+                        self.last_logout_reason,
+                        self.last_session_duration,
+                        logout_time=self.last_logout_time,
+                    )
                 self.is_logged_in = False
                 self.status_message = "Stored session token expired. Please re-authenticate."
-                self.last_error = self.last_logout_reason
+                self.last_error = self.last_logout_reason or self._ws_keeper.last_error
 
     async def verify_token_validity(self, token: str) -> bool:
         """Check token validity via the keeper's persistent connection state.

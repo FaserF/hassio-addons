@@ -197,16 +197,45 @@ class AuthHelper:
         # Phone Number Input & Submit
         phone_script = f"""
         (() => {{
-            const input = document.querySelector('input[name="phoneNumber"], input[type="tel"], input[autocomplete="tel"], input');
+            const input = document.querySelector('input[name="phoneNumber"], input[type="tel"], input[autocomplete="tel"], input[placeholder*="Phone"], input[placeholder*="Telefon"], input');
             if (!input) return {{ ok: false, stage: 'phone', reason: 'input_not_found' }};
             input.focus();
+            input.click();
             const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
             nativeSetter.call(input, "{clean_phone}");
             input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
             input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
-            input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter' }}));
+            input.dispatchEvent(new KeyboardEvent('keydown', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
+            input.dispatchEvent(new KeyboardEvent('keypress', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
+            input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
 
-            // Method 1: Form submit
+            // Method 1: Find and click visible submit/next button
+            const btns = Array.from(document.querySelectorAll('button, div[role="button"], a[role="button"]'));
+            const btn = btns.find(b => {{
+                const text = (b.textContent || '').trim().toLowerCase();
+                const testId = (b.getAttribute('data-testid') || '').toLowerCase();
+                const type = (b.getAttribute('type') || '').toLowerCase();
+                return type === 'submit' || testId.includes('submit') || testId.includes('next') || testId.includes('login') ||
+                       ['weiter', 'next', 'continue', 'anmelden', 'login', 'senden', 'submit'].some(k => text === k || text.includes(k));
+            }});
+
+            if (btn) {{
+                btn.removeAttribute('disabled');
+                btn.disabled = false;
+                btn.focus();
+                const rect = btn.getBoundingClientRect();
+                const clientX = rect.left + rect.width / 2;
+                const clientY = rect.top + rect.height / 2;
+                const mouseOpts = {{ bubbles: true, cancelable: true, view: window, clientX, clientY }};
+                btn.dispatchEvent(new MouseEvent('pointerdown', mouseOpts));
+                btn.dispatchEvent(new MouseEvent('mousedown', mouseOpts));
+                btn.dispatchEvent(new MouseEvent('pointerup', mouseOpts));
+                btn.dispatchEvent(new MouseEvent('mouseup', mouseOpts));
+                btn.dispatchEvent(new MouseEvent('click', mouseOpts));
+                btn.click();
+                return {{ ok: true, stage: 'phone', clicked: true, btnText: (btn.textContent || '').trim() }};
+            }}
+
             if (input.form) {{
                 try {{
                     input.form.requestSubmit();
@@ -214,16 +243,6 @@ class AuthHelper:
                 }} catch(e) {{}}
             }}
 
-            // Method 2: Button Click
-            const btns = Array.from(document.querySelectorAll('button'));
-            const btn = btns.find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Continue') || b.textContent.includes('Anmelden'))));
-            if (btn) {{
-                btn.disabled = false;
-                btn.dispatchEvent(new MouseEvent('mousedown', {{ bubbles: true, cancelable: true, view: window }}));
-                btn.dispatchEvent(new MouseEvent('mouseup', {{ bubbles: true, cancelable: true, view: window }}));
-                btn.click();
-                return {{ ok: true, stage: 'phone', clicked: true }};
-            }}
             return {{ ok: true, stage: 'phone', clicked: false }};
         }})()
         """
@@ -234,16 +253,45 @@ class AuthHelper:
         # PIN Input & Submit
         pin_script = f"""
         (() => {{
-            const input = document.querySelector('input[type="password"], input[name="pin"], input[name="password"], input[inputmode="numeric"]');
+            const input = document.querySelector('input[type="password"], input[name="pin"], input[name="password"], input[inputmode="numeric"], input[autocomplete="current-password"]');
             if (!input) return {{ ok: false, stage: 'pin', reason: 'input_not_found' }};
             input.focus();
+            input.click();
             const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
             nativeSetter.call(input, "{clean_pin}");
             input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
             input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
-            input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter' }}));
+            input.dispatchEvent(new KeyboardEvent('keydown', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
+            input.dispatchEvent(new KeyboardEvent('keypress', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
+            input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
 
-            // Method 1: Form submit
+            // Method 1: Find and click visible submit/login button
+            const btns = Array.from(document.querySelectorAll('button, div[role="button"], a[role="button"]'));
+            const btn = btns.find(b => {{
+                const text = (b.textContent || '').trim().toLowerCase();
+                const testId = (b.getAttribute('data-testid') || '').toLowerCase();
+                const type = (b.getAttribute('type') || '').toLowerCase();
+                return type === 'submit' || testId.includes('submit') || testId.includes('login') || testId.includes('pin') ||
+                       ['anmelden', 'login', 'weiter', 'next', 'submit', 'bestätigen', 'confirm'].some(k => text === k || text.includes(k));
+            }});
+
+            if (btn) {{
+                btn.removeAttribute('disabled');
+                btn.disabled = false;
+                btn.focus();
+                const rect = btn.getBoundingClientRect();
+                const clientX = rect.left + rect.width / 2;
+                const clientY = rect.top + rect.height / 2;
+                const mouseOpts = {{ bubbles: true, cancelable: true, view: window, clientX, clientY }};
+                btn.dispatchEvent(new MouseEvent('pointerdown', mouseOpts));
+                btn.dispatchEvent(new MouseEvent('mousedown', mouseOpts));
+                btn.dispatchEvent(new MouseEvent('pointerup', mouseOpts));
+                btn.dispatchEvent(new MouseEvent('mouseup', mouseOpts));
+                btn.dispatchEvent(new MouseEvent('click', mouseOpts));
+                btn.click();
+                return {{ ok: true, stage: 'pin', clicked: true, btnText: (btn.textContent || '').trim() }};
+            }}
+
             if (input.form) {{
                 try {{
                     input.form.requestSubmit();
@@ -251,16 +299,6 @@ class AuthHelper:
                 }} catch(e) {{}}
             }}
 
-            // Method 2: Button Click
-            const btns = Array.from(document.querySelectorAll('button'));
-            const btn = btns.find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Anmelden') || b.textContent.includes('Login') || b.textContent.includes('Weiter') || b.textContent.includes('Next') || b.textContent.includes('Submit'))));
-            if (btn) {{
-                btn.disabled = false;
-                btn.dispatchEvent(new MouseEvent('mousedown', {{ bubbles: true, cancelable: true, view: window }}));
-                btn.dispatchEvent(new MouseEvent('mouseup', {{ bubbles: true, cancelable: true, view: window }}));
-                btn.click();
-                return {{ ok: true, stage: 'pin', clicked: true }};
-            }}
             return {{ ok: true, stage: 'pin', clicked: false }};
         }})()
         """
