@@ -182,23 +182,44 @@ class AuthHelper:
         await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
         await asyncio.sleep(4)
 
-        # Cookie banner
-        banner_script = """
+        # 0. Cookie banner & Login Mode Check (Switch from QR-Code to Phone Login if necessary)
+        prep_script = """
         (() => {
+            // 1. Accept cookies
             const btns = Array.from(document.querySelectorAll('button'));
             const acceptBtn = btns.find(b => b.textContent && (b.textContent.includes('Accept') || b.textContent.includes('Akzeptieren') || b.textContent.includes('Allow')));
-            if (acceptBtn) { acceptBtn.click(); return true; }
-            return false;
+            if (acceptBtn) { acceptBtn.click(); }
+
+            // 2. Check if QR-Code mode is shown and switch to Phone number login
+            const switchBtns = Array.from(document.querySelectorAll('button, a, div[role="button"], span'));
+            const phoneLoginBtn = switchBtns.find(b => {
+                const text = (b.textContent || '').trim().toLowerCase();
+                return text.includes('telefon') || text.includes('phone') || text.includes('handynummer') || text.includes('ohne qr') || text.includes('andere anmeldemethode');
+            });
+            if (phoneLoginBtn) {
+                phoneLoginBtn.click();
+                return { switched_mode: true, text: (phoneLoginBtn.textContent || '').trim() };
+            }
+            return { switched_mode: false };
         })()
         """
-        await self.cdp.send_cmd("Runtime.evaluate", {"expression": banner_script})
-        await asyncio.sleep(1)
+        prep_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": prep_script, "returnByValue": True})
+        _LOGGER.info("CDP Login Prep result: %s", prep_res)
+        await asyncio.sleep(2.0)
 
         # Phone Number Input & Submit
         phone_script = f"""
         (() => {{
-            const input = document.querySelector('input[name="phoneNumber"], input[type="tel"], input[autocomplete="tel"], input[placeholder*="Phone"], input[placeholder*="Telefon"], input');
-            if (!input) return {{ ok: false, stage: 'phone', reason: 'input_not_found' }};
+            const inputs = Array.from(document.querySelectorAll('input'));
+            const input = inputs.find(i => {{
+                const name = (i.getAttribute('name') || '').toLowerCase();
+                const type = (i.getAttribute('type') || '').toLowerCase();
+                const auto = (i.getAttribute('autocomplete') || '').toLowerCase();
+                const place = (i.getAttribute('placeholder') || '').toLowerCase();
+                return name.includes('phone') || type === 'tel' || auto.includes('tel') || place.includes('phone') || place.includes('telefon') || place.includes('handy') || (type === 'text' && !name.includes('pin'));
+            }}) || inputs[0];
+
+            if (!input) return {{ ok: false, stage: 'phone', reason: 'input_not_found', total_inputs: inputs.length }};
             input.focus();
             input.click();
             const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
@@ -209,14 +230,15 @@ class AuthHelper:
             input.dispatchEvent(new KeyboardEvent('keypress', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
             input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
 
-            // Method 1: Find and click visible submit/next button
-            const btns = Array.from(document.querySelectorAll('button, div[role="button"], a[role="button"]'));
+            // Method 1: Find visible submit button that has text or is submit type
+            const btns = Array.from(document.querySelectorAll('button, div[role="button"]'));
             const btn = btns.find(b => {{
                 const text = (b.textContent || '').trim().toLowerCase();
                 const testId = (b.getAttribute('data-testid') || '').toLowerCase();
                 const type = (b.getAttribute('type') || '').toLowerCase();
-                return type === 'submit' || testId.includes('submit') || testId.includes('next') || testId.includes('login') ||
-                       ['weiter', 'next', 'continue', 'anmelden', 'login', 'senden', 'submit'].some(k => text === k || text.includes(k));
+                const isSubmit = type === 'submit' || testId.includes('submit') || testId.includes('next');
+                const hasText = ['weiter', 'next', 'continue', 'anmelden', 'login', 'senden', 'submit'].some(k => text === k || text.includes(k));
+                return (isSubmit || hasText) && b.offsetWidth > 0 && b.offsetHeight > 0;
             }});
 
             if (btn) {{
@@ -271,8 +293,9 @@ class AuthHelper:
                 const text = (b.textContent || '').trim().toLowerCase();
                 const testId = (b.getAttribute('data-testid') || '').toLowerCase();
                 const type = (b.getAttribute('type') || '').toLowerCase();
-                return type === 'submit' || testId.includes('submit') || testId.includes('login') || testId.includes('pin') ||
-                       ['anmelden', 'login', 'weiter', 'next', 'submit', 'bestätigen', 'confirm'].some(k => text === k || text.includes(k));
+                const isSubmit = type === 'submit' || testId.includes('submit') || testId.includes('login') || testId.includes('pin');
+                const hasText = ['anmelden', 'login', 'weiter', 'next', 'submit', 'bestätigen', 'confirm'].some(k => text === k || text.includes(k));
+                return (isSubmit || hasText) && b.offsetWidth > 0 && b.offsetHeight > 0;
             }});
 
             if (btn) {{
