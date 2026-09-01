@@ -153,6 +153,9 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
       defaultQueryTimeoutMs: 90000,
       retryRequestDelayMs: 5000,
       generateHighQualityLinkPreview: true,
+      options: {
+        resolveDNSHost,
+      },
       linkPreviewImageOptions: {
         resolveDNSHost,
       },
