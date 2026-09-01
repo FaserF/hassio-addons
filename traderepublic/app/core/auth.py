@@ -177,6 +177,52 @@ class AuthHelper:
 
         return None
 
+    async def extract_qr_code(self) -> Optional[str]:
+        """Extract QR code as base64 data URI from Trade Republic login page."""
+        qr_script = """
+        (() => {
+            // 1. Look for img with data URL or QR in src/alt
+            const imgs = Array.from(document.querySelectorAll('img'));
+            const qrImg = imgs.find(i => (i.src && i.src.startsWith('data:image')) || (i.alt && i.alt.toLowerCase().includes('qr')) || (i.className && i.className.toLowerCase().includes('qr')));
+            if (qrImg && qrImg.src && qrImg.src.startsWith('data:image')) {
+                return qrImg.src;
+            }
+
+            // 2. Look for canvas and convert to dataURL
+            const canvases = Array.from(document.querySelectorAll('canvas'));
+            if (canvases.length > 0) {
+                try {
+                    for (let c of canvases) {
+                        if (c.width > 50 && c.height > 50) {
+                            return c.toDataURL('image/png');
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            // 3. Look for SVG QR code and convert to data URI
+            const svgs = Array.from(document.querySelectorAll('svg'));
+            const qrSvg = svgs.find(s => (s.getAttribute('data-testid') || '').includes('qr') || (s.className && typeof s.className === 'string' && s.className.toLowerCase().includes('qr')) || s.querySelector('rect, path'));
+            if (qrSvg) {
+                try {
+                    const xml = new XMLSerializer().serializeToString(qrSvg);
+                    return 'data:image/svg+xml;utf8,' + encodeURIComponent(xml);
+                } catch(e) {}
+            }
+
+            return null;
+        })()
+        """
+        try:
+            res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": qr_script, "returnByValue": True})
+            if res and isinstance(res, dict):
+                val = res.get("result", {}).get("value")
+                if val and isinstance(val, str) and (val.startswith("data:image") or "svg" in val):
+                    return val
+        except Exception as e:
+            _LOGGER.debug("Failed to extract QR code: %s", e)
+        return None
+
     async def execute_login(self, clean_phone: str, clean_pin: str) -> Dict[str, Any]:
         """Navigate to login, enter credentials, solve challenge and trigger push/SMS."""
         await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})

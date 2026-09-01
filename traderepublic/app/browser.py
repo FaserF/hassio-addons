@@ -305,6 +305,48 @@ class TradeRepublicBrowserService:
                 _LOGGER.error("Login init error: %s", e)
                 return {"success": False, "error": f"Internal browser error: {e}"}
 
+    async def get_qr_code(self) -> Dict[str, Any]:
+        """Navigate to login, ensure QR challenge is present and extract it."""
+        async with self._lock:
+            try:
+                # If we are not already on the login page, navigate there
+                url_res = await self.cdp.send_cmd(
+                    "Runtime.evaluate", {"expression": "window.location.href", "returnByValue": True}
+                )
+                current_url = url_res and url_res.get("result", {}).get("value", "")
+                if "login" not in current_url:
+                    await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
+                    await asyncio.sleep(3.0)
+
+                # Dismiss cookie banner if present
+                banner_script = """
+                (() => {
+                    const btns = Array.from(document.querySelectorAll('button'));
+                    const acceptBtn = btns.find(b => b.textContent && (b.textContent.includes('Accept') || b.textContent.includes('Akzeptieren') || b.textContent.includes('Allow')));
+                    if (acceptBtn) { acceptBtn.click(); }
+                })()
+                """
+                await self.cdp.send_cmd("Runtime.evaluate", {"expression": banner_script})
+
+                # Start polling task for approval in background if not already polling
+                if not self.login_started_at or (time.time() - self.login_started_at > 120):
+                    self.login_started_at = time.time()
+                    self._last_invalidated_token = self.session_token
+                    self.session_token = None
+                    self.is_logged_in = False
+                    self._ws_keeper.stop()
+                    asyncio.create_task(self._poll_for_app_approval())
+
+                qr_data = await self.auth_helper.extract_qr_code()
+                return {
+                    "success": bool(qr_data),
+                    "qr_code": qr_data,
+                    "is_logged_in": self.is_logged_in,
+                }
+            except Exception as e:
+                _LOGGER.debug("Error getting QR code: %s", e)
+                return {"success": False, "error": str(e), "qr_code": None}
+
     async def _poll_for_app_approval(self) -> None:
         """Poll for session token in background for 120s after credentials submission."""
         from core.verifier import verify_tr_token

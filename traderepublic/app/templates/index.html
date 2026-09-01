@@ -630,8 +630,28 @@
     {% endif %}
     {% endif %}
 
-    <div id="step-login" class="{% if (is_logged_in and not last_error) or login_in_progress %}hidden{% endif %}"
-      style="margin-top:1rem;">
+    <div id="login-tabs" class="{% if (is_logged_in and not last_error) or login_in_progress %}hidden{% endif %}" style="margin-top:1rem;display:flex;gap:0.5rem;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:0.5rem;">
+      <button type="button" class="btn-secondary" id="tab-qr-btn" onclick="switchLoginTab('qr')" style="flex:1;background:rgba(59,130,246,0.2);border-color:#3b82f6;color:#93c5fd;font-weight:600;">📱 <span data-i18n="tab_qr">QR-Code Login (Empfohlen)</span></button>
+      <button type="button" class="btn-secondary" id="tab-phone-btn" onclick="switchLoginTab('phone')" style="flex:1;">📞 <span data-i18n="tab_phone">Telefonnummer &amp; PIN</span></button>
+    </div>
+
+    <div id="step-qr" class="{% if (is_logged_in and not last_error) or login_in_progress %}hidden{% endif %}" style="margin-top:1rem;text-align:center;">
+      <div class="alert alert-info" style="text-align:left;margin-bottom:1rem;">
+        <b>📷 QR-Code Login:</b><br>
+        1. Öffne die Trade Republic App auf deinem Smartphone.<br>
+        2. Gehe auf <b>Profil → Einstellungen → Web-Login / QR scannen</b>.<br>
+        3. Scanne den QR-Code unten, um die Sitzung automatisch zu verknüpfen.
+      </div>
+      <div style="background:white;padding:1rem;border-radius:12px;display:inline-block;margin:0 auto;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+        <img id="qr-code-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="QR Code" style="width:220px;height:220px;display:block;margin:0 auto;" />
+      </div>
+      <div style="margin-top:1rem;display:flex;gap:0.5rem;justify-content:center;">
+        <button type="button" onclick="loadQRCode()" class="btn-secondary" style="margin-top:0;">🔄 <span data-i18n="btn_refresh_qr">QR-Code neu laden</span></button>
+        <button type="button" onclick="checkSession()" class="btn-primary" style="margin-top:0;background:#22c55e;">✓ <span data-i18n="btn_check_qr">Status prüfen</span></button>
+      </div>
+    </div>
+
+    <div id="step-login" class="hidden" style="margin-top:1rem;">
       <form onsubmit="event.preventDefault(); submitLogin();">
         <div class="form-group">
           <label for="phone" data-i18n="lbl_phone_input">Phone Number (international format, e.g. +491701234567,
@@ -643,7 +663,7 @@
         <div class="form-group">
           <label for="pin" data-i18n="lbl_pin">PIN (4-6 digits)</label>
           <input type="password" id="pin" placeholder="••••" inputmode="numeric" pattern="[0-9]{4,6}"
-            autocomplete="current-password" required autofocus />
+            autocomplete="current-password" required />
         </div>
         <button type="submit" data-i18n="btn_start_login">Start Login &amp; Solve Challenge</button>
       </form>
@@ -795,6 +815,57 @@
       applyTranslations();
     }
 
+    function switchLoginTab(tab) {
+      const qrStep = document.getElementById('step-qr');
+      const phoneStep = document.getElementById('step-login');
+      const qrBtn = document.getElementById('tab-qr-btn');
+      const phoneBtn = document.getElementById('tab-phone-btn');
+
+      if (tab === 'qr') {
+        qrStep.classList.remove('hidden');
+        phoneStep.classList.add('hidden');
+        qrBtn.style.background = 'rgba(59,130,246,0.2)';
+        qrBtn.style.borderColor = '#3b82f6';
+        qrBtn.style.color = '#93c5fd';
+        qrBtn.style.fontWeight = '600';
+        phoneBtn.style.background = '';
+        phoneBtn.style.borderColor = '';
+        phoneBtn.style.color = '';
+        phoneBtn.style.fontWeight = '';
+        loadQRCode();
+      } else {
+        qrStep.classList.add('hidden');
+        phoneStep.classList.remove('hidden');
+        phoneBtn.style.background = 'rgba(59,130,246,0.2)';
+        phoneBtn.style.borderColor = '#3b82f6';
+        phoneBtn.style.color = '#93c5fd';
+        phoneBtn.style.fontWeight = '600';
+        qrBtn.style.background = '';
+        qrBtn.style.borderColor = '';
+        qrBtn.style.color = '';
+        qrBtn.style.fontWeight = '';
+      }
+    }
+
+    async function loadQRCode() {
+      const imgEl = document.getElementById('qr-code-img');
+      if (!imgEl) return;
+      try {
+        const res = await fetch('./api/v1/login/qr');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.qr_code) {
+            imgEl.src = data.qr_code;
+          }
+          if (data.is_logged_in) {
+            location.reload();
+          }
+        }
+      } catch (err) {
+        console.debug('Failed to fetch QR code:', err);
+      }
+    }
+
     // ── Init ──────────────────────────────────────────────────────────────
     (async () => {
       currentLang = detectLang();
@@ -805,6 +876,11 @@
       const remainingSec = {{ login_remaining_sec | tojson }} || 0;
       if (inProgress && remainingSec > 0) {
         startTwoFaCountdown(remainingSec);
+      } else {
+        const isLoggedIn = {{ is_logged_in | tojson }};
+        if (!isLoggedIn) {
+          loadQRCode();
+        }
       }
     })();
 
