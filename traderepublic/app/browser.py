@@ -305,16 +305,17 @@ class TradeRepublicBrowserService:
                 _LOGGER.error("Login init error: %s", e)
                 return {"success": False, "error": f"Internal browser error: {e}"}
 
-    async def get_qr_code(self) -> Dict[str, Any]:
+    async def get_qr_code(self, force_refresh: bool = False) -> Dict[str, Any]:
         """Navigate to login, ensure QR challenge is present and extract it."""
         async with self._lock:
             try:
-                # If we are not already on the login page, navigate there
+                # If force_refresh requested or not on login page, navigate to login
                 url_res = await self.cdp.send_cmd(
                     "Runtime.evaluate", {"expression": "window.location.href", "returnByValue": True}
                 )
                 current_url = url_res and url_res.get("result", {}).get("value", "")
-                if "login" not in current_url:
+                if force_refresh or "login" not in current_url:
+                    _LOGGER.info("Navigating to Trade Republic login page for fresh QR code...")
                     await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
                     await asyncio.sleep(3.0)
 
@@ -334,6 +335,15 @@ class TradeRepublicBrowserService:
                     asyncio.create_task(self._poll_for_qr_approval())
 
                 qr_data = await self.auth_helper.extract_qr_code()
+
+                # If QR code was not found (e.g. page was in stale/idle state), force a clean reload and retry once
+                if not qr_data and not force_refresh:
+                    _LOGGER.info("QR code missing or stale, performing clean reload...")
+                    await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
+                    await asyncio.sleep(3.5)
+                    await self.cdp.send_cmd("Runtime.evaluate", {"expression": banner_script})
+                    qr_data = await self.auth_helper.extract_qr_code()
+
                 return {
                     "success": bool(qr_data),
                     "qr_code": qr_data,

@@ -446,9 +446,9 @@ async def set_manual_session(req: ManualTokenRequest):
 
 @app.get("/api/v1/login/qr")
 @app.post("/api/v1/login/qr")
-async def get_login_qr():
+async def get_login_qr(refresh: bool = False):
     """Retrieve the current QR code from Trade Republic login page."""
-    res = await browser_service.get_qr_code()
+    res = await browser_service.get_qr_code(force_refresh=refresh)
     return res
 
 

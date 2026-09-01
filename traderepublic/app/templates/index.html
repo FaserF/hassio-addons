@@ -646,7 +646,7 @@
         <img id="qr-code-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="QR Code" style="width:220px;height:220px;display:block;margin:0 auto;" />
       </div>
       <div style="margin-top:1rem;display:flex;gap:0.5rem;justify-content:center;">
-        <button type="button" onclick="loadQRCode()" class="btn-secondary" style="margin-top:0;">🔄 <span data-i18n="btn_refresh_qr">Reload QR Code</span></button>
+        <button type="button" onclick="loadQRCode(true)" class="btn-secondary" style="margin-top:0;">🔄 <span data-i18n="btn_refresh_qr">Reload QR Code</span></button>
         <button type="button" onclick="checkSession()" class="btn-primary" style="margin-top:0;background:#22c55e;">✓ <span data-i18n="btn_check_qr">Check Status</span></button>
       </div>
     </div>
@@ -847,11 +847,13 @@
       }
     }
 
-    async function loadQRCode() {
+    async function loadQRCode(forceRefresh = false) {
       const imgEl = document.getElementById('qr-code-img');
       if (!imgEl) return;
       try {
-        const res = await fetch('./api/v1/login/qr');
+        imgEl.style.opacity = '0.4';
+        const url = './api/v1/login/qr' + (forceRefresh ? '?refresh=true' : '');
+        const res = await fetch(url, { method: 'POST' });
         if (res.ok) {
           const data = await res.json();
           if (data.qr_code) {
@@ -863,6 +865,8 @@
         }
       } catch (err) {
         console.debug('Failed to fetch QR code:', err);
+      } finally {
+        imgEl.style.opacity = '1';
       }
     }
 

@@ -178,67 +178,94 @@ class AuthHelper:
         return None
 
     async def extract_qr_code(self) -> Optional[str]:
-        """Extract QR code as base64 data URI from Trade Republic login page."""
-        qr_script = """
-        (() => {
-            // 1. Look for SVG with QR pattern (rects / paths)
-            const svgs = Array.from(document.querySelectorAll('svg'));
-            for (let s of svgs) {
-                // Must have multiple rects or paths resembling QR code matrix
-                const rectCount = s.querySelectorAll('rect, path').length;
-                if (rectCount > 10 || (s.getAttribute('data-testid') || '').toLowerCase().includes('qr')) {
-                    try {
-                        const xml = new XMLSerializer().serializeToString(s);
-                        return 'data:image/svg+xml;utf8,' + encodeURIComponent(xml);
-                    } catch(e) {}
-                }
-            }
-
-            // 2. Look for Canvas and convert to PNG
-            const canvases = Array.from(document.querySelectorAll('canvas'));
-            for (let c of canvases) {
-                if (c.width > 50 && c.height > 50) {
-                    try {
-                        return c.toDataURL('image/png');
-                    } catch(e) {}
-                }
-            }
-
-            // 3. Look for img elements (excluding logos/avatars)
-            const imgs = Array.from(document.querySelectorAll('img'));
-            for (let i of imgs) {
-                const src = i.src || '';
-                const alt = (i.alt || '').toLowerCase();
-                const cls = (i.className || '').toLowerCase();
-                if ((src.startsWith('data:image') && !src.includes('logo')) || alt.includes('qr') || cls.includes('qr')) {
-                    return src;
-                }
-            }
-
-            return null;
-        })()
-        """
+        """Extract QR code as base64 data URI or screenshot from Trade Republic login page."""
         try:
-            res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": qr_script, "returnByValue": True})
-            if res and isinstance(res, dict):
-                val = res.get("result", {}).get("value")
-                if (
-                    val
-                    and isinstance(val, str)
-                    and (val.startswith("data:image") or val.startswith("data:image/svg+xml"))
-                ):
-                    return val
+            # 1. First ensure we are in QR mode (switch back if in phone mode or if expired button is shown)
+            qr_prep_script = """
+            (() => {
+                // If there is an expired QR reload button or overlay, click it
+                const allElements = Array.from(document.querySelectorAll('button, div[role="button"], a, svg, span, p'));
+                const reloadBtn = allElements.find(el => {
+                    const txt = (el.textContent || '').trim().toLowerCase();
+                    const aria = (el.getAttribute('aria-label') || '').toLowerCase();
+                    const testId = (el.getAttribute('data-testid') || '').toLowerCase();
+                    return (
+                        txt.includes('abgelaufen') || txt.includes('neu laden') || txt.includes('erneuern') ||
+                        txt.includes('refresh') || txt.includes('reload') || txt.includes('aktualisieren') ||
+                        aria.includes('refresh') || aria.includes('reload') || testId.includes('refresh') || testId.includes('reload')
+                    ) && el.offsetWidth > 0 && el.offsetHeight > 0;
+                });
+                if (reloadBtn) {
+                    reloadBtn.click();
+                    return { action: 'clicked_reload' };
+                }
 
-            # Fallback: Capture screenshot of the QR code bounding box directly via CDP
+                // If currently on phone login form, switch to QR login if link/button available
+                const qrSwitchBtn = allElements.find(el => {
+                    const txt = (el.textContent || '').trim().toLowerCase();
+                    return (txt.includes('qr-code') || txt.includes('qr code') || txt.includes('mit qr')) && el.offsetWidth > 0;
+                });
+                if (qrSwitchBtn) {
+                    qrSwitchBtn.click();
+                    return { action: 'switched_to_qr' };
+                }
+
+                return { action: 'none' };
+            })()
+            """
+            prep_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": qr_prep_script, "returnByValue": True})
+            action = prep_res and prep_res.get("result", {}).get("value", {}).get("action")
+            if action in ("clicked_reload", "switched_to_qr"):
+                await asyncio.sleep(2.0)
+
+            # 2. Look for Canvas element with valid dimensions
+            canvas_script = """
+            (() => {
+                const canvases = Array.from(document.querySelectorAll('canvas'));
+                for (let c of canvases) {
+                    if (c.offsetWidth >= 140 && c.offsetHeight >= 140) {
+                        try {
+                            return c.toDataURL('image/png');
+                        } catch(e) {}
+                    }
+                }
+                return null;
+            })()
+            """
+            canvas_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": canvas_script, "returnByValue": True})
+            canvas_val = canvas_res and canvas_res.get("result", {}).get("value")
+            if canvas_val and isinstance(canvas_val, str) and canvas_val.startswith("data:image/png"):
+                return canvas_val
+
+            # 3. Locate the bounding box of the full QR container and screenshot via CDP
             box_script = """
             (() => {
-                const qrContainer = document.querySelector('[data-testid*="qr"], div:has(> svg), div:has(> canvas), main div');
-                const el = Array.from(document.querySelectorAll('svg, canvas, div')).find(e => {
-                    const rect = e.getBoundingClientRect();
-                    return rect.width >= 120 && rect.width <= 350 && Math.abs(rect.width - rect.height) < 20 && rect.top > 0;
-                });
-                if (el) {
+                const candidates = Array.from(document.querySelectorAll('div, section, main, [data-testid*="qr"], svg'));
+                const qrContainers = candidates.filter(el => {
                     const r = el.getBoundingClientRect();
+                    const isSquare = Math.abs(r.width - r.height) < 40;
+                    const isProperSize = r.width >= 150 && r.width <= 450 && r.height >= 150 && r.height <= 450;
+                    const isVisible = r.top >= 0 && r.left >= 0 && (r.top + r.height) <= window.innerHeight + 200;
+                    if (!isSquare || !isProperSize || !isVisible) return false;
+                    
+                    const hasGraphic = el.querySelector('svg, canvas, img') !== null || el.tagName.toLowerCase() === 'svg';
+                    return hasGraphic;
+                });
+
+                if (qrContainers.length > 0) {
+                    // Sort descending by area to get the outer QR wrapper containing both the matrix and center icon
+                    qrContainers.sort((a, b) => {
+                        const ra = a.getBoundingClientRect();
+                        const rb = b.getBoundingClientRect();
+                        return (rb.width * rb.height) - (ra.width * ra.height);
+                    });
+                    // Pick candidate around ~180px - 320px
+                    const best = qrContainers.find(el => {
+                        const r = el.getBoundingClientRect();
+                        return r.width >= 180 && r.width <= 320;
+                    }) || qrContainers[0];
+
+                    const r = best.getBoundingClientRect();
                     return { x: r.x, y: r.y, width: r.width, height: r.height };
                 }
                 return null;
@@ -246,20 +273,43 @@ class AuthHelper:
             """
             box_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": box_script, "returnByValue": True})
             box = box_res and box_res.get("result", {}).get("value")
-            if box and isinstance(box, dict):
+            if box and isinstance(box, dict) and box.get("width", 0) >= 140:
                 clip_params = {
                     "format": "png",
                     "clip": {
-                        "x": box.get("x", 0),
-                        "y": box.get("y", 0),
-                        "width": box.get("width", 200),
-                        "height": box.get("height", 200),
-                        "scale": 1,
+                        "x": float(box.get("x", 0)),
+                        "y": float(box.get("y", 0)),
+                        "width": float(box.get("width", 200)),
+                        "height": float(box.get("height", 200)),
+                        "scale": 2,
                     },
                 }
                 shot = await self.cdp.send_cmd("Page.captureScreenshot", clip_params)
                 if shot and isinstance(shot, dict) and shot.get("data"):
                     return f"data:image/png;base64,{shot.get('data')}"
+
+            # 4. Fallback: Full SVG with QR pattern (> 20 paths/rects)
+            svg_script = """
+            (() => {
+                const svgs = Array.from(document.querySelectorAll('svg'));
+                for (let s of svgs) {
+                    const rect = s.getBoundingClientRect();
+                    const rectCount = s.querySelectorAll('rect, path').length;
+                    if (rectCount >= 30 && rect.width >= 140) {
+                        try {
+                            const xml = new XMLSerializer().serializeToString(s);
+                            return 'data:image/svg+xml;utf8,' + encodeURIComponent(xml);
+                        } catch(e) {}
+                    }
+                }
+                return null;
+            })()
+            """
+            svg_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": svg_script, "returnByValue": True})
+            svg_val = svg_res and svg_res.get("result", {}).get("value")
+            if svg_val and isinstance(svg_val, str) and svg_val.startswith("data:image/svg+xml"):
+                return svg_val
+
         except Exception as e:
             _LOGGER.debug("Failed to extract QR code: %s", e)
         return None
@@ -277,27 +327,52 @@ class AuthHelper:
             const acceptBtn = btns.find(b => b.textContent && (b.textContent.includes('Accept') || b.textContent.includes('Akzeptieren') || b.textContent.includes('Allow')));
             if (acceptBtn) { acceptBtn.click(); }
 
-            // 2. Check if QR-Code mode is shown and switch to Phone number login
-            const switchBtns = Array.from(document.querySelectorAll('button, a, div[role="button"], span'));
-            const phoneLoginBtn = switchBtns.find(b => {
-                const text = (b.textContent || '').trim().toLowerCase();
-                return text.includes('telefon') || text.includes('phone') || text.includes('handynummer') || text.includes('ohne qr') || text.includes('andere anmeldemethode');
-            });
-            if (phoneLoginBtn) {
-                phoneLoginBtn.click();
-                return { switched_mode: true, text: (phoneLoginBtn.textContent || '').trim() };
+            // 2. Check if already on phone input screen
+            const visibleInputs = Array.from(document.querySelectorAll('input')).filter(i => i.offsetWidth > 0 && i.offsetHeight > 0);
+            if (visibleInputs.length > 0) {
+                return { switched_mode: true, reason: 'inputs_already_visible' };
             }
+
+            // 3. Find switch button/link (all languages & data-testids)
+            const elements = Array.from(document.querySelectorAll('button, a, div[role="button"], span, p'));
+            const switchBtn = elements.find(el => {
+                const txt = (el.textContent || '').trim().toLowerCase();
+                const testId = (el.getAttribute('data-testid') || '').toLowerCase();
+                const href = (el.getAttribute('href') || '').toLowerCase();
+                const aria = (el.getAttribute('aria-label') || '').toLowerCase();
+                return (
+                    txt.includes('telefon') || txt.includes('phone') || txt.includes('handy') ||
+                    txt.includes('ohne qr') || txt.includes('without qr') || txt.includes('andere') ||
+                    txt.includes('zugangsdaten') || txt.includes('credentials') || txt.includes('manuell') ||
+                    txt.includes('manual') || txt.includes('numéro') || txt.includes('número') ||
+                    testId.includes('phone') || testId.includes('switch') || testId.includes('credentials') ||
+                    href.includes('phone') || href.includes('credentials') || aria.includes('phone')
+                ) && el.offsetWidth > 0;
+            });
+
+            if (switchBtn) {
+                switchBtn.click();
+                return { switched_mode: true, text: switchBtn.textContent.trim() };
+            }
+
+            // If no specific text matched, try any other visible button on the page
+            const otherBtns = btns.filter(b => b !== acceptBtn && b.offsetWidth > 0 && b.offsetHeight > 0);
+            if (otherBtns.length > 0) {
+                otherBtns[0].click();
+                return { switched_mode: true, text: otherBtns[0].textContent.trim(), fallback: true };
+            }
+
             return { switched_mode: false };
         })()
         """
         prep_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": prep_script, "returnByValue": True})
         _LOGGER.info("CDP Login Prep result: %s", prep_res)
-        await asyncio.sleep(2.0)
+        await asyncio.sleep(2.5)
 
         # Phone Number Input & Submit
         phone_script = f"""
         (() => {{
-            const inputs = Array.from(document.querySelectorAll('input'));
+            const inputs = Array.from(document.querySelectorAll('input')).filter(i => i.offsetWidth > 0 && i.offsetHeight > 0);
             const input = inputs.find(i => {{
                 const name = (i.getAttribute('name') || '').toLowerCase();
                 const type = (i.getAttribute('type') || '').toLowerCase();
@@ -317,15 +392,15 @@ class AuthHelper:
             input.dispatchEvent(new KeyboardEvent('keypress', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
             input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
 
-            // Method 1: Find visible submit button that has text or is submit type
-            const btns = Array.from(document.querySelectorAll('button, div[role="button"]'));
+            // Find visible submit button
+            const btns = Array.from(document.querySelectorAll('button, div[role="button"]')).filter(b => b.offsetWidth > 0 && b.offsetHeight > 0);
             const btn = btns.find(b => {{
                 const text = (b.textContent || '').trim().toLowerCase();
                 const testId = (b.getAttribute('data-testid') || '').toLowerCase();
                 const type = (b.getAttribute('type') || '').toLowerCase();
                 const isSubmit = type === 'submit' || testId.includes('submit') || testId.includes('next');
                 const hasText = ['weiter', 'next', 'continue', 'anmelden', 'login', 'senden', 'submit'].some(k => text === k || text.includes(k));
-                return (isSubmit || hasText) && b.offsetWidth > 0 && b.offsetHeight > 0;
+                return isSubmit || hasText;
             }});
 
             if (btn) {{
@@ -374,15 +449,14 @@ class AuthHelper:
             input.dispatchEvent(new KeyboardEvent('keypress', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
             input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
 
-            // Method 1: Find and click visible submit/login button
-            const btns = Array.from(document.querySelectorAll('button, div[role="button"], a[role="button"]'));
+            const btns = Array.from(document.querySelectorAll('button, div[role="button"], a[role="button"]')).filter(b => b.offsetWidth > 0 && b.offsetHeight > 0);
             const btn = btns.find(b => {{
                 const text = (b.textContent || '').trim().toLowerCase();
                 const testId = (b.getAttribute('data-testid') || '').toLowerCase();
                 const type = (b.getAttribute('type') || '').toLowerCase();
                 const isSubmit = type === 'submit' || testId.includes('submit') || testId.includes('login') || testId.includes('pin');
                 const hasText = ['anmelden', 'login', 'weiter', 'next', 'submit', 'bestätigen', 'confirm'].some(k => text === k || text.includes(k));
-                return (isSubmit || hasText) && b.offsetWidth > 0 && b.offsetHeight > 0;
+                return isSubmit || hasText;
             }});
 
             if (btn) {{
@@ -415,13 +489,11 @@ class AuthHelper:
         pin_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": pin_script, "returnByValue": True})
         _LOGGER.info("CDP PIN step result: %s", pin_res)
 
-        # Wait for TR's React app to fire its login API call, then capture the response.
-        # This reveals whether AWS WAF is blocking the request or TR accepted/rejected it.
         await asyncio.sleep(4.0)
 
+        # Check performance logs for auth requests
         network_spy_script = """
         (() => {
-            // Collect all performance resource entries for TR API calls made after submit
             const entries = performance.getEntriesByType('resource').filter(e =>
                 e.name.includes('api.traderepublic.com') || e.name.includes('auth') || e.name.includes('login')
             );
@@ -434,14 +506,60 @@ class AuthHelper:
         """
         spy_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": network_spy_script, "returnByValue": True})
         network_calls = spy_res and spy_res.get("result", {}).get("value")
+        has_auth_call = bool(network_calls and ("auth/web/login" in str(network_calls) or "v1/auth" in str(network_calls)))
         if network_calls:
-            _LOGGER.info("TR network calls after submit: %s", network_calls)
-        else:
-            _LOGGER.warning(
-                "No TR network calls detected after form submit — WAF may have blocked the request or React did not fire"
-            )
+            _LOGGER.info("TR network calls after submit: %s (has_auth_call: %s)", network_calls, has_auth_call)
 
-        # Check current page URL (TR redirects away from /login on success)
+        # In-Page API Fallback: If DOM interaction did not trigger auth API call, execute in-page fetch with solved WAF context
+        if not has_auth_call:
+            _LOGGER.info("DOM interaction did not produce auth call, executing in-page direct API fetch...")
+            in_page_fetch_script = f"""
+            (async () => {{
+                try {{
+                    const res = await fetch('https://api.traderepublic.com/api/v1/auth/web/login', {{
+                        method: 'POST',
+                        headers: {{
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }},
+                        body: JSON.stringify({{
+                            phoneNumber: "{clean_phone}",
+                            pin: "{clean_pin}"
+                        }})
+                    }});
+                    const st = res.status;
+                    const txt = await res.text();
+                    let d = null;
+                    try {{ d = JSON.parse(txt); }} catch(e) {{}}
+                    return {{ ok: res.ok, status: st, data: d, raw: txt }};
+                }} catch(err) {{
+                    return {{ ok: false, error: err.toString() }};
+                }}
+            }})()
+            """
+            fetch_res = await self.cdp.send_cmd(
+                "Runtime.evaluate", {"expression": in_page_fetch_script, "awaitPromise": True, "returnByValue": True}
+            )
+            fetch_val = fetch_res and fetch_res.get("result", {}).get("value")
+            _LOGGER.info("In-page fetch login result: %s", fetch_val)
+            if fetch_val and isinstance(fetch_val, dict):
+                if fetch_val.get("ok"):
+                    data = fetch_val.get("data") or {}
+                    if data.get("processId"):
+                        self._last_process_id = data.get("processId")
+                    return {
+                        "success": True,
+                        "message": "Push notification sent. Please tap Confirm in your Trade Republic app.",
+                    }
+                elif fetch_val.get("status") in (400, 401, 403, 429):
+                    data = fetch_val.get("data") or {}
+                    err_msg = data.get("message") or data.get("error") or f"HTTP {fetch_val.get('status')}"
+                    return {
+                        "success": False,
+                        "error": f"Trade Republic login rejected: {err_msg}",
+                    }
+
+        # Check current page URL
         url_res = await self.cdp.send_cmd(
             "Runtime.evaluate", {"expression": "window.location.href", "returnByValue": True}
         )
