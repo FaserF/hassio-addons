@@ -251,7 +251,7 @@ class AuthHelper:
                     const isProperSize = r.width >= 150 && r.width <= 450 && r.height >= 150 && r.height <= 450;
                     const isVisible = r.top >= 0 && r.left >= 0 && (r.top + r.height) <= window.innerHeight + 200;
                     if (!isSquare || !isProperSize || !isVisible) return false;
-                    
+
                     const hasGraphic = el.querySelector('svg, canvas, img') !== null || el.tagName.toLowerCase() === 'svg';
                     return hasGraphic;
                 });

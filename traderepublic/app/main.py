@@ -21,7 +21,8 @@ _LOGGER = logging.getLogger("traderepublic-addon")
 
 class EndpointFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        return "/api/v1/status" not in record.getMessage()
+        msg = record.getMessage()
+        return "/api/v1/status" not in msg and "/api/v1/login/qr" not in msg
 
 
 logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
