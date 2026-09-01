@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.1.4 (2026-09-01)
+
+### 🐛 Bug Fixes
+- pass resolveDNSHost into fetch options for link-preview to suppress loopback warning ([`51f5055b`](https://github.com/FaserF/hassio-addons/commit/51f5055ba29d3d59a2cf9186ca46cc4df640eef4))
+- ignore voice notes silently when no STT engine or API key is configured ([`0263bee5`](https://github.com/FaserF/hassio-addons/commit/0263bee5fa19506947d28a254e10e29daf79d901))
+- pass startDate and endDate as Date objects for Baileys send_event endpoint ([`4b9bf440`](https://github.com/FaserF/hassio-addons/commit/4b9bf44037cabd6b8f77cc6050e167d2bbdf72f6))
+- improve contact name resolution for LID-addressed chats in chat list #1007 ([`59d676fb`](https://github.com/FaserF/hassio-addons/commit/59d676fb34748752863bac80a538b00549ad60a1))
+- skip HA Core supervisor polling when running in standalone container without SUPERVISOR_TOKEN ([`35be267f`](https://github.com/FaserF/hassio-addons/commit/35be267f1e770ce585ff4a513251d33b5fabe48e))
+
+### 📦 Dependencies
+- ⬆️ Update dependency globals to v17.12.0 (#1045) ([`540761a3`](https://github.com/FaserF/hassio-addons/commit/540761a3965697c98b5919d4d3fff853a50f15b4))
+- ⬆️ Update dependency express-rate-limit to v8.7.0 ([`2d8596c6`](https://github.com/FaserF/hassio-addons/commit/2d8596c6bfa6804a9f37fd751e600c2434abc6dd))
+
+
 ## 2.1.3 (2026-08-28)
 
 ### ✨ Features
