@@ -328,14 +328,10 @@ class TradeRepublicBrowserService:
                 """
                 await self.cdp.send_cmd("Runtime.evaluate", {"expression": banner_script})
 
-                # Start polling task for approval in background if not already polling
-                if not self.login_started_at or (time.time() - self.login_started_at > 120):
-                    self.login_started_at = time.time()
-                    self._last_invalidated_token = self.session_token
-                    self.session_token = None
-                    self.is_logged_in = False
-                    self._ws_keeper.stop()
-                    asyncio.create_task(self._poll_for_app_approval())
+                # Start background watcher for QR scan without triggering 2FA countdown
+                if not getattr(self, "_qr_polling_active", False):
+                    self._qr_polling_active = True
+                    asyncio.create_task(self._poll_for_qr_approval())
 
                 qr_data = await self.auth_helper.extract_qr_code()
                 return {
@@ -346,6 +342,38 @@ class TradeRepublicBrowserService:
             except Exception as e:
                 _LOGGER.debug("Error getting QR code: %s", e)
                 return {"success": False, "error": str(e), "qr_code": None}
+
+    async def _poll_for_qr_approval(self) -> None:
+        """Poll in background for successful QR code scan without triggering 2FA state."""
+        try:
+            from core.verifier import verify_tr_token
+
+            invalid_tokens: set[str] = set()
+            if getattr(self, "_last_invalidated_token", None):
+                invalid_tokens.add(self._last_invalidated_token)
+
+            for _ in range(60):  # Poll every 3s for up to 3 minutes
+                await asyncio.sleep(3)
+                if self.is_logged_in:
+                    break
+                # If a Phone/PIN login was explicitly started, abort QR watcher
+                if self.login_started_at and (time.time() - self.login_started_at < 120):
+                    break
+                token = await self.auth_helper.extract_token_from_cookies()
+                if not token or token in invalid_tokens:
+                    continue
+                is_valid = await verify_tr_token(token)
+                if is_valid:
+                    await self.save_session(token, is_new_login=True)
+                    self._ws_keeper.start()
+                    _LOGGER.info("QR code scan login detected! Session saved and WS keeper restarted.")
+                    break
+                else:
+                    invalid_tokens.add(token)
+        except Exception as e:
+            _LOGGER.debug("Error in QR approval poller: %s", e)
+        finally:
+            self._qr_polling_active = False
 
     async def _poll_for_app_approval(self) -> None:
         """Poll for session token in background for 120s after credentials submission."""

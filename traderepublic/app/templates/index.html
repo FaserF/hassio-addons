@@ -631,23 +631,23 @@
     {% endif %}
 
     <div id="login-tabs" class="{% if (is_logged_in and not last_error) or login_in_progress %}hidden{% endif %}" style="margin-top:1rem;display:flex;gap:0.5rem;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:0.5rem;">
-      <button type="button" class="btn-secondary" id="tab-qr-btn" onclick="switchLoginTab('qr')" style="flex:1;background:rgba(59,130,246,0.2);border-color:#3b82f6;color:#93c5fd;font-weight:600;">📱 <span data-i18n="tab_qr">QR-Code Login (Empfohlen)</span></button>
-      <button type="button" class="btn-secondary" id="tab-phone-btn" onclick="switchLoginTab('phone')" style="flex:1;">📞 <span data-i18n="tab_phone">Telefonnummer &amp; PIN</span></button>
+      <button type="button" class="btn-secondary" id="tab-qr-btn" onclick="switchLoginTab('qr')" style="flex:1;background:rgba(59,130,246,0.2);border-color:#3b82f6;color:#93c5fd;font-weight:600;">📱 <span data-i18n="tab_qr">QR Code Login (Recommended)</span></button>
+      <button type="button" class="btn-secondary" id="tab-phone-btn" onclick="switchLoginTab('phone')" style="flex:1;">📞 <span data-i18n="tab_phone">Phone Number &amp; PIN</span></button>
     </div>
 
     <div id="step-qr" class="{% if (is_logged_in and not last_error) or login_in_progress %}hidden{% endif %}" style="margin-top:1rem;text-align:center;">
       <div class="alert alert-info" style="text-align:left;margin-bottom:1rem;">
-        <b>📷 QR-Code Login:</b><br>
-        1. Öffne die Trade Republic App auf deinem Smartphone.<br>
-        2. Gehe auf <b>Profil → Einstellungen → Web-Login / QR scannen</b>.<br>
-        3. Scanne den QR-Code unten, um die Sitzung automatisch zu verknüpfen.
+        <b data-i18n="qr_title">📷 QR Code Login:</b><br>
+        <span data-i18n="qr_step1">1. Open the Trade Republic app on your phone.</span><br>
+        <span data-i18n="qr_step2">2. Go to Profile → Settings → Web Login / Scan QR.</span><br>
+        <span data-i18n="qr_step3">3. Scan the QR code below to automatically link your session.</span>
       </div>
       <div style="background:white;padding:1rem;border-radius:12px;display:inline-block;margin:0 auto;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
         <img id="qr-code-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="QR Code" style="width:220px;height:220px;display:block;margin:0 auto;" />
       </div>
       <div style="margin-top:1rem;display:flex;gap:0.5rem;justify-content:center;">
-        <button type="button" onclick="loadQRCode()" class="btn-secondary" style="margin-top:0;">🔄 <span data-i18n="btn_refresh_qr">QR-Code neu laden</span></button>
-        <button type="button" onclick="checkSession()" class="btn-primary" style="margin-top:0;background:#22c55e;">✓ <span data-i18n="btn_check_qr">Status prüfen</span></button>
+        <button type="button" onclick="loadQRCode()" class="btn-secondary" style="margin-top:0;">🔄 <span data-i18n="btn_refresh_qr">Reload QR Code</span></button>
+        <button type="button" onclick="checkSession()" class="btn-primary" style="margin-top:0;background:#22c55e;">✓ <span data-i18n="btn_check_qr">Check Status</span></button>
       </div>
     </div>
 

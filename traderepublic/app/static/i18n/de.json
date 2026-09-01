@@ -78,5 +78,13 @@
   "lbl_addon_version": "Add-on",
   "lbl_integration_version": "Integration",
   "restart_required_title": "🔄 Add-on Neustart: Kurze Bestätigung erforderlich",
-  "restart_required_body": "Trade Republic bindet WebSocket-Sitzungen direkt an die laufende Verbindung. Nach einem Neustart oder Update des Add-ons ist eine einmalige 1-Tap Bestätigung in der Trade Republic App erforderlich."
+  "restart_required_body": "Trade Republic bindet WebSocket-Sitzungen direkt an die laufende Verbindung. Nach einem Neustart oder Update des Add-ons ist eine einmalige 1-Tap Bestätigung in der Trade Republic App erforderlich.",
+  "tab_qr": "QR-Code Login (Empfohlen)",
+  "tab_phone": "Telefonnummer & PIN",
+  "qr_title": "📷 QR-Code Login:",
+  "qr_step1": "1. Öffne die Trade Republic App auf deinem Smartphone.",
+  "qr_step2": "2. Gehe auf Profil → Einstellungen → Web-Login / QR scannen.",
+  "qr_step3": "3. Scanne den QR-Code unten, um die Sitzung automatisch zu verknüpfen.",
+  "btn_refresh_qr": "QR-Code neu laden",
+  "btn_check_qr": "Status prüfen"
 }

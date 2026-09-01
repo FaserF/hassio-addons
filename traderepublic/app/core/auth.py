@@ -181,33 +181,38 @@ class AuthHelper:
         """Extract QR code as base64 data URI from Trade Republic login page."""
         qr_script = """
         (() => {
-            // 1. Look for img with data URL or QR in src/alt
-            const imgs = Array.from(document.querySelectorAll('img'));
-            const qrImg = imgs.find(i => (i.src && i.src.startsWith('data:image')) || (i.alt && i.alt.toLowerCase().includes('qr')) || (i.className && i.className.toLowerCase().includes('qr')));
-            if (qrImg && qrImg.src && qrImg.src.startsWith('data:image')) {
-                return qrImg.src;
-            }
-
-            // 2. Look for canvas and convert to dataURL
-            const canvases = Array.from(document.querySelectorAll('canvas'));
-            if (canvases.length > 0) {
-                try {
-                    for (let c of canvases) {
-                        if (c.width > 50 && c.height > 50) {
-                            return c.toDataURL('image/png');
-                        }
-                    }
-                } catch(e) {}
-            }
-
-            // 3. Look for SVG QR code and convert to data URI
+            // 1. Look for SVG with QR pattern (rects / paths)
             const svgs = Array.from(document.querySelectorAll('svg'));
-            const qrSvg = svgs.find(s => (s.getAttribute('data-testid') || '').includes('qr') || (s.className && typeof s.className === 'string' && s.className.toLowerCase().includes('qr')) || s.querySelector('rect, path'));
-            if (qrSvg) {
-                try {
-                    const xml = new XMLSerializer().serializeToString(qrSvg);
-                    return 'data:image/svg+xml;utf8,' + encodeURIComponent(xml);
-                } catch(e) {}
+            for (let s of svgs) {
+                // Must have multiple rects or paths resembling QR code matrix
+                const rectCount = s.querySelectorAll('rect, path').length;
+                if (rectCount > 10 || (s.getAttribute('data-testid') || '').toLowerCase().includes('qr')) {
+                    try {
+                        const xml = new XMLSerializer().serializeToString(s);
+                        return 'data:image/svg+xml;utf8,' + encodeURIComponent(xml);
+                    } catch(e) {}
+                }
+            }
+
+            // 2. Look for Canvas and convert to PNG
+            const canvases = Array.from(document.querySelectorAll('canvas'));
+            for (let c of canvases) {
+                if (c.width > 50 && c.height > 50) {
+                    try {
+                        return c.toDataURL('image/png');
+                    } catch(e) {}
+                }
+            }
+
+            // 3. Look for img elements (excluding logos/avatars)
+            const imgs = Array.from(document.querySelectorAll('img'));
+            for (let i of imgs) {
+                const src = i.src || '';
+                const alt = (i.alt || '').toLowerCase();
+                const cls = (i.className || '').toLowerCase();
+                if ((src.startsWith('data:image') && !src.includes('logo')) || alt.includes('qr') || cls.includes('qr')) {
+                    return src;
+                }
             }
 
             return null;
@@ -217,8 +222,44 @@ class AuthHelper:
             res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": qr_script, "returnByValue": True})
             if res and isinstance(res, dict):
                 val = res.get("result", {}).get("value")
-                if val and isinstance(val, str) and (val.startswith("data:image") or "svg" in val):
+                if (
+                    val
+                    and isinstance(val, str)
+                    and (val.startswith("data:image") or val.startswith("data:image/svg+xml"))
+                ):
                     return val
+
+            # Fallback: Capture screenshot of the QR code bounding box directly via CDP
+            box_script = """
+            (() => {
+                const qrContainer = document.querySelector('[data-testid*="qr"], div:has(> svg), div:has(> canvas), main div');
+                const el = Array.from(document.querySelectorAll('svg, canvas, div')).find(e => {
+                    const rect = e.getBoundingClientRect();
+                    return rect.width >= 120 && rect.width <= 350 && Math.abs(rect.width - rect.height) < 20 && rect.top > 0;
+                });
+                if (el) {
+                    const r = el.getBoundingClientRect();
+                    return { x: r.x, y: r.y, width: r.width, height: r.height };
+                }
+                return null;
+            })()
+            """
+            box_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": box_script, "returnByValue": True})
+            box = box_res and box_res.get("result", {}).get("value")
+            if box and isinstance(box, dict):
+                clip_params = {
+                    "format": "png",
+                    "clip": {
+                        "x": box.get("x", 0),
+                        "y": box.get("y", 0),
+                        "width": box.get("width", 200),
+                        "height": box.get("height", 200),
+                        "scale": 1,
+                    },
+                }
+                shot = await self.cdp.send_cmd("Page.captureScreenshot", clip_params)
+                if shot and isinstance(shot, dict) and shot.get("data"):
+                    return f"data:image/png;base64,{shot.get('data')}"
         except Exception as e:
             _LOGGER.debug("Failed to extract QR code: %s", e)
         return None
