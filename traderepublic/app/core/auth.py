@@ -213,7 +213,9 @@ class AuthHelper:
                 return { action: 'none' };
             })()
             """
-            prep_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": qr_prep_script, "returnByValue": True})
+            prep_res = await self.cdp.send_cmd(
+                "Runtime.evaluate", {"expression": qr_prep_script, "returnByValue": True}
+            )
             action = prep_res and prep_res.get("result", {}).get("value", {}).get("action")
             if action in ("clicked_reload", "switched_to_qr"):
                 await asyncio.sleep(2.0)
@@ -232,7 +234,9 @@ class AuthHelper:
                 return null;
             })()
             """
-            canvas_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": canvas_script, "returnByValue": True})
+            canvas_res = await self.cdp.send_cmd(
+                "Runtime.evaluate", {"expression": canvas_script, "returnByValue": True}
+            )
             canvas_val = canvas_res and canvas_res.get("result", {}).get("value")
             if canvas_val and isinstance(canvas_val, str) and canvas_val.startswith("data:image/png"):
                 return canvas_val
@@ -506,7 +510,9 @@ class AuthHelper:
         """
         spy_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": network_spy_script, "returnByValue": True})
         network_calls = spy_res and spy_res.get("result", {}).get("value")
-        has_auth_call = bool(network_calls and ("auth/web/login" in str(network_calls) or "v1/auth" in str(network_calls)))
+        has_auth_call = bool(
+            network_calls and ("auth/web/login" in str(network_calls) or "v1/auth" in str(network_calls))
+        )
         if network_calls:
             _LOGGER.info("TR network calls after submit: %s (has_auth_call: %s)", network_calls, has_auth_call)
 
