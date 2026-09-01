@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-08-29T14:42:11.006457",
+  "timestamp": "2026-09-01T17:13:48.569127",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
@@ -491,7 +491,7 @@
     },
     "whatsapp": {
       "name": "WhatsApp Gateway",
-      "version": "2.1.3",
+      "version": "2.1.4",
       "description": "Home Assistant WhatsApp App (Baileys/Node.js).",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-whatsapp-{arch}",
