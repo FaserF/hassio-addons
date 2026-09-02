@@ -17,7 +17,7 @@ pytest==9.1.1
 pytest-asyncio==1.4.0
 aiosqlite==0.22.1
 asyncpg==0.31.0
-google-genai==2.21.0
+google-genai==2.22.0
 pyotp==2.10.0
 webauthn==3.0.0
 PyYAML==6.0.3
