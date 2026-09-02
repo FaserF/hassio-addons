@@ -98,7 +98,7 @@ export const MARK_ONLINE = parseEnvBool('MARK_ONLINE', false);
 export const SYNC_FULL_HISTORY = parseEnvBool('SYNC_FULL_HISTORY', false);
 export const SHOULD_RESET = parseEnvBool('RESET_SESSION', false);
 
-export const WELCOME_MESSAGE_ENABLED = parseEnvBool('WELCOME_MESSAGE_ENABLED', true);
+export const WELCOME_MESSAGE_ENABLED = parseEnvBool('WELCOME_MESSAGE_ENABLED', false);
 export const ADMIN_NOTIFICATIONS_ENABLED = parseEnvBool('ADMIN_NOTIFICATIONS_ENABLED', true);
 
 function getAddonVersion() {

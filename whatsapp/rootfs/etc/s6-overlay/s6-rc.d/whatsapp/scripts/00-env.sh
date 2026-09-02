@@ -143,11 +143,11 @@ else
 	export ADMIN_NOTIFICATIONS_ENABLED="true"
 fi
 
-# Welcome Message (Default true)
-if bashio::config.false 'welcome_message_enabled'; then
-	export WELCOME_MESSAGE_ENABLED="false"
-else
+# Welcome Message (Default false)
+if bashio::config.true 'welcome_message_enabled'; then
 	export WELCOME_MESSAGE_ENABLED="true"
+else
+	export WELCOME_MESSAGE_ENABLED="false"
 fi
 
 # Media Folder (Default null)
