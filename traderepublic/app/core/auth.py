@@ -381,10 +381,20 @@ class AuthHelper:
             }}) || inputs[0];
 
             if (!input) return {{ ok: false, stage: 'phone', reason: 'input_not_found', total_inputs: inputs.length }};
+            let phoneToEnter = "{clean_phone}";
+            // If prefix +49 is already present in a country selector or static label, input the national number only
+            const pageText = document.body.innerText || "";
+            if (phoneToEnter.startsWith('+49') && (pageText.includes('+49') || document.querySelector('button:has(svg), div:has(img[alt*="flag"])'))) {{
+                phoneToEnter = phoneToEnter.replace('+49', '');
+                if (phoneToEnter.startsWith('0')) {{
+                    phoneToEnter = phoneToEnter.substring(1);
+                }}
+            }}
+
             input.focus();
             input.click();
             const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-            nativeSetter.call(input, "{clean_phone}");
+            nativeSetter.call(input, phoneToEnter);
             input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
             input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
             input.dispatchEvent(new KeyboardEvent('keydown', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
