@@ -220,12 +220,34 @@ class AuthHelper:
             if action in ("clicked_reload", "switched_to_qr"):
                 await asyncio.sleep(2.0)
 
-            # 2. Look for Canvas element with valid dimensions
+            # 2. Look for real QR SVG (> 20 paths/rects or with QR pattern, width >= 120)
+            svg_script = """
+            (() => {
+                const svgs = Array.from(document.querySelectorAll('svg'));
+                for (let s of svgs) {
+                    const rect = s.getBoundingClientRect();
+                    const rectCount = s.querySelectorAll('rect, path').length;
+                    if ((rectCount >= 20 || (s.getAttribute('data-testid') || '').includes('qr')) && rect.width >= 100 && rect.height >= 100) {
+                        try {
+                            const xml = new XMLSerializer().serializeToString(s);
+                            return 'data:image/svg+xml;utf8,' + encodeURIComponent(xml);
+                        } catch(e) {}
+                    }
+                }
+                return null;
+            })()
+            """
+            svg_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": svg_script, "returnByValue": True})
+            svg_val = svg_res and svg_res.get("result", {}).get("value")
+            if svg_val and isinstance(svg_val, str) and svg_val.startswith("data:image/svg+xml"):
+                return svg_val
+
+            # 3. Look for Canvas element with valid dimensions
             canvas_script = """
             (() => {
                 const canvases = Array.from(document.querySelectorAll('canvas'));
                 for (let c of canvases) {
-                    if (c.offsetWidth >= 140 && c.offsetHeight >= 140) {
+                    if (c.offsetWidth >= 120 && c.offsetHeight >= 120) {
                         try {
                             return c.toDataURL('image/png');
                         } catch(e) {}
@@ -241,43 +263,33 @@ class AuthHelper:
             if canvas_val and isinstance(canvas_val, str) and canvas_val.startswith("data:image/png"):
                 return canvas_val
 
-            # 3. Locate the bounding box of the full QR container and screenshot via CDP
+            # 4. Only screenshot the bounding box if it strictly contains a QR SVG/Canvas and NO input fields
             box_script = """
             (() => {
-                const candidates = Array.from(document.querySelectorAll('div, section, main, [data-testid*="qr"], svg'));
-                const qrContainers = candidates.filter(el => {
-                    const r = el.getBoundingClientRect();
-                    const isSquare = Math.abs(r.width - r.height) < 40;
-                    const isProperSize = r.width >= 150 && r.width <= 450 && r.height >= 150 && r.height <= 450;
-                    const isVisible = r.top >= 0 && r.left >= 0 && (r.top + r.height) <= window.innerHeight + 200;
-                    if (!isSquare || !isProperSize || !isVisible) return false;
-
-                    const hasGraphic = el.querySelector('svg, canvas, img') !== null || el.tagName.toLowerCase() === 'svg';
-                    return hasGraphic;
+                const qrSvg = Array.from(document.querySelectorAll('svg')).find(s => {
+                    const r = s.getBoundingClientRect();
+                    return s.querySelectorAll('rect, path').length >= 15 && r.width >= 100;
                 });
-
-                if (qrContainers.length > 0) {
-                    // Sort descending by area to get the outer QR wrapper containing both the matrix and center icon
-                    qrContainers.sort((a, b) => {
-                        const ra = a.getBoundingClientRect();
-                        const rb = b.getBoundingClientRect();
-                        return (rb.width * rb.height) - (ra.width * ra.height);
-                    });
-                    // Pick candidate around ~180px - 320px
-                    const best = qrContainers.find(el => {
-                        const r = el.getBoundingClientRect();
-                        return r.width >= 180 && r.width <= 320;
-                    }) || qrContainers[0];
-
-                    const r = best.getBoundingClientRect();
+                if (qrSvg) {
+                    const r = qrSvg.getBoundingClientRect();
                     return { x: r.x, y: r.y, width: r.width, height: r.height };
                 }
+
+                const qrCanvas = Array.from(document.querySelectorAll('canvas')).find(c => {
+                    const r = c.getBoundingClientRect();
+                    return r.width >= 100;
+                });
+                if (qrCanvas) {
+                    const r = qrCanvas.getBoundingClientRect();
+                    return { x: r.x, y: r.y, width: r.width, height: r.height };
+                }
+
                 return null;
             })()
             """
             box_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": box_script, "returnByValue": True})
             box = box_res and box_res.get("result", {}).get("value")
-            if box and isinstance(box, dict) and box.get("width", 0) >= 140:
+            if box and isinstance(box, dict) and box.get("width", 0) >= 80:
                 clip_params = {
                     "format": "png",
                     "clip": {
@@ -291,28 +303,6 @@ class AuthHelper:
                 shot = await self.cdp.send_cmd("Page.captureScreenshot", clip_params)
                 if shot and isinstance(shot, dict) and shot.get("data"):
                     return f"data:image/png;base64,{shot.get('data')}"
-
-            # 4. Fallback: Full SVG with QR pattern (> 20 paths/rects)
-            svg_script = """
-            (() => {
-                const svgs = Array.from(document.querySelectorAll('svg'));
-                for (let s of svgs) {
-                    const rect = s.getBoundingClientRect();
-                    const rectCount = s.querySelectorAll('rect, path').length;
-                    if (rectCount >= 30 && rect.width >= 140) {
-                        try {
-                            const xml = new XMLSerializer().serializeToString(s);
-                            return 'data:image/svg+xml;utf8,' + encodeURIComponent(xml);
-                        } catch(e) {}
-                    }
-                }
-                return null;
-            })()
-            """
-            svg_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": svg_script, "returnByValue": True})
-            svg_val = svg_res and svg_res.get("result", {}).get("value")
-            if svg_val and isinstance(svg_val, str) and svg_val.startswith("data:image/svg+xml"):
-                return svg_val
 
         except Exception as e:
             _LOGGER.debug("Failed to extract QR code: %s", e)
