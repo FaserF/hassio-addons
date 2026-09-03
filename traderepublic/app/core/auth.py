@@ -338,7 +338,7 @@ class AuthHelper:
             }
 
             // 3. Find switch button/link (all languages & data-testids)
-            const elements = Array.from(document.querySelectorAll('button, a, div[role="button"], span, p'));
+            const elements = Array.from(document.querySelectorAll('button, a, div[role="button"], span, p, label'));
             const switchBtn = elements.find(el => {
                 const txt = (el.textContent || '').trim().toLowerCase();
                 const testId = (el.getAttribute('data-testid') || '').toLowerCase();
@@ -349,6 +349,7 @@ class AuthHelper:
                     txt.includes('ohne qr') || txt.includes('without qr') || txt.includes('andere') ||
                     txt.includes('zugangsdaten') || txt.includes('credentials') || txt.includes('manuell') ||
                     txt.includes('manual') || txt.includes('numéro') || txt.includes('número') ||
+                    txt.includes('or log in') || txt.includes('oder melde') || txt.includes('log in with') ||
                     testId.includes('phone') || testId.includes('switch') || testId.includes('credentials') ||
                     href.includes('phone') || href.includes('credentials') || aria.includes('phone')
                 ) && el.offsetWidth > 0;
@@ -359,14 +360,18 @@ class AuthHelper:
                 return { switched_mode: true, text: switchBtn.textContent.trim() };
             }
 
-            // If no specific text matched, try any other visible button on the page
-            const otherBtns = btns.filter(b => b !== acceptBtn && b.offsetWidth > 0 && b.offsetHeight > 0);
-            if (otherBtns.length > 0) {
-                otherBtns[0].click();
-                return { switched_mode: true, text: otherBtns[0].textContent.trim(), fallback: true };
+            // Fallback: look for clickable element below or adjacent to the QR code
+            const clickables = Array.from(document.querySelectorAll('a, button, [role="button"]')).filter(el => {
+                return el !== acceptBtn && el.offsetWidth > 0 && el.offsetHeight > 0;
+            });
+            if (clickables.length > 0) {
+                // Click the last clickable or one with text
+                const target = clickables.find(c => (c.textContent || '').trim().length > 0) || clickables[0];
+                target.click();
+                return { switched_mode: true, text: target.textContent.trim(), fallback: true };
             }
 
-            return { switched_mode: false };
+            return { switched_mode: false, total_clickables: clickables.length };
         })()
         """
         prep_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": prep_script, "returnByValue": True})
@@ -495,11 +500,12 @@ class AuthHelper:
 
         await asyncio.sleep(4.0)
 
-        # Check performance logs for auth requests
+        # Check performance logs for auth requests (ignoring passive background qr-challenges)
         network_spy_script = """
         (() => {
             const entries = performance.getEntriesByType('resource').filter(e =>
-                e.name.includes('api.traderepublic.com') || e.name.includes('auth') || e.name.includes('login')
+                (e.name.includes('api.traderepublic.com') || e.name.includes('auth') || e.name.includes('login')) &&
+                !e.name.includes('qr-challenges')
             );
             return JSON.stringify(entries.map(e => ({
                 url: e.name,
@@ -511,7 +517,12 @@ class AuthHelper:
         spy_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": network_spy_script, "returnByValue": True})
         network_calls = spy_res and spy_res.get("result", {}).get("value")
         has_auth_call = bool(
-            network_calls and ("auth/web/login" in str(network_calls) or "v1/auth" in str(network_calls))
+            network_calls
+            and (
+                "auth/web/login" in str(network_calls)
+                or "v1/auth" in str(network_calls)
+                or "v2/auth" in str(network_calls)
+            )
         )
         if network_calls:
             _LOGGER.info("TR network calls after submit: %s (has_auth_call: %s)", network_calls, has_auth_call)
@@ -522,7 +533,8 @@ class AuthHelper:
             in_page_fetch_script = f"""
             (async () => {{
                 try {{
-                    const res = await fetch('https://api.traderepublic.com/api/v1/auth/web/login', {{
+                    // Attempt login call via the current in-page session context
+                    let res = await fetch('https://api.traderepublic.com/api/v1/auth/web/login', {{
                         method: 'POST',
                         headers: {{
                             'Content-Type': 'application/json',
@@ -533,6 +545,22 @@ class AuthHelper:
                             pin: "{clean_pin}"
                         }})
                     }});
+
+                    // If v1 returns 404/426, try v2 credentials endpoint
+                    if (res.status === 404 || res.status === 426) {{
+                        res = await fetch('https://api.traderepublic.com/api/v2/auth/web/login', {{
+                            method: 'POST',
+                            headers: {{
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            }},
+                            body: JSON.stringify({{
+                                phoneNumber: "{clean_phone}",
+                                pin: "{clean_pin}"
+                            }})
+                        }});
+                    }}
+
                     const st = res.status;
                     const txt = await res.text();
                     let d = null;
