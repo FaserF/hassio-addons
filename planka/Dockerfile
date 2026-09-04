@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.3
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.4
 FROM ghcr.io/plankanban/planka:2.2.1 AS planka
 
 FROM ${BUILD_FROM}
