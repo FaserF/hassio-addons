@@ -55,8 +55,8 @@ COPY --from=admin-build /app/admin/shielddns-admin /usr/bin/shielddns-admin
 # Install dependencies
 # hadolint ignore=DL3018
 RUN \
-    echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
-    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.24/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.24/community" >> /etc/apk/repositories \
     && apk add --no-cache musl musl-dev \
     && apk upgrade --no-cache --available \
     && apk add --no-cache \

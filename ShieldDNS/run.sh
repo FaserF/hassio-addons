@@ -370,7 +370,7 @@ if bashio::config.true 'developer_mode'; then
 			if [ -d "$DEV_BUILD_DIR/admin" ]; then
 				bashio::log.info "Compiling ShieldDNS Admin binary..."
 				cd "$DEV_BUILD_DIR/admin" || exit 1
-				if go build -o /usr/bin/shielddns-admin .; then
+				if go build -o /usr/bin/shielddns-admin . || GOTOOLCHAIN=auto go build -o /usr/bin/shielddns-admin .; then
 					chmod +x /usr/bin/shielddns-admin
 					bashio::log.info "=================================================="
 					bashio::log.info "   ✅ DEV MODE COMPILE COMPLETE"
