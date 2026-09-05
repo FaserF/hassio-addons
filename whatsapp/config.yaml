@@ -1,7 +1,6 @@
-name: "WhatsApp Gateway"
-version: "2.1.4"
+name: "WhatsApp Gateway (Edge)"
+version: "2.1.5-dev-20260905-2011-d23efe7"
 slug: "whatsapp"
-image: ghcr.io/faserf/hassio-addons-whatsapp-{arch}
 description: "Home Assistant WhatsApp App (Baileys/Node.js)."
 url: "https://github.com/FaserF/ha-whatsapp"
 arch:
@@ -73,3 +72,4 @@ hassio_api: true
 ingress: true
 ingress_port: 8066
 ingress_entry: /
+stage: experimental

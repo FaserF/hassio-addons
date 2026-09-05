@@ -1,13 +1,22 @@
-# EntraMirror
+# Wiki.JS (Version 3 - Alpha)
 
-<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/.dev/EntraMirror/logo.png" width="100" alt="Logo" />
+> [!CAUTION]
+> **EDGE/DEVELOPMENT BUILD**
+>
+> You are viewing the `edge` branch. This version is built locally from source
+> and may contain bugs or incomplete features. For stable releases, switch to
+> the `master` branch or use the stable repository URL.
 
-[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=605cee21_EntraMirror)
+
+
+<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/.dev/wiki.js3/logo.png" width="100" alt="Logo" />
+
+[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=edfe50eb_wiki.js3)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
-[![Docker Image](https://img.shields.io/badge/docker-0.1.1-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-entramirror)
+[![Docker Image](https://img.shields.io/badge/docker-0.7.2-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-wiki)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> Microsoft Entra ID Tenant Backup, Restore, Synchronization & Cloning for Home Assistant.
+> The most powerful and extensible open source Wiki software (Version 3 - Alpha)
 
 ---
 
@@ -30,7 +39,17 @@
 
 ## 📖 About
 
-EntraMirror provides tenant backup, restore, sync and disaster recovery capabilities for Microsoft Entra ID environments.
+## 🏁 First Startup
+
+On the first startup, you will be prompted with an administration setup wizard. The wizard will guide you through the initial configuration of your wiki connection and the creation of your administrator account.
+
+Please create your own **Administrator Account** (Email / Password) during this process.
+
+### Default Database Credentials
+
+The app comes pre-configured with a local PostgreSQL database. The default password for the `wiki` database user is:
+
+- **Password**: `wikijs` (This is the database password, NOT your admin login)
 
 ---
 
@@ -41,17 +60,13 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 ### Options
 
 ```yaml
-debug: false
-developer_mode: false
-github_repo: FaserF/EntraMirror
-github_token: ''
+certfile: fullchain.pem
+db_password: wikijs
+keyfile: privkey.pem
 log_level: info
 reset_database: false
-secret_key: ''
-sso_client_id: ''
-sso_enabled: false
-sso_tenant_id: common
-version: latest
+reset_database_confirm: false
+ssl: true
 ```
 
 ---
