@@ -30,25 +30,21 @@ function fetchJson(url) {
     if (GITHUB_TOKEN && GITHUB_TOKEN !== 'null') {
       headers.Authorization = `Bearer ${GITHUB_TOKEN}`;
     }
-    const req = client.get(
-      url,
-      { headers },
-      (res) => {
-        if (res.statusCode < 200 || res.statusCode >= 300) {
-          resolve(null);
-          return;
-        }
-        let body = '';
-        res.on('data', (chunk) => (body += chunk));
-        res.on('end', () => {
-          try {
-            resolve(JSON.parse(body));
-          } catch (e) {
-            resolve(null);
-          }
-        });
+    const req = client.get(url, { headers }, (res) => {
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        resolve(null);
+        return;
       }
-    );
+      let body = '';
+      res.on('data', (chunk) => (body += chunk));
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(body));
+        } catch (e) {
+          resolve(null);
+        }
+      });
+    });
     req.on('error', () => resolve(null));
     req.setTimeout(8000, () => {
       req.destroy();
