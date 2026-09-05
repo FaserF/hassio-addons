@@ -15,7 +15,7 @@ bcrypt==5.0.0
 cryptography==50.0.1
 requests==2.34.2
 APScheduler==3.11.3
-mcp[server]>=2.1.1
+mcp[server]==2.1.1
 mkdocs==1.6.1
 mkdocs-material==9.7.7
 pymdown-extensions==11.0.2
