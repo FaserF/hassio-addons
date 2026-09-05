@@ -223,7 +223,6 @@ class AuthHelper:
             # 2. Prefer capturing PNG via Canvas or Page.captureScreenshot
             # Note: HA frontend markdown ![QR Code](...) fails on SVG data URIs, so we always ensure PNG base64
 
-
             # 3. Look for Canvas element with valid dimensions
             canvas_script = """
             (() => {
