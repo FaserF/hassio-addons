@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.5-dev-20260905-2011-d23efe7 (2026-09-05)
+
+### 🐛 Bug Fixes
+- optimize GitHub API release checking and caching (ref: FaserF/ha-whatsapp#102) ([`d23efe79`](https://github.com/FaserF/hassio-addons/commit/d23efe7920723dfad692c75c4945aa7a98af62d1))
+- disable welcome message by default ([`81ebfda5`](https://github.com/FaserF/hassio-addons/commit/81ebfda572ac4759d6495ff818c1102f2f205bb0))
+
+### 📦 Dependencies
+- ⬆️ Update dependency eslint to v10.10.0 (#1058) ([`aa2ce0e1`](https://github.com/FaserF/hassio-addons/commit/aa2ce0e128a757bdc532227cd852bfe97d156d37))
+- build(deps): bump qs from 6.15.2 to 6.16.0 in /whatsapp/app in the npm_and_yarn group across 1 directory (#1052) ([`73439e9a`](https://github.com/FaserF/hassio-addons/commit/73439e9a7683ed6543c95bc5648675c94da569f2))
+
+
 ## 2.1.4 (2026-09-01)
 
 ### 🐛 Bug Fixes

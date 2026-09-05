@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.5.4-dev-20260905-2248-83398a0 (2026-09-05)
+
+### ✨ Features
+- add developer mode support ([`579e0d97`](https://github.com/FaserF/hassio-addons/commit/579e0d976ccf36b6abeb83649185c81553f2a2c8))
+
+### 🐛 Bug Fixes
+- fix addon building ([`83398a02`](https://github.com/FaserF/hassio-addons/commit/83398a02f82c47ecd0823d177a14f650a823c6e0))
+
+### 🎨 Style
+- remove config options available in ui ([`a7fb1af4`](https://github.com/FaserF/hassio-addons/commit/a7fb1af40e82ed765fa7c01b271c5c33b7bdd0b2))
+
+
 ## 2.5.3 (2026-08-28)
 
 ### 🐛 Bug Fixes
