@@ -1,7 +1,0 @@
-configuration:
-  config_path:
-    name: "Configuration Path"
-    description: "Path to the configuration file."
-  log_level:
-    name: "Log Level"
-    description: "Logging level (default is 'info')."
