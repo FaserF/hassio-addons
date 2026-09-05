@@ -41,3 +41,9 @@ configuration:
   doh_alt_port_2:
     name: Alt DoH Port 2
     description: "Optional: Zusätzlicher Port für DoH (z.B. 2443)."
+  developer_mode:
+    name: Entwickler-Modus
+    description: "Wenn aktiviert, lädt das Addon bei jedem Start den aktuellen GitHub-Code herunter und kompiliert ihn."
+  github_token:
+    name: GitHub Token
+    description: "Optionales persönliches Zugriffs-Token für die GitHub-API (nützlich bei privaten Repositories oder Rate-Limits)."

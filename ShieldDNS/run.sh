@@ -334,6 +334,80 @@ bashio::log.info "🌍 Unifying DoH and Admin UI on Port ${DOH_PORT}..."
 bashio::log.info "🔗 Ingress (Home Assistant) active on Port 8099 (Plain HTTP)"
 
 # ------------------------------------------------------------------------------
+# 3.5. Developer Mode (Download and Compile Latest Code from GitHub)
+# ------------------------------------------------------------------------------
+if bashio::config.true 'developer_mode'; then
+	bashio::log.warning "=================================================="
+	bashio::log.warning "   ⚠️  DEVELOPER MODE ENABLED  ⚠️"
+	bashio::log.warning "=================================================="
+	bashio::log.warning "Using latest code from GitHub 'main' branch."
+	bashio::log.warning "Downloading and recompiling ShieldDNS Admin..."
+
+	GITHUB_TOKEN=""
+	if bashio::config.has_value 'github_token'; then
+		TOKEN_VALUE=$(bashio::config 'github_token')
+		TOKEN_VALUE=$(echo "$TOKEN_VALUE" | xargs)
+		if [ -n "$TOKEN_VALUE" ] && [ "$TOKEN_VALUE" != "null" ]; then
+			GITHUB_TOKEN="$TOKEN_VALUE"
+		fi
+	fi
+
+	DEV_BUILD_DIR="/tmp/shielddns-dev-build"
+	rm -rf "$DEV_BUILD_DIR"
+	mkdir -p "$DEV_BUILD_DIR"
+	cd "$DEV_BUILD_DIR" || exit 1
+
+	download_dev_code() {
+		local BRANCH=$1
+		local URL="https://github.com/FaserF/ShieldDNS/archive/refs/heads/${BRANCH}.tar.gz"
+		local CURL_ARGS=("-fL" "-s" "-S")
+
+		if [ -n "$GITHUB_TOKEN" ]; then
+			bashio::log.info "Using GitHub Token for authentication..."
+			echo "Authorization: token ${GITHUB_TOKEN}" > /tmp/gh_token_header
+			CURL_ARGS+=("-H" "@/tmp/gh_token_header")
+		fi
+
+		bashio::log.info "Attempting to download branch: ${BRANCH}"
+		if curl "${CURL_ARGS[@]}" "$URL" -o dev_source.tar.gz; then
+			rm -f /tmp/gh_token_header
+			return 0
+		else
+			rm -f /tmp/gh_token_header
+			return 1
+		fi
+	}
+
+	if download_dev_code "main" || download_dev_code "master"; then
+		bashio::log.info "Extracting ShieldDNS source code..."
+		if tar -xzf dev_source.tar.gz --strip-components=1; then
+			if [ -d "$DEV_BUILD_DIR/admin" ]; then
+				bashio::log.info "Compiling ShieldDNS Admin binary..."
+				cd "$DEV_BUILD_DIR/admin" || exit 1
+				if go build -o /usr/bin/shielddns-admin .; then
+					chmod +x /usr/bin/shielddns-admin
+					bashio::log.info "=================================================="
+					bashio::log.info "   ✅ DEV MODE COMPILE COMPLETE"
+					bashio::log.info "=================================================="
+				else
+					bashio::log.error "Go compilation failed! Keeping existing binary."
+				fi
+			else
+				bashio::log.error "Admin directory not found in downloaded repository!"
+			fi
+		else
+			bashio::log.error "Failed to extract downloaded repository archive!"
+		fi
+	else
+		bashio::log.error "Failed to download repository from GitHub!"
+	fi
+
+	# Clean up
+	cd / || exit 1
+	rm -rf "$DEV_BUILD_DIR"
+fi
+
+# ------------------------------------------------------------------------------
 # 4. ShieldDNS Admin & CoreDNS Execution
 # ------------------------------------------------------------------------------
 mkdir -p /data

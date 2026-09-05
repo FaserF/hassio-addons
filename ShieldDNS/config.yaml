@@ -31,6 +31,8 @@ options:
   doh_port: 443
   fallback_dns: false
   fallback_dns_server: 1.1.1.1
+  developer_mode: false
+  github_token: ""
 schema:
   upstream_dns: str
   upstream_dot: str?
@@ -44,6 +46,8 @@ schema:
   fallback_dns_server: str?
   doh_alt_port_1: port?
   doh_alt_port_2: port?
+  developer_mode: bool?
+  github_token: password?
 # ports:
 #   # With host_network: true, we do not map ports via Docker.
 #   # The App binds directly to the ports defined in 'options'.

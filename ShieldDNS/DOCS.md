@@ -21,6 +21,8 @@ Initial setup is done via the **Configuration** tab in Home Assistant.
 - `dot_port`: Port for DNS-over-TLS (Default: `8853`).
 - `doh_port`: Port for DNS-over-HTTPS (Default: `3443`).
 - `log_level`: Level of detail in the addon logs.
+- `developer_mode`: When enabled (`true`), downloads and compiles the latest source code from GitHub on start.
+- `github_token`: Optional Personal Access Token for GitHub API requests.
 
 ## 📱 Protocol Setup
 

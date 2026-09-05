@@ -70,7 +70,8 @@ RUN \
     curl \
     unzip \
     jq \
-    ca-certificates
+    ca-certificates \
+    go
 
 # Copy rootfs
 COPY rootfs /
