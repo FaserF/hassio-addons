@@ -220,27 +220,9 @@ class AuthHelper:
             if action in ("clicked_reload", "switched_to_qr"):
                 await asyncio.sleep(2.0)
 
-            # 2. Look for real QR SVG (> 20 paths/rects or with QR pattern, width >= 120)
-            svg_script = """
-            (() => {
-                const svgs = Array.from(document.querySelectorAll('svg'));
-                for (let s of svgs) {
-                    const rect = s.getBoundingClientRect();
-                    const rectCount = s.querySelectorAll('rect, path').length;
-                    if ((rectCount >= 20 || (s.getAttribute('data-testid') || '').includes('qr')) && rect.width >= 100 && rect.height >= 100) {
-                        try {
-                            const xml = new XMLSerializer().serializeToString(s);
-                            return 'data:image/svg+xml;utf8,' + encodeURIComponent(xml);
-                        } catch(e) {}
-                    }
-                }
-                return null;
-            })()
-            """
-            svg_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": svg_script, "returnByValue": True})
-            svg_val = svg_res and svg_res.get("result", {}).get("value")
-            if svg_val and isinstance(svg_val, str) and svg_val.startswith("data:image/svg+xml"):
-                return svg_val
+            # 2. Prefer capturing PNG via Canvas or Page.captureScreenshot
+            # Note: HA frontend markdown ![QR Code](...) fails on SVG data URIs, so we always ensure PNG base64
+
 
             # 3. Look for Canvas element with valid dimensions
             canvas_script = """
