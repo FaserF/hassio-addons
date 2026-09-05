@@ -1,7 +1,0 @@
-configuration:
-  firmware_path:
-    name: "Firmware-Pfad"
-    description: "Verzeichnis, in dem die Firmware gespeichert ist."
-  firmware_name:
-    name: "Firmware-Name"
-    description: "Name der Firmware-Datei."
