@@ -364,7 +364,7 @@ if bashio::config.true 'developer_mode'; then
 
 		if [ -n "$GITHUB_TOKEN" ]; then
 			bashio::log.info "Using GitHub Token for authentication..."
-			echo "Authorization: token ${GITHUB_TOKEN}" > /tmp/gh_token_header
+			echo "Authorization: token ${GITHUB_TOKEN}" >/tmp/gh_token_header
 			CURL_ARGS+=("-H" "@/tmp/gh_token_header")
 		fi
 

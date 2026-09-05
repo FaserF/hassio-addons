@@ -98,10 +98,12 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ```yaml
 certfile: fullchain.pem
+developer_mode: false
 doh_port: 443
 dot_port: 8853
 fallback_dns: false
 fallback_dns_server: 1.1.1.1
+github_token: ''
 keyfile: privkey.pem
 log_level: info
 prefer_encrypted: true
