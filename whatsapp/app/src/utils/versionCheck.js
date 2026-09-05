@@ -1,6 +1,9 @@
 import http from 'http';
 import https from 'https';
+import fs from 'fs';
+import path from 'path';
 import { logger } from '../logger.js';
+import { GITHUB_TOKEN, ADDON_VERSION } from '../config.js';
 
 let cache = {
   lastFetch: 0,
@@ -14,19 +17,22 @@ let cache = {
   },
 };
 
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour cache
+const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours cache
+const ERROR_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes backoff cache on rate-limit/error
 
 function fetchJson(url) {
   return new Promise((resolve) => {
     const client = url.startsWith('https') ? https : http;
+    const headers = {
+      'User-Agent': 'Home-Assistant-WhatsApp-Addon',
+      Accept: 'application/vnd.github+json',
+    };
+    if (GITHUB_TOKEN && GITHUB_TOKEN !== 'null') {
+      headers.Authorization = `Bearer ${GITHUB_TOKEN}`;
+    }
     const req = client.get(
       url,
-      {
-        headers: {
-          'User-Agent': 'Home-Assistant-WhatsApp-Addon',
-          Accept: 'application/vnd.github+json',
-        },
-      },
+      { headers },
       (res) => {
         if (res.statusCode < 200 || res.statusCode >= 300) {
           resolve(null);
@@ -57,9 +63,12 @@ export async function getLatestReleases(
   currentIntVer = null
 ) {
   const now = Date.now();
-  if (!forceRefresh && now - cache.lastFetch < CACHE_TTL_MS && cache.data.latestAddonVersion) {
+  if (!forceRefresh && now - cache.lastFetch < CACHE_TTL_MS && cache.lastFetch > 0) {
     return cache.data;
   }
+
+  // Always mark lastFetch even if errors occur so we don't spam GitHub on every poll
+  cache.lastFetch = now;
 
   try {
     // 1. Fetch Integration releases (FaserF/ha-whatsapp)
@@ -72,7 +81,7 @@ export async function getLatestReleases(
       );
       if (single) intReleaseList = [single];
     }
-    const targetIntVer = currentIntVer || cache.data.integrationVersion;
+    const targetIntVer = currentIntVer || cache.data.latestIntegrationVersion;
     let intRelease = null;
     if (Array.isArray(intReleaseList) && intReleaseList.length > 0) {
       if (targetIntVer) {
@@ -92,12 +101,11 @@ export async function getLatestReleases(
         intRelease.html_url || 'https://github.com/FaserF/ha-whatsapp/releases';
     }
 
-    // 2. Fetch Addon release notes from local CHANGELOG.md (FaserF/hassio-addons does not use GitHub releases)
+    // 2. Addon version and release notes from local CHANGELOG.md (FaserF/hassio-addons does not use GitHub releases)
+    cache.data.latestAddonVersion = ADDON_VERSION || null;
     cache.data.addonReleaseUrl =
       'https://github.com/FaserF/hassio-addons/blob/master/whatsapp/CHANGELOG.md';
     try {
-      const fs = await import('fs');
-      const path = await import('path');
       const changelogPath = path.join(process.cwd(), 'CHANGELOG.md');
       if (fs.existsSync(changelogPath)) {
         const content = fs.readFileSync(changelogPath, 'utf-8');
@@ -111,10 +119,10 @@ export async function getLatestReleases(
     if (!cache.data.addonChangelog) {
       cache.data.addonChangelog = 'No release notes available.';
     }
-
-    cache.lastFetch = now;
   } catch (e) {
     logger.debug({ error: e.message }, 'Failed to check GitHub releases');
+    // Set fallback lastFetch on error so we back off for at least 15 minutes
+    cache.lastFetch = now - (CACHE_TTL_MS - ERROR_CACHE_TTL_MS);
   }
 
   return cache.data;

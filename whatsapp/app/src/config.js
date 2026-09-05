@@ -100,6 +100,7 @@ export const SHOULD_RESET = parseEnvBool('RESET_SESSION', false);
 
 export const WELCOME_MESSAGE_ENABLED = parseEnvBool('WELCOME_MESSAGE_ENABLED', false);
 export const ADMIN_NOTIFICATIONS_ENABLED = parseEnvBool('ADMIN_NOTIFICATIONS_ENABLED', true);
+export const GITHUB_TOKEN = getEnv('GITHUB_TOKEN', '');
 
 function getAddonVersion() {
   const envVer = getEnv('ADDON_VERSION');
