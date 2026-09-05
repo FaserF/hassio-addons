@@ -236,9 +236,6 @@ echo "➡️  Starting ShieldDNS Initialization..."
 if [ -f "/data/options.json" ] && [ -n "$(command -v bashio::config)" ]; then
 	bashio::log.info "ℹ️  Home Assistant Addon environment detected."
 
-	UPSTREAM_DNS=$(bashio::config 'upstream_dns')
-	UPSTREAM_DOT=$(bashio::config 'upstream_dot')
-	PREFER_ENCRYPTED=$(bashio::config 'prefer_encrypted')
 	CERT_FILE=$(bashio::config 'certfile')
 	KEY_FILE=$(bashio::config 'keyfile')
 	if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
@@ -248,8 +245,6 @@ if [ -f "/data/options.json" ] && [ -n "$(command -v bashio::config)" ]; then
 	bashio::log.level "${LOG_LEVEL}"
 	DOT_PORT=$(bashio::config 'dot_port')
 	DOH_PORT=$(bashio::config 'doh_port')
-	FALLBACK_DNS_ENABLED=$(bashio::config 'fallback_dns')
-	FALLBACK_DNS_SERVER=$(bashio::config 'fallback_dns_server')
 	export DATA_DIR="/data"
 
 	# Prepend /ssl/ to cert paths if they are just filenames
@@ -257,21 +252,12 @@ if [ -f "/data/options.json" ] && [ -n "$(command -v bashio::config)" ]; then
 	if [[ "$KEY_FILE" != /* ]]; then KEY_FILE="/ssl/$KEY_FILE"; fi
 else
 	echo "ℹ️  Standard Docker environment detected."
-	UPSTREAM_DNS=${UPSTREAM_DNS:-"86.54.11.100 1.1.1.1 9.9.9.9 8.8.8.8 1.0.0.1"}
-	UPSTREAM_DOT=${UPSTREAM_DOT:-"unfiltered.joindns4.eu dns.quad9.net one.one.one.one dns.google"}
-	PREFER_ENCRYPTED=${PREFER_ENCRYPTED:-"true"}
 	CERT_FILE=${CERT_FILE:-"/ssl/fullchain.pem"}
 	KEY_FILE=${KEY_FILE:-"/ssl/privkey.pem"}
 	LOG_LEVEL=${LOG_LEVEL:-"info"}
 	DOT_PORT=${DOT_PORT:-853}
 	DOH_PORT=${DOH_PORT:-443}
-	FALLBACK_DNS_ENABLED=${FALLBACK_DNS_ENABLED:-"false"}
-	FALLBACK_DNS_SERVER=${FALLBACK_DNS_SERVER:-"1.1.1.1"}
 fi
-
-# Sanitize upstreams (replace commas with spaces)
-UPSTREAM_DNS=$(echo "${UPSTREAM_DNS}" | tr ',' ' ')
-UPSTREAM_DOT=$(echo "${UPSTREAM_DOT}" | tr ',' ' ')
 
 # ------------------------------------------------------------------------------
 # 1.5. SSL Fallback Check
@@ -450,19 +436,19 @@ if [ ! -f "$COREFILE_PATH" ]; then
 	cat <<EOF >$COREFILE_PATH
 .:${DNS_PORT} {
     bind 0.0.0.0
-    forward . ${UPSTREAM_DNS}
+    forward . 1.1.1.1 8.8.8.8
     log
     errors
 }
 tls://.:${DOT_PORT} {
     tls ${CERT_FILE} ${KEY_FILE}
-    forward . ${UPSTREAM_DNS}
+    forward . 1.1.1.1 8.8.8.8
     log
     errors
 }
 https://.:${ADMIN_PORT} {
     tls ${CERT_FILE} ${KEY_FILE}
-    forward . ${UPSTREAM_DNS}
+    forward . 1.1.1.1 8.8.8.8
     log
     errors
 }

@@ -16,10 +16,9 @@ Initial setup is done via the **Configuration** tab in Home Assistant.
 
 ### Options
 
-- `upstream_dns`: The DNS servers to forward queries to (e.g., `1.1.1.1, 8.8.8.8`).
 - `certfile` / `keyfile`: Your SSL certificate files located in the `/ssl` folder.
 - `dot_port`: Port for DNS-over-TLS (Default: `8853`).
-- `doh_port`: Port for DNS-over-HTTPS (Default: `3443`).
+- `doh_port`: Port for DNS-over-HTTPS (Default: `443`).
 - `log_level`: Level of detail in the addon logs.
 - `developer_mode`: When enabled (`true`), downloads and compiles the latest source code from GitHub on start.
 - `github_token`: Optional Personal Access Token for GitHub API requests.

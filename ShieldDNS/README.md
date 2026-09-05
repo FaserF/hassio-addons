@@ -101,14 +101,9 @@ certfile: fullchain.pem
 developer_mode: false
 doh_port: 443
 dot_port: 8853
-fallback_dns: false
-fallback_dns_server: 1.1.1.1
 github_token: ''
 keyfile: privkey.pem
 log_level: info
-prefer_encrypted: true
-upstream_dns: 86.54.11.100 1.1.1.1 9.9.9.9 8.8.8.8 1.0.0.1
-upstream_dot: unfiltered.joindns4.eu dns.quad9.net one.one.one.one dns.google
 ```
 
 ---
