@@ -378,7 +378,7 @@ if bashio::config.true 'developer_mode'; then
 				if [ -z "$FREE_MEM_KB" ]; then
 					FREE_MEM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null | awk '{print $2}')
 				fi
-				FREE_MEM_MB=$(( ${FREE_MEM_KB:-2097152} / 1024 ))
+				FREE_MEM_MB=$((${FREE_MEM_KB:-2097152} / 1024))
 
 				bashio::log.info "Hardware detected: ${BUILD_PROCS} CPU cores, ~${FREE_MEM_MB} MB available memory."
 
