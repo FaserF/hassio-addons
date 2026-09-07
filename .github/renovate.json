@@ -195,20 +195,22 @@
       "customType": "regex",
       "managerFilePatterns": ["/(^|/)ShieldDNS/Dockerfile$/"],
       "matchStrings": [
-        "ARG SHIELDDNS_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s*"
+        "ARG SHIELDDNS_VERSION=[\"']?(?<currentValue>[^\"'\\s]+)[\"']?\\s*"
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "FaserF/ShieldDNS",
+      "versioningTemplate": "semver",
       "extractVersionTemplate": "^v?(?<version>.*)$"
     },
     {
       "customType": "regex",
       "managerFilePatterns": ["/(^|/)ShieldDNS/Dockerfile$/"],
       "matchStrings": [
-        "ARG COREDNS_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
+        "ARG COREDNS_VERSION=[\"']?(?<currentValue>[^\"'\\s]+)[\"']?\\s*"
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "coredns/coredns",
+      "versioningTemplate": "semver",
       "extractVersionTemplate": "^v?(?<version>.*)$"
     },
     {

@@ -31,7 +31,7 @@ RUN apk add --no-cache curl \
 FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS admin-build
 ARG TARGETARCH
 # renovate: datasource=github-releases depName=FaserF/ShieldDNS
-ARG SHIELDDNS_VERSION="1.10.5"
+ARG SHIELDDNS_VERSION="1.11.0"
 WORKDIR /app
 RUN apk add --no-cache curl \
     && curl -L "https://github.com/FaserF/ShieldDNS/archive/refs/tags/v${SHIELDDNS_VERSION}.tar.gz" -o source.tar.gz \
@@ -82,8 +82,8 @@ COPY run.sh /etc/services.d/shielddns/run
 RUN dos2unix /etc/services.d/shielddns/run && chmod +x /etc/services.d/shielddns/run
 
 # Healthcheck
-HEALTHCHECK --interval=5s --timeout=3s --retries=3 --start-period=10s \
-    CMD ["/bin/sh", "-c", "curl -fS http://localhost:8080/api/health/live || exit 1"]
+HEALTHCHECK --interval=15s --timeout=5s --retries=3 --start-period=60s \
+    CMD ["/bin/sh", "-c", "curl -fS http://localhost:8099/api/health/live || exit 1"]
 
 # Labels
 LABEL org.opencontainers.image.title="ShieldDNS"

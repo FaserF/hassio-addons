@@ -224,6 +224,7 @@ fi
 # </App_BANNER_INJECTION>
 
 set -e
+trap 'exit_code=$?; bashio::log.error "🚨 Unexpected failure on line ${BASH_LINENO[0]} (command: \"${BASH_COMMAND}\", exit code: ${exit_code})"; bashio::log.error "💡 Check system memory, CPU or configuration. For developer mode, ensure sufficient RAM (>= 2GB)."' ERR
 
 # Define local paths
 COREFILE_PATH="/data/Corefile"
@@ -370,13 +371,56 @@ if bashio::config.true 'developer_mode'; then
 			if [ -d "$DEV_BUILD_DIR/admin" ]; then
 				bashio::log.info "Compiling ShieldDNS Admin binary..."
 				cd "$DEV_BUILD_DIR/admin" || exit 1
-				if go build -o /usr/bin/shielddns-admin . || GOTOOLCHAIN=auto go build -o /usr/bin/shielddns-admin .; then
+
+				# Hardware detection & resource adaptation for compilation
+				BUILD_PROCS=$(nproc 2>/dev/null || echo 1)
+				FREE_MEM_KB=$(grep MemAvailable /proc/meminfo 2>/dev/null | awk '{print $2}')
+				if [ -z "$FREE_MEM_KB" ]; then
+					FREE_MEM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null | awk '{print $2}')
+				fi
+				FREE_MEM_MB=$(( ${FREE_MEM_KB:-2097152} / 1024 ))
+
+				bashio::log.info "Hardware detected: ${BUILD_PROCS} CPU cores, ~${FREE_MEM_MB} MB available memory."
+
+				# Limit Go compiler concurrency on low-resource hardware to prevent OOM kills
+				if [ "$FREE_MEM_MB" -lt 1500 ]; then
+					bashio::log.warning "Low memory environment (< 1.5 GB). Setting GOMAXPROCS=1 and build parallelism -p 1 to prevent OOM."
+					BUILD_PROCS=1
+					export GOGC=50
+				elif [ "$FREE_MEM_MB" -lt 2500 ] && [ "$BUILD_PROCS" -gt 2 ]; then
+					bashio::log.notice "Moderate memory environment (< 2.5 GB). Limiting build parallelism to 2 cores."
+					BUILD_PROCS=2
+					export GOGC=75
+				fi
+
+				export GOMAXPROCS="$BUILD_PROCS"
+				export CGO_ENABLED=0
+
+				BUILD_EXIT=0
+				go build -p "$BUILD_PROCS" -ldflags="-s -w" -o /usr/bin/shielddns-admin . || BUILD_EXIT=$?
+				if [ "$BUILD_EXIT" -ne 0 ]; then
+					bashio::log.warning "Standard go build exited with code ${BUILD_EXIT}. Retrying with GOTOOLCHAIN=auto..."
+					BUILD_EXIT=0
+					GOTOOLCHAIN=auto go build -p "$BUILD_PROCS" -ldflags="-s -w" -o /usr/bin/shielddns-admin . || BUILD_EXIT=$?
+				fi
+
+				if [ "$BUILD_EXIT" -eq 0 ]; then
 					chmod +x /usr/bin/shielddns-admin
 					bashio::log.info "=================================================="
 					bashio::log.info "   ✅ DEV MODE COMPILE COMPLETE"
 					bashio::log.info "=================================================="
 				else
-					bashio::log.error "Go compilation failed! Keeping existing binary."
+					bashio::log.error "❌ Go compilation failed with exit code: ${BUILD_EXIT}!"
+					if [ "$BUILD_EXIT" -eq 137 ]; then
+						bashio::log.error "💥 Exit code 137 indicates Go compiler was KILLED by OOM Killer (Insufficient RAM)!"
+						bashio::log.error "💡 Increase VM / Host memory to at least 2 GB or turn off developer_mode."
+					fi
+					if [ -f "/usr/bin/shielddns-admin" ]; then
+						bashio::log.warning "⚠️  Falling back to previously installed / pre-baked shielddns-admin binary."
+					else
+						bashio::log.error "🚨 No existing shielddns-admin binary found. Cannot proceed."
+						exit "$BUILD_EXIT"
+					fi
 				fi
 			else
 				bashio::log.error "Admin directory not found in downloaded repository!"
@@ -458,7 +502,20 @@ fi
 # CoreDNS is managed by the Go backend (shielddns-admin)
 # so it handles log parsing and restarts automatically.
 
-wait $ADMIN_PID
+# Wait for backend process to exit and capture return code
+ADMIN_EXIT=0
+wait "$ADMIN_PID" || ADMIN_EXIT=$?
+
+if [ "$ADMIN_EXIT" -ne 0 ]; then
+	bashio::log.error "🚨 ShieldDNS Admin backend crashed or was killed (Exit code: ${ADMIN_EXIT})."
+	if [ "$ADMIN_EXIT" -eq 137 ]; then
+		bashio::log.error "💥 Exit code 137 indicates the process was killed by SIGKILL / Linux OOM Killer (Out Of Memory)!"
+		bashio::log.error "💡 Please allocate more memory to your Home Assistant instance or disable developer_mode."
+	fi
+	bashio::log.info "⏹️  Shutting down services..."
+	exit "$ADMIN_EXIT"
+fi
+
 bashio::log.info "⏹️  Shutting down services..."
-bashio::log.info "ℹ️  ShieldDNS has stopped."
+bashio::log.info "ℹ️  ShieldDNS has stopped cleanly."
 exit 0
