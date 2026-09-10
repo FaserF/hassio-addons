@@ -10,7 +10,7 @@ httpx==0.28.1
 aiogram==3.31.0
 websockets==16.1.1
 python-dotenv==1.2.3
-psycopg2-binary==2.9.12
+psycopg2-binary==2.9.13
 alembic==1.19.2
 structlog==26.1.0
 pytest==9.1.1
