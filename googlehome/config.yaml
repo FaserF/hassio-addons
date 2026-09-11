@@ -1,4 +1,4 @@
-name: "Google Home Token Hub"
+name: "Google Home Token Hub (Edge)"
 version: "0.1.0"
 slug: "googlehome"
 description: "Google Home Master Token Generator & Ingress Authentication Hub for Home Assistant."

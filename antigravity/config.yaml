@@ -1,8 +1,7 @@
 ---
-name: "Antigravity"
+name: "Antigravity (Edge)"
 version: "0.1.0"
 slug: "antigravity"
-image: "ghcr.io/faserf/hassio-addons-antigravity-{arch}"
 description: "Google Antigravity Quota Monitor, Multi-Account Dashboard, and Dynamic Polling Gateway for Home Assistant."
 url: "https://github.com/FaserF/hassio-addons/tree/master/antigravity"
 arch:
@@ -20,7 +19,7 @@ map:
   - homeassistant_config:ro
 
 ports:
-  8199/tcp: 8199
+  8199/tcp: 18199
 ports_description:
   8199/tcp: "Antigravity Web UI and REST API (Ingress recommended)"
 
