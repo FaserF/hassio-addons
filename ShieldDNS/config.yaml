@@ -1,7 +1,7 @@
 name: "ShieldDNS"
 version: "2.5.3"
 slug: "shielddns"
-description: "High-performance DoT proxy for AdGuard Home"
+description: "DNS-over-TLS/HTTPS proxy with ad blocking, filtering and admin UI"
 url: "https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS"
 arch:
   - aarch64

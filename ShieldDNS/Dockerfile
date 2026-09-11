@@ -87,7 +87,7 @@ HEALTHCHECK --interval=15s --timeout=5s --retries=3 --start-period=60s \
 
 # Labels
 LABEL org.opencontainers.image.title="ShieldDNS"
-LABEL org.opencontainers.image.description="High-performance DoT proxy for AdGuard Home"
+LABEL org.opencontainers.image.description="DNS-over-TLS/HTTPS proxy with ad blocking, filtering and admin UI"
 LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Apps"
 LABEL org.opencontainers.image.authors="FaserF <https://github.com/FaserF>"
 LABEL org.opencontainers.image.licenses="MIT"

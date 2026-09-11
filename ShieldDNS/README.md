@@ -7,7 +7,7 @@
 [![Docker Image](https://img.shields.io/badge/docker-2.5.3-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-shielddns)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> High-performance DoT proxy for AdGuard Home
+> DNS-over-TLS/HTTPS proxy with ad blocking, filtering and admin UI
 
 ---
 
