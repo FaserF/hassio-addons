@@ -469,8 +469,14 @@ sleep 2
 
 # Check if services are still running
 if ! kill -0 $ADMIN_PID 2>/dev/null; then
-	bashio::log.error "❌ ShieldDNS Admin failed to start. Check logs."
+	bashio::log.error "❌ ShieldDNS Admin failed to start. See error output above."
 	exit 1
+fi
+
+# Reset boot loop protection counter immediately upon successful startup
+if [ -d "/data" ]; then
+	VERSION_TAG="${VERSION:-unknown}"
+	printf "%s\n0\n" "$VERSION_TAG" >"/data/.boot_loop_protection" 2>/dev/null || true
 fi
 
 bashio::log.info "✅ ShieldDNS Started Successfully."

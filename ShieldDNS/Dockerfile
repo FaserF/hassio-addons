@@ -82,7 +82,7 @@ COPY run.sh /etc/services.d/shielddns/run
 RUN dos2unix /etc/services.d/shielddns/run && chmod +x /etc/services.d/shielddns/run
 
 # Healthcheck
-HEALTHCHECK --interval=15s --timeout=5s --retries=3 --start-period=60s \
+HEALTHCHECK --interval=15s --timeout=5s --retries=5 --start-period=300s \
     CMD ["/bin/sh", "-c", "curl -fS http://localhost:8099/api/health/live || exit 1"]
 
 # Labels
