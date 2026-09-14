@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.5.4-dev-20260913-1104-25a9126 (2026-09-13)
+
+### ✨ Features
+- add developer mode support ([`579e0d97`](https://github.com/FaserF/hassio-addons/commit/579e0d976ccf36b6abeb83649185c81553f2a2c8))
+
+### 🐛 Bug Fixes
+- extend healthcheck start period and reset boot loop protection on startup ([`25a9126d`](https://github.com/FaserF/hassio-addons/commit/25a9126d5ff6e5151edca8880940e96df3f1b315))
+- fix dev docker build on low hardware ([`88ec5c71`](https://github.com/FaserF/hassio-addons/commit/88ec5c71a02d1c619addba6f502a7891643d708b))
+- fix addon building ([`83398a02`](https://github.com/FaserF/hassio-addons/commit/83398a02f82c47ecd0823d177a14f650a823c6e0))
+
+### 📦 Dependencies
+- updated addon description ([`61c7db3c`](https://github.com/FaserF/hassio-addons/commit/61c7db3c2353dd002ec49a90970517c9632fa8fe))
+
+### 🎨 Style
+- remove config options available in ui ([`a7fb1af4`](https://github.com/FaserF/hassio-addons/commit/a7fb1af40e82ed765fa7c01b271c5c33b7bdd0b2))
+
+
 ## 2.5.3 (2026-08-28)
 
 ### 🐛 Bug Fixes
