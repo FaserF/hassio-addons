@@ -183,24 +183,43 @@ class AuthHelper:
             # 1. First ensure we are in QR mode (switch back if in phone mode or if expired button is shown)
             qr_prep_script = """
             (() => {
-                // If there is an expired QR reload button or overlay, click it
-                const allElements = Array.from(document.querySelectorAll('button, div[role="button"], a, svg, span, p'));
+                // 1. Check if the QR is expired (circle-arrow overlay or text)
+                // Trade Republic shows an overlay with a circular reload icon or blur over the QR code
+                const allElements = Array.from(document.querySelectorAll('button, div[role="button"], a, svg, span, p, div'));
                 const reloadBtn = allElements.find(el => {
                     const txt = (el.textContent || '').trim().toLowerCase();
                     const aria = (el.getAttribute('aria-label') || '').toLowerCase();
                     const testId = (el.getAttribute('data-testid') || '').toLowerCase();
-                    return (
+                    const cls = (el.className || '').toString().toLowerCase();
+                    const isOverlay = cls.includes('overlay') || cls.includes('backdrop') || cls.includes('expired');
+                    const hasReloadTxt = (
                         txt.includes('abgelaufen') || txt.includes('neu laden') || txt.includes('erneuern') ||
                         txt.includes('refresh') || txt.includes('reload') || txt.includes('aktualisieren') ||
                         aria.includes('refresh') || aria.includes('reload') || testId.includes('refresh') || testId.includes('reload')
-                    ) && el.offsetWidth > 0 && el.offsetHeight > 0;
+                    );
+                    return (hasReloadTxt || isOverlay) && el.offsetWidth > 0 && el.offsetHeight > 0;
                 });
                 if (reloadBtn) {
                     reloadBtn.click();
                     return { action: 'clicked_reload' };
                 }
 
-                // If currently on phone login form, switch to QR login if link/button available
+                // 2. If an SVG circle-arrow is inside the QR area, click it
+                const reloadSvgs = Array.from(document.querySelectorAll('svg')).filter(s => {
+                    const r = s.getBoundingClientRect();
+                    return r.width > 20 && r.width < 100 && r.height > 20 && r.height < 100 && (
+                        s.innerHTML.includes('path') || s.querySelector('path')
+                    );
+                });
+                for (let s of reloadSvgs) {
+                    const parent = s.closest('button, [role="button"], div');
+                    if (parent && parent.offsetWidth > 0) {
+                        parent.click();
+                        return { action: 'clicked_reload' };
+                    }
+                }
+
+                // 3. If currently on phone login form, switch to QR login if link/button available
                 const qrSwitchBtn = allElements.find(el => {
                     const txt = (el.textContent || '').trim().toLowerCase();
                     return (txt.includes('qr-code') || txt.includes('qr code') || txt.includes('mit qr')) && el.offsetWidth > 0;
