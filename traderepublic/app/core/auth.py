@@ -458,17 +458,40 @@ class AuthHelper:
         # PIN Input & Submit
         pin_script = f"""
         (() => {{
-            const input = document.querySelector('input[type="password"], input[name="pin"], input[name="password"], input[inputmode="numeric"], input[autocomplete="current-password"]');
-            if (!input) return {{ ok: false, stage: 'pin', reason: 'input_not_found' }};
-            input.focus();
-            input.click();
-            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-            nativeSetter.call(input, "{clean_pin}");
-            input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
-            input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
-            input.dispatchEvent(new KeyboardEvent('keydown', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
-            input.dispatchEvent(new KeyboardEvent('keypress', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
-            input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
+            // 1. Check for single password / pin field
+            const singleInput = document.querySelector('input[type="password"], input[name="pin"], input[name="password"], input[inputmode="numeric"], input[autocomplete="current-password"]');
+            
+            // 2. Check for multiple digit inputs (PIN boxes)
+            const digitInputs = Array.from(document.querySelectorAll('input')).filter(i => {{
+                const len = i.getAttribute('maxlength');
+                const mode = i.getAttribute('inputmode');
+                return (len === '1' || mode === 'numeric') && i.offsetWidth > 0;
+            }});
+
+            const pinStr = "{clean_pin}";
+
+            if (digitInputs.length >= 4) {{
+                for (let i = 0; i < Math.min(digitInputs.length, pinStr.length); i++) {{
+                    const dInput = digitInputs[i];
+                    dInput.focus();
+                    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+                    nativeSetter.call(dInput, pinStr[i]);
+                    dInput.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
+                    dInput.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
+                }}
+            }} else if (singleInput) {{
+                singleInput.focus();
+                singleInput.click();
+                const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+                nativeSetter.call(singleInput, pinStr);
+                singleInput.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
+                singleInput.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
+                singleInput.dispatchEvent(new KeyboardEvent('keydown', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
+                singleInput.dispatchEvent(new KeyboardEvent('keypress', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
+                singleInput.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
+            }} else {{
+                return {{ ok: false, stage: 'pin', reason: 'input_not_found' }};
+            }}
 
             const btns = Array.from(document.querySelectorAll('button, div[role="button"], a[role="button"]')).filter(b => b.offsetWidth > 0 && b.offsetHeight > 0);
             const btn = btns.find(b => {{
@@ -497,9 +520,10 @@ class AuthHelper:
                 return {{ ok: true, stage: 'pin', clicked: true, btnText: (btn.textContent || '').trim() }};
             }}
 
-            if (input.form) {{
+            const activeInput = singleInput || digitInputs[0];
+            if (activeInput && activeInput.form) {{
                 try {{
-                    input.form.requestSubmit();
+                    activeInput.form.requestSubmit();
                     return {{ ok: true, stage: 'pin', method: 'form_requestSubmit' }};
                 }} catch(e) {{}}
             }}
@@ -545,8 +569,8 @@ class AuthHelper:
             in_page_fetch_script = f"""
             (async () => {{
                 try {{
-                    // Attempt login call via the current in-page session context
-                    let res = await fetch('https://api.traderepublic.com/api/v1/auth/web/login', {{
+                    // Attempt v2 auth endpoint first (Trade Republic now uses v2 for push flow)
+                    let res = await fetch('https://api.traderepublic.com/api/v2/auth/web/login', {{
                         method: 'POST',
                         headers: {{
                             'Content-Type': 'application/json',
@@ -558,9 +582,9 @@ class AuthHelper:
                         }})
                     }});
 
-                    // If v1 returns 404/426, try v2 credentials endpoint
-                    if (res.status === 404 || res.status === 426) {{
-                        res = await fetch('https://api.traderepublic.com/api/v2/auth/web/login', {{
+                    // If v2 not accepted, try v1
+                    if (res.status === 404) {{
+                        res = await fetch('https://api.traderepublic.com/api/v1/auth/web/login', {{
                             method: 'POST',
                             headers: {{
                                 'Content-Type': 'application/json',
