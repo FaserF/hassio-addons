@@ -249,7 +249,7 @@ class AuthHelper:
             (() => {
                 const qrSvg = Array.from(document.querySelectorAll('svg')).find(s => {
                     const r = s.getBoundingClientRect();
-                    return s.querySelectorAll('rect, path').length >= 15 && r.width >= 100;
+                    return (s.querySelectorAll('rect, path').length >= 10 || (s.innerHTML && s.innerHTML.includes('rect'))) && r.width >= 60;
                 });
                 if (qrSvg) {
                     const r = qrSvg.getBoundingClientRect();
@@ -258,10 +258,22 @@ class AuthHelper:
 
                 const qrCanvas = Array.from(document.querySelectorAll('canvas')).find(c => {
                     const r = c.getBoundingClientRect();
-                    return r.width >= 100;
+                    return r.width >= 60;
                 });
                 if (qrCanvas) {
                     const r = qrCanvas.getBoundingClientRect();
+                    return { x: r.x, y: r.y, width: r.width, height: r.height };
+                }
+
+                // Fallback: look for QR container div or image with qr in class/id/data-testid
+                const qrContainer = Array.from(document.querySelectorAll('div, img')).find(el => {
+                    const r = el.getBoundingClientRect();
+                    const testId = (el.getAttribute('data-testid') || '').toLowerCase();
+                    const cls = (el.className || '').toString().toLowerCase();
+                    return (testId.includes('qr') || cls.includes('qr')) && r.width >= 100 && r.height >= 100;
+                });
+                if (qrContainer) {
+                    const r = qrContainer.getBoundingClientRect();
                     return { x: r.x, y: r.y, width: r.width, height: r.height };
                 }
 
@@ -270,12 +282,12 @@ class AuthHelper:
             """
             box_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": box_script, "returnByValue": True})
             box = box_res and box_res.get("result", {}).get("value")
-            if box and isinstance(box, dict) and box.get("width", 0) >= 80:
+            if box and isinstance(box, dict) and box.get("width", 0) >= 50:
                 clip_params = {
                     "format": "png",
                     "clip": {
-                        "x": float(box.get("x", 0)),
-                        "y": float(box.get("y", 0)),
+                        "x": max(0.0, float(box.get("x", 0))),
+                        "y": max(0.0, float(box.get("y", 0))),
                         "width": float(box.get("width", 200)),
                         "height": float(box.get("height", 200)),
                         "scale": 2,
