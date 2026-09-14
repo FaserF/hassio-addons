@@ -1,5 +1,5 @@
 fastapi==0.141.1
-uvicorn[standard]==0.52.4
+uvicorn[standard]==0.53.0
 sqlmodel==0.0.42
 sqlalchemy[asyncio]==2.0.52
 greenlet==3.5.5
