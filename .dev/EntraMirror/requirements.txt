@@ -18,7 +18,7 @@ APScheduler==3.11.3
 mcp[server]>=2.1.1
 mkdocs==1.6.1
 mkdocs-material==9.7.7
-pymdown-extensions==11.0.2
+pymdown-extensions==12.0
 Pillow==12.3.0
 python-dotenv==1.2.3
 PyYAML==6.0.3
