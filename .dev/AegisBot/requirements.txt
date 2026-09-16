@@ -1,6 +1,6 @@
 fastapi==0.141.1
 uvicorn[standard]==0.53.0
-sqlalchemy==2.0.53
+sqlalchemy==2.0.54
 pydantic[email]==2.13.5
 pydantic-settings==2.15.0
 PyJWT[crypto]==2.14.0
