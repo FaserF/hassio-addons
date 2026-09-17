@@ -16,6 +16,7 @@ Usage:
 import os
 import re
 import sys
+from typing import Optional
 
 import yaml
 
@@ -348,7 +349,7 @@ ENV APP_UNSUPPORTED="{str(unsupported).lower()}" """
     return True
 
 
-def find_run_script(addon_path: str) -> str:
+def find_run_script(addon_path: str) -> Optional[str]:
     """Find the main run script for the addon."""
     candidates = [
         os.path.join(addon_path, "run.sh"),

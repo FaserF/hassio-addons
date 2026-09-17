@@ -84,11 +84,13 @@ def generate_landscape_logo(addon_dir: str, title: str, subtitle: str | None = N
         ]
         font_s_path = next((p for p in font_sub_paths if os.path.exists(p)), None)
 
+        font_title: ImageFont.ImageFont | ImageFont.FreeTypeFont
         if font_b_path:
             font_title = ImageFont.truetype(font_b_path, 48)
         else:
             font_title = ImageFont.load_default()
 
+        font_sub: ImageFont.ImageFont | ImageFont.FreeTypeFont
         if font_s_path:
             font_sub = ImageFont.truetype(font_s_path, 28)
         else:
@@ -97,12 +99,12 @@ def generate_landscape_logo(addon_dir: str, title: str, subtitle: str | None = N
         dummy = Image.new("RGBA", (10, 10))
         d = ImageDraw.Draw(dummy)
         t_bbox = d.textbbox((0, 0), title, font=font_title)
-        t_width = t_bbox[2] - t_bbox[0]
+        t_width = int(t_bbox[2] - t_bbox[0])
 
         s_width = 0
         if subtitle:
             s_bbox = d.textbbox((0, 0), subtitle, font=font_sub)
-            s_width = s_bbox[2] - s_bbox[0]
+            s_width = int(s_bbox[2] - s_bbox[0])
 
         text_max_w = max(t_width, s_width)
 
@@ -111,7 +113,7 @@ def generate_landscape_logo(addon_dir: str, title: str, subtitle: str | None = N
         padding = 24
         spacing = 20
 
-        total_w = padding + badge_size + spacing + text_max_w + padding + 10
+        total_w = int(padding + badge_size + spacing + text_max_w + padding + 10)
         total_w = max(total_w, 512)
 
         banner = Image.new("RGBA", (total_w, h), (0, 0, 0, 0))

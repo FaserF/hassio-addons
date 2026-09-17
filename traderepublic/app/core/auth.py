@@ -460,7 +460,7 @@ class AuthHelper:
         (() => {{
             // 1. Check for single password / pin field
             const singleInput = document.querySelector('input[type="password"], input[name="pin"], input[name="password"], input[inputmode="numeric"], input[autocomplete="current-password"]');
-            
+
             // 2. Check for multiple digit inputs (PIN boxes)
             const digitInputs = Array.from(document.querySelectorAll('input')).filter(i => {{
                 const len = i.getAttribute('maxlength');

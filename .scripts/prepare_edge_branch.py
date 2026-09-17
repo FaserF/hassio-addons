@@ -15,6 +15,7 @@ Usage:
 import json
 import os
 import re
+import shutil
 import subprocess
 from datetime import datetime
 
@@ -347,9 +348,6 @@ def update_integration_for_edge() -> bool:
     except Exception as e:
         print(f"⚠️ Error updating integration for edge: {e}")
         return False
-
-
-import shutil
 
 
 def main():

@@ -6,8 +6,8 @@ import yaml
 
 
 def check_addon(addon_path):
-    errors = []
-    warnings = []
+    errors: list[str] = []
+    warnings: list[str] = []
 
     dockerfile_path = os.path.join(addon_path, "Dockerfile")
     build_yaml_path = os.path.join(addon_path, "build.yaml")

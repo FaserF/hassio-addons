@@ -3,7 +3,7 @@ import subprocess
 
 # Define Edge add-ons or logic to detect them
 # For now, we assume any add-on ending in '-edge' or specific list
-EDGE_ADDONS = [
+EDGE_ADDONS: list[str] = [
     # "example-edge",
     # "node-red-edge"
 ]

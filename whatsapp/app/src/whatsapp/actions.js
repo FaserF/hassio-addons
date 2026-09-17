@@ -212,12 +212,6 @@ export async function reply(session, jid, content, quotedMsg = null, options = {
       const reasonText = err?.message || String(err || 'Unknown sending error');
       trackFailure(session, targetJid, text, reasonText);
       logger.error({ error: reasonText, jid: targetJid }, 'Failed to send reply');
-      session.stats.failed = (session.stats.failed || 0) + 1;
-      session.stats.lifetime_failed = (session.stats.lifetime_failed || 0) + 1;
-      logger.debug(
-        { sessionId: session.id, jid: maskData(targetJid) },
-        '📉 Stat: Failed incremented'
-      );
     }
     return null;
   }
@@ -263,21 +257,38 @@ export function trackReceived(session, sender, message) {
 }
 
 export function trackFailure(session, target, message, reason) {
+  if (!session) return;
   const timestamp = formatHATime(new Date());
   const displayTarget = target
     ? target.includes('@g.us')
       ? target
-      : target.split('@')[0]
+      : target.split('@')[0].split(':')[0]
     : 'unknown';
   const cleanReason =
     typeof reason === 'string' ? reason : reason?.message || String(reason || 'Unknown error');
-  session.recentFailures.unshift({
-    timestamp,
-    target: maskData(displayTarget),
-    message: maskData(message || ''),
-    reason: cleanReason,
-  });
-  if (session.recentFailures.length > 5) session.recentFailures.pop();
+
+  if (Array.isArray(session.recentFailures)) {
+    session.recentFailures.unshift({
+      timestamp,
+      target: maskData(displayTarget),
+      message: maskData(message || ''),
+      reason: cleanReason,
+    });
+    if (session.recentFailures.length > 5) session.recentFailures.pop();
+  }
+
+  if (session.stats) {
+    session.stats.failed = (session.stats.failed || 0) + 1;
+    session.stats.lifetime_failed = (session.stats.lifetime_failed || 0) + 1;
+    session.stats.last_failed_message = maskData(message || '');
+    session.stats.last_failed_target = maskData(displayTarget);
+    session.stats.last_error_reason = cleanReason;
+    session.stats.last_failed_time = Date.now();
+    logger.debug(
+      { sessionId: session.id, jid: maskData(displayTarget) },
+      '📉 Stat: Failed incremented'
+    );
+  }
 }
 
 /**

@@ -211,7 +211,7 @@ def categorize_commits(commits, repo_url, addon_slug=None):
     """Categorize commits with clickable links."""
     # Use addon_slug to skip release commits for the current addon
     target_addon = (addon_slug or "").lower()
-    categories = {
+    categories: dict[str, list[str]] = {
         "✨ Features": [],
         "🐛 Bug Fixes": [],
         "📦 Dependencies": [],
@@ -378,7 +378,7 @@ def categorize_commits(commits, repo_url, addon_slug=None):
 
 def parse_existing_changelog_entry(content: str) -> dict:
     """Parse an existing changelog entry into categories."""
-    categories = {}
+    categories: dict[str, list[str]] = {}
     current_category = None
 
     # Simple parser assuming standard format

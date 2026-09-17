@@ -35,7 +35,7 @@ def check_domain(s, domains):
 
 # Import single source of truth for add-ons
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from addons_config import (
+from addons_config import (  # noqa: E402
     BETA_NOTICE,
     DEV_ADDONS,
     DEV_NOTICE,

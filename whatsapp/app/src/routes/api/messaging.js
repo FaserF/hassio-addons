@@ -3,7 +3,7 @@ import { logger } from '../../logger.js';
 import { authMiddleware } from '../../middleware.js';
 import { getReqSession } from '../../session.js';
 import { getJid } from '../../utils/jid.js';
-import { trackSent } from '../../whatsapp/actions.js';
+import { trackSent, trackFailure } from '../../whatsapp/actions.js';
 import { getQuotedMessage } from '../../whatsapp/events/index.js';
 import { ensureConnected, asyncHandler, getLastMessagesForChat } from './helpers.js';
 import { generateMessageID } from '../../utils/security.js';
@@ -18,8 +18,9 @@ export function registerMessagingRoutes(app) {
     '/send_message',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         const { number, message, quotedMessageId } = req.body;
         if (!number || !message)
           return res.status(400).json({ detail: 'Missing number or message' });
@@ -40,6 +41,7 @@ export function registerMessagingRoutes(app) {
         trackSent(session, number, message);
         res.json({ status: 'sent', id: sentMsg?.key?.id || generateMessageID() });
       } catch (err) {
+        trackFailure(session, req.body?.number, req.body?.message, err.message);
         res.status(500).json({ detail: err.message });
       }
     })
@@ -49,8 +51,9 @@ export function registerMessagingRoutes(app) {
     '/send_image',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         const { number, url, caption } = req.body;
         if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
 
@@ -65,6 +68,7 @@ export function registerMessagingRoutes(app) {
         trackSent(session, number, `[Image] ${caption || ''}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
+        trackFailure(session, req.body?.number, `[Image] ${req.body?.caption || ''}`, err.message);
         res.status(500).json({ detail: err.message });
       }
     })
@@ -74,8 +78,9 @@ export function registerMessagingRoutes(app) {
     '/send_poll',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         const { number, name, question, options, selectableCount } = req.body;
         const pollTitle = name || question;
         if (!number || !pollTitle || !options || !Array.isArray(options)) {
@@ -116,6 +121,7 @@ export function registerMessagingRoutes(app) {
         trackSent(session, number, `[Poll] ${pollTitle}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
+        trackFailure(session, req.body?.number, `[Poll] ${req.body?.name || req.body?.question || ''}`, err.message);
         res.status(500).json({ detail: err.message });
       }
     })
@@ -125,8 +131,9 @@ export function registerMessagingRoutes(app) {
     '/send_location',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         const { number, degreesLatitude, degreesLongitude, name, address } = req.body;
         if (!number || degreesLatitude == null || degreesLongitude == null) {
           return res.status(400).json({ detail: 'Missing number, latitude, or longitude' });
@@ -146,6 +153,7 @@ export function registerMessagingRoutes(app) {
         );
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
+        trackFailure(session, req.body?.number, `[Location] ${req.body?.name || ''}`, err.message);
         res.status(500).json({ detail: err.message });
       }
     })
@@ -155,8 +163,9 @@ export function registerMessagingRoutes(app) {
     '/send_event',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         // Accept both 'startTime' (direct API) and 'date' (stable integration v1.7.5)
         const {
           number,
@@ -210,6 +219,7 @@ export function registerMessagingRoutes(app) {
         trackSent(session, number, `[Event] ${name}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
+        trackFailure(session, req.body?.number, `[Event] ${req.body?.name || ''}`, err.message);
         res.status(500).json({ detail: err.message });
       }
     })
@@ -219,8 +229,9 @@ export function registerMessagingRoutes(app) {
     '/send_buttons',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         const { number, text, buttons, footer } = req.body;
         if (!number || !text || !buttons)
           return res.status(400).json({ detail: 'Missing parameters' });
@@ -252,6 +263,7 @@ export function registerMessagingRoutes(app) {
             'Interactive buttons are deprecated by WhatsApp for standard web accounts and may render only as plain text on client apps. Consider using send_poll.',
         });
       } catch (err) {
+        trackFailure(session, req.body?.number, `[Buttons] ${req.body?.text || ''}`, err.message);
         res.status(500).json({ detail: err.message });
       }
     })
@@ -261,8 +273,9 @@ export function registerMessagingRoutes(app) {
     '/send_document',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         const { number, url, fileName, caption, mimetype, mimeType, mime_type } = req.body;
         if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
 
@@ -288,6 +301,7 @@ export function registerMessagingRoutes(app) {
         trackSent(session, number, `[Document] ${name}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
+        trackFailure(session, req.body?.number, `[Document] ${req.body?.fileName || 'document'}`, err.message);
         res.status(500).json({ detail: err.message });
       }
     })
@@ -297,8 +311,9 @@ export function registerMessagingRoutes(app) {
     '/send_sticker',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         const { number, url } = req.body;
         if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
 
@@ -312,6 +327,7 @@ export function registerMessagingRoutes(app) {
         trackSent(session, number, `[Sticker]`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
+        trackFailure(session, req.body?.number, `[Sticker]`, err.message);
         res.status(500).json({ detail: err.message });
       }
     })
@@ -321,8 +337,9 @@ export function registerMessagingRoutes(app) {
     '/send_gif',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         const { number, url, caption } = req.body;
         if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
 
@@ -338,6 +355,7 @@ export function registerMessagingRoutes(app) {
         trackSent(session, number, `[GIF] ${caption || ''}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
+        trackFailure(session, req.body?.number, `[GIF] ${req.body?.caption || ''}`, err.message);
         res.status(500).json({ detail: err.message });
       }
     })
@@ -347,8 +365,9 @@ export function registerMessagingRoutes(app) {
     '/send_video',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         const { number, url, caption, gifPlayback } = req.body;
         if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
 
@@ -364,6 +383,7 @@ export function registerMessagingRoutes(app) {
         trackSent(session, number, `[Video] ${caption || ''}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
+        trackFailure(session, req.body?.number, `[Video] ${req.body?.caption || ''}`, err.message);
         res.status(500).json({ detail: err.message });
       }
     })
@@ -373,8 +393,9 @@ export function registerMessagingRoutes(app) {
     '/send_audio',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         const { number, url, ptt } = req.body;
         if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
 
@@ -390,6 +411,7 @@ export function registerMessagingRoutes(app) {
         trackSent(session, number, `[Audio]`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
+        trackFailure(session, req.body?.number, `[Audio]`, err.message);
         res.status(500).json({ detail: err.message });
       }
     })
@@ -454,8 +476,9 @@ export function registerMessagingRoutes(app) {
     '/send_list',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         const { number, title, buttonText, sections } = req.body;
         if (!number || !title || !sections)
           return res.status(400).json({ detail: 'Missing parameters' });
@@ -472,6 +495,7 @@ export function registerMessagingRoutes(app) {
         trackSent(session, number, `[List] ${title}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
+        trackFailure(session, req.body?.number, `[List] ${req.body?.title || ''}`, err.message);
         res.status(500).json({ detail: err.message });
       }
     })
@@ -481,8 +505,9 @@ export function registerMessagingRoutes(app) {
     '/send_contact',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         const { number, contactName, contactNumber } = req.body;
         if (!number || !contactName || !contactNumber) {
           return res.status(400).json({ detail: 'Missing parameters' });
@@ -505,6 +530,7 @@ export function registerMessagingRoutes(app) {
         trackSent(session, number, `[Contact] ${contactName}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
+        trackFailure(session, req.body?.number, `[Contact] ${req.body?.contactName || ''}`, err.message);
         res.status(500).json({ detail: err.message });
       }
     })
@@ -681,8 +707,9 @@ export function registerMessagingRoutes(app) {
     '/forward_message',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         const { number, messageId, targetNumber } = req.body;
         if (!number || !messageId || !targetNumber) {
           return res.status(400).json({ detail: 'Missing number, messageId, or targetNumber' });
@@ -701,6 +728,7 @@ export function registerMessagingRoutes(app) {
         trackSent(session, targetNumber, `[Forwarded Message]`);
         res.json({ status: 'forwarded', id: sentMsg?.key?.id });
       } catch (err) {
+        trackFailure(session, req.body?.targetNumber, `[Forwarded Message]`, err.message);
         res.status(500).json({ detail: err.message });
       }
     })
@@ -710,8 +738,9 @@ export function registerMessagingRoutes(app) {
     '/send_status',
     authMiddleware,
     asyncHandler(async (req, res) => {
+      let session;
       try {
-        const session = getReqSession(req);
+        session = getReqSession(req);
         const { message, url, caption } = req.body;
         if (!message && !url) {
           return res.status(400).json({ detail: 'Missing message or url for status' });
@@ -732,6 +761,7 @@ export function registerMessagingRoutes(app) {
         trackSent(session, 'status@broadcast', `[Status Update] ${message || caption || ''}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
+        trackFailure(session, 'status@broadcast', `[Status Update] ${req.body?.message || req.body?.caption || ''}`, err.message);
         res.status(500).json({ detail: err.message });
       }
     })

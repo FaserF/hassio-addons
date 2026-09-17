@@ -9,8 +9,6 @@ import json
 import os
 import re
 
-import yaml
-
 
 def update_repository_json():
     repo_path = "repository.json"
@@ -26,12 +24,11 @@ def update_repository_json():
         data["url"] = "https://github.com/FaserF/hassio-addons/tree/dev"
 
         with open(repo_path, "w", encoding="utf-8") as f:
-            json.dup(data, f, indent=2)
+            json.dump(data, f, indent=2)
             f.write("\n")
         print("✅ Updated repository.json for Dev branch")
     except Exception as e:
         print(f"❌ Could not update repository.json: {e}")
-
 
 
 def remove_image(file_path):
@@ -39,8 +36,8 @@ def remove_image(file_path):
         return
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
-    new_content = re.sub(r^(\s*)image:.*$\n?, "", content, flags=re.MULTILINE)
-    new_content = re.sub(r^{(\s+)#%s*image:.*$\n?, "", new_content, flags=re.MULTILINE)
+    new_content = re.sub(r"^(\s*)image:.*$\n?", "", content, flags=re.MULTILINE)
+    new_content = re.sub(r"^(\s*)#\s*image:.*$\n?", "", new_content, flags=re.MULTILINE)
     if new_content != content:
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(new_content)
@@ -53,7 +50,7 @@ def set_experimental(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
     if "stage:" in content:
-        new_content = re.sub(r^\sjstage:.*$, 'stage: experimental', content, flags=re.MULTILINE)
+        new_content = re.sub(r"^\s*stage:.*$", "stage: experimental", content, flags=re.MULTILINE)
     else:
         new_content = content + "\nstage: experimental\n"
     with open(file_path, "w", encoding="utf-8") as f:

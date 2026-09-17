@@ -6,8 +6,11 @@ architecture badges, modern UI, category grouping, and one-click repo install.
 """
 
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 import yaml
 
@@ -18,11 +21,9 @@ if hasattr(sys.stdout, "reconfigure"):
 REPO_URL = "https://github.com/FaserF/hassio-addons"
 REPO_RAW_URL = "https://raw.githubusercontent.com/FaserF/hassio-addons/master"
 
-import os
-
 # Import single source of truth for add-ons
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from addons_config import DEV_ADDONS
+from addons_config import DEV_ADDONS  # noqa: E402
 
 # Enhanced emoji/category detection
 ICON_MAP = {
@@ -140,7 +141,7 @@ def parse_version(version_str: str) -> tuple:
         return (0, 0, 0)
 
 
-def extract_metadata(config_path: Path, relative_path: str, is_unsupported: bool) -> dict:
+def extract_metadata(config_path: Path, relative_path: str, is_unsupported: bool) -> Optional[dict]:
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             config = yaml.safe_load(f) or {}

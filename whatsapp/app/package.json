@@ -21,12 +21,13 @@
     "bonjour-service": "^1.4.1",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
-    "link-preview-js": "5.0.0",
     "jimp": "^1.6.1",
+    "link-preview-js": "5.0.0",
     "lru-cache": "^11.5.1",
     "mime-types": "^3.0.2",
     "pino": "^10.3.1",
-    "qrcode": "^1.5.4"
+    "qrcode": "^1.5.4",
+    "sharp": "^0.35.4"
   },
   "overrides": {
     "link-preview-js": "5.0.0",
