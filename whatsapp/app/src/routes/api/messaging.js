@@ -110,7 +110,7 @@ export function registerMessagingRoutes(app) {
           poll: {
             name: pollTitle,
             values: cleanedOptions,
-            selectableCount: selectableCount || 1,
+            selectableCount: selectableCount ??  1,
           },
         });
         trackSent(session, number, `[Poll] ${pollTitle}`);
