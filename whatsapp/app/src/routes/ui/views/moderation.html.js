@@ -832,6 +832,10 @@ export default () => `
                             <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-cmds-multi-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
                             <span class="mod-option-label" data-i18n="moderation.enable_multi_cmds">Process multiple commands in a single message (default: execute 1st command only)</span>
                         </div>
+                        <div class="mod-option-row" style="margin-bottom:10px;">
+                            <label class="mod-toggle-switch mod-toggle-sm"><input type="checkbox" id="mod-cmds-prefixless-private-enabled"><span class="mod-toggle-track"><span class="mod-toggle-thumb"></span></span></label>
+                            <span class="mod-option-label" data-i18n="moderation.enable_prefixless_private_cmds">Allow bare commands in private 1:1 chats without prefix (e.g. help, ping)</span>
+                        </div>
                         <div class="mod-field-group" style="max-width:200px; margin-bottom:12px;">
                             <label class="mod-field-label" data-i18n="moderation.cmd_prefix">Command Prefix</label>
                             <input type="text" id="mod-cmds-prefix" class="mod-input" value="!" maxlength="3">

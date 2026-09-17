@@ -196,6 +196,7 @@ export function getDefaultGroupConfig() {
       enabled: true,
       prefix: '!',
       mute_action: 'delete', // WhatsApp limitation: 'delete' un-sends their future messages or restricts group
+      allow_prefixless_private: false, // Disallow bare words in 1:1 chats without prefix by default
     },
     federation_id: 'fed_global_default',
     pinned_messages: {}, // msgId -> { id, participant, fromMe } — persisted across restarts
@@ -283,6 +284,14 @@ export function getGroupModerationConfig(groupId) {
     kick_log: Array.isArray(existing.kick_log) ? existing.kick_log : def.kick_log,
     filters: Array.isArray(existing.filters) ? existing.filters : def.filters,
     notes: { ...def.notes, ...(existing.notes || {}) },
+    commands: {
+      ...def.commands,
+      ...(existing.commands || {}),
+      allow_prefixless_private:
+        existing.commands?.allow_prefixless_private !== undefined
+          ? Boolean(existing.commands.allow_prefixless_private)
+          : Boolean(existing.allow_prefixless_private_commands || def.commands.allow_prefixless_private),
+    },
     antispam: {
       notify_bypassed_actions:
         existing.antispam?.notify_bypassed_actions !== undefined

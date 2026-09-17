@@ -1135,6 +1135,7 @@ const TRACKED_FIELD_IDS = [
   'mod-fed-select',
   'mod-cmds-enabled',
   'mod-cmds-multi-enabled',
+  'mod-cmds-prefixless-private-enabled',
   'mod-cmds-prefix',
   'mod-cmds-mute-action',
 ];
@@ -1729,6 +1730,11 @@ async function selectModerationGroup(groupId) {
   if (cmdsEnabled) cmdsEnabled.checked = Boolean(config.commands?.enabled !== false);
   const cmdsMultiEnabled = document.getElementById('mod-cmds-multi-enabled');
   if (cmdsMultiEnabled) cmdsMultiEnabled.checked = Boolean(config.commands?.multi_command_enabled);
+  const cmdsPrefixlessPrivate = document.getElementById('mod-cmds-prefixless-private-enabled');
+  if (cmdsPrefixlessPrivate)
+    cmdsPrefixlessPrivate.checked = Boolean(
+      config.commands?.allow_prefixless_private || config.allow_prefixless_private_commands
+    );
   const cmdsPrefix = document.getElementById('mod-cmds-prefix');
   if (cmdsPrefix) cmdsPrefix.value = config.commands?.prefix || '!';
   const cmdsMuteAct = document.getElementById('mod-cmds-mute-action');
@@ -2269,6 +2275,9 @@ async function saveGroupCommands() {
 
   const enabled = Boolean(document.getElementById('mod-cmds-enabled')?.checked);
   const multi_command_enabled = Boolean(document.getElementById('mod-cmds-multi-enabled')?.checked);
+  const allow_prefixless_private = Boolean(
+    document.getElementById('mod-cmds-prefixless-private-enabled')?.checked
+  );
   const prefix = document.getElementById('mod-cmds-prefix')?.value || '!';
   const mute_action = document.getElementById('mod-cmds-mute-action')?.value || 'delete';
 
@@ -2284,6 +2293,7 @@ async function saveGroupCommands() {
     ...(groupConfig.commands || {}),
     enabled,
     multi_command_enabled,
+    allow_prefixless_private,
     prefix,
     mute_action,
     disabled_commands: disabledCmds,

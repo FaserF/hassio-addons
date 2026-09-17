@@ -727,6 +727,7 @@
     "cmds_desc": "Allow members and admins to interact with the bot via group commands and custom mapped shortcuts.",
     "enable_cmds": "Enable group commands (!help, !warn, !ban, etc.)",
     "enable_multi_cmds": "Process multiple commands in a single message (default: execute 1st command only)",
+    "enable_prefixless_private_cmds": "Allow bare commands in private 1:1 chats without prefix (e.g. help, ping)",
     "cmd_prefix": "Command Prefix",
     "mute_action": "Mute Action (WhatsApp API Limit)",
     "mute_action_delete": "Delete user's messages",

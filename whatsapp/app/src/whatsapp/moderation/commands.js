@@ -93,7 +93,17 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
 
   const isPrivateChat = !groupId || !groupId.endsWith('@g.us');
   const config = getGroupModerationConfig(groupId) || {};
-  if (!isPrivateChat && (!config.enabled || !config.commands?.enabled)) return false;
+  const isCommandsEnabled = Boolean(config.enabled && config.commands?.enabled);
+
+  // Gating: In groups, commands require both group moderation and commands to be enabled.
+  // In private chats, commands require either moderation & commands to be enabled OR the sender to be an admin (e.g. executing admin commands).
+  if (isPrivateChat) {
+    if (!isCommandsEnabled && !isAdminUser) {
+      return false;
+    }
+  } else if (!isCommandsEnabled) {
+    return false;
+  }
 
   // Verification guard: in group chats, non-admin unverified users cannot execute commands
   if (!isPrivateChat && !isAdminUser && config.greetings?.captcha_enabled) {
@@ -211,11 +221,16 @@ export async function processCommand(session, msg, text, senderJid, isAdminUser,
         validCommandLines.push(normalizedCmd);
       }
     } else if (isPrivateChat && !msg?.key?.fromMe) {
-      // In private chat, only allow explicit incoming user commands without prefix if they match known safe commands
-      const firstWord = line.split(/\s+/)[0].replace(/@.*$/, '').toLowerCase();
-      const safePrefixless = new Set(['help', 'info', 'ping', 'status', 'rules', 'about']);
-      if (safePrefixless.has(firstWord) && registry.getCommand(firstWord) !== undefined) {
-        validCommandLines.push(`${prefix}${line}`);
+      // In private chat, only allow explicit incoming user commands without prefix if enabled in config and matches safe commands
+      const allowPrefixlessPrivate = Boolean(
+        config.commands?.allow_prefixless_private || config.allow_prefixless_private_commands
+      );
+      if (allowPrefixlessPrivate) {
+        const firstWord = line.split(/\s+/)[0].replace(/@.*$/, '').toLowerCase();
+        const safePrefixless = new Set(['help', 'info', 'ping', 'status', 'rules', 'about']);
+        if (safePrefixless.has(firstWord) && registry.getCommand(firstWord) !== undefined) {
+          validCommandLines.push(`${prefix}${line}`);
+        }
       }
     }
   }

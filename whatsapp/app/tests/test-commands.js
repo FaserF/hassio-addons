@@ -543,6 +543,97 @@ async function runTests() {
     'Non-note hashtag is safely ignored without unknown command error'
   );
 
+  // =========================================================================
+  // Tests for Issue #1078: Private chat prefixless moderation commands gating
+  // =========================================================================
+  const privateSenderJid = '491768888888@s.whatsapp.net';
+  const privateDmJid = '491768888888@s.whatsapp.net';
+  const privateMsg = {
+    key: { remoteJid: privateDmJid, fromMe: false, id: 'DM_MSG_1' },
+    message: { conversation: 'help' },
+  };
+
+  // 1. By default, unconfigured private chats have enabled: false -> bare 'help' must NOT execute for non-admin
+  const defaultDmHandled = await processCommand(
+    mockSession,
+    privateMsg,
+    'help',
+    privateSenderJid,
+    false, // non-admin
+    privateDmJid
+  );
+  assert(
+    defaultDmHandled === false,
+    'Bare word "help" in unconfigured private chat must return false (bypass prevented)'
+  );
+  console.log('✅ PASSED: Bare word "help" in unconfigured private chat is blocked');
+
+  // 2. Even with prefixed '!help', non-admin in disabled/unconfigured private chat cannot execute commands
+  const defaultPrefixedDmHandled = await processCommand(
+    mockSession,
+    { key: { remoteJid: privateDmJid, fromMe: false, id: 'DM_MSG_2' }, message: { conversation: '!help' } },
+    '!help',
+    privateSenderJid,
+    false,
+    privateDmJid
+  );
+  assert(
+    defaultPrefixedDmHandled === false,
+    'Prefixed "!help" in unconfigured private chat for non-admin must return false'
+  );
+  console.log('✅ PASSED: Prefixed "!help" in unconfigured private chat for non-admin is blocked');
+
+  // 3. Admin sender CAN execute prefixed '!help' in private chat
+  const adminPrefixedDmHandled = await processCommand(
+    mockSessionHelp,
+    { key: { remoteJid: privateDmJid, fromMe: false, id: 'DM_MSG_3' }, message: { conversation: '!help' } },
+    '!help',
+    privateSenderJid,
+    true, // admin
+    privateDmJid
+  );
+  assert(
+    adminPrefixedDmHandled === true,
+    'Admin sender can execute prefixed command in private chat'
+  );
+  console.log('✅ PASSED: Admin sender can execute prefixed command in private chat');
+
+  // 4. Admin sender sending bare word 'help' without prefixless enabled is NOT treated as command
+  const adminBareDmHandled = await processCommand(
+    mockSession,
+    privateMsg,
+    'help',
+    privateSenderJid,
+    true, // admin
+    privateDmJid
+  );
+  assert(
+    adminBareDmHandled === false,
+    'Bare word "help" for admin in private chat without allow_prefixless_private returns false'
+  );
+  console.log('✅ PASSED: Bare word "help" for admin in private chat without allow_prefixless_private is blocked');
+
+  // 5. When private chat explicitly has moderation + commands + allow_prefixless_private enabled
+  const dmConfig = getGroupModerationConfig(privateDmJid);
+  dmConfig.enabled = true;
+  dmConfig.commands.enabled = true;
+  dmConfig.commands.allow_prefixless_private = true;
+  setGroupModerationConfig(privateDmJid, dmConfig);
+
+  const explicitlyAllowedBareHandled = await processCommand(
+    mockSessionHelp,
+    privateMsg,
+    'help',
+    privateSenderJid,
+    false, // non-admin
+    privateDmJid
+  );
+  assert(
+    explicitlyAllowedBareHandled === true,
+    'Bare word "help" is executed when allow_prefixless_private is explicitly enabled'
+  );
+  console.log('✅ PASSED: Bare word "help" executes when allow_prefixless_private is explicitly enabled');
+
   // Count total commands (deduplicated)
   const seen = new Set();
   let totalCommands = 0;
