@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.6.3-dev-20260918-2107-2e80491 (2026-09-18)
+
+### ✨ Features
+- move in-development add-ons to .dev/ directory to hide from stable repository in Home Assistant ([`2e804917`](https://github.com/FaserF/hassio-addons/commit/2e8049174658ea37ac75009502669b59c49f2404))
+
+### 🐛 Bug Fixes
+- fix HA Ingress access ([`f5ba3905`](https://github.com/FaserF/hassio-addons/commit/f5ba3905e2c16d5b87cc873b153048bcfb24ead2))
+
+### 📦 Dependencies
+- ⬆️ Update dependency google-genai to v2.19.0 (#1002) ([`5406a20e`](https://github.com/FaserF/hassio-addons/commit/5406a20e252e72afb41639b475c66e8937fcb50b))
+
+### 📝 Documentation
+- ci: integrate in-development add-ons blacklist across workflows, scripts and README generators ([`6f5b41cc`](https://github.com/FaserF/hassio-addons/commit/6f5b41cc98d3fc3592543b75ad72bd7a4f331825))
+
+### 🚀 Other
+- Standardize log_level configuration and handling across all add-ons ([`7ddda206`](https://github.com/FaserF/hassio-addons/commit/7ddda206529ef9453a58d36af03969ed975a8e66))
+
+
 ## 0.6.2 (2026-08-19)
 
 ### ✨ Features

@@ -1,13 +1,22 @@
-# Google Home Token Hub
+# Solumati
 
-<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/.dev/googlehome/logo.png" width="100" alt="Logo" />
+> [!CAUTION]
+> **EDGE/DEVELOPMENT BUILD**
+>
+> You are viewing the `edge` branch. This version is built locally from source
+> and may contain bugs or incomplete features. For stable releases, switch to
+> the `master` branch or use the stable repository URL.
 
-[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=605cee21_googlehome)
+
+
+<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/.dev/solumati/logo.png" width="100" alt="Logo" />
+
+[![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=edfe50eb_solumati)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
-[![Docker Image](https://img.shields.io/badge/docker-0.1.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-googlehome)
+[![Docker Image](https://img.shields.io/badge/docker-2.4.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-solumati)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> Google Home Master Token Generator & Ingress Authentication Hub for Home Assistant.
+> The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches.
 
 ---
 
@@ -30,19 +39,7 @@
 
 ## 📖 About
 
-## ✨ Features
-
-- 🔑 **Master Token Generation:** Safely exchange short-lived web tokens or Google App Passwords into permanent Master Tokens (`aas_et/...`).
-- 🖥️ **Modern Ingress Web UI:** Clean, responsive dark-mode web dashboard displaying live token status and account linkage.
-- 🔌 **Supervisor Auto-Discovery:** Seamless zero-touch handshake with the [Google Home Integration](https://github.com/FaserF/ha-googlehome).
-- 📦 **Auto-Install & Updates:** Automatically installs and keeps the `ha-googlehome` custom integration up to date in Home Assistant.
-
-## 🔗 Related Integration
-
-This add-on works together with the **[ha-googlehome Home Assistant Custom Integration](https://github.com/FaserF/ha-googlehome)**:
-
-- [ha-googlehome on GitHub](https://github.com/FaserF/ha-googlehome)
-- Provides 100% local control, alarms, timers, volume, Do Not Disturb, and Night Mode entities.
+The Anti-Swipe Revolution - Self-hosted dating platform focused on meaningful matches.
 
 ---
 
@@ -53,9 +50,13 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 ### Options
 
 ```yaml
-auto_install_integration: true
+app_base_url: ''
+dev_use_main_branch: false
+factory_reset: false
 github_token: ''
 log_level: info
+marketing_page_enabled: false
+test_mode: false
 ```
 
 ---

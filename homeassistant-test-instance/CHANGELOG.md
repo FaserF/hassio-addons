@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.6-dev-20260918-2102-6dd9ade (2026-09-18)
+
+- Release version 1.0.6-dev-20260918-2102-6dd9ade
+
+
 ## 1.0.5 (2026-09-18)
 
 ### 📦 Dependencies
