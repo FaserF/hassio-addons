@@ -1,7 +1,0 @@
-configuration:
-  config_path:
-    name: "Configuration Path"
-    description: "Path to the configuration file."
-  debug:
-    name: "Debug Mode"
-    description: "Enables detailed logging for troubleshooting."
