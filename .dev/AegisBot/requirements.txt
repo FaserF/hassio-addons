@@ -19,7 +19,7 @@ aiosqlite==0.22.1
 asyncpg==0.31.0
 google-genai==2.24.0
 pyotp==2.10.0
-webauthn==3.0.0
+webauthn==3.0.1
 PyYAML==6.0.3
 qrcode[pil]==8.2
 Pillow==12.3.0
