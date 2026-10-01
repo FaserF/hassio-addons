@@ -18,7 +18,7 @@ let cache = {
 };
 
 const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours cache
-const ERROR_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes backoff cache on rate-limit/error
+const ERROR_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour backoff cache on rate-limit/error
 
 function fetchJson(url) {
   return new Promise((resolve) => {
@@ -32,7 +32,11 @@ function fetchJson(url) {
     }
     const req = client.get(url, { headers }, (res) => {
       if (res.statusCode < 200 || res.statusCode >= 300) {
-        resolve(null);
+        if (res.statusCode === 403 || res.statusCode === 429) {
+          logger.debug({ statusCode: res.statusCode, url }, 'GitHub API rate-limited, backing off');
+        }
+        res.resume(); // Discard stream
+        resolve({ error: true, statusCode: res.statusCode });
         return;
       }
       let body = '';
@@ -41,14 +45,14 @@ function fetchJson(url) {
         try {
           resolve(JSON.parse(body));
         } catch (e) {
-          resolve(null);
+          resolve({ error: true, errorMsg: e.message });
         }
       });
     });
-    req.on('error', () => resolve(null));
+    req.on('error', (err) => resolve({ error: true, errorMsg: err.message }));
     req.setTimeout(8000, () => {
       req.destroy();
-      resolve(null);
+      resolve({ error: true, errorMsg: 'timeout' });
     });
   });
 }
@@ -58,6 +62,11 @@ export async function getLatestReleases(
   _currentAddonVer = null,
   currentIntVer = null
 ) {
+  const checkEnabled = process.env.ENABLE_VERSION_CHECK !== 'false';
+  if (!checkEnabled) {
+    return cache.data;
+  }
+
   const now = Date.now();
   if (!forceRefresh && now - cache.lastFetch < CACHE_TTL_MS && cache.lastFetch > 0) {
     return cache.data;
@@ -66,16 +75,24 @@ export async function getLatestReleases(
   // Always mark lastFetch even if errors occur so we don't spam GitHub on every poll
   cache.lastFetch = now;
 
+  let hadFetchError = false;
+
   try {
     // 1. Fetch Integration releases (FaserF/ha-whatsapp)
     let intReleaseList = await fetchJson(
       'https://api.github.com/repos/FaserF/ha-whatsapp/releases'
     );
-    if (!Array.isArray(intReleaseList)) {
+    if (!intReleaseList || intReleaseList.error || !Array.isArray(intReleaseList)) {
+      if (intReleaseList?.error) hadFetchError = true;
       const single = await fetchJson(
         'https://api.github.com/repos/FaserF/ha-whatsapp/releases/latest'
       );
-      if (single) intReleaseList = [single];
+      if (single && !single.error) {
+        intReleaseList = [single];
+        hadFetchError = false;
+      } else if (single?.error) {
+        hadFetchError = true;
+      }
     }
     const targetIntVer = currentIntVer || cache.data.latestIntegrationVersion;
     let intRelease = null;
@@ -115,9 +132,13 @@ export async function getLatestReleases(
     if (!cache.data.addonChangelog) {
       cache.data.addonChangelog = 'No release notes available.';
     }
+
+    if (hadFetchError) {
+      // Back off for ERROR_CACHE_TTL_MS so we don't spam GitHub on rate limits
+      cache.lastFetch = now - (CACHE_TTL_MS - ERROR_CACHE_TTL_MS);
+    }
   } catch (e) {
     logger.debug({ error: e.message }, 'Failed to check GitHub releases');
-    // Set fallback lastFetch on error so we back off for at least 15 minutes
     cache.lastFetch = now - (CACHE_TTL_MS - ERROR_CACHE_TTL_MS);
   }
 

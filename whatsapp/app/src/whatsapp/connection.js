@@ -4,6 +4,7 @@ import {
   DisconnectReason,
   Browsers,
   fetchLatestBaileysVersion,
+  fetchLatestWaWebVersion,
 } from '@whiskeysockets/baileys';
 import QRCode from 'qrcode';
 import path from 'path';
@@ -129,10 +130,21 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
   }
 
   try {
-    const { version, isLatest } = await fetchLatestBaileysVersion().catch((err) => {
-      logger.warn({ error: err.message }, '⚠️ Failed to fetch latest WA version, using fallback.');
-      return { version: [2, 3000, 1015901307], isLatest: false };
-    });
+    let versionResult;
+    try {
+      if (typeof fetchLatestWaWebVersion === 'function') {
+        versionResult = await fetchLatestWaWebVersion();
+      }
+    } catch (waWebErr) {
+      logger.debug({ error: waWebErr.message }, 'Failed to fetch latest WA Web version, falling back to Baileys version fetch');
+    }
+    if (!versionResult || !versionResult.version) {
+      versionResult = await fetchLatestBaileysVersion().catch((err) => {
+        logger.warn({ error: err.message }, '⚠️ Failed to fetch latest WA version, using fallback.');
+        return { version: [2, 3000, 1015901307], isLatest: false };
+      });
+    }
+    const { version, isLatest } = versionResult;
 
     logger.info(
       { version, isLatest, sessionId, sessionAuthDir, hasCreds },

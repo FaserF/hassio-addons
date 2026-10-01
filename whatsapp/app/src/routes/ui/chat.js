@@ -403,14 +403,17 @@ function renderChatList(chats) {
             ? `${t('common.group')} (${c.name.split(':')[1]})`
             : c.name;
 
+      const safeJsName = escapeJs(displayName);
+      const safeAttrName = escapeAttr(displayName);
+
       return `
-            <div class="chat-item ${isActive}" onclick="selectChat('${c.jid}', '${escapeHtml(displayName)}')">
+            <div class="chat-item ${isActive}" onclick="selectChat('${c.jid}', '${escapeAttr(safeJsName)}')">
                 <div class="chat-avatar" data-avatar-jid="${c.jid}">
                     ${avatarHtml}
                 </div>
                 <div class="chat-info">
                     <div class="chat-meta">
-                        <span class="chat-name" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</span>${badgesContainer}
+                        <span class="chat-name" title="${safeAttrName}">${escapeHtml(displayName)}</span>${badgesContainer}
                         <span class="chat-time">${timeStr}</span>
                     </div>
                     <div class="chat-last-msg">${escapeHtml(c.preview || t('chats.no_messages'))}</div>
@@ -674,7 +677,7 @@ function renderContactBlock(m) {
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px;">
-        ${cleanPhone ? `<button class="btn btn-primary btn-sm" onclick="selectChat('${cleanPhone}@s.whatsapp.net', '${escapeAttr(name)}')" style="font-size:11.5px;padding:3px 10px;"><i class="fas fa-comment-alt" style="margin-right:4px;"></i> Chat</button>` : ''}
+        ${cleanPhone ? `<button class="btn btn-primary btn-sm" onclick="selectChat('${cleanPhone}@s.whatsapp.net', '${escapeAttr(escapeJs(name))}')" style="font-size:11.5px;padding:3px 10px;"><i class="fas fa-comment-alt" style="margin-right:4px;"></i> Chat</button>` : ''}
         ${phone ? `<a href="tel:${phone}" class="btn btn-secondary btn-sm" style="font-size:11.5px;padding:3px 10px;text-decoration:none;"><i class="fas fa-phone-alt" style="margin-right:4px;"></i> Call</a>` : ''}
       </div>
     </div>`;

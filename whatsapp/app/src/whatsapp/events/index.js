@@ -902,8 +902,8 @@ export function handleIncomingMessages(session) {
         ];
         if (supportedMediaTypes.includes(messageType)) {
           try {
-            const mediaContent = msg.message[messageType];
-            caption = mediaContent.caption || '';
+            const mediaContent = realMsgObj?.[messageType] || msg.message?.[messageType];
+            caption = mediaContent?.caption || '';
             mediaType = messageType
               .replace('Message', '')
               .replace('documentWithCaption', 'document')
@@ -918,10 +918,11 @@ export function handleIncomingMessages(session) {
             };
             const friendlyLabel = friendlyLabelMap[mediaType] || `[${mediaType}]`;
             text = caption ? caption : friendlyLabel;
-            mimeType = mediaContent.mimetype;
+            mimeType = mediaContent?.mimetype;
 
+            const mediaMsg = realMsgObj?.[messageType] ? { ...msg, message: realMsgObj } : msg;
             const buffer = await downloadMediaMessage(
-              msg,
+              mediaMsg,
               'buffer',
               {},
               { logger: logger.child({ module: `media-dl-${session.id}` }) }
