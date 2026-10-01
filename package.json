@@ -4,7 +4,7 @@
   },
   "overrides": {
     "markdown-it": "^15.0.2",
-    "js-yaml": "^5.2.2",
+    "js-yaml": "^5.4.2",
     "brace-expansion": "5.0.12"
   }
 }
