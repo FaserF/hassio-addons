@@ -1,6 +1,6 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.4.0
 ARG KOMODO_VERSION=2.3.3
-FROM mongo:8.3 AS mongo
+FROM mongo:9.0 AS mongo
 FROM ghcr.io/moghtech/komodo-core:${KOMODO_VERSION} AS komodo
 FROM ${BUILD_FROM}
 
