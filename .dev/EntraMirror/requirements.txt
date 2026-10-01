@@ -12,7 +12,7 @@ python-jose[cryptography]==3.5.0
 PyJWT==2.15.1
 httpx==0.28.1
 bcrypt==5.0.0
-cryptography==50.0.1
+cryptography==50.0.2
 requests==2.34.2
 APScheduler==3.11.3
 mcp[server]>=2.1.1
