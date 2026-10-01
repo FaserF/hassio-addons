@@ -121,7 +121,12 @@ export function registerMessagingRoutes(app) {
         trackSent(session, number, `[Poll] ${pollTitle}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
-        trackFailure(session, req.body?.number, `[Poll] ${req.body?.name || req.body?.question || ''}`, err.message);
+        trackFailure(
+          session,
+          req.body?.number,
+          `[Poll] ${req.body?.name || req.body?.question || ''}`,
+          err.message
+        );
         res.status(500).json({ detail: err.message });
       }
     })
@@ -301,7 +306,12 @@ export function registerMessagingRoutes(app) {
         trackSent(session, number, `[Document] ${name}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
-        trackFailure(session, req.body?.number, `[Document] ${req.body?.fileName || 'document'}`, err.message);
+        trackFailure(
+          session,
+          req.body?.number,
+          `[Document] ${req.body?.fileName || 'document'}`,
+          err.message
+        );
         res.status(500).json({ detail: err.message });
       }
     })
@@ -530,7 +540,12 @@ export function registerMessagingRoutes(app) {
         trackSent(session, number, `[Contact] ${contactName}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
-        trackFailure(session, req.body?.number, `[Contact] ${req.body?.contactName || ''}`, err.message);
+        trackFailure(
+          session,
+          req.body?.number,
+          `[Contact] ${req.body?.contactName || ''}`,
+          err.message
+        );
         res.status(500).json({ detail: err.message });
       }
     })
@@ -761,7 +776,12 @@ export function registerMessagingRoutes(app) {
         trackSent(session, 'status@broadcast', `[Status Update] ${message || caption || ''}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
-        trackFailure(session, 'status@broadcast', `[Status Update] ${req.body?.message || req.body?.caption || ''}`, err.message);
+        trackFailure(
+          session,
+          'status@broadcast',
+          `[Status Update] ${req.body?.message || req.body?.caption || ''}`,
+          err.message
+        );
         res.status(500).json({ detail: err.message });
       }
     })

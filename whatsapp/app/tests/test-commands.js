@@ -571,7 +571,10 @@ async function runTests() {
   // 2. Even with prefixed '!help', non-admin in disabled/unconfigured private chat cannot execute commands
   const defaultPrefixedDmHandled = await processCommand(
     mockSession,
-    { key: { remoteJid: privateDmJid, fromMe: false, id: 'DM_MSG_2' }, message: { conversation: '!help' } },
+    {
+      key: { remoteJid: privateDmJid, fromMe: false, id: 'DM_MSG_2' },
+      message: { conversation: '!help' },
+    },
     '!help',
     privateSenderJid,
     false,
@@ -586,7 +589,10 @@ async function runTests() {
   // 3. Admin sender CAN execute prefixed '!help' in private chat
   const adminPrefixedDmHandled = await processCommand(
     mockSessionHelp,
-    { key: { remoteJid: privateDmJid, fromMe: false, id: 'DM_MSG_3' }, message: { conversation: '!help' } },
+    {
+      key: { remoteJid: privateDmJid, fromMe: false, id: 'DM_MSG_3' },
+      message: { conversation: '!help' },
+    },
     '!help',
     privateSenderJid,
     true, // admin
@@ -611,7 +617,9 @@ async function runTests() {
     adminBareDmHandled === false,
     'Bare word "help" for admin in private chat without allow_prefixless_private returns false'
   );
-  console.log('✅ PASSED: Bare word "help" for admin in private chat without allow_prefixless_private is blocked');
+  console.log(
+    '✅ PASSED: Bare word "help" for admin in private chat without allow_prefixless_private is blocked'
+  );
 
   // 5. When private chat explicitly has moderation + commands + allow_prefixless_private enabled
   const dmConfig = getGroupModerationConfig(privateDmJid);
@@ -632,7 +640,9 @@ async function runTests() {
     explicitlyAllowedBareHandled === true,
     'Bare word "help" is executed when allow_prefixless_private is explicitly enabled'
   );
-  console.log('✅ PASSED: Bare word "help" executes when allow_prefixless_private is explicitly enabled');
+  console.log(
+    '✅ PASSED: Bare word "help" executes when allow_prefixless_private is explicitly enabled'
+  );
 
   // Count total commands (deduplicated)
   const seen = new Set();

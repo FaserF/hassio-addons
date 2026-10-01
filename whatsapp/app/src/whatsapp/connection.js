@@ -136,11 +136,17 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         versionResult = await fetchLatestWaWebVersion();
       }
     } catch (waWebErr) {
-      logger.debug({ error: waWebErr.message }, 'Failed to fetch latest WA Web version, falling back to Baileys version fetch');
+      logger.debug(
+        { error: waWebErr.message },
+        'Failed to fetch latest WA Web version, falling back to Baileys version fetch'
+      );
     }
     if (!versionResult || !versionResult.version) {
       versionResult = await fetchLatestBaileysVersion().catch((err) => {
-        logger.warn({ error: err.message }, '⚠️ Failed to fetch latest WA version, using fallback.');
+        logger.warn(
+          { error: err.message },
+          '⚠️ Failed to fetch latest WA version, using fallback.'
+        );
         return { version: [2, 3000, 1015901307], isLatest: false };
       });
     }

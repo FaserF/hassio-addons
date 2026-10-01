@@ -290,7 +290,9 @@ export function getGroupModerationConfig(groupId) {
       allow_prefixless_private:
         existing.commands?.allow_prefixless_private !== undefined
           ? Boolean(existing.commands.allow_prefixless_private)
-          : Boolean(existing.allow_prefixless_private_commands || def.commands.allow_prefixless_private),
+          : Boolean(
+              existing.allow_prefixless_private_commands || def.commands.allow_prefixless_private
+            ),
     },
     antispam: {
       notify_bypassed_actions:
