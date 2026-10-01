@@ -1,4 +1,4 @@
-fastapi==0.142.1
+fastapi==0.142.2
 uvicorn[standard]==0.53.0
 sqlalchemy==2.1.1
 pydantic[email]==2.13.5
