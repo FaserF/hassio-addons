@@ -712,7 +712,6 @@ async def get_session():
 @app.get("/api/v1/status", dependencies=[Security(require_auth)])
 @app.get("/api/status", dependencies=[Security(require_auth)])
 async def get_status():
-    state.record_interaction("status", "Status polled by client")
     return {
         "email": state.email,
         "master_token": state.master_token,

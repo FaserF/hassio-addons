@@ -1152,50 +1152,96 @@
       }, 1500);
     }
 
+    function getStepProgress(step) {
+      switch (step) {
+        case 'navigating':
+          return { percent: 15, title: currentDict.step_navigating_title || '🌐 Connecting to Google', label: '15%' };
+        case 'filling_email':
+          return { percent: 35, title: currentDict.step_filling_email_title || '📧 Entering Account', label: '35%' };
+        case 'filling_password':
+          return { percent: 55, title: currentDict.step_verifying_password_title || '🔑 Verifying Credentials', label: '55%' };
+        case '2fa_prompt':
+          return { percent: 75, title: currentDict.prompt_number_title || '📱 Check your Smartphone', label: '75%' };
+        case '2fa_code':
+          return { percent: 80, title: currentDict.prompt_code_title || '🔐 Enter Verification Code', label: '80%' };
+        case '2fa_general':
+          return { percent: 75, title: currentDict.prompt_general_title || '📱 Confirm Security Prompt', label: '75%' };
+        case 'exchanging':
+          return { percent: 95, title: currentDict.step_exchanging_title || '✨ Generating Master Token', label: '95%' };
+        default:
+          return { percent: 10, title: currentDict.processing_title || '⏳ Authenticating...', label: '10%' };
+      }
+    }
+
     function showInteractive2FAModal() {
-      const title = currentDict.prompt_number_title || '📱 Check your Smartphone';
+      const initial = getStepProgress('navigating');
       const body = `
-        <div id="interactive2FABody" style="text-align:center;padding:1rem 0;">
-          <div style="font-size:2rem;margin-bottom:0.75rem;">⏳</div>
-          <div style="font-size:0.95rem;color:#cbd5e1;">${currentDict.processing || 'Authenticating with Google in background browser...'}</div>
+        <div id="interactive2FABody" style="text-align:center;padding:0.75rem 0;">
+          <div style="margin-bottom:1.25rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;color:#94a3b8;margin-bottom:0.4rem;">
+              <span id="2faProgressTitle">${initial.title}</span>
+              <span id="2faProgressPercent" style="font-weight:700;color:#60a5fa;">${initial.label}</span>
+            </div>
+            <div style="width:100%;height:8px;background:rgba(255,255,255,0.08);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);">
+              <div id="2faProgressBar" style="width:${initial.percent}%;height:100%;background:linear-gradient(90deg, #2563eb, #38bdf8);border-radius:999px;transition:width 0.4s ease;"></div>
+            </div>
+          </div>
+          <div id="interactive2FAStepContent">
+            <div style="font-size:2rem;margin-bottom:0.75rem;">⏳</div>
+            <div style="font-size:0.95rem;color:#cbd5e1;">${currentDict.processing || 'Authenticating with Google in background browser...'}</div>
+          </div>
         </div>
       `;
       const footer = `<button class="btn-action" onclick="cancel2FA()">${currentDict.btn_cancel_2fa || 'Cancel'}</button>`;
-      openModal(title, body, footer);
+      openModal(initial.title, body, footer);
     }
 
     function update2FAUI(step, twoFactor) {
-      const bodyEl = document.getElementById('interactive2FABody');
-      if (!bodyEl) return;
+      const prog = getStepProgress(step);
+      
+      const titleTextEl = document.getElementById('modalTitleText');
+      if (titleTextEl) titleTextEl.innerHTML = prog.title;
+
+      const pTitle = document.getElementById('2faProgressTitle');
+      if (pTitle) pTitle.innerText = prog.title;
+
+      const pPercent = document.getElementById('2faProgressPercent');
+      if (pPercent) pPercent.innerText = prog.label;
+
+      const pBar = document.getElementById('2faProgressBar');
+      if (pBar) pBar.style.width = prog.percent + '%';
+
+      const contentEl = document.getElementById('interactive2FAStepContent');
+      if (!contentEl) return;
 
       if (step === 'navigating') {
-        bodyEl.innerHTML = `
-          <div style="font-size:2rem;margin-bottom:0.75rem;">🌐</div>
+        contentEl.innerHTML = `
+          <div style="font-size:2.2rem;margin-bottom:0.75rem;">🌐</div>
           <div style="font-size:0.95rem;color:#cbd5e1;">${currentDict.step_navigating || 'Connecting to Google Authentication...'}</div>
         `;
       } else if (step === 'filling_email') {
-        bodyEl.innerHTML = `
-          <div style="font-size:2rem;margin-bottom:0.75rem;">📧</div>
+        contentEl.innerHTML = `
+          <div style="font-size:2.2rem;margin-bottom:0.75rem;">📧</div>
           <div style="font-size:0.95rem;color:#cbd5e1;">${currentDict.step_filling_email || 'Entering Google Account Email...'}</div>
         `;
       } else if (step === 'filling_password') {
-        bodyEl.innerHTML = `
-          <div style="font-size:2rem;margin-bottom:0.75rem;">🔑</div>
+        contentEl.innerHTML = `
+          <div style="font-size:2.2rem;margin-bottom:0.75rem;">🔑</div>
           <div style="font-size:0.95rem;color:#cbd5e1;">${currentDict.step_verifying_password || 'Verifying password...'}</div>
         `;
       } else if (step === '2fa_prompt') {
         const num = (twoFactor && twoFactor.number) ? twoFactor.number : '';
-        bodyEl.innerHTML = `
+        contentEl.innerHTML = `
           <div style="font-size:0.95rem;color:#cbd5e1;margin-bottom:1rem;">
             ${currentDict.prompt_number_desc || 'Google sent a security prompt. Select and tap the matching number on your phone:'}
           </div>
           <div style="display:inline-block;background:linear-gradient(135deg, #1e3a8a, #2563eb);color:#ffffff;font-size:2.8rem;font-weight:800;padding:0.75rem 2rem;border-radius:16px;box-shadow:0 0 25px rgba(37,99,235,0.5);letter-spacing:2px;margin-bottom:1rem;">
             ${num || '✓'}
           </div>
-          <div style="font-size:0.8rem;color:#94a3b8;">${twoFactor.text || (currentDict.waiting_phone_confirmation || 'Waiting for phone confirmation...')}</div>
+          <div style="font-size:0.83rem;color:#94a3b8;">${currentDict.waiting_phone_confirmation || 'Waiting for phone confirmation...'}</div>
         `;
       } else if (step === '2fa_code') {
-        bodyEl.innerHTML = `
+        contentEl.innerHTML = `
           <div style="font-size:0.95rem;color:#cbd5e1;margin-bottom:1rem;">
             ${currentDict.prompt_code_desc || 'Enter the 6-digit security code received via SMS or Authenticator App:'}
           </div>
@@ -1205,15 +1251,15 @@
           </form>
         `;
       } else if (step === '2fa_general') {
-        bodyEl.innerHTML = `
-          <div style="font-size:2rem;margin-bottom:0.75rem;">📱</div>
-          <div style="font-size:0.95rem;color:#cbd5e1;margin-bottom:0.5rem;">${currentDict.prompt_general_title || 'Google Security Prompt Active'}</div>
+        contentEl.innerHTML = `
+          <div style="font-size:2.2rem;margin-bottom:0.75rem;">📱</div>
+          <div style="font-size:0.98rem;font-weight:600;color:#cbd5e1;margin-bottom:0.4rem;">${currentDict.prompt_general_title || 'Google Security Prompt Active'}</div>
           <div style="font-size:0.85rem;color:#94a3b8;">${currentDict.prompt_general_desc || "Please tap 'Yes' on your smartphone or confirm the security prompt."}</div>
         `;
       } else if (step === 'exchanging') {
-        bodyEl.innerHTML = `
-          <div style="font-size:2rem;margin-bottom:0.75rem;">✨</div>
-          <div style="font-size:0.95rem;color:#4ade80;">${currentDict.exchanging_token || 'Generating & Saving Master Token...'}</div>
+        contentEl.innerHTML = `
+          <div style="font-size:2.2rem;margin-bottom:0.75rem;">✨</div>
+          <div style="font-size:0.98rem;font-weight:600;color:#4ade80;">${currentDict.exchanging_token || 'Generating & Saving Master Token...'}</div>
         `;
       }
     }
