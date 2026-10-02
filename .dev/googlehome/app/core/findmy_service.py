@@ -91,7 +91,7 @@ def generate_adm_token(email: str, master_token: str, android_id: str = "android
             return {"success": False, "error": res.get("Error", "Unknown OAuth error")}
     except Exception as err:
         _LOGGER.exception("ADM token generation failed: %s", err)
-        return {"success": False, "error": str(err)}
+        return {"success": False, "error": "ADM token generation failed"}
 
 
 def deploy_secrets_to_homeassistant(secrets_data: Dict[str, Any]) -> tuple[bool, str]:

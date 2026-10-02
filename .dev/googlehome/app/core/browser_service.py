@@ -499,7 +499,7 @@ class GoogleHomeBrowserService:
         except Exception as err:
             _LOGGER.exception("Error in Google Auth Sequence: %s", err)
             self.auth_step = "error"
-            self.auth_error = str(err)
+            self.auth_error = "Authentication sequence failed"
             self.auth_in_progress = False
 
     async def _click_continue_next(self) -> Optional[str]:
@@ -684,7 +684,7 @@ class GoogleHomeBrowserService:
         except Exception as err:
             _LOGGER.exception("Token exchange failed: %s", err)
             self.auth_step = "error"
-            self.auth_error = str(err)
+            self.auth_error = "Token exchange failed"
             self.auth_in_progress = False
 
     async def _attempt_shared_key_extraction(self, email: str) -> Optional[str]:

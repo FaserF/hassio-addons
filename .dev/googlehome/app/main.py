@@ -611,7 +611,7 @@ async def post_login(req: LoginRequest):
                 return {"success": True, "master_token": master_token, "step": "success"}
             else:
                 err_msg = res.get("Error", "Unknown")
-                state.last_error = f"Google Token error: {err_msg}"
+                state.last_error = "Google token exchange failed"
                 state.record_interaction("login", f"Failed: {err_msg}")
                 raise HTTPException(status_code=400, detail="Google rejected token exchange. Please verify your token.")
         except HTTPException:
@@ -789,9 +789,8 @@ async def post_generate_adm_token():
         state.save()
         return {"success": True, "token": res["token"], "message": "Find My ADM Token generated successfully"}
     else:
-        err = res.get("error", "Unknown error")
-        state.last_error = f"Find My ADM Token error: {err}"
-        raise HTTPException(status_code=400, detail=f"Failed to generate ADM Token: {err}")
+        state.last_error = "Find My ADM Token generation failed"
+        raise HTTPException(status_code=400, detail="Failed to generate ADM Token. Check credentials and try again.")
 
 
 @app.post("/api/findmy/set-shared-key")
@@ -1055,4 +1054,6 @@ async def post_install_integration(req: InstallIntegrationRequest):
 
     except Exception as err:
         _LOGGER.exception("Error installing integration %s: %s", slug, err)
-        raise HTTPException(status_code=500, detail=f"Installation failed: {err}") from err
+        raise HTTPException(
+            status_code=500, detail="Integration installation failed. Check add-on logs for details."
+        ) from err
