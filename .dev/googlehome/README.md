@@ -34,7 +34,6 @@
 
 It powers both **Google Home** speaker control and **Google Find My Device** Bluetooth / device tracker tracking in Home Assistant without manual command-line token extractions.
 
-
 ## ✨ Features
 
 - 🔑 **Master Token Generation:** Safely exchange credentials, Google App Passwords, or short-lived web tokens into permanent Master Tokens (`aas_et/...`).
@@ -46,7 +45,6 @@ It powers both **Google Home** speaker control and **Google Find My Device** Blu
 - 🖥️ **Modern Ingress Web UI:** Clean, responsive dark-mode web dashboard featuring live session status, interactive 2FA challenge handling, token export, and dedicated Google Home & Google Find My tabs.
 - 🔌 **Supervisor Auto-Discovery:** Seamless zero-touch handshake with the **[ha-googlehome](https://github.com/FaserF/ha-googlehome)** integration.
 - 📦 **Auto-Install & Updates:** Automatically installs and keeps the `ha-googlehome` custom integration up to date in Home Assistant.
-
 
 ## 🔗 Supported Integrations
 
