@@ -7,7 +7,7 @@
 [![Docker Image](https://img.shields.io/badge/docker-0.1.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-googlehome)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> Google Home & Google Find My Master Token Generator & Ingress Authentication Hub for Home Assistant.
+> Google Home Master Token Generator & Ingress Authentication Hub for Home Assistant.
 
 ---
 
@@ -34,7 +34,6 @@
 
 It powers both **Google Home** speaker control and **Google Find My Device** Bluetooth / device tracker tracking in Home Assistant without manual command-line token extractions.
 
----
 
 ## ✨ Features
 
@@ -48,7 +47,6 @@ It powers both **Google Home** speaker control and **Google Find My Device** Blu
 - 🔌 **Supervisor Auto-Discovery:** Seamless zero-touch handshake with the **[ha-googlehome](https://github.com/FaserF/ha-googlehome)** integration.
 - 📦 **Auto-Install & Updates:** Automatically installs and keeps the `ha-googlehome` custom integration up to date in Home Assistant.
 
----
 
 ## 🔗 Supported Integrations
 
@@ -68,25 +66,20 @@ This add-on provides authentication and tokens for the following Home Assistant 
 
 ## ⚙️ Configuration
 
-Configure the app via the **Configuration** tab in the Home Assistant App page:
-
-```yaml
-auto_install_integration: true
-github_token: ''
-log_level: info
-```
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ### Options
 
-| Option | Type | Description |
-| --- | --- | --- |
-| `auto_install_integration` | `bool` | Automatically download/update the `ha-googlehome` custom integration. |
-| `github_token` | `str` | Optional GitHub personal access token to prevent API rate limits when downloading releases. |
-| `log_level` | `str` | Logging level (`trace`, `debug`, `info`, `notice`, `warning`, `error`, `fatal`). |
+```yaml
+auto_install_integration: true
+auto_stop_timeout: 60
+github_token: ''
+log_level: info
+```
 
 ---
 
 ## 👨‍💻 Credits & License
 
 This project is open-source and available under the MIT License.
-Maintained by **[FaserF](https://github.com/FaserF)**.
+Maintained by **FaserF**.
