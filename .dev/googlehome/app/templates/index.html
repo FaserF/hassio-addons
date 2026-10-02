@@ -762,7 +762,7 @@
             <div class="status-label">
               <span data-i18n="lbl_findmy_adm">Find My ADM Token</span>
             </div>
-            <div class="status-value" style="font-family:monospace;font-size:0.8rem;word-break:break-all;">
+            <div class="status-value" id="findmy-adm-val" style="font-family:monospace;font-size:0.8rem;word-break:break-all;">
               {% if findmy_adm_token %}{{ findmy_adm_token[:16] }}...{% else %}<span style="color:var(--muted);" data-i18n="status_not_generated">Not generated yet</span>{% endif %}
             </div>
           </div>
@@ -772,7 +772,7 @@
               <span data-i18n="lbl_findmy_shared">E2EE Shared Key</span>
               <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_findmy_e2ee">Required to decrypt exact tracker locations.</span></span>
             </div>
-            <div class="status-value" style="font-family:monospace;font-size:0.8rem;word-break:break-all;color:{% if findmy_shared_key %}#4ade80{% else %}#f87171{% endif %};">
+            <div class="status-value" id="findmy-shared-val" style="font-family:monospace;font-size:0.8rem;word-break:break-all;color:{% if findmy_shared_key %}#4ade80{% else %}#f87171{% endif %};">
               {% if findmy_shared_key %}{{ findmy_shared_key[:16] }}... ✓{% else %}<span style="color:#f87171;" data-i18n="status_key_missing">Missing (Locations cannot be decrypted)</span>{% endif %}
             </div>
           </div>
@@ -1295,15 +1295,17 @@
       const wrapFm = document.getElementById('findmy-view-wrapper');
 
       if (tab === 'gh') {
-        btnGh.classList.add('active');
-        btnFm.classList.remove('active');
-        wrapGh.style.display = 'block';
-        wrapFm.style.display = 'none';
+        if (btnGh) btnGh.classList.add('active');
+        if (btnFm) btnFm.classList.remove('active');
+        if (wrapGh) wrapGh.style.display = 'block';
+        if (wrapFm) wrapFm.style.display = 'none';
+        try { localStorage.setItem('gh_active_tab', 'gh'); } catch (e) {}
       } else {
-        btnGh.classList.remove('active');
-        btnFm.classList.add('active');
-        wrapGh.style.display = 'none';
-        wrapFm.style.display = 'block';
+        if (btnGh) btnGh.classList.remove('active');
+        if (btnFm) btnFm.classList.add('active');
+        if (wrapGh) wrapGh.style.display = 'none';
+        if (wrapFm) wrapFm.style.display = 'block';
+        try { localStorage.setItem('gh_active_tab', 'findmy'); } catch (e) {}
       }
     }
 
@@ -1318,7 +1320,15 @@
         const data = await res.json();
         if (res.ok && data.success) {
           showToast('✓ ' + (currentDict.toast_findmy_adm_success || 'ADM Token generated successfully!'));
-          setTimeout(() => window.location.reload(), 1200);
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '✓ ' + (currentDict.btn_gen_adm || 'ADM Token Generated');
+          }
+          const admValEl = document.getElementById('findmy-adm-val');
+          if (admValEl && data.adm_token) {
+            admValEl.innerHTML = data.adm_token.substring(0, 16) + '... ✓';
+            admValEl.style.color = '#4ade80';
+          }
         } else {
           showErrorModal('ADM Token Generation', data.detail || 'Failed to generate ADM token.');
           if (btn) {
@@ -1439,7 +1449,11 @@
         const data = await res.json();
         if (res.ok && data.success) {
           showToast('✓ ' + (currentDict.toast_findmy_key_saved || 'E2EE Shared Key saved!'));
-          setTimeout(() => window.location.reload(), 1200);
+          const sharedValEl = document.getElementById('findmy-shared-val');
+          if (sharedValEl) {
+            sharedValEl.innerHTML = key.substring(0, 16) + '... ✓';
+            sharedValEl.style.color = '#4ade80';
+          }
         } else {
           showErrorModal('Save Failed', data.detail || 'Failed to save shared key.');
         }
@@ -1588,6 +1602,14 @@
       if (btnLang) btnLang.classList.add('active');
       loadI18n(initialLang);
       checkIntegrationsStatus();
+
+      // Restore active tab (Google Home or Google Find My)
+      try {
+        const savedTab = localStorage.getItem('gh_active_tab');
+        if (savedTab === 'findmy') {
+          switchMainTab('findmy');
+        }
+      } catch (e) {}
     });
   </script>
 </body>
