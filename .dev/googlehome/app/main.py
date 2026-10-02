@@ -612,7 +612,8 @@ async def post_login(req: LoginRequest):
             else:
                 err_msg = res.get("Error", "Unknown")
                 state.last_error = "Google token exchange failed"
-                state.record_interaction("login", f"Failed: {err_msg}")
+                _LOGGER.warning("Google token exchange rejected: %s", err_msg)
+                state.record_interaction("login", "Token exchange rejected by Google")
                 raise HTTPException(status_code=400, detail="Google rejected token exchange. Please verify your token.")
         except HTTPException:
             raise
