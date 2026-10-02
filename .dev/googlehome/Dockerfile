@@ -11,7 +11,7 @@ ENV APP_UNSUPPORTED="false"
 
 # 1. Install Alpine packages
 # hadolint ignore=DL3018
-RUN apk add --no-cache python3 py3-pip chromium ttf-freefont ca-certificates curl jq "dos2unix~=7.5"
+RUN apk add --no-cache python3 py3-pip chromium ttf-freefont ca-certificates curl jq git unzip "dos2unix~=7.5"
 
 # 2. Set workdir
 WORKDIR /opt/googlehome
