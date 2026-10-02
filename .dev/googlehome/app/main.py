@@ -359,6 +359,7 @@ def on_shared_key_acquired(email: str, shared_key_hex: str) -> None:
     # Also auto-deploy secrets.json if integration path exists
     try:
         from .core.findmy_service import deploy_secrets_to_homeassistant
+
         bundle = {
             "googleHomeUsername": email,
             "aas_token": state.master_token,
@@ -545,6 +546,7 @@ async def post_logout():
 
 # ── Google Find My Integration Endpoints ─────────────────────────────────────
 
+
 class FindMySharedKeyRequest(BaseModel):
     shared_key: str
 
@@ -657,4 +659,3 @@ async def post_findmy_deploy():
         return {"success": True, "path": path_or_msg, "message": f"Successfully written to {path_or_msg}"}
     else:
         return {"success": False, "message": path_or_msg}
-

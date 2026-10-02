@@ -659,7 +659,10 @@ class GoogleHomeBrowserService:
     async def _attempt_shared_key_extraction(self, email: str) -> Optional[str]:
         """Attempt to retrieve the Google Find My E2EE Shared Key from the active browser session."""
         try:
-            from .findmy_service import get_security_domain_request_url, parse_vault_shared_keys
+            from .findmy_service import (
+                get_security_domain_request_url,
+                parse_vault_shared_keys,
+            )
 
             sec_url = get_security_domain_request_url()
             _LOGGER.info("Navigating to Find My E2EE security domain unlock: %s", sec_url)
@@ -690,7 +693,10 @@ class GoogleHomeBrowserService:
                 await asyncio.sleep(0.5)
                 res = await self.cdp.send_cmd(
                     "Runtime.evaluate",
-                    {"expression": "window.__vaultKeysResult ? JSON.stringify(window.__vaultKeysResult) : null", "returnByValue": True},
+                    {
+                        "expression": "window.__vaultKeysResult ? JSON.stringify(window.__vaultKeysResult) : null",
+                        "returnByValue": True,
+                    },
                 )
                 val = res.get("value") if res else None
                 if val and isinstance(val, str):
