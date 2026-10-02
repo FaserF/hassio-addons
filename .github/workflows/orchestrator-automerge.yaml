@@ -391,12 +391,16 @@ jobs:
           # Default to skip=true, only set to false after successful check
           echo "skip=true" >> "$GITHUB_OUTPUT"
 
-          if ! labels=$(gh pr view "$PR_NUMBER" --json labels --jq '.labels[].name'); then
-            echo "Error: Failed to fetch labels for PR #$PR_NUMBER"
-            exit 1
+          PR_INFO=$(gh pr view "$PR_NUMBER" --json labels,isDraft)
+          IS_DRAFT=$(echo "$PR_INFO" | jq -r '.isDraft')
+
+          if [ "$IS_DRAFT" = "true" ]; then
+            echo "📝 PR #$PR_NUMBER is still a draft. Skipping auto-merge."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-          if echo "$labels" | grep -q "no-merge"; then
+          if echo "$PR_INFO" | jq -r '.labels[].name' | grep -q "no-merge"; then
             echo "🛑 'no-merge' label found. Skipping auto-merge."
             echo "skip=true" >> "$GITHUB_OUTPUT"
             bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
