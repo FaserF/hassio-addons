@@ -7,7 +7,7 @@
 [![Docker Image](https://img.shields.io/badge/docker-0.1.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-googlehome)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> Google Home Master Token Generator & Ingress Authentication Hub for Home Assistant.
+> Google Home & Google Find My Master Token Generator & Ingress Authentication Hub for Home Assistant.
 
 ---
 
@@ -30,27 +30,45 @@
 
 ## 📖 About
 
+**Google Home Token Hub** is an authentication gateway and token management add-on for Home Assistant. It simplifies Google authentication by automatically extracting permanent Master Tokens (`aas_et/...`), generating Spot/Nova API credentials, and handling End-to-End Encryption (E2EE) shared keys.
+
+It powers both **Google Home** speaker control and **Google Find My Device** Bluetooth / device tracker tracking in Home Assistant without manual command-line token extractions.
+
+---
+
 ## ✨ Features
 
-- 🔑 **Master Token Generation:** Safely exchange short-lived web tokens or Google App Passwords into permanent Master Tokens (`aas_et/...`).
-- 🖥️ **Modern Ingress Web UI:** Clean, responsive dark-mode web dashboard displaying live token status and account linkage.
-- 🔌 **Supervisor Auto-Discovery:** Seamless zero-touch handshake with the [Google Home Integration](https://github.com/FaserF/ha-googlehome).
+- 🔑 **Master Token Generation:** Safely exchange credentials, Google App Passwords, or short-lived web tokens into permanent Master Tokens (`aas_et/...`).
+- 📍 **Google Find My Device Hub:**
+  - Dedicated authentication hub for the **[BSkando/GoogleFindMy-HA](https://github.com/BSkando/GoogleFindMy-HA)** integration.
+  - Automatically mints ADM (Android Device Manager) OAuth tokens for Spot & Nova APIs.
+  - Supports Google Accounts security domain unlock to retrieve End-to-End Encryption (E2EE) shared keys (`finder_hw`) required to decrypt real-time tracker locations.
+  - Generates ready-to-use `secrets.json` and can deploy it directly into Home Assistant's `/config/custom_components/googlefindmy/Auth/secrets.json` with a single click.
+- 🖥️ **Modern Ingress Web UI:** Clean, responsive dark-mode web dashboard featuring live session status, interactive 2FA challenge handling, token export, and dedicated Google Home & Google Find My tabs.
+- 🔌 **Supervisor Auto-Discovery:** Seamless zero-touch handshake with the **[ha-googlehome](https://github.com/FaserF/ha-googlehome)** integration.
 - 📦 **Auto-Install & Updates:** Automatically installs and keeps the `ha-googlehome` custom integration up to date in Home Assistant.
 
-## 🔗 Related Integration
+---
 
-This add-on works together with the **[ha-googlehome Home Assistant Custom Integration](https://github.com/FaserF/ha-googlehome)**:
+## 🔗 Supported Integrations
 
-- [ha-googlehome on GitHub](https://github.com/FaserF/ha-googlehome)
-- Provides 100% local control, alarms, timers, volume, Do Not Disturb, and Night Mode entities.
+This add-on provides authentication and tokens for the following Home Assistant integrations:
+
+1. **[ha-googlehome](https://github.com/FaserF/ha-googlehome)**
+   - Custom Home Assistant integration for Google Home / Nest devices.
+   - Provides 100% local control, alarms, timers, volume control, Do Not Disturb, and Night Mode switches.
+   - Auto-discovered and auto-configured directly by this add-on.
+
+2. **[GoogleFindMy-HA (BSkando/GoogleFindMy-HA)](https://github.com/BSkando/GoogleFindMy-HA)**
+   - Google Find My Device tracker integration for Home Assistant.
+   - Uses the ADM OAuth token and E2EE shared key generated in this add-on to track Chipolo, Pebblebee, Pixel, and other Google Find My network trackers.
+   - Supports 1-click automatic secrets deployment straight to the integration folder.
 
 ---
 
 ## ⚙️ Configuration
 
-Configure the app via the **Configuration** tab in the Home Assistant App page.
-
-### Options
+Configure the app via the **Configuration** tab in the Home Assistant App page:
 
 ```yaml
 auto_install_integration: true
@@ -58,9 +76,17 @@ github_token: ''
 log_level: info
 ```
 
+### Options
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `auto_install_integration` | `bool` | Automatically download/update the `ha-googlehome` custom integration. |
+| `github_token` | `str` | Optional GitHub personal access token to prevent API rate limits when downloading releases. |
+| `log_level` | `str` | Logging level (`trace`, `debug`, `info`, `notice`, `warning`, `error`, `fatal`). |
+
 ---
 
 ## 👨‍💻 Credits & License
 
 This project is open-source and available under the MIT License.
-Maintained by **FaserF**.
+Maintained by **[FaserF](https://github.com/FaserF)**.

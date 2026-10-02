@@ -24,6 +24,33 @@ DATA_DIR = os.getenv("DATA_DIR", "/data")
 SESSION_FILE = os.path.join(DATA_DIR, "session.json")
 
 
+def get_addon_options() -> dict:
+    """Read add-on configuration options from /data/options.json."""
+    options_path = os.path.join(DATA_DIR, "options.json")
+    if os.path.exists(options_path):
+        try:
+            with open(options_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as err:
+            _LOGGER.warning("Could not read options.json: %s", err)
+    return {}
+
+
+def get_auto_stop_timeout_minutes() -> int:
+    """Retrieve auto-stop timeout in minutes (default 60, 0 to disable)."""
+    env_val = os.getenv("AUTO_STOP_TIMEOUT")
+    if env_val and env_val.isdigit():
+        return int(env_val)
+    options = get_addon_options()
+    val = options.get("auto_stop_timeout")
+    if val is not None:
+        try:
+            return int(val)
+        except (ValueError, TypeError):
+            pass
+    return 60
+
+
 def get_addon_version() -> str:
     """Retrieve the current Google Home add-on version dynamically from Supervisor."""
     supervisor_token = os.getenv("SUPERVISOR_TOKEN")
@@ -72,36 +99,163 @@ def get_addon_version() -> str:
     return env_ver.strip() if env_ver else (dynamic_ver.strip() if dynamic_ver else "0.1.0")
 
 
-def get_integration_version() -> str:
-    """Retrieve locally installed Google Home custom integration version."""
+INTEGRATION_SPECS = {
+    "google_home": {
+        "slug": "google_home",
+        "name": "ha-googlehome",
+        "title": "Google Home",
+        "category": "Speakers & Displays",
+        "repo": "FaserF/ha-googlehome",
+        "folder": "google_home",
+        "manifest_slug": "google_home",
+        "hacs_url": "https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=ha-googlehome&category=integration",
+        "github_url": "https://github.com/FaserF/ha-googlehome",
+    },
+    "googlefindmy": {
+        "slug": "googlefindmy",
+        "name": "GoogleFindMy-HA",
+        "title": "Google Find My Device",
+        "category": "Trackers & Tags",
+        "repo": "BSkando/GoogleFindMy-HA",
+        "folder": "googlefindmy",
+        "manifest_slug": "googlefindmy",
+        "hacs_url": "https://my.home-assistant.io/redirect/hacs_repository/?owner=BSkando&repository=GoogleFindMy-HA&category=integration",
+        "github_url": "https://github.com/BSkando/GoogleFindMy-HA",
+    },
+}
+
+_GITHUB_CACHE: dict[str, dict[str, Any]] = {}
+_LAST_ACTIVITY_TIME: float = time.time()
+INSTALL_STATE_FILE = os.path.join(DATA_DIR, "install_state.json")
+
+
+def update_activity_timestamp() -> None:
+    """Record user/API activity to reset the auto-stop inactivity timer."""
+    global _LAST_ACTIVITY_TIME
+    _LAST_ACTIVITY_TIME = time.time()
+
+
+def get_pending_restart_state() -> dict[str, Any]:
+    """Check if an integration install/update occurred and Home Assistant core hasn't restarted yet."""
+    if not os.path.exists(INSTALL_STATE_FILE):
+        return {"restart_required": False, "pending_integrations": []}
+    try:
+        with open(INSTALL_STATE_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data
+    except Exception:
+        return {"restart_required": False, "pending_integrations": []}
+
+
+def set_pending_restart_state(integration_slug: str) -> None:
+    """Mark an integration as installed/updated pending Home Assistant restart."""
+    os.makedirs(DATA_DIR, exist_ok=True)
+    state_data = get_pending_restart_state()
+    state_data["restart_required"] = True
+    pending = set(state_data.get("pending_integrations", []))
+    pending.add(integration_slug)
+    state_data["pending_integrations"] = list(pending)
+    state_data["updated_at"] = time.time()
+    try:
+        with open(INSTALL_STATE_FILE, "w", encoding="utf-8") as f:
+            json.dump(state_data, f, indent=2)
+    except Exception as err:
+        _LOGGER.warning("Could not save install state: %s", err)
+
+
+def clear_pending_restart_state() -> None:
+    """Clear restart required flag."""
+    if os.path.exists(INSTALL_STATE_FILE):
+        try:
+            os.remove(INSTALL_STATE_FILE)
+        except Exception:
+            pass
+
+
+def get_installed_integration_manifest(slug: str) -> Optional[dict]:
+    """Retrieve parsed manifest.json for an installed integration if present."""
     ha_cfg = os.getenv("HA_CONFIG_ROOT", "/config")
+    folder = INTEGRATION_SPECS.get(slug, {}).get("folder", slug)
     candidates = [
-        os.path.join(ha_cfg, "custom_components", "google_home", "manifest.json"),
-        "/config/custom_components/google_home/manifest.json",
-        "/homeassistant/custom_components/google_home/manifest.json",
-        "custom_components/google_home/manifest.json",
-        "../ha-googlehome/custom_components/google_home/manifest.json",
-        os.path.join(
-            os.path.dirname(__file__),
-            "..",
-            "..",
-            "ha-googlehome",
-            "custom_components",
-            "google_home",
-            "manifest.json",
-        ),
+        os.path.join(ha_cfg, "custom_components", folder, "manifest.json"),
+        f"/config/custom_components/{folder}/manifest.json",
+        f"/homeassistant/custom_components/{folder}/manifest.json",
+        f"custom_components/{folder}/manifest.json",
+        os.path.join(os.path.dirname(__file__), "..", "..", folder, "custom_components", folder, "manifest.json"),
     ]
     for path in candidates:
         if os.path.exists(path):
             try:
                 with open(path, "r", encoding="utf-8") as f:
-                    manifest = json.load(f)
-                    ver = manifest.get("version")
-                    if ver:
-                        return str(ver).strip()
-            except Exception:
-                pass
-    return "1.0.0"
+                    return json.load(f)
+            except Exception as err:
+                _LOGGER.debug("Error reading %s: %s", path, err)
+    return None
+
+
+def get_integration_version(slug: str = "google_home") -> Optional[str]:
+    """Retrieve locally installed integration version."""
+    manifest = get_installed_integration_manifest(slug)
+    if manifest and manifest.get("version"):
+        return str(manifest.get("version")).strip()
+    return None
+
+
+async def fetch_latest_github_release(repo: str) -> Optional[str]:
+    """Fetch latest release tag from GitHub API with in-memory caching."""
+    now = time.time()
+    cached = _GITHUB_CACHE.get(repo)
+    if cached and (now - cached.get("timestamp", 0) < 900):  # 15 minutes cache
+        return cached.get("version")
+
+    headers = {
+        "User-Agent": "HomeAssistant-GoogleHome-Addon",
+        "Accept": "application/vnd.github.v3+json",
+    }
+    gh_token = os.getenv("GITHUB_TOKEN") or get_addon_options().get("github_token")
+    if gh_token:
+        headers["Authorization"] = f"Bearer {gh_token}"
+
+    url = f"https://api.github.com/repos/{repo}/releases/latest"
+    try:
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=4)) as resp,
+        ):
+            if resp.status == 200:
+                data = await resp.json()
+                tag = data.get("tag_name") or data.get("name")
+                if tag:
+                    tag_clean = str(tag).strip().lstrip("v")
+                    _GITHUB_CACHE[repo] = {"version": tag_clean, "timestamp": now}
+                    return tag_clean
+            elif resp.status == 404:
+                # Try tags endpoint if no formal release
+                tags_url = f"https://api.github.com/repos/{repo}/tags"
+                async with session.get(tags_url, headers=headers, timeout=aiohttp.ClientTimeout(total=4)) as tag_resp:
+                    if tag_resp.status == 200:
+                        tags_data = await tag_resp.json()
+                        if tags_data and isinstance(tags_data, list):
+                            tag_clean = str(tags_data[0].get("name", "")).strip().lstrip("v")
+                            if tag_clean:
+                                _GITHUB_CACHE[repo] = {"version": tag_clean, "timestamp": now}
+                                return tag_clean
+    except Exception as err:
+        _LOGGER.debug("GitHub release check for %s failed: %s", repo, err)
+
+    return cached.get("version") if cached else None
+
+
+def compare_is_update_available(installed_ver: Optional[str], latest_ver: Optional[str]) -> bool:
+    """Compare semver strings to determine if an update is available."""
+    if not installed_ver or not latest_ver:
+        return False
+    try:
+        inst_parts = [int(p) for p in installed_ver.lstrip("v").split("-")[0].split(".") if p.isdigit()]
+        lat_parts = [int(p) for p in latest_ver.lstrip("v").split("-")[0].split(".") if p.isdigit()]
+        return lat_parts > inst_parts
+    except Exception:
+        return installed_ver.lstrip("v") != latest_ver.lstrip("v")
 
 
 class TokenState:
@@ -199,11 +353,48 @@ async def require_auth(
     raise HTTPException(status_code=403, detail="Forbidden: Internal network or Ingress required")
 
 
+async def auto_stop_inactivity_worker() -> None:
+    """Monitor inactivity and trigger add-on shutdown after timeout."""
+    _LOGGER.info("Starting auto-stop inactivity monitor...")
+    while True:
+        await asyncio.sleep(30)
+        timeout_min = get_auto_stop_timeout_minutes()
+        if timeout_min <= 0:
+            continue
+
+        timeout_sec = timeout_min * 60
+        idle_duration = time.time() - _LAST_ACTIVITY_TIME
+        if idle_duration >= timeout_sec:
+            _LOGGER.warning(
+                "Add-on inactive for %s minutes (threshold: %s min). Initiating graceful shutdown via Supervisor...",
+                int(idle_duration // 60),
+                timeout_min,
+            )
+            supervisor_token = os.getenv("SUPERVISOR_TOKEN")
+            if supervisor_token:
+                try:
+                    async with (
+                        aiohttp.ClientSession() as session,
+                        session.post(
+                            "http://supervisor/addons/self/stop",
+                            headers={"Authorization": f"Bearer {supervisor_token}"},
+                            timeout=aiohttp.ClientTimeout(total=5),
+                        ) as resp,
+                    ):
+                        _LOGGER.info("Supervisor stop response: status %s", resp.status)
+                except Exception as err:
+                    _LOGGER.error("Failed to request Supervisor stop: %s", err)
+            else:
+                _LOGGER.info("Standalone mode: auto-stop threshold reached, stopping event loop.")
+            break
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     _LOGGER.info("Starting Google Home Token Hub...")
     asyncio.create_task(register_supervisor_discovery())
     asyncio.create_task(browser_service.start_chromium())
+    asyncio.create_task(auto_stop_inactivity_worker())
     yield
 
 
@@ -251,6 +442,8 @@ app = FastAPI(title="Google Home Token Hub", lifespan=lifespan)
 async def ingress_middleware(request: Request, call_next):
     """Handle Home Assistant Ingress dynamic subpath prefix and normalize slashes."""
     import re
+
+    update_activity_timestamp()
 
     path = request.scope.get("path", "/")
     path = re.sub(r"/+", "/", path)
@@ -659,3 +852,154 @@ async def post_findmy_deploy():
         return {"success": True, "path": path_or_msg, "message": f"Successfully written to {path_or_msg}"}
     else:
         return {"success": False, "message": path_or_msg}
+
+
+class InstallIntegrationRequest(BaseModel):
+    integration: str
+
+
+@app.get("/api/integrations/status")
+@app.get("/api/v1/integrations/status")
+async def get_integrations_status():
+    """Return status, versions, update checks, and restart states for supported integrations."""
+    update_activity_timestamp()
+    restart_state = get_pending_restart_state()
+    integrations_list = []
+
+    for slug, spec in INTEGRATION_SPECS.items():
+        manifest = get_installed_integration_manifest(slug)
+        is_installed = manifest is not None
+        installed_version = manifest.get("version") if manifest else None
+        latest_version = await fetch_latest_github_release(spec["repo"])
+        update_available = compare_is_update_available(installed_version, latest_version) if is_installed else False
+        is_pending_restart = slug in restart_state.get("pending_integrations", [])
+
+        integrations_list.append(
+            {
+                "slug": slug,
+                "name": spec["name"],
+                "title": spec["title"],
+                "category": spec["category"],
+                "repo": spec["repo"],
+                "is_installed": is_installed,
+                "installed_version": installed_version,
+                "latest_version": latest_version,
+                "update_available": update_available,
+                "is_pending_restart": is_pending_restart,
+                "hacs_url": spec["hacs_url"],
+                "github_url": spec["github_url"],
+            }
+        )
+
+    return {
+        "integrations": integrations_list,
+        "restart_required": restart_state.get("restart_required", False),
+        "pending_integrations": restart_state.get("pending_integrations", []),
+        "auto_stop_timeout": get_auto_stop_timeout_minutes(),
+    }
+
+
+@app.post("/api/integrations/install")
+@app.post("/api/v1/integrations/install")
+async def post_install_integration(req: InstallIntegrationRequest):
+    """Download and install/update an integration directly into /config/custom_components/."""
+    update_activity_timestamp()
+    slug = req.integration.strip()
+    if slug not in INTEGRATION_SPECS:
+        raise HTTPException(status_code=400, detail=f"Unknown integration slug '{slug}'")
+
+    spec = INTEGRATION_SPECS[slug]
+    ha_cfg = os.getenv("HA_CONFIG_ROOT", "/config")
+    target_components_dir = os.path.join(ha_cfg, "custom_components")
+    target_dir = os.path.join(target_components_dir, spec["folder"])
+
+    repo = spec["repo"]
+    zip_url = f"https://github.com/{repo}/archive/refs/heads/master.zip"
+    # Or fetch release zip if latest release exists
+    latest_ver = await fetch_latest_github_release(repo)
+    if latest_ver:
+        zip_url = f"https://github.com/{repo}/archive/refs/tags/v{latest_ver}.zip"
+
+    headers = {
+        "User-Agent": "HomeAssistant-GoogleHome-Addon",
+        "Accept": "*/*",
+    }
+    gh_token = os.getenv("GITHUB_TOKEN") or get_addon_options().get("github_token")
+    if gh_token:
+        headers["Authorization"] = f"Bearer {gh_token}"
+
+    import io
+    import zipfile
+
+    _LOGGER.info("Starting 1-click installation of %s from %s...", spec["name"], zip_url)
+    zip_bytes = None
+    try:
+        async with aiohttp.ClientSession() as session:
+            # Try specific release zip, fall back to master branch zip
+            for candidate_url in [
+                zip_url,
+                f"https://github.com/{repo}/archive/refs/heads/master.zip",
+                f"https://github.com/{repo}/archive/refs/heads/main.zip",
+            ]:
+                try:
+                    async with session.get(
+                        candidate_url, headers=headers, timeout=aiohttp.ClientTimeout(total=20)
+                    ) as resp:
+                        if resp.status == 200:
+                            zip_bytes = await resp.read()
+                            break
+                except Exception as dl_err:
+                    _LOGGER.debug("Download retry from %s: %s", candidate_url, dl_err)
+
+        if not zip_bytes:
+            raise HTTPException(status_code=502, detail=f"Failed to download repository archive for {spec['name']}.")
+
+        zf = zipfile.ZipFile(io.BytesIO(zip_bytes))
+        prefix_folder = f"custom_components/{spec['folder']}/"
+        # Find where the component folder is inside the zip archive
+        matching_members = [m for m in zf.namelist() if f"/{prefix_folder}" in m or m.startswith(prefix_folder)]
+
+        if not matching_members:
+            # Maybe the repo root is the component (fallback check)
+            matching_members = [m for m in zf.namelist() if "manifest.json" in m]
+            if not matching_members:
+                raise HTTPException(status_code=500, detail="Could not locate custom_components folder in archive.")
+
+        # Determine root common prefix for the component
+        manifest_member = next(
+            (m for m in zf.namelist() if m.endswith(f"{spec['folder']}/manifest.json") or m.endswith("/manifest.json")),
+            None,
+        )
+        if not manifest_member:
+            raise HTTPException(status_code=500, detail="Could not find manifest.json inside download.")
+
+        component_base_prefix = os.path.dirname(manifest_member)
+
+        os.makedirs(target_dir, exist_ok=True)
+        for member in zf.namelist():
+            if member.startswith(component_base_prefix + "/") and not member.endswith("/"):
+                rel_path = member[len(component_base_prefix) + 1 :]
+                dest_path = os.path.join(target_dir, rel_path)
+                os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+                with open(dest_path, "wb") as f_out:
+                    f_out.write(zf.read(member))
+
+        set_pending_restart_state(slug)
+        state.record_interaction("install", f"Installed/Updated {spec['name']}")
+        _LOGGER.info("Successfully installed %s into %s", spec["name"], target_dir)
+
+        # Clear cached version to reflect update
+        _GITHUB_CACHE.pop(repo, None)
+
+        return {
+            "success": True,
+            "integration": slug,
+            "name": spec["name"],
+            "installed_path": target_dir,
+            "restart_required": True,
+            "message": f"Successfully installed {spec['name']}. Home Assistant restart required!",
+        }
+
+    except Exception as err:
+        _LOGGER.exception("Error installing integration %s: %s", slug, err)
+        raise HTTPException(status_code=500, detail=f"Installation failed: {err}") from err

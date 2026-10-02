@@ -569,8 +569,11 @@
           <a class="version-tag" href="https://github.com/FaserF/hassio-addons/tree/master/googlehome" target="_blank" rel="noopener noreferrer">
             <span data-i18n="lbl_addon_version">Add-on</span>: <strong style="color:#cbd5e1;">{% if addon_version and addon_version != '—' %}{% if not addon_version.startswith('v') %}v{% endif %}{{ addon_version }}{% else %}—{% endif %}</strong>
           </a>
-          <a class="version-tag" href="https://github.com/FaserF/ha-googlehome" target="_blank" rel="noopener noreferrer">
-            <span data-i18n="lbl_integration_version">Integration</span>: <strong style="color:#cbd5e1;">{% if integration_version and integration_version != '—' %}{% if not integration_version.startswith('v') %}v{% endif %}{{ integration_version }}{% else %}—{% endif %}</strong>
+          <a class="version-tag" href="https://github.com/FaserF/ha-googlehome" target="_blank" rel="noopener noreferrer" title="ha-googlehome integration repository">
+            <span>🏠 <span data-i18n="lbl_integration_version">ha-googlehome</span></span>: <strong style="color:#cbd5e1;">{% if integration_version and integration_version != '—' %}{% if not integration_version.startswith('v') %}v{% endif %}{{ integration_version }}{% else %}—{% endif %}</strong>
+          </a>
+          <a class="version-tag" href="https://github.com/BSkando/GoogleFindMy-HA" target="_blank" rel="noopener noreferrer" title="GoogleFindMy-HA integration repository">
+            <span>📍 GoogleFindMy-HA ↗</span>
           </a>
         </div>
       </div>
@@ -596,6 +599,39 @@
         📍 <span data-i18n="tab_findmy">Google Find My (Trackers)</span>
         {% if findmy_shared_key %}<span style="color:#4ade80;font-size:0.75rem;margin-left:4px;">●</span>{% endif %}
       </button>
+    </div>
+
+    <!-- Integrations Overview & Quick Install Card -->
+    <div class="guide-card" id="integration-manager-card" style="border: 1px solid rgba(59, 130, 246, 0.3); background: rgba(15, 23, 42, 0.6); margin-bottom: 1.5rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem;">
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <span style="font-size:1.15rem;">🧩</span>
+          <span style="font-weight:700;font-size:0.95rem;color:#e2e8f0;" data-i18n="integrations_hub_title">Compatible Home Assistant Integrations</span>
+        </div>
+        <button class="btn-action" style="flex:none;padding:0.25rem 0.6rem;font-size:0.75rem;" onclick="checkIntegrationsStatus(true)">
+          🔄 <span data-i18n="btn_refresh_status">Refresh</span>
+        </button>
+      </div>
+
+      <!-- Pending HA Restart Banner -->
+      <div id="ha-restart-alert" class="hidden" style="background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span style="font-size: 1.2rem;">⚠️</span>
+          <div>
+            <div style="font-weight: 700; color: #fef08a; font-size: 0.85rem;" data-i18n="alert_restart_title">Home Assistant Restart Required</div>
+            <div style="font-size: 0.78rem; color: #fde047;" data-i18n="alert_restart_desc">An integration was newly installed or updated. Please restart Home Assistant to load the component.</div>
+          </div>
+        </div>
+        <a href="https://my.home-assistant.io/redirect/server_controls/" target="_blank" rel="noopener noreferrer" class="btn-modal-link" style="margin: 0; padding: 0.35rem 0.75rem; font-size: 0.78rem; background: #eab308; color: #000; text-decoration: none; font-weight: 700; border-radius: 6px;">
+          ⚡ <span data-i18n="btn_restart_ha">Restart HA Controls ↗</span>
+        </a>
+      </div>
+
+      <!-- Integrations Grid -->
+      <div id="integrations-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.85rem;">
+        <!-- Filled dynamically by JavaScript -->
+        <div style="color: var(--muted); font-size: 0.82rem; padding: 0.5rem 0;" data-i18n="loading_integrations">⏳ Loading integration status...</div>
+      </div>
     </div>
 
     <!-- Google Home View Wrapper -->
@@ -673,7 +709,7 @@
       </div>
       <div class="guide-step">
         <div class="guide-step-title" data-i18n="step3_title">3. Instant Discovery in Home Assistant</div>
-        <div class="guide-step-desc" data-i18n="step3_desc">Home Assistant automatically connects with the Token Hub and imports all your Google Home speakers and devices.</div>
+        <div class="guide-step-desc" data-i18n="step3_desc">Home Assistant automatically connects with the Token Hub and imports all your Google Home speakers and devices via <a href="https://github.com/FaserF/ha-googlehome" target="_blank" rel="noopener noreferrer" style="color:#60a5fa;text-decoration:underline;">ha-googlehome</a>.</div>
       </div>
     </div>
 
@@ -681,17 +717,17 @@
       <form id="authForm" onsubmit="submitAuth(event)">
         <div class="form-group">
           <label data-i18n="email_label">Google Account Email</label>
-          <input type="email" id="emailInput" value="{{ email }}" required placeholder="name@gmail.com">
+          <input type="email" id="emailInput" value="{{ email }}" required placeholder="name@gmail.com" data-i18n-placeholder="email_placeholder">
         </div>
 
         <div class="form-group" id="pwdGroup">
           <label data-i18n="password_label">Google Password or App Password</label>
-          <input type="password" id="passwordInput" placeholder="••••••••••••••••">
+          <input type="password" id="passwordInput" placeholder="••••••••••••••••" data-i18n-placeholder="password_placeholder">
         </div>
 
         <div class="form-group hidden" id="tokenGroup" style="display: none;">
           <label data-i18n="token_label">Manual Web OAuth Token (oauth2_4/...) or Master Token (aas_et/...)</label>
-          <input type="text" id="tokenInput" placeholder="oauth2_4/... or aas_et/...">
+          <input type="text" id="tokenInput" placeholder="oauth2_4/... or aas_et/..." data-i18n-placeholder="token_placeholder">
         </div>
 
         <div style="margin-bottom: 1rem; text-align: right;">
@@ -714,11 +750,11 @@
           {% if findmy_shared_key %}
           <span class="badge badge-success" data-i18n="findmy_ready">✓ Ready</span>
           {% else %}
-          <span class="badge badge-danger">E2EE Key Required</span>
+          <span class="badge badge-danger" data-i18n="findmy_key_required">E2EE Key Required</span>
           {% endif %}
         </div>
         <p style="font-size:0.85rem;color:var(--muted);margin:0 0 1rem 0;" data-i18n="findmy_desc">
-          Generate tokens and E2EE decryption keys for Google Find My Device integration (BSkando/GoogleFindMy-HA) to track device locations.
+          Generate tokens and E2EE decryption keys for the <a href="https://github.com/BSkando/GoogleFindMy-HA" target="_blank" rel="noopener noreferrer" style="color:#60a5fa;text-decoration:underline;">BSkando/GoogleFindMy-HA</a> integration to track device locations.
         </p>
 
         <div class="status-grid" style="border-top:none;padding-top:0;">
@@ -727,7 +763,7 @@
               <span data-i18n="lbl_findmy_adm">Find My ADM Token</span>
             </div>
             <div class="status-value" style="font-family:monospace;font-size:0.8rem;word-break:break-all;">
-              {% if findmy_adm_token %}{{ findmy_adm_token[:16] }}...{% else %}<span style="color:var(--muted);">Not generated yet</span>{% endif %}
+              {% if findmy_adm_token %}{{ findmy_adm_token[:16] }}...{% else %}<span style="color:var(--muted);" data-i18n="status_not_generated">Not generated yet</span>{% endif %}
             </div>
           </div>
 
@@ -737,39 +773,78 @@
               <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_findmy_e2ee">Required to decrypt exact tracker locations.</span></span>
             </div>
             <div class="status-value" style="font-family:monospace;font-size:0.8rem;word-break:break-all;color:{% if findmy_shared_key %}#4ade80{% else %}#f87171{% endif %};">
-              {% if findmy_shared_key %}{{ findmy_shared_key[:16] }}... ✓{% else %}<span style="color:#f87171;">Missing (Locations cannot be decrypted)</span>{% endif %}
+              {% if findmy_shared_key %}{{ findmy_shared_key[:16] }}... ✓{% else %}<span style="color:#f87171;" data-i18n="status_key_missing">Missing (Locations cannot be decrypted)</span>{% endif %}
             </div>
           </div>
         </div>
 
-        <div style="display:flex;flex-direction:column;gap:0.6rem;margin-top:1.25rem;">
-          <button class="btn-action" onclick="generateFindMyAdmToken()" id="btnGenAdm" style="background:#2563eb;color:#fff;padding:0.6rem;">
-            ⚡ <span data-i18n="btn_gen_adm">Generate ADM Token</span>
-          </button>
-          
-          <button class="btn-action" onclick="openFindMyUnlockUrl()" style="background:#1e293b;border:1px solid #3b82f6;color:#93c5fd;padding:0.6rem;">
-            🔐 <span data-i18n="btn_open_e2ee">Retrieve E2EE Key (Google Unlock)</span>
-          </button>
+        <!-- Step-by-Step Guidance -->
+        <div style="margin-top: 1.25rem;">
+          <div style="font-weight:700;font-size:0.95rem;color:#e2e8f0;margin-bottom:0.5rem;">
+            🗺️ <span data-i18n="findmy_guide_title">Setup Guide (3 Steps):</span>
+          </div>
 
-          <div style="display:flex;gap:0.5rem;margin-top:0.25rem;">
-            <button class="btn-action" onclick="copyFindMySecrets()" id="btnCopySecrets" style="flex:1;">
-              📋 <span data-i18n="btn_copy_secrets">Copy secrets.json</span>
-            </button>
-            <button class="btn-action" onclick="deployFindMySecrets()" id="btnDeployHa" style="flex:1;background:#15803d;color:#fff;">
-              🚀 <span data-i18n="btn_deploy_ha">Deploy to Home Assistant</span>
-            </button>
+          <!-- Step 1 -->
+          <div class="guide-step">
+            <div class="guide-step-title">
+              <span data-i18n="findmy_step1_title">Step 1: Generate Find My ADM Token</span>
+            </div>
+            <div class="guide-step-desc" data-i18n="findmy_step1_desc">
+              Requires an active Master Token from the Google Home tab. Mints the Android Device Manager (ADM) token for Spot/Nova API queries.
+            </div>
+            <div style="margin-top: 0.5rem;">
+              <button class="btn-action" onclick="generateFindMyAdmToken()" id="btnGenAdm" style="background:#2563eb;color:#fff;padding:0.45rem 1rem;">
+                ⚡ <span data-i18n="btn_gen_adm">Generate ADM Token</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="guide-step" style="border-left-color: var(--google-yellow);">
+            <div class="guide-step-title">
+              <span data-i18n="findmy_step2_title">Step 2: Obtain E2EE Decryption Key (Shared Key)</span>
+            </div>
+            <div class="guide-step-desc" data-i18n="findmy_step2_desc">
+              Google encrypts GPS tracker coordinates end-to-end. Click below for instructions on retrieving your 64-character hex shared key via Google Domain Unlock or DevTools.
+            </div>
+            <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="btn-action" onclick="openFindMyUnlockUrl()" style="background:#1e293b;border:1px solid #3b82f6;color:#93c5fd;padding:0.45rem 1rem;">
+                🔐 <span data-i18n="btn_open_e2ee">Domain Unlock Guide & Link</span>
+              </button>
+            </div>
+            <div class="guide-note" data-i18n="findmy_step2_note">
+              💡 Tip: The Google Unlock page must be opened in a browser where your Google Account is already signed in. If it loops or hangs on desktop, approve the screen lock on your Android phone or use DevTools Network tab to copy the key.
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="guide-step" style="border-left-color: var(--google-green);">
+            <div class="guide-step-title">
+              <span data-i18n="findmy_step3_title">Step 3: Deploy to Home Assistant</span>
+            </div>
+            <div class="guide-step-desc" data-i18n="findmy_step3_desc">
+              Automatically creates or updates secrets.json in /config/custom_components/googlefindmy/Auth/secrets.json.
+            </div>
+            <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="btn-action" onclick="deployFindMySecrets()" id="btnDeployHa" style="background:#15803d;color:#fff;padding:0.45rem 1rem;">
+                🚀 <span data-i18n="btn_deploy_ha">Deploy to Home Assistant</span>
+              </button>
+              <button class="btn-action" onclick="copyFindMySecrets()" id="btnCopySecrets" style="padding:0.45rem 1rem;">
+                📋 <span data-i18n="btn_copy_secrets">Copy secrets.json</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Manual Shared Key / Secrets Box -->
       <div class="auth-card" style="margin-top:1rem;">
-        <h3 style="font-size:0.95rem;margin:0 0 0.75rem 0;color:#cbd5e1;">⚙️ Manual Key Import / Input</h3>
+        <h3 style="font-size:0.95rem;margin:0 0 0.75rem 0;color:#cbd5e1;" data-i18n="manual_key_title">⚙️ Manual Key Import / Input</h3>
         <div class="form-group">
-          <label>Shared Key (Hex format):</label>
+          <label data-i18n="lbl_shared_key_hex">Shared Key (Hex format):</label>
           <div style="display:flex;gap:0.5rem;">
-            <input type="text" id="manualSharedKeyInput" value="{{ findmy_shared_key }}" placeholder="e.g. 4a7f20... (64 hex characters)">
-            <button class="btn-action" onclick="saveManualSharedKey()" style="flex:0 0 90px;background:#2563eb;color:#fff;">Save Key</button>
+            <input type="text" id="manualSharedKeyInput" value="{{ findmy_shared_key }}" placeholder="e.g. 4a7f20... (64 hex characters)" data-i18n-placeholder="shared_key_placeholder">
+            <button class="btn-action" onclick="saveManualSharedKey()" style="flex:0 0 110px;background:#2563eb;color:#fff;" data-i18n="btn_save_key">Save Key</button>
           </div>
         </div>
       </div>
@@ -845,7 +920,16 @@
           el.innerHTML = currentDict[key];
         }
       });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (currentDict[key]) {
+          el.setAttribute('placeholder', currentDict[key]);
+        }
+      });
       updateAdvButtonText();
+      if (typeof checkIntegrationsStatus === 'function') {
+        checkIntegrationsStatus();
+      }
     }
 
     function toggleAdvanced() {
@@ -1087,17 +1171,17 @@
       if (step === 'navigating') {
         bodyEl.innerHTML = `
           <div style="font-size:2rem;margin-bottom:0.75rem;">🌐</div>
-          <div style="font-size:0.95rem;color:#cbd5e1;">Connecting to Google Authentication...</div>
+          <div style="font-size:0.95rem;color:#cbd5e1;">${currentDict.step_navigating || 'Connecting to Google Authentication...'}</div>
         `;
       } else if (step === 'filling_email') {
         bodyEl.innerHTML = `
           <div style="font-size:2rem;margin-bottom:0.75rem;">📧</div>
-          <div style="font-size:0.95rem;color:#cbd5e1;">Entering Google Account Email...</div>
+          <div style="font-size:0.95rem;color:#cbd5e1;">${currentDict.step_filling_email || 'Entering Google Account Email...'}</div>
         `;
       } else if (step === 'filling_password') {
         bodyEl.innerHTML = `
           <div style="font-size:2rem;margin-bottom:0.75rem;">🔑</div>
-          <div style="font-size:0.95rem;color:#cbd5e1;">Verifying password...</div>
+          <div style="font-size:0.95rem;color:#cbd5e1;">${currentDict.step_verifying_password || 'Verifying password...'}</div>
         `;
       } else if (step === '2fa_prompt') {
         const num = (twoFactor && twoFactor.number) ? twoFactor.number : '';
@@ -1108,7 +1192,7 @@
           <div style="display:inline-block;background:linear-gradient(135deg, #1e3a8a, #2563eb);color:#ffffff;font-size:2.8rem;font-weight:800;padding:0.75rem 2rem;border-radius:16px;box-shadow:0 0 25px rgba(37,99,235,0.5);letter-spacing:2px;margin-bottom:1rem;">
             ${num || '✓'}
           </div>
-          <div style="font-size:0.8rem;color:#94a3b8;">${twoFactor.text || 'Waiting for phone confirmation...'}</div>
+          <div style="font-size:0.8rem;color:#94a3b8;">${twoFactor.text || (currentDict.waiting_phone_confirmation || 'Waiting for phone confirmation...')}</div>
         `;
       } else if (step === '2fa_code') {
         bodyEl.innerHTML = `
@@ -1123,8 +1207,8 @@
       } else if (step === '2fa_general') {
         bodyEl.innerHTML = `
           <div style="font-size:2rem;margin-bottom:0.75rem;">📱</div>
-          <div style="font-size:0.95rem;color:#cbd5e1;margin-bottom:0.5rem;">Google Security Prompt Active</div>
-          <div style="font-size:0.85rem;color:#94a3b8;">Please tap 'Yes' on your smartphone or confirm the security prompt.</div>
+          <div style="font-size:0.95rem;color:#cbd5e1;margin-bottom:0.5rem;">${currentDict.prompt_general_title || 'Google Security Prompt Active'}</div>
+          <div style="font-size:0.85rem;color:#94a3b8;">${currentDict.prompt_general_desc || "Please tap 'Yes' on your smartphone or confirm the security prompt."}</div>
         `;
       } else if (step === 'exchanging') {
         bodyEl.innerHTML = `
@@ -1212,13 +1296,31 @@
         if (res.ok && data.url) {
           const title = currentDict.modal_findmy_e2ee_title || '🔐 Retrieve E2EE Key (Google Unlock)';
           const body = `
-            <p style="margin-top:0;">${currentDict.modal_findmy_e2ee_desc || 'To track exact device locations, Google encrypts location coordinates end-to-end (E2EE). Click the link below to open the official Google domain unlock prompt in a new tab, confirm your screen lock / password, and then copy the shared key back or let the background browser capture it:'}</p>
-            <div style="margin:1rem 0;text-align:center;">
-              <a href="${data.url}" target="_blank" rel="noopener noreferrer" class="btn-modal-link" style="display:inline-block;padding:0.75rem 1.25rem;font-size:0.95rem;">
-                🌐 ${currentDict.btn_open_google_unlock || 'Open Google Domain Unlock Page'} &rarr;
-              </a>
+            <div style="font-size:0.88rem;color:#cbd5e1;line-height:1.5;">
+              <p style="margin-top:0;">
+                ${currentDict.e2ee_modal_intro || "Google encrypts Bluetooth tracker locations with <b>End-to-End Encryption (E2EE)</b>. The key is secured by your Google Account's screen lock."}
+              </p>
+              
+              <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:0.85rem;border:1px solid #223049;margin:0.75rem 0;">
+                <div style="font-weight:600;color:#93c5fd;margin-bottom:0.4rem;">${currentDict.e2ee_modal_how_to || '📋 How to proceed:'}</div>
+                <ol style="margin:0;padding-left:1.2rem;font-size:0.83rem;color:#94a3b8;">
+                  <li style="margin-bottom:0.35rem;">${currentDict.e2ee_step_1 || "Click the button below to open Google's official Domain Unlock page in a new tab."}</li>
+                  <li style="margin-bottom:0.35rem;">${currentDict.e2ee_step_2 || 'Sign in or confirm your Google Account screen lock / PIN / biometric prompt.'}</li>
+                  <li style="margin-bottom:0.35rem;"><b>${currentDict.e2ee_step_3_mobile || 'If on mobile/Android:'}</b> ${currentDict.e2ee_step_3_mobile_desc || 'It directly releases the key.'}</li>
+                  <li><b>${currentDict.e2ee_step_3_desktop || 'If on Desktop:'}</b> ${currentDict.e2ee_step_3_desktop_desc || 'If Google loads indefinitely or shows #close at the end, your browser has already received the unlock payload. Check DevTools (Network tab for encryption/unlock response or copy from your Google Find My App / Python script) and paste the 64-char hex key into the Manual Key Import box.'}</li>
+                </ol>
+              </div>
+
+              <div style="margin:1rem 0;text-align:center;">
+                <a href="${data.url}" target="_blank" rel="noopener noreferrer" class="btn-modal-link" style="display:inline-block;padding:0.75rem 1.35rem;font-size:0.95rem;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">
+                  🌐 ${currentDict.btn_open_google_unlock || 'Open Google Domain Unlock Page'} &rarr;
+                </a>
+              </div>
+
+              <div style="font-size:0.78rem;color:#94a3b8;background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.25);border-radius:6px;padding:0.6rem;">
+                ⚠️ <b>${currentDict.lbl_important_note || 'Important Note'}:</b> ${currentDict.e2ee_note_existing_secrets || 'If you already generated a secrets.json via BSkando/GoogleFindMy-HA or GoogleFindMyTools, you can simply paste the shared_key directly into the manual input field below without re-running this flow!'}
+              </div>
             </div>
-            <p style="font-size:0.8rem;color:#94a3b8;">After verifying your Google Account screen lock, your browser receives the decryption token. Paste the hex shared key into the manual key box below if auto-detection is not enabled.</p>
           `;
           openModal(title, body);
         } else {
@@ -1300,6 +1402,117 @@
       }
     }
 
+    async function checkIntegrationsStatus(showToastOnDone = false) {
+      try {
+        const res = await fetch(rootPath + '/api/integrations/status');
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        // Show/hide restart alert banner
+        const restartAlert = document.getElementById('ha-restart-alert');
+        if (restartAlert) {
+          if (data.restart_required) {
+            restartAlert.classList.remove('hidden');
+          } else {
+            restartAlert.classList.add('hidden');
+          }
+        }
+
+        const listEl = document.getElementById('integrations-list');
+        if (!listEl) return;
+
+        let html = '';
+        (data.integrations || []).forEach(item => {
+          const isInstalled = item.is_installed;
+          const instVer = item.installed_version ? ('v' + item.installed_version.replace(/^v/, '')) : '—';
+          const latVer = item.latest_version ? ('v' + item.latest_version.replace(/^v/, '')) : '—';
+          const isUpdate = item.update_available;
+
+          let badgeStatus = '';
+          if (isInstalled) {
+            if (isUpdate) {
+              badgeStatus = `<span class="badge" style="background:rgba(234,179,8,0.15);color:#fde047;border:1px solid rgba(234,179,8,0.3);font-size:0.72rem;padding:0.2rem 0.5rem;">⚡ ${currentDict.badge_update_available || 'Update Available'}</span>`;
+            } else {
+              badgeStatus = `<span class="badge badge-success" style="font-size:0.72rem;padding:0.2rem 0.5rem;">✓ ${currentDict.badge_installed_up_to_date || 'Up to Date'}</span>`;
+            }
+          } else {
+            badgeStatus = `<span class="badge" style="background:rgba(148,163,184,0.15);color:#94a3b8;border:1px solid rgba(148,163,184,0.25);font-size:0.72rem;padding:0.2rem 0.5rem;">○ ${currentDict.badge_not_installed || 'Not Installed'}</span>`;
+          }
+
+          html += `
+            <div style="background:var(--card-inner);border:1px solid var(--border);border-radius:10px;padding:0.85rem;display:flex;flex-direction:column;justify-content:space-between;gap:0.75rem;">
+              <div>
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;margin-bottom:0.35rem;">
+                  <div>
+                    <a href="${item.github_url}" target="_blank" rel="noopener noreferrer" style="font-weight:700;font-size:0.92rem;color:#e2e8f0;text-decoration:none;display:flex;align-items:center;gap:0.35rem;">
+                      ${item.title} <span style="font-size:0.75rem;color:#60a5fa;">↗</span>
+                    </a>
+                    <div style="font-size:0.74rem;color:var(--muted);">${item.category} &bull; <code>${item.name}</code></div>
+                  </div>
+                  <div>${badgeStatus}</div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;background:rgba(0,0,0,0.25);border-radius:6px;padding:0.45rem 0.6rem;margin-top:0.5rem;font-size:0.78rem;">
+                  <div>
+                    <div style="color:var(--muted);font-size:0.72rem;">${currentDict.lbl_installed_ver || 'Installed'}</div>
+                    <div style="font-weight:600;color:${isInstalled ? '#93c5fd' : '#94a3b8'};">${instVer}</div>
+                  </div>
+                  <div>
+                    <div style="color:var(--muted);font-size:0.72rem;">${currentDict.lbl_latest_ver || 'Latest Release'}</div>
+                    <div style="font-weight:600;color:#4ade80;">${latVer}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:0.45rem;flex-wrap:wrap;margin-top:auto;">
+                <a href="${item.hacs_url}" target="_blank" rel="noopener noreferrer" class="btn-action" style="flex:1;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:0.35rem;padding:0.38rem 0.5rem;font-size:0.77rem;background:#2563eb;color:#fff;border-color:transparent;">
+                  <span>🛒</span> <span>${currentDict.btn_open_hacs || 'HACS Link (Recommended)'}</span>
+                </a>
+                <button onclick="installIntegration('${item.slug}', '${item.name}', this)" class="btn-action" style="flex:1;display:flex;align-items:center;justify-content:center;gap:0.35rem;padding:0.38rem 0.5rem;font-size:0.77rem;background:#1e293b;">
+                  <span>⬇️</span> <span>${isInstalled ? (isUpdate ? (currentDict.btn_one_click_update || '1-Click Update') : (currentDict.btn_reinstall || 'Reinstall')) : (currentDict.btn_one_click_install || '1-Click Install')}</span>
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
+        listEl.innerHTML = html;
+        if (showToastOnDone) {
+          showToast('✓ ' + (currentDict.toast_status_refreshed || 'Integration status updated!'));
+        }
+      } catch (e) {
+        console.error('Failed to fetch integrations status:', e);
+      }
+    }
+
+    async function installIntegration(slug, name, btnEl) {
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.innerHTML = '⏳ ' + (currentDict.installing || 'Installing...');
+      }
+      try {
+        const res = await fetch(rootPath + '/api/integrations/install', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ integration: slug })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast('🎉 ' + data.message);
+          checkIntegrationsStatus();
+        } else {
+          showErrorModal('Installation Error', data.detail || ('Failed to install ' + name));
+        }
+      } catch (e) {
+        showErrorModal('Error', 'Install request failed: ' + e);
+      } finally {
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.innerHTML = '⬇️ ' + (currentDict.btn_one_click_install || 'Install');
+        }
+      }
+    }
+
     // Live background polling every 5s for stats
     setInterval(async () => {
       try {
@@ -1328,6 +1541,7 @@
       const btnLang = document.getElementById('lang-' + initialLang);
       if (btnLang) btnLang.classList.add('active');
       loadI18n(initialLang);
+      checkIntegrationsStatus();
     });
   </script>
 </body>

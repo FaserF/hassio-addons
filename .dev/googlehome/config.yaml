@@ -18,11 +18,13 @@ options:
   log_level: "info"
   auto_install_integration: true
   github_token: ""
+  auto_stop_timeout: 60
 
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
   auto_install_integration: bool
   github_token: str?
+  auto_stop_timeout: int?
 
 ports: {}
 ports_description:

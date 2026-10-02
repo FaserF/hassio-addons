@@ -8,3 +8,6 @@ configuration:
   github_token:
     name: GitHub Token
     description: Optional GitHub personal access token to prevent API rate limits.
+  auto_stop_timeout:
+    name: Auto-Stop Timeout (Minutes)
+    description: Automatically stop this add-on after this duration of inactivity in minutes (0 to disable, default 60).

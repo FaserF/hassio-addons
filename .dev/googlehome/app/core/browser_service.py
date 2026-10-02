@@ -392,11 +392,34 @@ class GoogleHomeBrowserService:
 
             pwd_err = await self._check_page_error()
             if pwd_err:
-                self.auth_step = "error"
-                self.auth_error = f"Google rejected password: {pwd_err}"
-                self.auth_in_progress = False
-                _LOGGER.error(self.auth_error)
-                return
+                err_lower = pwd_err.lower()
+                benign_2fa = any(
+                    k in err_lower
+                    for k in [
+                        "verify",
+                        "bestätigen",
+                        "identity",
+                        "identität",
+                        "challenge",
+                        "2-step",
+                        "2-schritt",
+                        "two-step",
+                        "code",
+                        "phone",
+                        "telefon",
+                        "security",
+                        "sicherheit",
+                        "device",
+                        "gerät",
+                    ]
+                )
+                if not benign_2fa:
+                    self.auth_step = "error"
+                    self.auth_error = f"Google rejected password: {pwd_err}"
+                    self.auth_in_progress = False
+                    _LOGGER.error(self.auth_error)
+                    return
+                _LOGGER.info("Google prompted verification/2FA after password: %s", pwd_err)
 
             # ── STEP 3+: Monitor loop ─────────────────────────────────────────
             # Handles intermediate screens (who-uses-device, privacy/terms), 2FA, and final cookie.
@@ -604,8 +627,16 @@ class GoogleHomeBrowserService:
                 return { type: 'totp', title: 'Authenticator App', text: bodyText.substring(0, 300) };
             }
 
-            // 4. General challenge URL
-            if (window.location.href.includes('challenge') || window.location.href.includes('signin/v2')) {
+            // 4. General challenge URL or Verify it's you text
+            if (
+                window.location.href.includes('challenge') ||
+                window.location.href.includes('signin/v2') ||
+                bodyText.toLowerCase().includes("verify it's you") ||
+                bodyText.toLowerCase().includes("verify that it's you") ||
+                bodyText.toLowerCase().includes("bestätige, dass du es bist") ||
+                bodyText.toLowerCase().includes("bestätigen sie Ihre identität") ||
+                bodyText.toLowerCase().includes("identität bestätigen")
+            ) {
                 return { type: 'general', title: 'Google Security Verification', text: bodyText.substring(0, 300) };
             }
 
