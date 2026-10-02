@@ -1,5 +1,5 @@
 ---
 build_from:
-  amd64: ghcr.io/hassio-addons/debian-base:9.4.0
+  amd64: ghcr.io/hassio-addons/debian-base:9.5.0
 args:
   KOMODO_VERSION: 2.3.3
