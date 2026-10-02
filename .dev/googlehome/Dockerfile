@@ -20,7 +20,7 @@ WORKDIR /opt/googlehome
 COPY . .
 
 # 4. Install Python dependencies
-RUN python3 -m pip install --no-cache-dir --break-system-packages fastapi uvicorn jinja2 gpsoauth glocaltokens aiohttp websockets
+RUN python3 -m pip install --no-cache-dir --break-system-packages fastapi uvicorn jinja2 gpsoauth glocaltokens aiohttp websockets protobuf cryptography
 
 # 5. Move rootfs to root & fix line endings
 RUN if [ -d "rootfs" ]; then cp -rv rootfs/* /; find /etc/s6-overlay -type f -exec dos2unix {} \;; find /etc/s6-overlay -name run -exec chmod +x {} \;; find /etc/s6-overlay -name finish -exec chmod +x {} \;; find /usr/lib/bashio -type f -exec dos2unix {} \; 2>/dev/null || true; fi

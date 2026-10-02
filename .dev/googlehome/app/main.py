@@ -4,7 +4,7 @@ import logging
 import os
 import time
 from contextlib import asynccontextmanager
-from typing import Optional
+from typing import Any, Optional
 
 import aiohttp
 from fastapi import FastAPI, HTTPException, Request, Security
@@ -108,11 +108,14 @@ class TokenState:
     def __init__(self) -> None:
         self.email: Optional[str] = None
         self.master_token: Optional[str] = None
+        self.findmy_adm_token: Optional[str] = None
+        self.findmy_shared_key: Optional[str] = None
+        self.findmy_owner_key: Optional[str] = None
         self.status: str = "Ready for token input"
         self.last_error: Optional[str] = None
         self.requests_count: int = 0
         self.last_sync_time: Optional[float] = None
-        self.request_counts_by_type: dict[str, int] = {"session": 0, "login": 0, "status": 0}
+        self.request_counts_by_type: dict[str, int] = {"session": 0, "login": 0, "status": 0, "findmy": 0}
         self.last_interaction_type: str = "None"
         self.last_interaction_details: str = "No requests recorded yet"
         self.load()
@@ -124,6 +127,9 @@ class TokenState:
                     data = json.load(f)
                     self.email = data.get("email")
                     self.master_token = data.get("master_token")
+                    self.findmy_adm_token = data.get("findmy_adm_token")
+                    self.findmy_shared_key = data.get("findmy_shared_key")
+                    self.findmy_owner_key = data.get("findmy_owner_key")
                     if self.master_token:
                         self.status = "Master Token active and linked"
             except Exception as err:
@@ -137,6 +143,9 @@ class TokenState:
                     {
                         "email": self.email,
                         "master_token": self.master_token,
+                        "findmy_adm_token": self.findmy_adm_token,
+                        "findmy_shared_key": self.findmy_shared_key,
+                        "findmy_owner_key": self.findmy_owner_key,
                     },
                     f,
                     indent=2,
@@ -154,6 +163,9 @@ class TokenState:
     def clear(self) -> None:
         self.email = None
         self.master_token = None
+        self.findmy_adm_token = None
+        self.findmy_shared_key = None
+        self.findmy_owner_key = None
         self.status = "Ready for token input"
         self.last_error = None
         if os.path.exists(SESSION_FILE):
@@ -314,6 +326,10 @@ async def get_index(request: Request):
             "request_counts_by_type": state.request_counts_by_type,
             "last_interaction_type": state.last_interaction_type,
             "last_interaction_details": state.last_interaction_details,
+            "findmy_adm_token": state.findmy_adm_token or "",
+            "findmy_shared_key": state.findmy_shared_key or "",
+            "findmy_owner_key": state.findmy_owner_key or "",
+            "has_findmy_ready": bool(state.findmy_shared_key or state.findmy_adm_token),
         },
     )
 
@@ -335,7 +351,28 @@ def on_token_acquired(email: str, master_token: str) -> None:
     state.save()
 
 
+def on_shared_key_acquired(email: str, shared_key_hex: str) -> None:
+    state.email = email
+    state.findmy_shared_key = shared_key_hex
+    state.record_interaction("findmy", "Find My Shared Key captured")
+    state.save()
+    # Also auto-deploy secrets.json if integration path exists
+    try:
+        from .core.findmy_service import deploy_secrets_to_homeassistant
+        bundle = {
+            "googleHomeUsername": email,
+            "aas_token": state.master_token,
+            "shared_key": shared_key_hex,
+        }
+        if state.findmy_adm_token:
+            bundle["adm_token"] = state.findmy_adm_token
+        deploy_secrets_to_homeassistant(bundle)
+    except Exception as err:
+        _LOGGER.debug("Auto-deploying secrets failed: %s", err)
+
+
 browser_service.set_on_success_callback(on_token_acquired)
+browser_service.set_on_shared_key_callback(on_shared_key_acquired)
 
 
 class TwoFactorRequest(BaseModel):
@@ -504,3 +541,120 @@ async def post_logout():
     state.clear()
     state.record_interaction("logout", "Session cleared by user")
     return {"success": True, "message": "Session successfully cleared"}
+
+
+# ── Google Find My Integration Endpoints ─────────────────────────────────────
+
+class FindMySharedKeyRequest(BaseModel):
+    shared_key: str
+
+
+@app.get("/api/findmy/secrets")
+@app.get("/api/v1/findmy/secrets")
+async def get_findmy_secrets():
+    """Return the generated secrets bundle formatted for GoogleFindMy-HA."""
+    if not state.master_token and not state.findmy_adm_token:
+        raise HTTPException(status_code=400, detail="No active Google session found. Please login first.")
+
+    bundle: dict[str, Any] = {
+        "googleHomeUsername": state.email or "",
+        "aas_token": state.master_token or "",
+    }
+    if state.findmy_adm_token:
+        bundle["adm_token"] = state.findmy_adm_token
+    if state.findmy_shared_key:
+        bundle["shared_key"] = state.findmy_shared_key
+    if state.findmy_owner_key:
+        bundle["owner_key"] = state.findmy_owner_key
+
+    return {
+        "email": state.email,
+        "bundle": bundle,
+        "bundle_json": json.dumps(bundle, indent=2),
+        "has_shared_key": bool(state.findmy_shared_key),
+        "has_adm_token": bool(state.findmy_adm_token),
+    }
+
+
+@app.post("/api/findmy/generate-adm-token")
+@app.post("/api/v1/findmy/generate-adm-token")
+async def post_generate_adm_token():
+    """Mint an ADM (Android Device Manager) token using the existing Master Token."""
+    if not state.master_token or not state.email:
+        raise HTTPException(status_code=400, detail="Please connect your Google Account first to get a Master Token.")
+
+    try:
+        from .core.findmy_service import generate_adm_token
+    except ImportError:
+        from core.findmy_service import generate_adm_token
+
+    res = generate_adm_token(state.email, state.master_token)
+    if res.get("success") and res.get("token"):
+        state.findmy_adm_token = res["token"]
+        state.record_interaction("findmy", "Generated ADM Token")
+        state.save()
+        return {"success": True, "token": res["token"], "message": "Find My ADM Token generated successfully"}
+    else:
+        err = res.get("error", "Unknown error")
+        state.last_error = f"Find My ADM Token error: {err}"
+        raise HTTPException(status_code=400, detail=f"Failed to generate ADM Token: {err}")
+
+
+@app.post("/api/findmy/set-shared-key")
+@app.post("/api/v1/findmy/set-shared-key")
+async def post_set_shared_key(req: FindMySharedKeyRequest):
+    """Manually or programmatically save the E2EE Shared Key."""
+    key = req.shared_key.strip()
+    if not key or len(key) < 16:
+        raise HTTPException(status_code=400, detail="Invalid Shared Key length. Expected hex string.")
+
+    state.findmy_shared_key = key
+    state.record_interaction("findmy", "Manual Shared Key saved")
+    state.save()
+
+    return {"success": True, "shared_key": key}
+
+
+@app.get("/api/findmy/security-url")
+@app.get("/api/v1/findmy/security-url")
+async def get_findmy_security_url():
+    """Return the Google security domain unlock URL for E2EE keys."""
+    try:
+        from .core.findmy_service import get_security_domain_request_url
+    except ImportError:
+        from core.findmy_service import get_security_domain_request_url
+
+    url = get_security_domain_request_url()
+    return {"url": url}
+
+
+@app.post("/api/findmy/deploy")
+@app.post("/api/v1/findmy/deploy")
+async def post_findmy_deploy():
+    """Automatically deploy secrets.json into /config/custom_components/googlefindmy/Auth/secrets.json."""
+    if not state.email or not state.master_token:
+        raise HTTPException(status_code=400, detail="No active Google credentials to deploy.")
+
+    try:
+        from .core.findmy_service import deploy_secrets_to_homeassistant
+    except ImportError:
+        from core.findmy_service import deploy_secrets_to_homeassistant
+
+    bundle: dict[str, Any] = {
+        "googleHomeUsername": state.email,
+        "aas_token": state.master_token,
+    }
+    if state.findmy_adm_token:
+        bundle["adm_token"] = state.findmy_adm_token
+    if state.findmy_shared_key:
+        bundle["shared_key"] = state.findmy_shared_key
+    if state.findmy_owner_key:
+        bundle["owner_key"] = state.findmy_owner_key
+
+    success, path_or_msg = deploy_secrets_to_homeassistant(bundle)
+    if success:
+        state.record_interaction("findmy", "Secrets deployed to HA")
+        return {"success": True, "path": path_or_msg, "message": f"Successfully written to {path_or_msg}"}
+    else:
+        return {"success": False, "message": path_or_msg}
+

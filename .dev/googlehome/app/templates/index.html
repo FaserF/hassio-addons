@@ -587,6 +587,19 @@
       </div>
     </div>
 
+    <!-- Main Navigation Tabs -->
+    <div class="tabs" style="margin-bottom: 1.5rem;">
+      <button class="tab-btn active" id="tab-btn-gh" onclick="switchMainTab('gh')">
+        🏠 <span data-i18n="tab_gh">Google Home</span>
+      </button>
+      <button class="tab-btn" id="tab-btn-findmy" onclick="switchMainTab('findmy')">
+        📍 <span data-i18n="tab_findmy">Google Find My (Trackers)</span>
+        {% if findmy_shared_key %}<span style="color:#4ade80;font-size:0.75rem;margin-left:4px;">●</span>{% endif %}
+      </button>
+    </div>
+
+    <!-- Google Home View Wrapper -->
+    <div id="gh-view-wrapper">
     {% if is_logged_in and not last_error %}
     <div class="status-card" id="status-card">
       <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -690,6 +703,78 @@
         </button>
       </form>
     </div>
+    </div>
+    <!-- End Google Home View Wrapper -->
+
+    <!-- Google Find My View Wrapper -->
+    <div id="findmy-view-wrapper" style="display: none;">
+      <div class="guide-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+          <div style="font-weight:700;font-size:1rem;color:#60a5fa;" data-i18n="findmy_card_title">📍 Google Find My Device Hub</div>
+          {% if findmy_shared_key %}
+          <span class="badge badge-success" data-i18n="findmy_ready">✓ Ready</span>
+          {% else %}
+          <span class="badge badge-danger">E2EE Key Required</span>
+          {% endif %}
+        </div>
+        <p style="font-size:0.85rem;color:var(--muted);margin:0 0 1rem 0;" data-i18n="findmy_desc">
+          Generate tokens and E2EE decryption keys for Google Find My Device integration (BSkando/GoogleFindMy-HA) to track device locations.
+        </p>
+
+        <div class="status-grid" style="border-top:none;padding-top:0;">
+          <div class="status-item">
+            <div class="status-label">
+              <span data-i18n="lbl_findmy_adm">Find My ADM Token</span>
+            </div>
+            <div class="status-value" style="font-family:monospace;font-size:0.8rem;word-break:break-all;">
+              {% if findmy_adm_token %}{{ findmy_adm_token[:16] }}...{% else %}<span style="color:var(--muted);">Not generated yet</span>{% endif %}
+            </div>
+          </div>
+
+          <div class="status-item">
+            <div class="status-label">
+              <span data-i18n="lbl_findmy_shared">E2EE Shared Key</span>
+              <span class="info-btn">i<span class="tooltip-text" data-i18n="tip_findmy_e2ee">Required to decrypt exact tracker locations.</span></span>
+            </div>
+            <div class="status-value" style="font-family:monospace;font-size:0.8rem;word-break:break-all;color:{% if findmy_shared_key %}#4ade80{% else %}#f87171{% endif %};">
+              {% if findmy_shared_key %}{{ findmy_shared_key[:16] }}... ✓{% else %}<span style="color:#f87171;">Missing (Locations cannot be decrypted)</span>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:0.6rem;margin-top:1.25rem;">
+          <button class="btn-action" onclick="generateFindMyAdmToken()" id="btnGenAdm" style="background:#2563eb;color:#fff;padding:0.6rem;">
+            ⚡ <span data-i18n="btn_gen_adm">Generate ADM Token</span>
+          </button>
+          
+          <button class="btn-action" onclick="openFindMyUnlockUrl()" style="background:#1e293b;border:1px solid #3b82f6;color:#93c5fd;padding:0.6rem;">
+            🔐 <span data-i18n="btn_open_e2ee">Retrieve E2EE Key (Google Unlock)</span>
+          </button>
+
+          <div style="display:flex;gap:0.5rem;margin-top:0.25rem;">
+            <button class="btn-action" onclick="copyFindMySecrets()" id="btnCopySecrets" style="flex:1;">
+              📋 <span data-i18n="btn_copy_secrets">Copy secrets.json</span>
+            </button>
+            <button class="btn-action" onclick="deployFindMySecrets()" id="btnDeployHa" style="flex:1;background:#15803d;color:#fff;">
+              🚀 <span data-i18n="btn_deploy_ha">Deploy to Home Assistant</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual Shared Key / Secrets Box -->
+      <div class="auth-card" style="margin-top:1rem;">
+        <h3 style="font-size:0.95rem;margin:0 0 0.75rem 0;color:#cbd5e1;">⚙️ Manual Key Import / Input</h3>
+        <div class="form-group">
+          <label>Shared Key (Hex format):</label>
+          <div style="display:flex;gap:0.5rem;">
+            <input type="text" id="manualSharedKeyInput" value="{{ findmy_shared_key }}" placeholder="e.g. 4a7f20... (64 hex characters)">
+            <button class="btn-action" onclick="saveManualSharedKey()" style="flex:0 0 90px;background:#2563eb;color:#fff;">Save Key</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Google Find My View Wrapper -->
   </div>
 
   <!-- Custom Modal Dialog -->
@@ -1070,6 +1155,149 @@
       closeModal();
       const btn = document.getElementById('submitBtn');
       if (btn) { btn.disabled = false; btn.innerHTML = currentDict.btn_submit || '🚀 Connect Google Account'; }
+    }
+
+    /* Google Find My View Functions */
+    function switchMainTab(tab) {
+      const btnGh = document.getElementById('tab-btn-gh');
+      const btnFm = document.getElementById('tab-btn-findmy');
+      const wrapGh = document.getElementById('gh-view-wrapper');
+      const wrapFm = document.getElementById('findmy-view-wrapper');
+
+      if (tab === 'gh') {
+        btnGh.classList.add('active');
+        btnFm.classList.remove('active');
+        wrapGh.style.display = 'block';
+        wrapFm.style.display = 'none';
+      } else {
+        btnGh.classList.remove('active');
+        btnFm.classList.add('active');
+        wrapGh.style.display = 'none';
+        wrapFm.style.display = 'block';
+      }
+    }
+
+    async function generateFindMyAdmToken() {
+      const btn = document.getElementById('btnGenAdm');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ ' + (currentDict.processing || 'Generating ADM Token...');
+      }
+      try {
+        const res = await fetch(rootPath + '/api/findmy/generate-adm-token', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast('✓ ' + (currentDict.toast_findmy_adm_success || 'ADM Token generated successfully!'));
+          setTimeout(() => window.location.reload(), 1200);
+        } else {
+          showErrorModal('ADM Token Generation', data.detail || 'Failed to generate ADM token.');
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '⚡ ' + (currentDict.btn_gen_adm || 'Generate ADM Token');
+          }
+        }
+      } catch (e) {
+        showErrorModal('Error', 'Connection error: ' + e);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '⚡ ' + (currentDict.btn_gen_adm || 'Generate ADM Token');
+        }
+      }
+    }
+
+    async function openFindMyUnlockUrl() {
+      try {
+        const res = await fetch(rootPath + '/api/findmy/security-url');
+        const data = await res.json();
+        if (res.ok && data.url) {
+          const title = currentDict.modal_findmy_e2ee_title || '🔐 Retrieve E2EE Key (Google Unlock)';
+          const body = `
+            <p style="margin-top:0;">${currentDict.modal_findmy_e2ee_desc || 'To track exact device locations, Google encrypts location coordinates end-to-end (E2EE). Click the link below to open the official Google domain unlock prompt in a new tab, confirm your screen lock / password, and then copy the shared key back or let the background browser capture it:'}</p>
+            <div style="margin:1rem 0;text-align:center;">
+              <a href="${data.url}" target="_blank" rel="noopener noreferrer" class="btn-modal-link" style="display:inline-block;padding:0.75rem 1.25rem;font-size:0.95rem;">
+                🌐 ${currentDict.btn_open_google_unlock || 'Open Google Domain Unlock Page'} &rarr;
+              </a>
+            </div>
+            <p style="font-size:0.8rem;color:#94a3b8;">After verifying your Google Account screen lock, your browser receives the decryption token. Paste the hex shared key into the manual key box below if auto-detection is not enabled.</p>
+          `;
+          openModal(title, body);
+        } else {
+          showErrorModal('Error', data.detail || 'Could not retrieve security domain unlock URL.');
+        }
+      } catch (e) {
+        showErrorModal('Error', 'Request failed: ' + e);
+      }
+    }
+
+    async function copyFindMySecrets() {
+      try {
+        const res = await fetch(rootPath + '/api/findmy/secrets');
+        const data = await res.json();
+        if (!res.ok) {
+          showErrorModal('Find My Secrets', data.detail || 'Could not generate secrets.json');
+          return;
+        }
+        const jsonStr = JSON.stringify(data, null, 2);
+        await navigator.clipboard.writeText(jsonStr);
+        showToast('✓ ' + (currentDict.toast_findmy_secrets_copied || 'secrets.json copied to clipboard!'));
+        const btn = document.getElementById('btnCopySecrets');
+        if (btn) {
+          const oldText = btn.innerHTML;
+          btn.innerHTML = '✓ ' + (currentDict.btn_copied || 'Copied!');
+          setTimeout(() => { btn.innerHTML = oldText; }, 2000);
+        }
+      } catch (e) {
+        showErrorModal('Copy Secrets', 'Failed to copy secrets: ' + e);
+      }
+    }
+
+    async function deployFindMySecrets() {
+      const btn = document.getElementById('btnDeployHa');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Deploying...';
+      }
+      try {
+        const res = await fetch(rootPath + '/api/findmy/deploy', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast('🚀 ' + (currentDict.toast_findmy_deployed || 'Successfully deployed to Home Assistant!'));
+        } else {
+          showErrorModal('Deployment Failed', data.detail || 'Could not deploy secrets to Home Assistant.');
+        }
+      } catch (e) {
+        showErrorModal('Error', 'Deployment request failed: ' + e);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '🚀 ' + (currentDict.btn_deploy_ha || 'Deploy to Home Assistant');
+        }
+      }
+    }
+
+    async function saveManualSharedKey() {
+      const input = document.getElementById('manualSharedKeyInput');
+      if (!input || !input.value.trim()) {
+        showErrorModal('Invalid Input', 'Please enter a valid hex shared key.');
+        return;
+      }
+      const key = input.value.trim();
+      try {
+        const res = await fetch(rootPath + '/api/findmy/set-shared-key', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shared_key: key })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast('✓ ' + (currentDict.toast_findmy_key_saved || 'E2EE Shared Key saved!'));
+          setTimeout(() => window.location.reload(), 1200);
+        } else {
+          showErrorModal('Save Failed', data.detail || 'Failed to save shared key.');
+        }
+      } catch (e) {
+        showErrorModal('Error', 'Failed to save key: ' + e);
+      }
     }
 
     // Live background polling every 5s for stats

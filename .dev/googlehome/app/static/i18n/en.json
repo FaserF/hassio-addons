@@ -71,5 +71,18 @@
   "val_password_missing": "Please enter your Google password or App Password.",
   "val_token_invalid": "Invalid token format. The token must start with 'aas_et/' (Master Token) or 'oauth2_4/' (Web OAuth Token).",
   "error": "Error: ",
-  "conn_error": "Connection error: "
+  "conn_error": "Connection error: ",
+  "tab_gh": "Google Home",
+  "tab_findmy": "Google Find My (Trackers)",
+  "findmy_card_title": "Google Find My Device Hub",
+  "findmy_ready": "✓ Find My Credentials Ready",
+  "findmy_desc": "Generate tokens and E2EE decryption keys for Google Find My Device integration (BSkando/GoogleFindMy-HA) to track device locations.",
+  "btn_gen_adm": "⚡ Generate ADM Token",
+  "btn_open_e2ee": "🔐 Retrieve E2EE Key (Google Unlock)",
+  "btn_copy_secrets": "📋 Copy secrets.json",
+  "btn_deploy_ha": "🚀 Deploy directly to Home Assistant",
+  "tip_findmy_e2ee": "End-to-End Encryption key (shared_key) required to decrypt real-time tracker locations.",
+  "lbl_findmy_adm": "Find My ADM Token",
+  "lbl_findmy_shared": "E2EE Shared Key (Required for Locations)",
+  "lbl_findmy_status": "Encryption State"
 }

@@ -71,5 +71,18 @@
   "val_password_missing": "Bitte gib dein Google-Passwort oder App-Passwort ein.",
   "val_token_invalid": "Ungültiges Token-Format. Der Token muss mit 'aas_et/' (Master-Token) oder 'oauth2_4/' (OAuth-Token) beginnen.",
   "error": "Fehler: ",
-  "conn_error": "Verbindungsfehler: "
+  "conn_error": "Verbindungsfehler: ",
+  "tab_gh": "Google Home",
+  "tab_findmy": "Google Find My (Tracker)",
+  "findmy_card_title": "Google Find My Device Hub",
+  "findmy_ready": "✓ Find My Anmeldedaten bereit",
+  "findmy_desc": "Generiere Tokens und E2EE-Schlüssel für die Google Find My Integration (BSkando/GoogleFindMy-HA) zur Standortermittlung deiner Tracker.",
+  "btn_gen_adm": "⚡ ADM-Token generieren",
+  "btn_open_e2ee": "🔐 E2EE-Schlüssel abrufen (Google Unlock)",
+  "btn_copy_secrets": "📋 secrets.json kopieren",
+  "btn_deploy_ha": "🚀 Direkt in Home Assistant übertragen",
+  "tip_findmy_e2ee": "End-to-End-Verschlüsselungsschlüssel (shared_key), der zur Entschlüsselung der exakten Tracker-Standorte erforderlich ist.",
+  "lbl_findmy_adm": "Find My ADM Token",
+  "lbl_findmy_shared": "E2EE Shared Key (für Standorte)",
+  "lbl_findmy_status": "Verschlüsselungsstatus"
 }

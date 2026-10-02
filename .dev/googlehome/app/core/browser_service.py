@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import os
 import subprocess
@@ -24,9 +25,13 @@ class GoogleHomeBrowserService:
         self._auth_task: Optional[asyncio.Task] = None
         self._target_email: Optional[str] = None
         self._on_success_callback: Optional[Callable[[str, str], None]] = None
+        self._on_shared_key_callback: Optional[Callable[[str, str], None]] = None
 
     def set_on_success_callback(self, cb: Callable[[str, str], None]) -> None:
         self._on_success_callback = cb
+
+    def set_on_shared_key_callback(self, cb: Callable[[str, str], None]) -> None:
+        self._on_shared_key_callback = cb
 
     async def start_chromium(self) -> None:
         """Launch headless Chromium with remote debugging."""
@@ -638,6 +643,8 @@ class GoogleHomeBrowserService:
                 self.auth_step = "success"
                 self.auth_in_progress = False
                 _LOGGER.info("Master Token successfully generated for %s", email)
+                # Attempt background retrieval of Find My E2EE shared key using the active authenticated browser session
+                asyncio.create_task(self._attempt_shared_key_extraction(email))
             else:
                 err_code = res.get("Error", "ExchangeFailed")
                 self.auth_step = "error"
@@ -648,3 +655,56 @@ class GoogleHomeBrowserService:
             self.auth_step = "error"
             self.auth_error = str(err)
             self.auth_in_progress = False
+
+    async def _attempt_shared_key_extraction(self, email: str) -> Optional[str]:
+        """Attempt to retrieve the Google Find My E2EE Shared Key from the active browser session."""
+        try:
+            from .findmy_service import get_security_domain_request_url, parse_vault_shared_keys
+
+            sec_url = get_security_domain_request_url()
+            _LOGGER.info("Navigating to Find My E2EE security domain unlock: %s", sec_url)
+            await self.cdp.send_cmd("Page.navigate", {"url": sec_url}, timeout=20.0)
+            await asyncio.sleep(2.0)
+            await self.cdp.reconnect_to_active_page()
+
+            # Inject JS interface window.mm
+            js_shim = """
+            (() => {
+                window.__vaultKeysResult = null;
+                window.mm = {
+                    setVaultSharedKeys: function(str, vaultKeys) {
+                        window.__vaultKeysResult = { method: 'setVaultSharedKeys', str: str, vaultKeys: vaultKeys };
+                    },
+                    closeView: function() {
+                        if (!window.__vaultKeysResult) {
+                            window.__vaultKeysResult = { method: 'closeView' };
+                        }
+                    }
+                };
+            })();
+            """
+            await self.cdp.send_cmd("Runtime.evaluate", {"expression": js_shim, "returnByValue": True})
+
+            # Poll for window.__vaultKeysResult up to 15 seconds
+            for _ in range(30):
+                await asyncio.sleep(0.5)
+                res = await self.cdp.send_cmd(
+                    "Runtime.evaluate",
+                    {"expression": "window.__vaultKeysResult ? JSON.stringify(window.__vaultKeysResult) : null", "returnByValue": True},
+                )
+                val = res.get("value") if res else None
+                if val and isinstance(val, str):
+                    try:
+                        data = json.loads(val)
+                        if data.get("method") == "setVaultSharedKeys" and data.get("vaultKeys"):
+                            shared_key_hex = parse_vault_shared_keys(data["vaultKeys"])
+                            if shared_key_hex:
+                                _LOGGER.info("Successfully extracted Find My Shared Key for %s", email)
+                                if self._on_shared_key_callback:
+                                    self._on_shared_key_callback(email, shared_key_hex)
+                                return shared_key_hex
+                    except Exception as err:
+                        _LOGGER.debug("Error parsing vault keys result: %s", err)
+        except Exception as err:
+            _LOGGER.debug("Background shared key extraction attempt: %s", err)
+        return None
