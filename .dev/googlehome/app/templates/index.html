@@ -594,10 +594,11 @@
     <div class="tabs" style="margin-bottom: 1.5rem;">
       <button class="tab-btn active" id="tab-btn-gh" onclick="switchMainTab('gh')">
         🏠 <span data-i18n="tab_gh">Google Home</span>
+        {% if is_logged_in %}<span style="color:#4ade80;font-size:0.75rem;margin-left:4px;">●</span>{% endif %}
       </button>
       <button class="tab-btn" id="tab-btn-findmy" onclick="switchMainTab('findmy')">
         📍 <span data-i18n="tab_findmy">Google Find My (Trackers)</span>
-        {% if findmy_shared_key %}<span style="color:#4ade80;font-size:0.75rem;margin-left:4px;">●</span>{% endif %}
+        {% if has_findmy_ready %}<span style="color:#4ade80;font-size:0.75rem;margin-left:4px;">●</span>{% endif %}
       </button>
     </div>
 
@@ -787,16 +788,46 @@
           <!-- Step 1 -->
           <div class="guide-step">
             <div class="guide-step-title">
-              <span data-i18n="findmy_step1_title">Step 1: Generate Find My ADM Token</span>
+              <span data-i18n="findmy_step1_title">Step 1: Google Account & ADM Token</span>
             </div>
             <div class="guide-step-desc" data-i18n="findmy_step1_desc">
-              Requires an active Master Token from the Google Home tab. Mints the Android Device Manager (ADM) token for Spot/Nova API queries.
+              Connect your Google Account to generate the required Android Device Manager (ADM) token for Spot/Nova tracker queries.
             </div>
-            <div style="margin-top: 0.5rem;">
+            {% if is_logged_in %}
+            <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
               <button class="btn-action" onclick="generateFindMyAdmToken()" id="btnGenAdm" style="background:#2563eb;color:#fff;padding:0.45rem 1rem;">
                 ⚡ <span data-i18n="btn_gen_adm">Generate ADM Token</span>
               </button>
+              <span style="font-size:0.8rem; color:#4ade80;">✓ Google Account Connected ({{ email }})</span>
             </div>
+            {% else %}
+            <!-- Standalone Google Account Login for Find My users -->
+            <div style="margin-top: 0.75rem; background: rgba(0,0,0,0.25); border: 1px solid #334155; border-radius: 8px; padding: 0.85rem;">
+              <div style="font-size:0.83rem; color:#93c5fd; font-weight:600; margin-bottom:0.5rem;" data-i18n="findmy_login_intro">
+                🔑 Connect your Google Account for Find My Device:
+              </div>
+              <form id="authFormFindMy" onsubmit="submitAuthFindMy(event)">
+                <div class="form-group" style="margin-bottom:0.6rem;">
+                  <label style="font-size:0.8rem;" data-i18n="email_label">Google Account Email</label>
+                  <input type="email" id="emailInputFm" value="{{ email }}" required placeholder="name@gmail.com" style="padding:0.45rem 0.65rem; font-size:0.85rem;" data-i18n-placeholder="email_placeholder">
+                </div>
+                <div class="form-group" id="pwdGroupFm" style="margin-bottom:0.6rem;">
+                  <label style="font-size:0.8rem;" data-i18n="password_label">Google Password or App Password</label>
+                  <input type="password" id="passwordInputFm" placeholder="••••••••••••••••" style="padding:0.45rem 0.65rem; font-size:0.85rem;" data-i18n-placeholder="password_placeholder">
+                </div>
+                <div class="form-group hidden" id="tokenGroupFm" style="display:none; margin-bottom:0.6rem;">
+                  <label style="font-size:0.8rem;" data-i18n="token_label">Manual Web OAuth Token or Master Token</label>
+                  <input type="text" id="tokenInputFm" placeholder="oauth2_4/... or aas_et/..." style="padding:0.45rem 0.65rem; font-size:0.85rem;" data-i18n-placeholder="token_placeholder">
+                </div>
+                <div style="margin-bottom: 0.6rem; text-align: right;">
+                  <a href="javascript:void(0)" onclick="toggleAdvancedFm()" id="toggleAdvBtnFm" style="font-size: 0.75rem; color: #94a3b8; text-decoration: underline;" data-i18n="opt_show_adv">⚙️ Advanced: Manual Token Entry (Optional)</a>
+                </div>
+                <button type="submit" class="btn-submit" id="submitBtnFm" style="padding:0.5rem 1rem; font-size:0.85rem;" data-i18n="btn_submit_findmy">
+                  🚀 Connect Google Account & Generate Token
+                </button>
+              </form>
+            </div>
+            {% endif %}
           </div>
 
           <!-- Step 2 -->
@@ -1321,6 +1352,80 @@
         if (wrapGh) wrapGh.style.display = 'none';
         if (wrapFm) wrapFm.style.display = 'block';
         try { localStorage.setItem('gh_active_tab', 'findmy'); } catch (e) {}
+      }
+    }
+
+    let showAdvancedFm = false;
+
+    function toggleAdvancedFm() {
+      showAdvancedFm = !showAdvancedFm;
+      const el = document.getElementById('tokenGroupFm');
+      if (el) {
+        el.classList.toggle('hidden', !showAdvancedFm);
+        el.style.display = showAdvancedFm ? 'block' : 'none';
+      }
+      const btn = document.getElementById('toggleAdvBtnFm');
+      if (btn) {
+        btn.innerHTML = showAdvancedFm
+          ? (currentDict.opt_hide_adv || '⚙️ Hide Advanced Token Entry')
+          : (currentDict.opt_show_adv || '⚙️ Advanced: Manual Token Entry (Optional)');
+      }
+    }
+
+    async function submitAuthFindMy(e) {
+      e.preventDefault();
+      const email = (document.getElementById('emailInputFm').value || '').trim();
+      const password = (document.getElementById('passwordInputFm').value || '').trim();
+      const token = showAdvancedFm ? (document.getElementById('tokenInputFm').value || '').trim() : '';
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        showErrorModal(currentDict.modal_error_title || 'Input Validation', currentDict.val_email_invalid || 'Please enter a valid Google email address.');
+        return;
+      }
+
+      if (token) {
+        let cleanToken = token;
+        if (cleanToken.startsWith('oauth_token=')) {
+          cleanToken = cleanToken.split('oauth_token=')[1].split(';')[0].trim();
+        }
+        if (!cleanToken.startsWith('aas_et/') && !cleanToken.startsWith('oauth2_4/')) {
+          showErrorModal(currentDict.modal_error_title || 'Input Validation', currentDict.val_token_invalid || "Invalid token format.");
+          return;
+        }
+      } else if (!password) {
+        showErrorModal(currentDict.modal_error_title || 'Input Validation', currentDict.val_password_missing || 'Please enter your Google password or App Password.');
+        return;
+      }
+
+      const btn = document.getElementById('submitBtnFm');
+      btn.disabled = true;
+      btn.innerHTML = currentDict.processing || '⏳ Authenticating with Google...';
+
+      try {
+        const res = await fetch(rootPath + '/api/auth/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, password: password, token: token })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast(currentDict.auth_success || '✓ Master Token successfully generated!');
+          try { localStorage.setItem('gh_active_tab', 'findmy'); } catch (e) {}
+          setTimeout(() => window.location.reload(), 1000);
+        } else if (res.ok && data.requires_2fa) {
+          try { localStorage.setItem('gh_active_tab', 'findmy'); } catch (e) {}
+          start2FAPolling();
+        } else {
+          showErrorModal(currentDict.modal_error_title || 'Authentication Error', data.detail || 'Authentication failed');
+          btn.disabled = false;
+          btn.innerHTML = currentDict.btn_submit_findmy || '🚀 Connect Google Account & Generate Token';
+        }
+      } catch (err) {
+        showErrorModal('Connection Error', (currentDict.conn_error || 'Connection error: ') + err);
+        btn.disabled = false;
+        btn.innerHTML = currentDict.btn_submit_findmy || '🚀 Connect Google Account & Generate Token';
       }
     }
 
