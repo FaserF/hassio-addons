@@ -144,5 +144,13 @@
   "toast_findmy_adm_success": "ADM Token generated successfully!",
   "toast_findmy_secrets_copied": "secrets.json copied to clipboard!",
   "toast_findmy_deployed": "Successfully deployed to Home Assistant!",
-  "toast_findmy_key_saved": "E2EE Shared Key saved!"
+  "toast_findmy_key_saved": "E2EE Shared Key saved!",
+  "btn_auto_extract_e2ee": "Auto-Extract via Add-on",
+  "extracting_e2ee": "Extracting E2EE Key via headless browser… (~30s)",
+  "toast_e2ee_extracted": "E2EE Shared Key extracted automatically!",
+  "e2ee_extract_failed": "Auto-extraction failed. The browser session may have expired — please try the manual fallback below.",
+  "findmy_step2_desc": "Google encrypts GPS tracker coordinates end-to-end. The add-on can extract this key automatically using the same headless browser session that generated your Master Token.",
+  "findmy_step2_auto_note": "✅ The add-on automatically navigates to the Google security domain unlock URL in its headless browser and captures the key — no DevTools or manual steps needed.",
+  "findmy_step2_manual_toggle": "🔧 Manual fallback (if auto-extract fails)",
+  "findmy_step2_note": "💡 Tip: Open the Google Unlock page in a browser where your Google Account is signed in. On desktop, if it hangs or shows #close, your browser already received the payload — copy the key from DevTools (Network → encryption/unlock) and paste below."
 }

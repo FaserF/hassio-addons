@@ -822,6 +822,60 @@ async def get_findmy_security_url():
     return {"url": url}
 
 
+@app.post("/api/findmy/extract-shared-key")
+@app.post("/api/v1/findmy/extract-shared-key")
+async def post_extract_shared_key():
+    """Trigger headless Chromium to automatically extract the E2EE Shared Key.
+
+    Requires an active authenticated browser session (master token must already exist).
+    Navigates to the Google security domain unlock URL, injects the window.mm shim,
+    and polls for the setVaultSharedKeys callback up to 30 seconds.
+    """
+    if not state.master_token or not state.email:
+        raise HTTPException(
+            status_code=400,
+            detail="No active Google session. Please generate a Master Token first.",
+        )
+
+    # If already have a shared key, check if the user wants to refresh it
+    # (we still proceed — let them call it again to refresh)
+
+    # Run extraction in background and poll result
+    extraction_task = asyncio.create_task(browser_service._attempt_shared_key_extraction(state.email))
+
+    # Wait up to 32 seconds for the task to complete
+    try:
+        result = await asyncio.wait_for(asyncio.shield(extraction_task), timeout=32.0)
+    except asyncio.TimeoutError:
+        result = None
+
+    if result:
+        # Callback already saved to state; return success
+        return {
+            "success": True,
+            "shared_key": result,
+            "message": "E2EE Shared Key successfully extracted via headless browser.",
+        }
+
+    # Check if the callback fired while we were waiting (race condition safeguard)
+    if state.findmy_shared_key:
+        return {
+            "success": True,
+            "shared_key": state.findmy_shared_key,
+            "message": "E2EE Shared Key captured via browser session.",
+        }
+
+    raise HTTPException(
+        status_code=408,
+        detail=(
+            "Could not automatically extract the E2EE Shared Key. "
+            "This usually means the headless browser session has expired or "
+            "Google requires a fresh screen-lock confirmation. "
+            "Try using the manual Google Unlock flow below."
+        ),
+    )
+
+
 @app.post("/api/findmy/deploy")
 @app.post("/api/v1/findmy/deploy")
 async def post_findmy_deploy():

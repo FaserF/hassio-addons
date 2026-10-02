@@ -144,5 +144,13 @@
   "toast_findmy_adm_success": "ADM-Token erfolgreich generiert!",
   "toast_findmy_secrets_copied": "secrets.json in die Zwischenablage kopiert!",
   "toast_findmy_deployed": "Erfolgreich nach Home Assistant übertragen!",
-  "toast_findmy_key_saved": "E2EE Shared Key gespeichert!"
+  "toast_findmy_key_saved": "E2EE Shared Key gespeichert!",
+  "btn_auto_extract_e2ee": "Automatisch per Add-on extrahieren",
+  "extracting_e2ee": "E2EE-Schlüssel wird per Hintergrund-Browser extrahiert… (~30 Sek.)",
+  "toast_e2ee_extracted": "E2EE Shared Key automatisch extrahiert!",
+  "e2ee_extract_failed": "Automatische Extraktion fehlgeschlagen. Die Browser-Sitzung ist möglicherweise abgelaufen — bitte nutze den manuellen Fallback unten.",
+  "findmy_step2_desc": "Google verschlüsselt Tracker-Standorte Ende-zu-Ende. Das Add-on kann diesen Schlüssel automatisch über dieselbe Hintergrund-Browser-Sitzung extrahieren, die deinen Master-Token generiert hat.",
+  "findmy_step2_auto_note": "✅ Das Add-on navigiert automatisch zur Google Security-Domain-Freigabe-URL im Hintergrund-Browser und erfasst den Schlüssel — keine DevTools oder manuellen Schritte erforderlich.",
+  "findmy_step2_manual_toggle": "🔧 Manueller Fallback (wenn Auto-Extraktion fehlschlägt)",
+  "findmy_step2_note": "💡 Tipp: Öffne die Google Unlock-Seite in einem Browser, in dem du mit deinem Google-Konto angemeldet bist. Am Desktop: Bleibt sie hängen oder zeigt #close, hat dein Browser das Payload bereits empfangen — kopiere den Schlüssel aus den DevTools (Netzwerk → encryption/unlock) und füge ihn unten ein."
 }

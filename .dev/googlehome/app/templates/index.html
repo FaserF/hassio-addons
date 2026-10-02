@@ -805,16 +805,31 @@
               <span data-i18n="findmy_step2_title">Step 2: Obtain E2EE Decryption Key (Shared Key)</span>
             </div>
             <div class="guide-step-desc" data-i18n="findmy_step2_desc">
-              Google encrypts GPS tracker coordinates end-to-end. Click below for instructions on retrieving your 64-character hex shared key via Google Domain Unlock or DevTools.
+              Google encrypts GPS tracker coordinates end-to-end. The add-on can extract this key automatically using the same headless browser session that generated your Master Token.
             </div>
             <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-              <button class="btn-action" onclick="openFindMyUnlockUrl()" style="background:#1e293b;border:1px solid #3b82f6;color:#93c5fd;padding:0.45rem 1rem;">
-                🔐 <span data-i18n="btn_open_e2ee">Domain Unlock Guide & Link</span>
+              <button class="btn-action" onclick="autoExtractSharedKey()" id="btnAutoExtract" style="background:#1d4ed8;color:#fff;padding:0.45rem 1rem;font-weight:600;">
+                🤖 <span data-i18n="btn_auto_extract_e2ee">Auto-Extract via Add-on</span>
               </button>
             </div>
-            <div class="guide-note" data-i18n="findmy_step2_note">
-              💡 Tip: The Google Unlock page must be opened in a browser where your Google Account is already signed in. If it loops or hangs on desktop, approve the screen lock on your Android phone or use DevTools Network tab to copy the key.
+            <div class="guide-note" style="margin-top:0.5rem;" data-i18n="findmy_step2_auto_note">
+              ✅ The add-on automatically navigates to the Google security domain unlock URL in its headless browser and captures the key — no DevTools or manual steps needed.
             </div>
+            <details style="margin-top:0.75rem;">
+              <summary style="cursor:pointer;font-size:0.82rem;color:var(--muted);user-select:none;" data-i18n="findmy_step2_manual_toggle">
+                🔧 Manual fallback (if auto-extract fails)
+              </summary>
+              <div style="margin-top:0.5rem;">
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                  <button class="btn-action" onclick="openFindMyUnlockUrl()" style="background:#1e293b;border:1px solid #3b82f6;color:#93c5fd;padding:0.45rem 1rem;">
+                    🔐 <span data-i18n="btn_open_e2ee">Domain Unlock Guide &amp; Link</span>
+                  </button>
+                </div>
+                <div class="guide-note" style="margin-top:0.4rem;" data-i18n="findmy_step2_note">
+                  💡 Tip: Open the Google Unlock page in a browser where your Google Account is signed in. On desktop, if it hangs or shows #close, your browser already received the payload — copy the key from DevTools (Network → encryption/unlock) and paste below.
+                </div>
+              </div>
+            </details>
           </div>
 
           <!-- Step 3 -->
@@ -1341,6 +1356,46 @@
         if (btn) {
           btn.disabled = false;
           btn.innerHTML = '⚡ ' + (currentDict.btn_gen_adm || 'Generate ADM Token');
+        }
+      }
+    }
+
+    async function autoExtractSharedKey() {
+      const btn = document.getElementById('btnAutoExtract');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ ' + (currentDict.extracting_e2ee || 'Extracting E2EE Key via headless browser… (~30s)');
+      }
+      try {
+        const res = await fetch(rootPath + '/api/findmy/extract-shared-key', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast('✅ ' + (currentDict.toast_e2ee_extracted || 'E2EE Shared Key extracted automatically!'));
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '✅ ' + (currentDict.btn_auto_extract_e2ee || 'Auto-Extract via Add-on');
+          }
+          const sharedValEl = document.getElementById('findmy-shared-val');
+          if (sharedValEl && data.shared_key) {
+            sharedValEl.innerHTML = data.shared_key.substring(0, 16) + '... ✅';
+            sharedValEl.style.color = '#4ade80';
+          }
+          // Also update the manual input
+          const manualInput = document.getElementById('manualSharedKeyInput');
+          if (manualInput && data.shared_key) manualInput.value = data.shared_key;
+        } else {
+          const errMsg = data.detail || (currentDict.e2ee_extract_failed || 'Auto-extraction failed. Please try the manual fallback below.');
+          showErrorModal(currentDict.modal_findmy_e2ee_title || '🔐 E2EE Key Extraction', errMsg);
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '🤖 ' + (currentDict.btn_auto_extract_e2ee || 'Auto-Extract via Add-on');
+          }
+        }
+      } catch (e) {
+        showErrorModal('Error', 'Connection error: ' + e);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '🤖 ' + (currentDict.btn_auto_extract_e2ee || 'Auto-Extract via Add-on');
         }
       }
     }
