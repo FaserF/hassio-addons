@@ -112,8 +112,8 @@ RUN \
             echo "⚠️ Download failed (likely Private Repository or Invalid Version)."; \
             echo "Skipping build stage. 'run.sh' will handle download with Token."; \
             # Ensure directories are clean/empty so run.sh detects missing code \
-            rm -rf /app/backend/* /app/frontend/* /app/docs/*; \
-            rm -f /tmp/build/source.tar.gz; \
+            mkdir -p /app/backend /app/frontend /app/docs && \
+            rm -rf /app/backend/* /app/frontend/* /app/docs/* /tmp/build/source.tar.gz 2>/dev/null || true; \
         fi; \
     fi
 
