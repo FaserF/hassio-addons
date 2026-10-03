@@ -12,6 +12,7 @@ import binascii
 import json
 import logging
 import os
+import urllib.parse
 import uuid
 from typing import Any, Dict, Optional
 
@@ -45,7 +46,55 @@ def get_security_domain_request_url() -> str:
     payload = b"\x08\x01" + domain_field + session_field
     b64_payload = binascii.b2a_base64(payload).decode("utf-8").strip()
 
-    return f"https://accounts.google.com/encryption/unlock/android?kdi={b64_payload}"
+    return f"https://accounts.google.com/encryption/unlock/android?kdi={urllib.parse.quote(b64_payload, safe='')}"
+
+
+GMS_APP_ID = "com.google.android.gms"
+OAUTHLOGIN_SERVICE = "oauth2:https://www.google.com/accounts/OAuthLogin"
+
+
+def get_browser_session_url(
+    email: str, master_token: str, continue_url: str, android_id: str = "android-701ab861a7be"
+) -> Optional[str]:
+    """Build a MergeSession URL that signs the headless browser in using the master token.
+
+    The headless Chromium has no Google cookies after a restart (Google Home works via
+    master token only). Navigating to this URL sets session cookies and then redirects
+    to ``continue_url``.
+    """
+    try:
+        import gpsoauth
+        import requests
+
+        res = gpsoauth.perform_oauth(
+            email,
+            master_token,
+            android_id,
+            service=OAUTHLOGIN_SERVICE,
+            app=GMS_APP_ID,
+            client_sig=ADM_CLIENT_SIG,
+        )
+        access_token = res.get("Auth")
+        if not access_token:
+            _LOGGER.warning("OAuthLogin token request rejected: %s", res.get("Error", "unknown"))
+            return None
+
+        resp = requests.get(
+            "https://accounts.google.com/OAuthLogin",
+            params={"source": "ChromiumBrowser", "issueuberauth": "1"},
+            headers={"Authorization": f"Bearer {access_token}"},
+            timeout=15,
+        )
+        if resp.status_code != 200 or not resp.text.strip():
+            _LOGGER.warning("Uberauth request failed with HTTP %s", resp.status_code)
+            return None
+
+        uberauth = resp.text.strip()
+        query = urllib.parse.urlencode({"uberauth": uberauth, "continue": continue_url, "source": "ChromiumBrowser"})
+        return f"https://accounts.google.com/MergeSession?{query}"
+    except Exception as err:
+        _LOGGER.warning("Failed to build browser session URL: %s", err)
+        return None
 
 
 def parse_vault_shared_keys(vault_keys_raw: str) -> Optional[str]:

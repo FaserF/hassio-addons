@@ -4,6 +4,7 @@ import logging
 import os
 import subprocess
 import time
+import urllib.parse
 from typing import Any, Callable, Dict, Optional
 
 from .cdp import CDPClient
@@ -687,61 +688,117 @@ class GoogleHomeBrowserService:
             self.auth_error = "Token exchange failed"
             self.auth_in_progress = False
 
-    async def _attempt_shared_key_extraction(self, email: str) -> Optional[str]:
-        """Attempt to retrieve the Google Find My E2EE Shared Key from the active browser session."""
-        try:
-            from .findmy_service import (
-                get_security_domain_request_url,
-                parse_vault_shared_keys,
-            )
+    async def _attempt_shared_key_extraction(
+        self, email: str, master_token: Optional[str] = None, poll_seconds: float = 45.0
+    ) -> Optional[str]:
+        """Attempt to retrieve the Google Find My E2EE Shared Key from the headless browser.
 
+        Steps:
+        1. Bootstrap Google cookies from the master token (MergeSession) - the browser
+           has no session after a restart.
+        2. Register the ``window.mm`` shim *before* any document loads, so the unlock
+           page's early ``setVaultSharedKeys`` call is never missed.
+        3. Navigate and poll for the callback.
+        """
+        from .findmy_service import (
+            get_browser_session_url,
+            get_security_domain_request_url,
+            parse_vault_shared_keys,
+        )
+
+        js_shim = """
+        (() => {
+            if (window.mm && window.__vaultShimInstalled) return;
+            window.__vaultShimInstalled = true;
+            window.__vaultKeysResult = window.__vaultKeysResult || null;
+            window.mm = {
+                setVaultSharedKeys: function(str, vaultKeys) {
+                    window.__vaultKeysResult = { method: 'setVaultSharedKeys', str: str, vaultKeys: vaultKeys };
+                },
+                closeView: function() {
+                    if (!window.__vaultKeysResult) {
+                        window.__vaultKeysResult = { method: 'closeView' };
+                    }
+                }
+            };
+        })();
+        """
+
+        last_url = ""
+        try:
             sec_url = get_security_domain_request_url()
-            _LOGGER.info("Navigating to Find My E2EE security domain unlock: %s", sec_url)
-            await self.cdp.send_cmd("Page.navigate", {"url": sec_url}, timeout=20.0)
+            target_url = sec_url
+            if master_token:
+                session_url = await asyncio.to_thread(get_browser_session_url, email, master_token, sec_url)
+                if session_url:
+                    target_url = session_url
+                    _LOGGER.info("Signing headless browser in via master token before E2EE unlock")
+                else:
+                    _LOGGER.warning("Could not bootstrap browser session; trying existing cookies")
+
+            await self.cdp.send_cmd("Page.enable", {})
+            await self.cdp.send_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": js_shim})
+            _LOGGER.info("Navigating to Find My E2EE security domain unlock")
+            await self.cdp.send_cmd("Page.navigate", {"url": target_url}, timeout=20.0)
             await asyncio.sleep(2.0)
             await self.cdp.reconnect_to_active_page()
-
-            # Inject JS interface window.mm
-            js_shim = """
-            (() => {
-                window.__vaultKeysResult = null;
-                window.mm = {
-                    setVaultSharedKeys: function(str, vaultKeys) {
-                        window.__vaultKeysResult = { method: 'setVaultSharedKeys', str: str, vaultKeys: vaultKeys };
-                    },
-                    closeView: function() {
-                        if (!window.__vaultKeysResult) {
-                            window.__vaultKeysResult = { method: 'closeView' };
-                        }
-                    }
-                };
-            })();
-            """
+            # Session may have changed after reconnect: re-register and inject immediately
+            await self.cdp.send_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": js_shim})
             await self.cdp.send_cmd("Runtime.evaluate", {"expression": js_shim, "returnByValue": True})
 
-            # Poll for window.__vaultKeysResult up to 15 seconds
-            for _ in range(30):
+            reloaded = False
+            steps = int(poll_seconds / 0.5)
+            for i in range(steps):
                 await asyncio.sleep(0.5)
                 res = await self.cdp.send_cmd(
                     "Runtime.evaluate",
                     {
-                        "expression": "window.__vaultKeysResult ? JSON.stringify(window.__vaultKeysResult) : null",
+                        "expression": (
+                            "JSON.stringify({r: window.__vaultKeysResult || null, u: location.href, "
+                            "s: !!window.__vaultShimInstalled})"
+                        ),
                         "returnByValue": True,
                     },
                 )
                 val = res.get("value") if res else None
-                if val and isinstance(val, str):
-                    try:
-                        data = json.loads(val)
-                        if data.get("method") == "setVaultSharedKeys" and data.get("vaultKeys"):
-                            shared_key_hex = parse_vault_shared_keys(data["vaultKeys"])
-                            if shared_key_hex:
-                                _LOGGER.info("Successfully extracted Find My Shared Key for %s", email)
-                                if self._on_shared_key_callback:
-                                    self._on_shared_key_callback(email, shared_key_hex)
-                                return shared_key_hex
-                    except Exception as err:
-                        _LOGGER.debug("Error parsing vault keys result: %s", err)
+                if not val or not isinstance(val, str):
+                    continue
+                try:
+                    data = json.loads(val)
+                except ValueError as err:
+                    _LOGGER.debug("Unparseable poll result: %s", err)
+                    continue
+
+                last_url = str(data.get("u") or "")
+                if not data.get("s"):
+                    await self.cdp.send_cmd("Runtime.evaluate", {"expression": js_shim, "returnByValue": True})
+
+                result = data.get("r")
+                if result and result.get("method") == "setVaultSharedKeys" and result.get("vaultKeys"):
+                    shared_key_hex = parse_vault_shared_keys(result["vaultKeys"])
+                    if shared_key_hex:
+                        _LOGGER.info("Successfully extracted Find My Shared Key for %s", email)
+                        if self._on_shared_key_callback:
+                            self._on_shared_key_callback(email, shared_key_hex)
+                        return shared_key_hex
+                    _LOGGER.warning("Received vault keys but could not parse a shared key")
+                    return None
+                if result and result.get("method") == "closeView":
+                    _LOGGER.warning("Unlock page closed without returning vault keys")
+                    return None
+
+                # Landed on unlock page after the shim was missed: reload once with shim pre-registered
+                if not reloaded and i > 10 and "encryption/unlock" in last_url:
+                    reloaded = True
+                    await self.cdp.send_cmd("Page.reload", {"ignoreCache": True})
         except Exception as err:
-            _LOGGER.debug("Background shared key extraction attempt: %s", err)
+            _LOGGER.warning("Shared key extraction failed: %s", err)
+            return None
+
+        host_path = urllib.parse.urlsplit(last_url)
+        _LOGGER.warning(
+            "Shared key extraction timed out. Browser ended at %s%s (sign-in or screen-lock confirmation required?)",
+            host_path.netloc,
+            host_path.path,
+        )
         return None

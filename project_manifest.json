@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-10-02T22:13:51.627145",
+  "timestamp": "2026-10-03T16:58:41.788022",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -478,7 +478,7 @@
       "slug": "googlehome",
       "rel_path": ".dev/googlehome",
       "name": "Google Home Token Hub",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Google Home Master Token Generator & Ingress Authentication Hub for Home Assistant.",
       "arch": ["aarch64", "amd64"],
       "image": "",

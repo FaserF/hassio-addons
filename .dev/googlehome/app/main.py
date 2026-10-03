@@ -841,11 +841,13 @@ async def post_extract_shared_key():
     # (we still proceed — let them call it again to refresh)
 
     # Run extraction in background and poll result
-    extraction_task = asyncio.create_task(browser_service._attempt_shared_key_extraction(state.email))
+    extraction_task = asyncio.create_task(
+        browser_service._attempt_shared_key_extraction(state.email, master_token=state.master_token)
+    )
 
-    # Wait up to 32 seconds for the task to complete
+    # Wait for sign-in bootstrap + unlock page (extraction polls up to 45s)
     try:
-        result = await asyncio.wait_for(asyncio.shield(extraction_task), timeout=32.0)
+        result = await asyncio.wait_for(asyncio.shield(extraction_task), timeout=75.0)
     except asyncio.TimeoutError:
         result = None
 
