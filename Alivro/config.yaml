@@ -1,8 +1,7 @@
 ---
-name: Alivro
-version: "0.1.0"
+name: Alivro (Edge)
+version: "0.1.1-dev-20261003-1617-2e80491"
 slug: alivro
-image: ghcr.io/faserf/hassio-addons-alivro-{arch}
 description: AI-Powered Mental Health & Well-being Companion.
 url: https://github.com/FaserF/Alivro
 arch:

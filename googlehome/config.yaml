@@ -1,5 +1,5 @@
-name: "Google Home Token Hub"
-version: "0.1.2"
+name: "Google Home Token Hub (Edge)"
+version: "0.1.3-dev-20261003-1617-72cb111"
 slug: "googlehome"
 description: "Google Home Master Token Generator & Ingress Authentication Hub for Home Assistant."
 url: "https://github.com/FaserF/ha-googlehome"
