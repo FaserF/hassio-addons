@@ -459,10 +459,12 @@ function _avatarPump() {
   while (_avatarActive < _AVATAR_MAX_CONCURRENT && _avatarWaiting.length) {
     const job = _avatarWaiting.shift();
     _avatarActive++;
-    _fetchAvatarNow(job.jid).then(job.resolve, job.resolve).finally(() => {
-      _avatarActive--;
-      _avatarPump();
-    });
+    _fetchAvatarNow(job.jid)
+      .then(job.resolve, job.resolve)
+      .finally(() => {
+        _avatarActive--;
+        _avatarPump();
+      });
   }
 }
 
