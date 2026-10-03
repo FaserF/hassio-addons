@@ -76,7 +76,7 @@ RUN \
     DOWNLOAD_URL="" && \
     if [ "${ALIVRO_VERSION}" = "latest" ]; then \
         # Try to find latest tag via API (with Accept header for better rate limits)
-        TAG_NAME=$(curl -s -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/FaserF/Alivro/releases/latest | grep '"tag_name":' | sed -E 's/.*"tag_name": "([^"]+)".*/\1/'); \
+        TAG_NAME=$(curl -s -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/FaserF/Alivro/releases/latest | { grep '"tag_name":' || true; } | sed -E 's/.*"tag_name": "([^"]+)".*/\1/'); \
         if [ -n "$TAG_NAME" ]; then \
             echo "Resolved latest version to: ${TAG_NAME}"; \
             DOWNLOAD_URL="https://api.github.com/repos/FaserF/Alivro/tarball/${TAG_NAME}"; \
