@@ -155,5 +155,18 @@
   "findmy_step2_desc": "Google encrypts GPS tracker coordinates end-to-end. The add-on can extract this key automatically using the same headless browser session that generated your Master Token.",
   "findmy_step2_auto_note": "✅ The add-on automatically navigates to the Google security domain unlock URL in its headless browser and captures the key — no DevTools or manual steps needed.",
   "findmy_step2_manual_toggle": "🔧 Manual fallback (if auto-extract fails)",
-  "findmy_step2_note": "💡 Tip: Open the Google Unlock page in a browser where your Google Account is signed in. On desktop, if it hangs or shows #close, your browser already received the payload — copy the key from DevTools (Network → encryption/unlock) and paste below."
+  "findmy_step2_note": "💡 Tip: Open the Google Unlock page in a browser where your Google Account is signed in. On desktop, if it hangs or shows #close, your browser already received the payload — copy the key from DevTools (Network → encryption/unlock) and paste below.",
+  "step_extract_init": "🌐 Launching Headless Chromium...",
+  "step_extract_init_desc": "Starting clean browser instance in background...",
+  "step_extract_signing_in": "🔑 Authenticating Session...",
+  "step_extract_signing_in_desc": "Bootstrapping Google session cookies via Master Token...",
+  "step_extract_navigating": "🔓 Requesting E2EE Unlock...",
+  "step_extract_navigating_desc": "Navigating to Google security domain unlock URL...",
+  "step_extract_waiting": "✨ Capturing E2EE Encryption Keys...",
+  "step_extract_waiting_desc": "Listening for Google security callback...",
+  "step_extract_challenge": "⚠️ Security Verification Required",
+  "step_extract_challenge_desc": "Google requires password re-entry or screen-lock confirmation.",
+  "step_extract_success": "✅ Key Successfully Extracted!",
+  "step_extract_success_desc": "E2EE Shared Key captured and verified.",
+  "step_extract_processing_desc": "Communicating with Google services..."
 }

@@ -822,6 +822,19 @@ async def get_findmy_security_url():
     return {"url": url}
 
 
+@app.get("/api/findmy/extract-status")
+@app.get("/api/v1/findmy/extract-status")
+async def get_findmy_extract_status():
+    """Return the live progress status of E2EE shared key extraction."""
+    return {
+        "in_progress": browser_service.extraction_in_progress,
+        "step": browser_service.extraction_step,
+        "error": browser_service.extraction_error,
+        "has_shared_key": bool(state.findmy_shared_key),
+        "shared_key": state.findmy_shared_key,
+    }
+
+
 @app.post("/api/findmy/extract-shared-key")
 @app.post("/api/v1/findmy/extract-shared-key")
 async def post_extract_shared_key():
@@ -867,15 +880,13 @@ async def post_extract_shared_key():
             "message": "E2EE Shared Key captured via browser session.",
         }
 
-    raise HTTPException(
-        status_code=408,
-        detail=(
-            "Could not automatically extract the E2EE Shared Key. "
-            "This usually means the headless browser session has expired or "
-            "Google requires a fresh screen-lock confirmation. "
-            "Try using the manual Google Unlock flow below."
-        ),
+    err_detail = browser_service.extraction_error or (
+        "Could not automatically extract the E2EE Shared Key. "
+        "This usually means the headless browser session has expired or "
+        "Google requires a fresh screen-lock confirmation. "
+        "Try using the manual Google Unlock flow below."
     )
+    raise HTTPException(status_code=408, detail=err_detail)
 
 
 @app.post("/api/findmy/deploy")

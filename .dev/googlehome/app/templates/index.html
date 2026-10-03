@@ -838,10 +838,26 @@
             <div class="guide-step-desc" data-i18n="findmy_step2_desc">
               Google encrypts GPS tracker coordinates end-to-end. The add-on can extract this key automatically using the same headless browser session that generated your Master Token.
             </div>
-            <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
               <button class="btn-action" onclick="autoExtractSharedKey()" id="btnAutoExtract" style="background:#1d4ed8;color:#fff;padding:0.45rem 1rem;font-weight:600;">
                 🤖 <span data-i18n="btn_auto_extract_e2ee">Auto-Extract via Add-on</span>
               </button>
+            </div>
+            <!-- Extraction Progress Card -->
+            <div id="extractProgressContainer" class="hidden" style="display:none;margin-top:0.75rem;background:rgba(15,23,42,0.7);border:1px solid #334155;border-radius:8px;padding:0.85rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;margin-bottom:0.4rem;">
+                <span id="extractStepTitle" style="font-weight:600;color:#93c5fd;display:flex;align-items:center;gap:0.4rem;">
+                  <span class="spinner" style="display:inline-block;width:12px;height:12px;border:2px solid #60a5fa;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span>
+                  <span id="extractStepText">Starting extraction...</span>
+                </span>
+                <span id="extractStepPercent" style="font-weight:700;color:#38bdf8;font-size:0.78rem;">10%</span>
+              </div>
+              <div style="width:100%;height:6px;background:rgba(255,255,255,0.08);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);">
+                <div id="extractProgressBar" style="width:10%;height:100%;background:linear-gradient(90deg, #2563eb, #38bdf8);border-radius:999px;transition:width 0.4s ease;"></div>
+              </div>
+              <div id="extractStepDetail" style="font-size:0.75rem;color:var(--muted);margin-top:0.4rem;">
+                Initializing headless browser session...
+              </div>
             </div>
             <div class="guide-note" style="margin-top:0.5rem;" data-i18n="findmy_step2_auto_note">
               ✅ The add-on automatically navigates to the Google security domain unlock URL in its headless browser and captures the key — no DevTools or manual steps needed.
@@ -1465,16 +1481,105 @@
       }
     }
 
+    function getExtractionStepInfo(step) {
+      switch (step) {
+        case 'init':
+          return {
+            percent: 15,
+            title: currentDict.step_extract_init || '🌐 Launching Headless Chromium...',
+            detail: currentDict.step_extract_init_desc || 'Starting clean browser instance in background...'
+          };
+        case 'signing_in':
+          return {
+            percent: 40,
+            title: currentDict.step_extract_signing_in || '🔑 Authenticating Session...',
+            detail: currentDict.step_extract_signing_in_desc || 'Bootstrapping Google session cookies via Master Token...'
+          };
+        case 'navigating_unlock':
+          return {
+            percent: 65,
+            title: currentDict.step_extract_navigating || '🔓 Requesting E2EE Unlock...',
+            detail: currentDict.step_extract_navigating_desc || 'Navigating to Google security domain unlock URL...'
+          };
+        case 'waiting_keys':
+          return {
+            percent: 85,
+            title: currentDict.step_extract_waiting || '✨ Capturing E2EE Encryption Keys...',
+            detail: currentDict.step_extract_waiting_desc || 'Listening for Google security callback...'
+          };
+        case 'challenge_detected':
+          return {
+            percent: 90,
+            title: currentDict.step_extract_challenge || '⚠️ Security Verification Required',
+            detail: currentDict.step_extract_challenge_desc || 'Google requires password re-entry or screen-lock confirmation.'
+          };
+        case 'success':
+          return {
+            percent: 100,
+            title: currentDict.step_extract_success || '✅ Key Successfully Extracted!',
+            detail: currentDict.step_extract_success_desc || 'E2EE Shared Key captured and verified.'
+          };
+        default:
+          return {
+            percent: 25,
+            title: currentDict.processing || '⏳ Processing...',
+            detail: currentDict.step_extract_processing_desc || 'Communicating with Google services...'
+          };
+      }
+    }
+
     async function autoExtractSharedKey() {
       const btn = document.getElementById('btnAutoExtract');
+      const progressBox = document.getElementById('extractProgressContainer');
+      const stepText = document.getElementById('extractStepText');
+      const stepPercent = document.getElementById('extractStepPercent');
+      const progressBar = document.getElementById('extractProgressBar');
+      const stepDetail = document.getElementById('extractStepDetail');
+
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '⏳ ' + (currentDict.extracting_e2ee || 'Extracting E2EE Key via headless browser… (~30s)');
+        btn.innerHTML = '⏳ ' + (currentDict.extracting_e2ee || 'Extracting E2EE Key via headless browser…');
       }
+
+      if (progressBox) {
+        progressBox.style.display = 'block';
+        const initInfo = getExtractionStepInfo('init');
+        if (stepText) stepText.innerHTML = initInfo.title;
+        if (stepPercent) stepPercent.innerHTML = initInfo.percent + '%';
+        if (progressBar) progressBar.style.width = initInfo.percent + '%';
+        if (stepDetail) stepDetail.innerHTML = initInfo.detail;
+      }
+
+      let pollInterval = setInterval(async () => {
+        try {
+          const sRes = await fetch(rootPath + '/api/findmy/extract-status');
+          if (sRes.ok) {
+            const sData = await sRes.json();
+            if (sData.step) {
+              const info = getExtractionStepInfo(sData.step);
+              if (stepText) stepText.innerHTML = info.title;
+              if (stepPercent) stepPercent.innerHTML = info.percent + '%';
+              if (progressBar) progressBar.style.width = info.percent + '%';
+              if (stepDetail) stepDetail.innerHTML = sData.error || info.detail;
+            }
+          }
+        } catch (e) {}
+      }, 1000);
+
       try {
         const res = await fetch(rootPath + '/api/findmy/extract-shared-key', { method: 'POST' });
+        clearInterval(pollInterval);
         const data = await res.json();
         if (res.ok && data.success) {
+          const succInfo = getExtractionStepInfo('success');
+          if (stepText) stepText.innerHTML = succInfo.title;
+          if (stepPercent) stepPercent.innerHTML = '100%';
+          if (progressBar) {
+            progressBar.style.width = '100%';
+            progressBar.style.background = '#22c55e';
+          }
+          if (stepDetail) stepDetail.innerHTML = succInfo.detail;
+
           showToast('✅ ' + (currentDict.toast_e2ee_extracted || 'E2EE Shared Key extracted automatically!'));
           if (btn) {
             btn.disabled = false;
@@ -1490,6 +1595,8 @@
           if (manualInput && data.shared_key) manualInput.value = data.shared_key;
         } else {
           const errMsg = data.detail || (currentDict.e2ee_extract_failed || 'Auto-extraction failed. Please try the manual fallback below.');
+          if (stepDetail) stepDetail.innerHTML = `<span style="color:#f87171;">${errMsg}</span>`;
+          if (progressBar) progressBar.style.background = '#ef4444';
           showErrorModal(currentDict.modal_findmy_e2ee_title || '🔐 E2EE Key Extraction', errMsg);
           if (btn) {
             btn.disabled = false;
@@ -1497,6 +1604,7 @@
           }
         }
       } catch (e) {
+        clearInterval(pollInterval);
         showErrorModal('Error', 'Connection error: ' + e);
         if (btn) {
           btn.disabled = false;

@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-10-03T16:59:27.838216",
+  "timestamp": "2026-10-03T17:57:26.724300",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
@@ -673,7 +673,7 @@
     },
     "googlehome": {
       "name": "Google Home Token Hub",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "description": "Google Home Master Token Generator & Ingress Authentication Hub for Home Assistant.",
       "arch": ["aarch64", "amd64"],
       "image": "",

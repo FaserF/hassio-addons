@@ -22,6 +22,9 @@ class GoogleHomeBrowserService:
         self.auth_in_progress: bool = False
         self.auth_step: str = "idle"
         self.auth_error: Optional[str] = None
+        self.extraction_in_progress: bool = False
+        self.extraction_step: str = "idle"
+        self.extraction_error: Optional[str] = None
         self.two_factor_data: Dict[str, Any] = {}
         self._auth_task: Optional[asyncio.Task] = None
         self._target_email: Optional[str] = None
@@ -676,7 +679,7 @@ class GoogleHomeBrowserService:
                 self.auth_in_progress = False
                 _LOGGER.info("Master Token successfully generated for %s", email)
                 # Attempt background retrieval of Find My E2EE shared key using the active authenticated browser session
-                asyncio.create_task(self._attempt_shared_key_extraction(email))
+                asyncio.create_task(self._attempt_shared_key_extraction(email, master_token=master_token))
             else:
                 err_code = res.get("Error", "ExchangeFailed")
                 self.auth_step = "error"
@@ -724,11 +727,18 @@ class GoogleHomeBrowserService:
         })();
         """
 
+        self.extraction_in_progress = True
+        self.extraction_step = "init"
+        self.extraction_error = None
         last_url = ""
+
         try:
+            await self.start_chromium()
+
             sec_url = get_security_domain_request_url()
             target_url = sec_url
             if master_token:
+                self.extraction_step = "signing_in"
                 session_url = await asyncio.to_thread(get_browser_session_url, email, master_token, sec_url)
                 if session_url:
                     target_url = session_url
@@ -736,6 +746,7 @@ class GoogleHomeBrowserService:
                 else:
                     _LOGGER.warning("Could not bootstrap browser session; trying existing cookies")
 
+            self.extraction_step = "navigating_unlock"
             await self.cdp.send_cmd("Page.enable", {})
             await self.cdp.send_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": js_shim})
             _LOGGER.info("Navigating to Find My E2EE security domain unlock")
@@ -746,6 +757,7 @@ class GoogleHomeBrowserService:
             await self.cdp.send_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": js_shim})
             await self.cdp.send_cmd("Runtime.evaluate", {"expression": js_shim, "returnByValue": True})
 
+            self.extraction_step = "waiting_keys"
             reloaded = False
             steps = int(poll_seconds / 0.5)
             for i in range(steps):
@@ -770,6 +782,14 @@ class GoogleHomeBrowserService:
                     continue
 
                 last_url = str(data.get("u") or "")
+
+                if "challenge" in last_url or "signin" in last_url:
+                    self.extraction_step = "challenge_detected"
+                    self.extraction_error = (
+                        "Google requires password or screen-lock confirmation for this session. "
+                        "Please use the manual Google Unlock flow below."
+                    )
+
                 if not data.get("s"):
                     await self.cdp.send_cmd("Runtime.evaluate", {"expression": js_shim, "returnByValue": True})
 
@@ -778,13 +798,21 @@ class GoogleHomeBrowserService:
                     shared_key_hex = parse_vault_shared_keys(result["vaultKeys"])
                     if shared_key_hex:
                         _LOGGER.info("Successfully extracted Find My Shared Key for %s", email)
+                        self.extraction_step = "success"
+                        self.extraction_in_progress = False
                         if self._on_shared_key_callback:
                             self._on_shared_key_callback(email, shared_key_hex)
                         return shared_key_hex
                     _LOGGER.warning("Received vault keys but could not parse a shared key")
+                    self.extraction_step = "error"
+                    self.extraction_error = "Received vault keys but could not parse a shared key."
+                    self.extraction_in_progress = False
                     return None
                 if result and result.get("method") == "closeView":
                     _LOGGER.warning("Unlock page closed without returning vault keys")
+                    self.extraction_step = "error"
+                    self.extraction_error = "Unlock page closed without returning vault keys."
+                    self.extraction_in_progress = False
                     return None
 
                 # Landed on unlock page after the shim was missed: reload once with shim pre-registered
@@ -793,6 +821,9 @@ class GoogleHomeBrowserService:
                     await self.cdp.send_cmd("Page.reload", {"ignoreCache": True})
         except Exception as err:
             _LOGGER.warning("Shared key extraction failed: %s", err)
+            self.extraction_step = "error"
+            self.extraction_error = f"Extraction error: {err}"
+            self.extraction_in_progress = False
             return None
 
         host_path = urllib.parse.urlsplit(last_url)
@@ -801,4 +832,18 @@ class GoogleHomeBrowserService:
             host_path.netloc,
             host_path.path,
         )
+        self.extraction_in_progress = False
+        if not self.extraction_error:
+            if "challenge" in last_url or "signin" in last_url:
+                self.extraction_step = "challenge_detected"
+                self.extraction_error = (
+                    "Google requires password or screen-lock confirmation. "
+                    "Please use the manual Google Unlock flow below."
+                )
+            else:
+                self.extraction_step = "timeout"
+                self.extraction_error = (
+                    "Extraction timed out. Google may require manual screen-lock confirmation. "
+                    "Please use the manual Google Unlock flow below."
+                )
         return None

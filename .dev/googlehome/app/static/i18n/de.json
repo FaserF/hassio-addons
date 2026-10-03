@@ -155,5 +155,18 @@
   "findmy_step2_desc": "Google verschlüsselt Tracker-Standorte Ende-zu-Ende. Das Add-on kann diesen Schlüssel automatisch über dieselbe Hintergrund-Browser-Sitzung extrahieren, die deinen Master-Token generiert hat.",
   "findmy_step2_auto_note": "✅ Das Add-on navigiert automatisch zur Google Security-Domain-Freigabe-URL im Hintergrund-Browser und erfasst den Schlüssel — keine DevTools oder manuellen Schritte erforderlich.",
   "findmy_step2_manual_toggle": "🔧 Manueller Fallback (wenn Auto-Extraktion fehlschlägt)",
-  "findmy_step2_note": "💡 Tipp: Öffne die Google Unlock-Seite in einem Browser, in dem du mit deinem Google-Konto angemeldet bist. Am Desktop: Bleibt sie hängen oder zeigt #close, hat dein Browser das Payload bereits empfangen — kopiere den Schlüssel aus den DevTools (Netzwerk → encryption/unlock) und füge ihn unten ein."
+  "findmy_step2_note": "💡 Tipp: Öffne die Google Unlock-Seite in einem Browser, in dem du mit deinem Google-Konto angemeldet bist. Am Desktop: Bleibt sie hängen oder zeigt #close, hat dein Browser das Payload bereits empfangen — kopiere den Schlüssel aus den DevTools (Netzwerk → encryption/unlock) und füge ihn unten ein.",
+  "step_extract_init": "🌐 Starte Chromium Hintergrund-Browser...",
+  "step_extract_init_desc": "Initialisiere saubere Browser-Instanz...",
+  "step_extract_signing_in": "🔑 Sitzung wird authentifiziert...",
+  "step_extract_signing_in_desc": "Erzeuge Google-Sitzungscookies via Master-Token...",
+  "step_extract_navigating": "🔓 Fordere E2EE-Freigabe an...",
+  "step_extract_navigating_desc": "Navigiere zur Google Security-Domain-Freigabeseite...",
+  "step_extract_waiting": "✨ Fange E2EE-Schlüssel ab...",
+  "step_extract_waiting_desc": "Warte auf Rückruf der Google-Sicherheitsdomain...",
+  "step_extract_challenge": "⚠️ Sicherheitsabfrage erforderlich",
+  "step_extract_challenge_desc": "Google verlangt eine Passworteingabe oder Bildschirmsperren-Bestätigung.",
+  "step_extract_success": "✅ Schlüssel erfolgreich extrahiert!",
+  "step_extract_success_desc": "E2EE Shared Key abgefangen und verifiziert.",
+  "step_extract_processing_desc": "Kommuniziere mit Google-Diensten..."
 }
