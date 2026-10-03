@@ -154,13 +154,84 @@ export function generateMessageID() {
 /**
  * Matches a message against a target JID, resolving LIDs, remoteJidAlt, and aliases.
  */
+// PERF PATCH: resolve the target's aliases (LID <-> PN, self) once per target instead of
+// scanning the whole contactCache for every stored message (O(messages x contacts)).
+const _targetAliasCache = new WeakMap();
+const _ALIAS_TTL_MS = 5000;
+
+function _digitsOf(jid) {
+  return normalizeJid(jid).split('@')[0].replace(/\D/g, '');
+}
+
+function _getTargetAliases(targetJid, session) {
+  const key = session || _ALIAS_TTL_MS;
+  const holder = typeof key === 'object' ? key : _targetAliasCache;
+  let perSession = _targetAliasCache.get(holder);
+  if (!perSession) {
+    perSession = new Map();
+    _targetAliasCache.set(holder, perSession);
+  }
+  const csize = session?.contactCache?.size || 0;
+  const hit = perSession.get(targetJid);
+  const now = Date.now();
+  if (hit && hit.csize === csize && now - hit.at < _ALIAS_TTL_MS) return hit;
+
+  const normT = normalizeJid(targetJid);
+  const userT = normT.split('@')[0];
+  const digitsT = userT.replace(/\D/g, '');
+  const ids = new Set([normT, userT]);
+  if (digitsT) ids.add(digitsT);
+
+  let selfDigits = [];
+  if (session?.sock?.user) {
+    const u = session.sock.user;
+    const myId = u.id ? normalizeJid(u.id).split('@')[0] : '';
+    const myLid = u.lid ? normalizeJid(u.lid).split('@')[0] : '';
+    const myNum = session.stats?.my_number ? session.stats.my_number.replace(/\D/g, '') : '';
+    selfDigits = [myId, myLid, myNum].map((x) => x.replace(/\D/g, '')).filter(Boolean);
+  }
+  const targetIsSelf = selfDigits.some(
+    (d) => d === digitsT || (d.length >= 7 && digitsT.endsWith(d))
+  );
+
+  if (digitsT && session?.contactCache) {
+    for (const contact of session.contactCache.values()) {
+      const known = [
+        contact.id ? _digitsOf(contact.id) : '',
+        contact.lid ? _digitsOf(contact.lid) : '',
+        contact.phoneNumber ? contact.phoneNumber.replace(/\D/g, '') : '',
+      ].filter(Boolean);
+      if (known.includes(digitsT)) for (const k of known) ids.add(k);
+    }
+  }
+
+  const entry = { at: now, csize, ids, selfDigits, targetIsSelf };
+  perSession.set(targetJid, entry);
+  if (perSession.size > 200) perSession.delete(perSession.keys().next().value);
+  return entry;
+}
+
+function _jidMatchesAliases(jid, al) {
+  const norm = normalizeJid(jid);
+  if (al.ids.has(norm)) return true;
+  const user = norm.split('@')[0];
+  if (al.ids.has(user)) return true;
+  const digits = user.replace(/\D/g, '');
+  if (digits && al.ids.has(digits)) return true;
+  if (al.targetIsSelf && digits) {
+    return al.selfDigits.some((d) => d === digits || (d.length >= 7 && digits.endsWith(d)));
+  }
+  return false;
+}
+
 export function isMessageForJid(msg, targetJid, session = null) {
   if (!msg?.key || !targetJid) return false;
   const remoteJid = msg.key.remoteJid;
   if (!remoteJid) return false;
   if (remoteJid === targetJid) return true;
   if (msg.key.remoteJidAlt && msg.key.remoteJidAlt === targetJid) return true;
-  return isSameUser(remoteJid, targetJid, session);
+  const al = _getTargetAliases(targetJid, session);
+  return _jidMatchesAliases(remoteJid, al);
 }
 
 /**

@@ -241,8 +241,14 @@ export function registerUiApiRoutes(app) {
       if (!targetJid) return res.status(400).json({ detail: 'Missing jid parameter' });
       if (!session || !session.messageStore) return res.json([]);
 
+      // PERF PATCH: only return the most recent messages (default 100) so large chats
+      // don't send MBs through the ingress on every 2.5s poll.
+      const msgLimit = Math.min(Math.max(parseInt(req.query.limit, 10) || 100, 1), 1000);
+      const tsOf = (m) => Number(m.messageTimestamp?.low || m.messageTimestamp || 0);
       const messages = Array.from(session.messageStore.values())
         .filter((msg) => isMessageForJid(msg, targetJid, session))
+        .sort((a, b) => tsOf(a) - tsOf(b))
+        .slice(-msgLimit)
         .map((msg) => {
           const timestamp = (msg.messageTimestamp?.low || msg.messageTimestamp || 0) * 1000;
           const text = getMessageText(msg);

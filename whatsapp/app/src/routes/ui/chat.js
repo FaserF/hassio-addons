@@ -424,7 +424,7 @@ function renderChatList(chats) {
     .join('');
 
   // Fetch avatars for list items in background
-  filtered.forEach((c) => {
+  filtered.slice(0, 40).forEach((c) => {
     if (avatarCache[c.jid] === undefined) {
       fetchAvatar(c.jid);
     }
@@ -448,7 +448,39 @@ function goBackToChatList(event) {
 
 const avatarCache = {};
 
-async function fetchAvatar(jid) {
+// PERF PATCH: avatar requests were fired for every chat at once (hundreds), saturating the
+// browser's ~6 connections per origin and starving messages/presence requests.
+const _avatarInflight = {};
+const _avatarWaiting = [];
+let _avatarActive = 0;
+const _AVATAR_MAX_CONCURRENT = 3;
+
+function _avatarPump() {
+  while (_avatarActive < _AVATAR_MAX_CONCURRENT && _avatarWaiting.length) {
+    const job = _avatarWaiting.shift();
+    _avatarActive++;
+    _fetchAvatarNow(job.jid).then(job.resolve, job.resolve).finally(() => {
+      _avatarActive--;
+      _avatarPump();
+    });
+  }
+}
+
+function fetchAvatar(jid, priority = false) {
+  if (avatarCache[jid] !== undefined) return Promise.resolve(avatarCache[jid]);
+  if (_avatarInflight[jid]) return _avatarInflight[jid];
+  if (priority) {
+    _avatarInflight[jid] = _fetchAvatarNow(jid).finally(() => delete _avatarInflight[jid]);
+    return _avatarInflight[jid];
+  }
+  _avatarInflight[jid] = new Promise((resolve) => {
+    _avatarWaiting.push({ jid, resolve });
+    _avatarPump();
+  }).finally(() => delete _avatarInflight[jid]);
+  return _avatarInflight[jid];
+}
+
+async function _fetchAvatarNow(jid) {
   if (avatarCache[jid] !== undefined) return avatarCache[jid];
   try {
     const headers = {};
@@ -513,7 +545,7 @@ function selectChat(jid, name) {
       ? `<img src="${cached}" class="avatar-img" alt="Avatar">`
       : `<i class="fas ${iconClass}"></i>`;
   }
-  fetchAvatar(jid);
+  fetchAvatar(jid, true);
 
   const finalDisplayName =
     name === '__ME_SELF_BOT__'
