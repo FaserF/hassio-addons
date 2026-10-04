@@ -168,5 +168,7 @@
   "step_extract_challenge_desc": "Google verlangt eine Passworteingabe oder Bildschirmsperren-Bestätigung.",
   "step_extract_success": "✅ Schlüssel erfolgreich extrahiert!",
   "step_extract_success_desc": "E2EE Shared Key abgefangen und verifiziert.",
-  "step_extract_processing_desc": "Kommuniziere mit Google-Diensten..."
+  "step_extract_processing_desc": "Kommuniziere mit Google-Diensten...",
+  "modal_screenlock_title": "📱 Google Bildschirmsperre erforderlich",
+  "screenlock_modal_intro": "Google schützt deine Find My Tracker-Schlüssel mit der <b>Bildschirmsperre (PIN/Muster/Fingerabdruck) deines Android-Geräts</b>. Da dieser Server kein physisches Display besitzt, fordert Google die Freigabe über dein registriertes Smartphone oder deinen Browser an."
 }

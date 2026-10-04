@@ -1597,7 +1597,14 @@
           const errMsg = data.detail || (currentDict.e2ee_extract_failed || 'Auto-extraction failed. Please try the manual fallback below.');
           if (stepDetail) stepDetail.innerHTML = `<span style="color:#f87171;">${errMsg}</span>`;
           if (progressBar) progressBar.style.background = '#ef4444';
-          showErrorModal(currentDict.modal_findmy_e2ee_title || '🔐 E2EE Key Extraction', errMsg);
+
+          // If Google requires on-device screen lock unlock, present a friendly action modal
+          if (errMsg.includes("screen-lock") || errMsg.includes("isn't unlocked") || errMsg.includes("Bildschirmsperre")) {
+            showScreenLockModal(errMsg);
+          } else {
+            showErrorModal(currentDict.modal_findmy_e2ee_title || '🔐 E2EE Key Extraction', errMsg);
+          }
+
           if (btn) {
             btn.disabled = false;
             btn.innerHTML = '🤖 ' + (currentDict.btn_auto_extract_e2ee || 'Auto-Extract via Add-on');
@@ -1610,6 +1617,41 @@
           btn.disabled = false;
           btn.innerHTML = '🤖 ' + (currentDict.btn_auto_extract_e2ee || 'Auto-Extract via Add-on');
         }
+      }
+    }
+
+    async function showScreenLockModal(reasonText) {
+      try {
+        const res = await fetch(rootPath + '/api/findmy/security-url');
+        const sdata = await res.json();
+        const unlockUrl = sdata.url || '#';
+        const title = currentDict.modal_screenlock_title || '📱 Google Bildschirmsperre erforderlich';
+        const body = `
+          <div style="font-size:0.88rem;color:#cbd5e1;line-height:1.5;">
+            <div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:0.75rem;margin-bottom:0.85rem;color:#fca5a5;">
+              ⚠️ <b>Google Sicherheitsvorgabe:</b> ${reasonText}
+            </div>
+            <p style="margin-top:0;">
+              ${currentDict.screenlock_modal_intro || "Google schützt deine Find My Tracker-Schlüssel mit der <b>Bildschirmsperre (PIN/Muster/Fingerabdruck) deines Android-Geräts</b>. Da dieser Server kein physisches Display besitzt, fordert Google die Freigabe über dein registriertes Smartphone oder deinen Browser an."}
+            </p>
+            <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:0.85rem;border:1px solid #223049;margin:0.75rem 0;">
+              <div style="font-weight:600;color:#93c5fd;margin-bottom:0.4rem;">💡 Schnelle Lösung (1 Klick):</div>
+              <ol style="margin:0;padding-left:1.2rem;font-size:0.83rem;color:#94a3b8;">
+                <li style="margin-bottom:0.35rem;">Klicke unten auf <b>„Freigabe-Seite öffnen“</b> (im Browser deines Handys oder PCs).</li>
+                <li style="margin-bottom:0.35rem;">Bestätige deine PIN, dein Gerätemuster oder dein Google-Passwort.</li>
+                <li>Trage den angezeigten 64-stelligen Schlüssel in das Feld <b>„Manueller Schlüssel-Import“</b> ein – fertig!</li>
+              </ol>
+            </div>
+            <div style="text-align:center;margin:1.25rem 0 0.5rem 0;">
+              <a href="${unlockUrl}" target="_blank" rel="noopener noreferrer" class="btn-modal-link" style="padding:0.75rem 1.4rem;font-size:0.95rem;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:0.5rem;">
+                🔓 ${currentDict.btn_open_google_unlock || 'Google Domain Unlock Seite öffnen'} ↗
+              </a>
+            </div>
+          </div>
+        `;
+        openModal(title, body);
+      } catch (e) {
+        showErrorModal('Error', reasonText);
       }
     }
 

@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-10-04T14:56:16.883022",
+  "timestamp": "2026-10-04T15:02:47.786286",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -804,8 +804,7 @@
       "Dockerfile",
       "README.md",
       "build.yaml",
-      "config.yaml",
-      "test_login_local.py"
+      "config.yaml"
     ],
     "traderepublic/app": ["browser.py", "main.py"],
     "traderepublic/app/core": [

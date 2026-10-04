@@ -168,5 +168,7 @@
   "step_extract_challenge_desc": "Google requires password re-entry or screen-lock confirmation.",
   "step_extract_success": "✅ Key Successfully Extracted!",
   "step_extract_success_desc": "E2EE Shared Key captured and verified.",
-  "step_extract_processing_desc": "Communicating with Google services..."
+  "step_extract_processing_desc": "Communicating with Google services...",
+  "modal_screenlock_title": "📱 Google Device Screen Lock Required",
+  "screenlock_modal_intro": "Google protects your Find My Device encryption keys using the <b>screen lock (PIN/pattern/fingerprint) of your Android device</b>. Because this server has no physical display, Google requires you to authorize it on your registered phone or desktop browser."
 }
