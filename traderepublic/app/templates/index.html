@@ -847,6 +847,8 @@
       }
     }
 
+    let qrAutoRefreshTimer = null;
+
     async function loadQRCode(forceRefresh = false) {
       const imgEl = document.getElementById('qr-code-img');
       if (!imgEl) return;
@@ -867,6 +869,14 @@
         console.debug('Failed to fetch QR code:', err);
       } finally {
         imgEl.style.opacity = '1';
+        if (!qrAutoRefreshTimer) {
+          qrAutoRefreshTimer = setInterval(() => {
+            const qrStep = document.getElementById('step-qr');
+            if (qrStep && !qrStep.classList.contains('hidden')) {
+              loadQRCode(false);
+            }
+          }, 45000);
+        }
       }
     }
 

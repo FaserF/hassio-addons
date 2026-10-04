@@ -180,46 +180,39 @@ class AuthHelper:
     async def extract_qr_code(self) -> Optional[str]:
         """Extract QR code as base64 data URI or screenshot from Trade Republic login page."""
         try:
-            # 1. First ensure we are in QR mode (switch back if in phone mode or if expired button is shown)
+            # 1. Check if the QR code is expired (.qrLoginCard__expired or blur overlay)
+            expired_check_script = """
+            (() => {
+                const exp = document.querySelector('.qrLoginCard__expired, .qrLoginCard__refreshIcon, [class*="expired"]');
+                if (exp) {
+                    const r = exp.getBoundingClientRect();
+                    return { expired: true, x: r.x + r.width / 2, y: r.y + r.height / 2 };
+                }
+                return { expired: false };
+            })()
+            """
+            exp_res = await self.cdp.send_cmd(
+                "Runtime.evaluate", {"expression": expired_check_script, "returnByValue": True}
+            )
+            exp_val = exp_res and exp_res.get("result", {}).get("value")
+            if exp_val and exp_val.get("expired"):
+                _LOGGER.info("QR code expired overlay detected — clicking reload icon via CDP...")
+                x = exp_val.get("x", 620)
+                y = exp_val.get("y", 225)
+                await self.cdp.send_cmd(
+                    "Input.dispatchMouseEvent",
+                    {"type": "mousePressed", "x": x, "y": y, "button": "left", "clickCount": 1},
+                )
+                await self.cdp.send_cmd(
+                    "Input.dispatchMouseEvent",
+                    {"type": "mouseReleased", "x": x, "y": y, "button": "left", "clickCount": 1},
+                )
+                await asyncio.sleep(2.0)
+
+            # 2. Ensure we are in QR mode (switch back if in phone mode)
             qr_prep_script = """
             (() => {
-                // 1. Check if the QR is expired (circle-arrow overlay or text)
-                // Trade Republic shows an overlay with a circular reload icon or blur over the QR code
-                const allElements = Array.from(document.querySelectorAll('button, div[role="button"], a, svg, span, p, div'));
-                const reloadBtn = allElements.find(el => {
-                    const txt = (el.textContent || '').trim().toLowerCase();
-                    const aria = (el.getAttribute('aria-label') || '').toLowerCase();
-                    const testId = (el.getAttribute('data-testid') || '').toLowerCase();
-                    const cls = (el.className || '').toString().toLowerCase();
-                    const isOverlay = cls.includes('overlay') || cls.includes('backdrop') || cls.includes('expired');
-                    const hasReloadTxt = (
-                        txt.includes('abgelaufen') || txt.includes('neu laden') || txt.includes('erneuern') ||
-                        txt.includes('refresh') || txt.includes('reload') || txt.includes('aktualisieren') ||
-                        aria.includes('refresh') || aria.includes('reload') || testId.includes('refresh') || testId.includes('reload')
-                    );
-                    return (hasReloadTxt || isOverlay) && el.offsetWidth > 0 && el.offsetHeight > 0;
-                });
-                if (reloadBtn) {
-                    reloadBtn.click();
-                    return { action: 'clicked_reload' };
-                }
-
-                // 2. If an SVG circle-arrow is inside the QR area, click it
-                const reloadSvgs = Array.from(document.querySelectorAll('svg')).filter(s => {
-                    const r = s.getBoundingClientRect();
-                    return r.width > 20 && r.width < 100 && r.height > 20 && r.height < 100 && (
-                        s.innerHTML.includes('path') || s.querySelector('path')
-                    );
-                });
-                for (let s of reloadSvgs) {
-                    const parent = s.closest('button, [role="button"], div');
-                    if (parent && parent.offsetWidth > 0) {
-                        parent.click();
-                        return { action: 'clicked_reload' };
-                    }
-                }
-
-                // 3. If currently on phone login form, switch to QR login if link/button available
+                const allElements = Array.from(document.querySelectorAll('button, div[role="button"], a, span, p'));
                 const qrSwitchBtn = allElements.find(el => {
                     const txt = (el.textContent || '').trim().toLowerCase();
                     return (txt.includes('qr-code') || txt.includes('qr code') || txt.includes('mit qr')) && el.offsetWidth > 0;
@@ -228,7 +221,6 @@ class AuthHelper:
                     qrSwitchBtn.click();
                     return { action: 'switched_to_qr' };
                 }
-
                 return { action: 'none' };
             })()
             """
@@ -236,7 +228,7 @@ class AuthHelper:
                 "Runtime.evaluate", {"expression": qr_prep_script, "returnByValue": True}
             )
             action = prep_res and prep_res.get("result", {}).get("value", {}).get("action")
-            if action in ("clicked_reload", "switched_to_qr"):
+            if action == "switched_to_qr":
                 await asyncio.sleep(2.0)
 
             # 2. Prefer capturing PNG via Canvas or Page.captureScreenshot
