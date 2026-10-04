@@ -873,7 +873,7 @@
                   </button>
                 </div>
                 <div class="guide-note" style="margin-top:0.4rem;" data-i18n="findmy_step2_note">
-                  💡 Tip: Open the Google Unlock page in a browser where your Google Account is signed in. On desktop, if it hangs or shows #close, your browser already received the payload — copy the key from DevTools (Network → encryption/unlock) and paste below.
+                  💡 Tip: If auto-extraction requests device screen lock, ensure Offline Finding is active on your Android phone, or paste an existing secrets.json / shared_key from GoogleFindMyTools below.
                 </div>
               </div>
             </details>
@@ -903,10 +903,13 @@
       <div class="auth-card" style="margin-top:1rem;">
         <h3 style="font-size:0.95rem;margin:0 0 0.75rem 0;color:#cbd5e1;" data-i18n="manual_key_title">⚙️ Manual Key Import / Input</h3>
         <div class="form-group">
-          <label data-i18n="lbl_shared_key_hex">Shared Key (Hex format):</label>
+          <label data-i18n="lbl_shared_key_hex">Shared Key (Hex format) or secrets.json Content:</label>
           <div style="display:flex;gap:0.5rem;">
-            <input type="text" id="manualSharedKeyInput" value="{{ findmy_shared_key }}" placeholder="e.g. 4a7f20... (64 hex characters)" data-i18n-placeholder="shared_key_placeholder">
+            <input type="text" id="manualSharedKeyInput" value="{{ findmy_shared_key }}" placeholder="Paste 64-char Hex Key or full secrets.json" data-i18n-placeholder="shared_key_placeholder">
             <button class="btn-action" onclick="saveManualSharedKey()" style="flex:0 0 110px;background:#2563eb;color:#fff;" data-i18n="btn_save_key">Save Key</button>
+          </div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:0.35rem;" data-i18n="manual_key_help">
+            💡 If you ran GoogleFindMyTools or BSkando's tool on your computer, paste the contents of <code>secrets.json</code> or your <code>shared_key</code> directly here.
           </div>
         </div>
       </div>
@@ -1632,19 +1635,19 @@
               ⚠️ <b>Google Sicherheitsvorgabe:</b> ${reasonText}
             </div>
             <p style="margin-top:0;">
-              ${currentDict.screenlock_modal_intro || "Google schützt deine Find My Tracker-Schlüssel mit der <b>Bildschirmsperre (PIN/Muster/Fingerabdruck) deines Android-Geräts</b>. Da dieser Server kein physisches Display besitzt, fordert Google die Freigabe über dein registriertes Smartphone oder deinen Browser an."}
+              ${currentDict.screenlock_modal_intro || "Google verschlüsselt die Tracker-Standorte Ende-zu-Ende (E2EE) mit der <b>Bildschirmsperre (PIN/Muster/Fingerabdruck) deines Android-Geräts</b>. Auf einem Server ohne eigenes Display kann Google diesen Schlüssel erst bereitstellen, wenn dein Android-Gerät die Offline-Suche mit Gerätesperre eingerichtet hat oder du deine vorhandene secrets.json einfügst."}
             </p>
             <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:0.85rem;border:1px solid #223049;margin:0.75rem 0;">
-              <div style="font-weight:600;color:#93c5fd;margin-bottom:0.4rem;">💡 Schnelle Lösung (1 Klick):</div>
+              <div style="font-weight:600;color:#93c5fd;margin-bottom:0.4rem;">💡 So geht es weiter:</div>
               <ol style="margin:0;padding-left:1.2rem;font-size:0.83rem;color:#94a3b8;">
-                <li style="margin-bottom:0.35rem;">Klicke unten auf <b>„Freigabe-Seite öffnen“</b> (im Browser deines Handys oder PCs).</li>
-                <li style="margin-bottom:0.35rem;">Bestätige deine PIN, dein Gerätemuster oder dein Google-Passwort.</li>
-                <li>Trage den angezeigten 64-stelligen Schlüssel in das Feld <b>„Manueller Schlüssel-Import“</b> ein – fertig!</li>
+                <li style="margin-bottom:0.45rem;"><b>Am Android-Smartphone:</b> Öffne <i>Einstellungen → Google → Alle Dienste → Mein Gerät finden → Offline-Suche</i> und richte eine Gerätesperre (PIN/Muster) ein. Klicke danach unten erneut auf <b>„Automatisch per Add-on extrahieren“</b>.</li>
+                <li style="margin-bottom:0.45rem;"><b>Oder vorhandene secrets.json einfügen:</b> Wenn du bereits GoogleFindMyTools oder BSkando/GoogleFindMy-HA genutzt hast, füge deinen vorhandenen <code>shared_key</code> oder die komplette <code>secrets.json</code> einfach unten in das Import-Feld ein.</li>
+                <li><b>Freigabe-Link testen:</b> Du kannst auch den direkten Freigabe-Link auf deinem Smartphone im Chrome-Browser öffnen, um deine Bildschirmsperre bei Google zu bestätigen.</li>
               </ol>
             </div>
             <div style="text-align:center;margin:1.25rem 0 0.5rem 0;">
               <a href="${unlockUrl}" target="_blank" rel="noopener noreferrer" class="btn-modal-link" style="padding:0.75rem 1.4rem;font-size:0.95rem;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:0.5rem;">
-                🔓 ${currentDict.btn_open_google_unlock || 'Google Domain Unlock Seite öffnen'} ↗
+                🔓 ${currentDict.btn_open_google_unlock || 'Google Domain Unlock Seite auf dem Smartphone öffnen'} ↗
               </a>
             </div>
           </div>
@@ -1668,23 +1671,18 @@
               </p>
               
               <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:0.85rem;border:1px solid #223049;margin:0.75rem 0;">
-                <div style="font-weight:600;color:#93c5fd;margin-bottom:0.4rem;">${currentDict.e2ee_modal_how_to || '📋 How to proceed:'}</div>
+                <div style="font-weight:600;color:#93c5fd;margin-bottom:0.4rem;">${currentDict.e2ee_modal_how_to || '📋 Options & Next Steps:'}</div>
                 <ol style="margin:0;padding-left:1.2rem;font-size:0.83rem;color:#94a3b8;">
-                  <li style="margin-bottom:0.35rem;">${currentDict.e2ee_step_1 || "Click the button below to open Google's official Domain Unlock page in a new tab."}</li>
-                  <li style="margin-bottom:0.35rem;">${currentDict.e2ee_step_2 || 'Sign in or confirm your Google Account screen lock / PIN / biometric prompt.'}</li>
-                  <li style="margin-bottom:0.35rem;"><b>${currentDict.e2ee_step_3_mobile || 'If on mobile/Android:'}</b> ${currentDict.e2ee_step_3_mobile_desc || 'It directly releases the key.'}</li>
-                  <li><b>${currentDict.e2ee_step_3_desktop || 'If on Desktop:'}</b> ${currentDict.e2ee_step_3_desktop_desc || 'If Google loads indefinitely or shows #close at the end, your browser has already received the unlock payload. Check DevTools (Network tab for encryption/unlock response or copy from your Google Find My App / Python script) and paste the 64-char hex key into the Manual Key Import box.'}</li>
+                  <li style="margin-bottom:0.45rem;"><b>Automatic via Add-on:</b> Use the <b>Auto-Extract</b> button first. The add-on runs a clean browser session to retrieve your key without manual steps.</li>
+                  <li style="margin-bottom:0.45rem;"><b>On Android Device:</b> Ensure <i>Settings → Google → Find My Device → Find your offline devices</i> is turned on with your phone's lock screen PIN/pattern.</li>
+                  <li><b>Import existing secrets.json / shared_key:</b> If you already generated a <code>secrets.json</code> via GoogleFindMyTools or BSkando/GoogleFindMy-HA, paste the entire JSON or the <code>shared_key</code> directly into the Import box below.</li>
                 </ol>
               </div>
 
               <div style="margin:1rem 0;text-align:center;">
                 <a href="${data.url}" target="_blank" rel="noopener noreferrer" class="btn-modal-link" style="display:inline-block;padding:0.75rem 1.35rem;font-size:0.95rem;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">
-                  🌐 ${currentDict.btn_open_google_unlock || 'Open Google Domain Unlock Page'} &rarr;
+                  🌐 ${currentDict.btn_open_google_unlock || 'Open Google Domain Unlock Page on Smartphone'} &rarr;
                 </a>
-              </div>
-
-              <div style="font-size:0.78rem;color:#94a3b8;background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.25);border-radius:6px;padding:0.6rem;">
-                ⚠️ <b>${currentDict.lbl_important_note || 'Important Note'}:</b> ${currentDict.e2ee_note_existing_secrets || 'If you already generated a secrets.json via BSkando/GoogleFindMy-HA or GoogleFindMyTools, you can simply paste the shared_key directly into the manual input field below without re-running this flow!'}
               </div>
             </div>
           `;

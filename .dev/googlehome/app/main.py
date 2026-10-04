@@ -797,16 +797,62 @@ async def post_generate_adm_token():
 @app.post("/api/findmy/set-shared-key")
 @app.post("/api/v1/findmy/set-shared-key")
 async def post_set_shared_key(req: FindMySharedKeyRequest):
-    """Manually or programmatically save the E2EE Shared Key."""
-    key = req.shared_key.strip()
-    if not key or len(key) < 16:
-        raise HTTPException(status_code=400, detail="Invalid Shared Key length. Expected hex string.")
+    """Manually or programmatically save the E2EE Shared Key or entire secrets.json."""
+    raw_val = req.shared_key.strip()
+    if not raw_val:
+        raise HTTPException(status_code=400, detail="Empty key or secrets input provided.")
 
-    state.findmy_shared_key = key
+    extracted_key = None
+    # Check if user pasted complete secrets.json
+    if raw_val.startswith("{") and raw_val.endswith("}"):
+        try:
+            bundle_data = json.loads(raw_val)
+            if isinstance(bundle_data, dict):
+                extracted_key = (
+                    bundle_data.get("shared_key") or bundle_data.get("sharedKey") or bundle_data.get("fmdn_shared_key")
+                )
+                if bundle_data.get("owner_key"):
+                    state.findmy_owner_key = bundle_data["owner_key"]
+                if bundle_data.get("adm_token"):
+                    state.findmy_adm_token = bundle_data["adm_token"]
+                if bundle_data.get("googleHomeUsername") and not state.email:
+                    state.email = bundle_data["googleHomeUsername"]
+                if bundle_data.get("aas_token") and not state.master_token:
+                    state.master_token = bundle_data["aas_token"]
+        except Exception as err:
+            _LOGGER.debug("Could not parse input as JSON bundle: %s", err)
+
+    if not extracted_key:
+        extracted_key = raw_val
+
+    if len(extracted_key) < 16:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid key format. Expected a 64-character hex shared_key or secrets.json bundle.",
+        )
+
+    state.findmy_shared_key = extracted_key
     state.record_interaction("findmy", "Manual Shared Key saved")
     state.save()
 
-    return {"success": True, "shared_key": key}
+    # Automatically deploy to Home Assistant if possible
+    try:
+        from .core.findmy_service import deploy_secrets_to_homeassistant
+    except ImportError:
+        from core.findmy_service import deploy_secrets_to_homeassistant
+
+    bundle = {
+        "googleHomeUsername": state.email or "",
+        "aas_token": state.master_token or "",
+        "shared_key": extracted_key,
+    }
+    if state.findmy_adm_token:
+        bundle["adm_token"] = state.findmy_adm_token
+    if state.findmy_owner_key:
+        bundle["owner_key"] = state.findmy_owner_key
+    deploy_secrets_to_homeassistant(bundle)
+
+    return {"success": True, "shared_key": extracted_key}
 
 
 @app.get("/api/findmy/security-url")

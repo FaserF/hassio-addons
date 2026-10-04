@@ -155,7 +155,7 @@
   "findmy_step2_desc": "Google verschlüsselt Tracker-Standorte Ende-zu-Ende. Das Add-on kann diesen Schlüssel automatisch über dieselbe Hintergrund-Browser-Sitzung extrahieren, die deinen Master-Token generiert hat.",
   "findmy_step2_auto_note": "✅ Das Add-on navigiert automatisch zur Google Security-Domain-Freigabe-URL im Hintergrund-Browser und erfasst den Schlüssel — keine DevTools oder manuellen Schritte erforderlich.",
   "findmy_step2_manual_toggle": "🔧 Manueller Fallback (wenn Auto-Extraktion fehlschlägt)",
-  "findmy_step2_note": "💡 Tipp: Öffne die Google Unlock-Seite in einem Browser, in dem du mit deinem Google-Konto angemeldet bist. Am Desktop: Bleibt sie hängen oder zeigt #close, hat dein Browser das Payload bereits empfangen — kopiere den Schlüssel aus den DevTools (Netzwerk → encryption/unlock) und füge ihn unten ein.",
+  "findmy_step2_note": "💡 Tipp: Falls die Auto-Extraktion eine Gerätesperre anfordert, stelle sicher, dass die Offline-Suche auf deinem Android-Smartphone aktiv ist, oder füge eine vorhandene secrets.json / shared_key aus GoogleFindMyTools unten ein.",
   "step_extract_init": "🌐 Starte Chromium Hintergrund-Browser...",
   "step_extract_init_desc": "Initialisiere saubere Browser-Instanz...",
   "step_extract_signing_in": "🔑 Sitzung wird authentifiziert...",
@@ -170,5 +170,6 @@
   "step_extract_success_desc": "E2EE Shared Key abgefangen und verifiziert.",
   "step_extract_processing_desc": "Kommuniziere mit Google-Diensten...",
   "modal_screenlock_title": "📱 Google Bildschirmsperre erforderlich",
-  "screenlock_modal_intro": "Google schützt deine Find My Tracker-Schlüssel mit der <b>Bildschirmsperre (PIN/Muster/Fingerabdruck) deines Android-Geräts</b>. Da dieser Server kein physisches Display besitzt, fordert Google die Freigabe über dein registriertes Smartphone oder deinen Browser an."
+  "screenlock_modal_intro": "Google verschlüsselt die Tracker-Standorte Ende-zu-Ende (E2EE) mit der <b>Bildschirmsperre (PIN/Muster/Fingerabdruck) deines Android-Geräts</b>. Auf einem Server ohne eigenes Display kann Google diesen Schlüssel erst bereitstellen, wenn dein Android-Gerät die Offline-Suche mit Gerätesperre eingerichtet hat oder du deine vorhandene secrets.json einfügst.",
+  "manual_key_help": "💡 Wenn du GoogleFindMyTools oder BSkandos Tool auf deinem Computer ausgeführt hast, kannst du den Inhalt der Datei <code>secrets.json</code> oder deinen <code>shared_key</code> einfach hier einfügen."
 }
