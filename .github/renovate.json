@@ -451,6 +451,17 @@
       "allowedVersions": "<17.0.0"
     },
     {
+      "description": "Restrict SQLAlchemy to <2.1.0 in Alivro and EntraMirror — sqlmodel (latest 0.0.47) requires SQLAlchemy<2.1.0. Remove this rule once sqlmodel releases a version supporting SQLAlchemy 2.1.x.",
+      "matchDepNames": ["SQLAlchemy", "sqlalchemy"],
+      "matchFileNames": [
+        ".dev/Alivro/requirements.txt",
+        "alivro/requirements.txt",
+        ".dev/EntraMirror/requirements.txt",
+        "entramirror/requirements.txt"
+      ],
+      "allowedVersions": "<2.1.0"
+    },
+    {
       "description": "Skip tests for patch updates only",
       "matchUpdateTypes": ["patch"],
       "commitMessageSuffix": " [skip-tests]",
