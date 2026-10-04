@@ -266,9 +266,18 @@ class AuthHelper:
             # 4. Only screenshot the bounding box if it strictly contains a QR SVG/Canvas and NO input fields
             box_script = """
             (() => {
+                const targetQrSvg = document.querySelector('.qrCode__matrix svg, [class*="qrCode"] svg');
+                if (targetQrSvg) {
+                    const r = targetQrSvg.getBoundingClientRect();
+                    return { x: r.x, y: r.y, width: r.width, height: r.height };
+                }
+
                 const qrSvg = Array.from(document.querySelectorAll('svg')).find(s => {
                     const r = s.getBoundingClientRect();
-                    return (s.querySelectorAll('rect, path').length >= 10 || (s.innerHTML && s.innerHTML.includes('rect'))) && r.width >= 60;
+                    const isCrisp = s.getAttribute('shape-rendering') === 'crispEdges';
+                    const is135 = s.getAttribute('viewBox') === '0 0 135 135';
+                    const hasLotsOfPaths = (s.querySelectorAll('rect, path').length >= 10 || (s.innerHTML && s.innerHTML.includes('rect')));
+                    return (isCrisp || is135 || hasLotsOfPaths) && r.width >= 50;
                 });
                 if (qrSvg) {
                     const r = qrSvg.getBoundingClientRect();
@@ -396,7 +405,7 @@ class AuthHelper:
             let phoneToEnter = "{clean_phone}";
             // If prefix +49 is already present in a country selector or static label, input the national number only
             const pageText = document.body.innerText || "";
-            if (phoneToEnter.startsWith('+49') && (pageText.includes('+49') || document.querySelector('button:has(svg), div:has(img[alt*="flag"])'))) {{
+            if (phoneToEnter.startsWith('+49') && (pageText.includes('+49') || document.querySelector('button:has(svg), div:has(img[alt*="flag"])', '.country-picker-trigger'))) {{
                 phoneToEnter = phoneToEnter.replace('+49', '');
                 if (phoneToEnter.startsWith('0')) {{
                     phoneToEnter = phoneToEnter.substring(1);
@@ -410,7 +419,6 @@ class AuthHelper:
             input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
             input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
             input.dispatchEvent(new KeyboardEvent('keydown', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
-            input.dispatchEvent(new KeyboardEvent('keypress', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
             input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
 
             // Find visible submit button
@@ -640,6 +648,9 @@ class AuthHelper:
         (() => {
             const errEl = document.querySelector('[role="alert"], [data-testid="error-message"], .error, .alert');
             if (errEl && errEl.textContent) return errEl.textContent.trim();
+            const bodyTxt = document.body.innerText || '';
+            const m = bodyTxt.match(/(Erneut versuchen in [^\n\\.]+)/i);
+            if (m) return m[1];
             return null;
         })()
         """
@@ -647,10 +658,15 @@ class AuthHelper:
         dom_err_text = dom_err and dom_err.get("result", {}).get("value")
         if dom_err_text:
             _LOGGER.warning("CDP DOM error detected: %s", dom_err_text)
+            return {
+                "success": False,
+                "error": dom_err_text,
+                "message": dom_err_text,
+            }
 
         return {
             "success": True,
-            "message": dom_err_text or "Credentials submitted. Please confirm in your Trade Republic smartphone app.",
+            "message": "Credentials submitted. Please confirm in your Trade Republic smartphone app.",
         }
 
     async def submit_2fa_code(self, clean_code: str) -> None:

@@ -25,7 +25,21 @@ class CDPClient:
                     pages = await resp.json()
                     if not pages:
                         return None
-                    ws_url = pages[0].get("webSocketDebuggerUrl")
+                    page_tab = next(
+                        (
+                            p
+                            for p in pages
+                            if p.get("type") == "page"
+                            and "chrome-extension://" not in p.get("url", "")
+                            and p.get("webSocketDebuggerUrl")
+                        ),
+                        None,
+                    )
+                    if not page_tab:
+                        page_tab = next((p for p in pages if p.get("webSocketDebuggerUrl")), None)
+                    if not page_tab:
+                        return None
+                    ws_url = page_tab.get("webSocketDebuggerUrl")
                     if not ws_url:
                         return None
 

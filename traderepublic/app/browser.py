@@ -94,6 +94,16 @@ class TradeRepublicBrowserService:
             ready = await self.cdp.wait_for_ready(timeout=20.0)
             if not ready:
                 _LOGGER.warning("Chromium CDP not ready within 20s — proceeding anyway")
+            else:
+                try:
+                    await self.cdp.send_cmd("Page.enable")
+                    await self.cdp.send_cmd("Network.enable")
+                    await self.cdp.send_cmd(
+                        "Page.addScriptToEvaluateOnNewDocument",
+                        {"source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"},
+                    )
+                except Exception as cdp_init_err:  # noqa: BLE001
+                    _LOGGER.debug("Could not run initial CDP setup: %s", cdp_init_err)
 
             await self._load_saved_session()
 
@@ -359,8 +369,9 @@ class TradeRepublicBrowserService:
             from core.verifier import verify_tr_token
 
             invalid_tokens: set[str] = set()
-            if getattr(self, "_last_invalidated_token", None):
-                invalid_tokens.add(self._last_invalidated_token)
+            last_tok = getattr(self, "_last_invalidated_token", None)
+            if last_tok:
+                invalid_tokens.add(last_tok)
 
             for _ in range(60):  # Poll every 3s for up to 3 minutes
                 await asyncio.sleep(3)
@@ -439,8 +450,9 @@ class TradeRepublicBrowserService:
                 # Prevents re-verifying the old (expired) cookie token that Chromium may
                 # still serve from its profile cache after execute_login navigation.
                 invalid_tokens: set[str] = set()
-                if getattr(self, "_last_invalidated_token", None):
-                    invalid_tokens.add(self._last_invalidated_token)
+                last_tok = getattr(self, "_last_invalidated_token", None)
+                if last_tok:
+                    invalid_tokens.add(last_tok)
 
                 clean_code = (code or "").strip()
                 if clean_code:
