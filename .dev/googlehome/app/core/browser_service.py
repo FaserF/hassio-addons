@@ -446,24 +446,18 @@ class GoogleHomeBrowserService:
                     await self._complete_token_exchange(email, oauth_token)
                     return
 
-                # "Wer nutzt dieses Gerät?" – "Ich" is pre-selected; just click Weiter/Next.
-                # Also handles any other intermediate confirmation screen.
-                if not _handled_intermediate:
-                    next_result = await self._click_continue_next()
-                    if next_result:
-                        _LOGGER.info("Clicked Weiter/Next on intermediate screen: %s", next_result)
-                        _handled_intermediate = True
-                        await asyncio.sleep(2.5)
-                        continue
+                # Speedbump / Terms screens (e.g. 'Wer nutzt dieses Gerät?', 'Willkommen', 'Ich stimme zu')
+                next_result = await self._click_continue_next()
+                if next_result:
+                    _LOGGER.info("Clicked Weiter/Next on intermediate screen: %s", next_result)
+                    await asyncio.sleep(2.0)
+                    continue
 
-                # Datenschutz/Terms – click Accept/Zustimmen
-                if not _handled_terms:
-                    terms_result = await self._click_accept_terms()
-                    if terms_result:
-                        _LOGGER.info("Clicked Accept/Zustimmen on terms screen: %s", terms_result)
-                        _handled_terms = True
-                        await asyncio.sleep(2.5)
-                        continue
+                terms_result = await self._click_accept_terms()
+                if terms_result:
+                    _LOGGER.info("Clicked Accept/Zustimmen on terms screen: %s", terms_result)
+                    await asyncio.sleep(2.0)
+                    continue
 
                 # Check for hard errors (not on 2FA pages)
                 page_err = await self._check_page_error()
@@ -783,12 +777,40 @@ class GoogleHomeBrowserService:
 
                 last_url = str(data.get("u") or "")
 
-                if "challenge" in last_url or "signin" in last_url:
-                    self.extraction_step = "challenge_detected"
-                    self.extraction_error = (
-                        "Google requires password or screen-lock confirmation for this session. "
-                        "Please use the manual Google Unlock flow below."
+                if "rejected" in last_url or "challenge" in last_url or "signin" in last_url:
+                    # Check body text for exact Google explanation
+                    body_res = await self.cdp.send_cmd(
+                        "Runtime.evaluate",
+                        {
+                            "expression": (
+                                "document.body ? document.body.innerText.replace(/\\s+/g, ' ').substring(0, 250) : ''"
+                            ),
+                            "returnByValue": True,
+                        },
                     )
+                    body_snippet = (body_res.get("value") or "").strip() if body_res else ""
+                    self.extraction_step = "challenge_detected"
+                    if (
+                        "not unlocked" in body_snippet.lower()
+                        or "isn't unlocked" in body_snippet.lower()
+                        or "nicht entsperrt" in body_snippet.lower()
+                    ):
+                        self.extraction_error = (
+                            "Google Account requires device screen-lock unlock: "
+                            "'Your encrypted data isn't unlocked yet'. "
+                            "Please unlock your Google Account or use the manual flow below."
+                        )
+                    else:
+                        self.extraction_error = (
+                            "Google requires screen-lock confirmation or re-authentication: "
+                            f"{body_snippet or 'Security verification required'}. "
+                            "Please use the manual Google Unlock flow below."
+                        )
+                    # Don't wait for 45s timeout when Google explicitly rejected the unlock request
+                    if i > 6 and ("rejected" in last_url or "pwd" in last_url):
+                        _LOGGER.warning("Unlock explicitly rejected by Google: %s", self.extraction_error)
+                        self.extraction_in_progress = False
+                        return None
 
                 if not data.get("s"):
                     await self.cdp.send_cmd("Runtime.evaluate", {"expression": js_shim, "returnByValue": True})
