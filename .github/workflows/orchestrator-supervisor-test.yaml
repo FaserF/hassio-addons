@@ -250,7 +250,7 @@ jobs:
                   tr -d '\r' < "$DEST_DIR/config.yaml" > "$DEST_DIR/config.yaml.tmp" && mv "$DEST_DIR/config.yaml.tmp" "$DEST_DIR/config.yaml"
                 fi
 
-              # Remap common ports that might conflict in CI (Pterodactyl Wings)
+              # Remap common ports that might conflict in CI
               if [ -f "$DEST_DIR/config.yaml" ]; then
                  if grep -q "8080/tcp" "$DEST_DIR/config.yaml"; then
                     echo "Remapping port 8080 to 8088 to avoid CI conflicts..."
@@ -259,6 +259,15 @@ jobs:
                  if grep -q "2022" "$DEST_DIR/config.yaml"; then
                     echo "Remapping port 2022 to 2028 to avoid CI conflicts..."
                     sed -i "s/2022/2028/g" "$DEST_DIR/config.yaml"
+                 fi
+                 # HA 2026.8+ defaults to port 80/443 - remap addon host ports to avoid conflict
+                 if grep -q "80/tcp:" "$DEST_DIR/config.yaml"; then
+                    echo "Remapping host port 80 to 8880 to avoid HA port conflict..."
+                    sed -i -E 's/(80\/tcp:[[:space:]]*)80/\18880/g' "$DEST_DIR/config.yaml"
+                 fi
+                 if grep -q "443/tcp:" "$DEST_DIR/config.yaml"; then
+                    echo "Remapping host port 443 to 8443 to avoid HA port conflict..."
+                    sed -i -E 's/(443\/tcp:[[:space:]]*)443/\18443/g' "$DEST_DIR/config.yaml"
                  fi
 
               fi
@@ -678,13 +687,19 @@ jobs:
 
               if [ -n "$OPTS" ]; then
                 echo "Configuring options for $SLUG..."
-                # Directly call Supervisor API since 'ha apps options' is missing in this CLI version
-                docker exec ha-supervisor-test curl -s -X POST \
+                # POST /addons/{slug}/options expects the options object directly (not wrapped in {"options": ...})
+                OPTS_RESPONSE=$(docker exec ha-supervisor-test curl -s -w "\n%{http_code}" -X POST \
                   -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
                   -H "Content-Type: application/json" \
-                  -d "{\"options\": $OPTS}" \
-                  "http://supervisor/addons/$SLUG/options" || echo "⚠️ Failed to update options via API"
-
+                  -d "$OPTS" \
+                  "http://supervisor/addons/$SLUG/options" 2>&1 || echo "CURL_FAILED")
+                OPTS_HTTP_CODE=$(echo "$OPTS_RESPONSE" | tail -1)
+                OPTS_BODY=$(echo "$OPTS_RESPONSE" | head -n -1)
+                if [ "$OPTS_HTTP_CODE" = "200" ] || echo "$OPTS_BODY" | grep -q '"result":"ok"'; then
+                  echo "✅ Options updated successfully (HTTP $OPTS_HTTP_CODE)"
+                else
+                  echo "⚠️ Failed to update options via API (HTTP $OPTS_HTTP_CODE): $OPTS_BODY"
+                fi
 
                 # Wait for Supervisor to sync configuration
                 sleep 2
@@ -697,7 +712,7 @@ jobs:
                     docker exec ha-supervisor-test curl -s -X POST \
                       -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
                       -H "Content-Type: application/json" \
-                      -d "{\"options\": $OPTS}" \
+                      -d "$OPTS" \
                       "http://supervisor/addons/$SLUG/options" || echo "⚠️ Failed to update options via API (retry)"
                     sleep 2
                   fi
