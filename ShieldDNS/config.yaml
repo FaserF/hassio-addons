@@ -1,5 +1,5 @@
 name: "ShieldDNS"
-version: "2.5.3"
+version: "2.5.4"
 slug: "shielddns"
 description: "DNS-over-TLS/HTTPS proxy with ad blocking, filtering and admin UI"
 url: "https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS"
