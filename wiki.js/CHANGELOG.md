@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.5.4 (2026-10-05)
+
+### 📦 Dependencies
+- ⬆️ Update Add-on base images ([`835dff8e`](https://github.com/FaserF/hassio-addons/commit/835dff8e77d525c2bbc80c93fe500b885da641d1))
+- ⬆️ Update ghcr.io/requarks/wiki Docker tag to v[2.5.316](https://github.com/requarks/wiki/releases/tag/2.5.316) (#1127) ([`d046d90d`](https://github.com/FaserF/hassio-addons/commit/d046d90d9b6e6a3369ccf67ed27e89a5de3da7df))
+- ⬆️ Update ghcr.io/requarks/wiki Docker tag to v[2.5.315](https://github.com/requarks/wiki/releases/tag/2.5.315) (#1098) ([`ad5b11fd`](https://github.com/FaserF/hassio-addons/commit/ad5b11fd989e6e5857aeaa2fe559847a81ba33ff))
+
+
 ## 3.5.3 (2026-08-28)
 
 ### 🐛 Bug Fixes
