@@ -225,6 +225,7 @@ fi
 
 set -e
 
+# shellcheck disable=SC2317,SC2329
 _handle_err() {
 	local exit_code="$?"
 	bashio::log.error "🚨 Unexpected failure on line ${BASH_LINENO[0]} (command: \"${BASH_COMMAND}\", exit code: ${exit_code})"
