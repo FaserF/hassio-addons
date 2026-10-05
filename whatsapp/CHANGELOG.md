@@ -1,5 +1,38 @@
 # Changelog
 
+## 2.1.5 (2026-10-05)
+
+### 🐛 Bug Fixes
+- restore seconds parameter for video and audio messages (FaserF/ha-whatsapp#50) ([`80252fe0`](https://github.com/FaserF/hassio-addons/commit/80252fe07b079594f26510427301a662228e4b22))
+- optimize message querying and rate-limit UI avatar requests (#1130) ([`2e6902cc`](https://github.com/FaserF/hassio-addons/commit/2e6902cce050df3f3921074c3c13bc1a0866b13f))
+- resolve open issues for version fetch, presence patch, media handling, and chat escaping ([`e99daa16`](https://github.com/FaserF/hassio-addons/commit/e99daa16c4d5aae40235178e1afb4919ea636e55))
+- gate moderation commands and disable prefixless bare commands in private chats (#1078) ([`2ce6d3c5`](https://github.com/FaserF/hassio-addons/commit/2ce6d3c58e6495d64dc0770490979bc59270ab4e))
+- resolve media thumbnail failure and track send errors (#1077) ([`6d47a9f9`](https://github.com/FaserF/hassio-addons/commit/6d47a9f92d14b4f0dc73fa521f53c6f58df813f2))
+- optimize GitHub API release checking and caching (ref: FaserF/ha-whatsapp#102) ([`d23efe79`](https://github.com/FaserF/hassio-addons/commit/d23efe7920723dfad692c75c4945aa7a98af62d1))
+- fix poll multiple option send ([`502365f0`](https://github.com/FaserF/hassio-addons/commit/502365f01ef27360fb9c5fe1bbb8fe48916d63a5))
+- disable welcome message by default ([`81ebfda5`](https://github.com/FaserF/hassio-addons/commit/81ebfda572ac4759d6495ff818c1102f2f205bb0))
+
+### 📦 Dependencies
+- ⬆️ Update Add-on base images ([`835dff8e`](https://github.com/FaserF/hassio-addons/commit/835dff8e77d525c2bbc80c93fe500b885da641d1))
+- ⬆️ Update dependency eslint to v10.12.0 (#1132) ([`d97db6ab`](https://github.com/FaserF/hassio-addons/commit/d97db6ab2a33e81f4ab50b34201f41071b02ecb3))
+- ⬆️ Update dependency pino to v10.4.0 (#1131) ([`f36d6b14`](https://github.com/FaserF/hassio-addons/commit/f36d6b145d57e7f3f4cf6f356b0f9e4e4187045a))
+- ⬆️ Update dependency uvicorn to v0.54.0 (#1122) ([`2537b119`](https://github.com/FaserF/hassio-addons/commit/2537b119b7441eb8398def9d3194a80b5400c062))
+- ⬆️ Update dependency globals to v17.13.0 (#1119) ([`25f5e773`](https://github.com/FaserF/hassio-addons/commit/25f5e77375508cb69cd36b600c71386f670d5dc7))
+- ⬆️ Update dependency sharp to v0.35.5 ([`7d298cb1`](https://github.com/FaserF/hassio-addons/commit/7d298cb1b64ddcf0e57ff582350d44f7b93dce86))
+- ⬆️ Update dependency fastapi to v0.142.2 (#1112) ([`a137cfbd`](https://github.com/FaserF/hassio-addons/commit/a137cfbd7b4eda832c083f8b4dc601fa8861c51c))
+- ⬆️ Update dependency fastapi to v0.142.1 (#1107) ([`acb214b8`](https://github.com/FaserF/hassio-addons/commit/acb214b8a46155870a2a73096c9d9942e19d8af7))
+- ⬆️ Update dependency fastapi to v0.142.0 (#1105) ([`3d60b77f`](https://github.com/FaserF/hassio-addons/commit/3d60b77fc4ed5a13e239b472d3dfcb110ab475c6))
+- build(deps): bump ip-address from 10.4.0 to 10.7.2 in /whatsapp/app in the npm_and_yarn group across 1 directory (#1095) ([`9863b989`](https://github.com/FaserF/hassio-addons/commit/9863b989624b9b90940dccd7660bf66dad13d109))
+- ⬆️ Update dependency lru-cache to v11.5.3 (#1089) ([`7d3744b6`](https://github.com/FaserF/hassio-addons/commit/7d3744b675db4d067aa845070cb292051914f586))
+- build(deps): bump the npm_and_yarn group across 2 directories with 2 updates (#1092) ([`b8e1765f`](https://github.com/FaserF/hassio-addons/commit/b8e1765fd5d429a8e40164b1177ee1ebb84ba08c))
+- ⬆️ Update dependency eslint to v10.11.0 (#1087) ([`ba3873d3`](https://github.com/FaserF/hassio-addons/commit/ba3873d319983660bb6c5e525ae73985040ef5ab))
+- ⬆️ Update dependency playwright to v1.63.0 (#1082) ([`c16d6a12`](https://github.com/FaserF/hassio-addons/commit/c16d6a124bf514d6efeeb27aa5d95352d2b75e4d))
+- ⬆️ Update dependency brace-expansion to v5.0.12 (#1074) ([`7e5e0f51`](https://github.com/FaserF/hassio-addons/commit/7e5e0f51b29b4493265d33ede24d7d1a67175b01))
+
+### 🎨 Style
+- format repository files with prettier ([`91331581`](https://github.com/FaserF/hassio-addons/commit/9133158127d0eb25088334a34b1f22fb9ec834a7))
+
+
 ## 2.1.4 (2026-09-01)
 
 ### 🐛 Bug Fixes
