@@ -205,7 +205,9 @@ jobs:
           docker network create ha-test-net 2>/dev/null || true
 
           # Create data directories
-          mkdir -p /tmp/ha-data/addons/local
+          mkdir -p /tmp/ha-data/apps/local
+          mkdir -p /tmp/ha-data/addons
+          ln -sfn /tmp/ha-data/apps/local /tmp/ha-data/addons/local 2>/dev/null || mkdir -p /tmp/ha-data/addons/local
           mkdir -p /tmp/ha-data/config
           mkdir -p /tmp/ha-data/share
           mkdir -p /tmp/ha-data/media
@@ -222,7 +224,7 @@ jobs:
           echo 'token: "example"' > /tmp/ha-data/share/pterodactyl/config.yml
           chmod -R 777 /tmp/ha-data/share
 
-          # Copy Apps to local addons directory
+          # Copy Apps to local apps directory
           # NOTE: .unsupported Apps are excluded - they are built locally from unsupported branch
           IFS=',' read -ra App_ARRAY <<< "${{ needs.filter-ingress.outputs.ingress_Apps }}"
           for App in "${App_ARRAY[@]}"; do
@@ -235,12 +237,12 @@ jobs:
             fi
 
             if [ -d "./$App" ]; then
-              echo "Copying $App to local addons..."
-              cp -r "./$App" "/tmp/ha-data/addons/local/"
+              echo "Copying $App to local apps..."
+              cp -r "./$App" "/tmp/ha-data/apps/local/"
 
                 # Strip 'image' key to force local build
                 # Use tr to remove potential carriage returns from CRLF files
-                DEST_DIR="/tmp/ha-data/addons/local/$(basename "$App")"
+                DEST_DIR="/tmp/ha-data/apps/local/$(basename "$App")"
                 if [ -f "$DEST_DIR/config.yaml" ]; then
                   echo "Stripping 'image' key from $DEST_DIR/config.yaml to force local build..."
                   # Robust line removal that handles CRLF
@@ -287,7 +289,7 @@ jobs:
             --privileged \
             --network ha-test-net \
             -p "${{ env.HA_PORT }}:7123" \
-            -v /tmp/ha-data/addons/local:/mnt/supervisor/addons/local \
+            -v /tmp/ha-data/apps/local:/mnt/supervisor/apps/local \
             -v /tmp/ha-data/config:/mnt/supervisor/homeassistant \
             --mount type=bind,source=/tmp/ha-data/share,target=/mnt/supervisor/share,bind-propagation=rslave \
             --mount type=bind,source=/tmp/ha-data/media,target=/mnt/supervisor/media,bind-propagation=shared \
@@ -311,9 +313,17 @@ jobs:
           fi
           echo "✅ Container running (PID $(docker inspect -f '{{.State.Pid}}' ha-supervisor-test))"
 
-          # Prepare environment: remove debugpy to avoid port conflicts
+          # Prepare environment: remove debugpy to avoid port conflicts and ensure backward-compatible paths
           echo "🔧 Preparing container environment..."
-          docker exec ha-supervisor-test bash -c "find /usr/local/lib -name debugpy -type d -exec rm -rf {} + 2>/dev/null || true"
+          docker exec ha-supervisor-test bash -c "
+            find /usr/local/lib -name debugpy -type d -exec rm -rf {} + 2>/dev/null || true
+            mkdir -p /mnt/supervisor/addons 2>/dev/null || true
+            ln -sfn /mnt/supervisor/apps/local /mnt/supervisor/addons/local 2>/dev/null || true
+            if [ -d /data ]; then
+              mkdir -p /data/addons 2>/dev/null || true
+              ln -sfn /data/apps/local /data/addons/local 2>/dev/null || true
+            fi
+          "
 
           # Verify supervisor_run is available
           if ! docker exec ha-supervisor-test which supervisor_run >/dev/null 2>&1; then
@@ -540,10 +550,10 @@ jobs:
               echo "$LIST_OUTPUT" | jq -r '(.data.addons // .addons)[] | "\(.slug) - \(.name)"' 2>/dev/null || echo "$LIST_OUTPUT"
               echo ""
               echo "Checking App directory structure..."
-              docker exec ha-supervisor-test ls -la /mnt/supervisor/addons/local/ 2>&1 || echo "Could not list App directory"
+              docker exec ha-supervisor-test ls -la /mnt/supervisor/apps/local/ 2>&1 || docker exec ha-supervisor-test ls -la /mnt/supervisor/addons/local/ 2>&1 || echo "Could not list App directory"
               echo ""
               echo "Checking if App files exist in container..."
-              docker exec ha-supervisor-test ls -la "/mnt/supervisor/addons/local/$App/" 2>&1 || echo "App directory not found"
+              docker exec ha-supervisor-test ls -la "/mnt/supervisor/apps/local/$App/" 2>&1 || docker exec ha-supervisor-test ls -la "/mnt/supervisor/addons/local/$App/" 2>&1 || echo "App directory not found"
               echo ""
               echo "Checking for validation errors in supervisor logs..."
               docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -200 | grep -iE "(validation|error|$App|$SLUG)" | grep -vE "error=None|warning=None|PullLogEntry" || echo "No validation errors found"
