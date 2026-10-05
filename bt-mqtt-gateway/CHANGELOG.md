@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.1-dev-20261005-1638-a182bba (2026-10-05)
+
+- Release version 3.0.1-dev-20261005-1638-a182bba
+
+
 ## 3.0.0 (2026-01-03)
 
 🎉 **Happy New Year 2026!** 🎉
