@@ -224,7 +224,13 @@ fi
 # </App_BANNER_INJECTION>
 
 set -e
-trap 'exit_code=$?; bashio::log.error "🚨 Unexpected failure on line ${BASH_LINENO[0]} (command: \"${BASH_COMMAND}\", exit code: ${exit_code})"; bashio::log.error "💡 Check system memory, CPU or configuration. For developer mode, ensure sufficient RAM (>= 2GB)."' ERR
+
+_handle_err() {
+	local exit_code="$?"
+	bashio::log.error "🚨 Unexpected failure on line ${BASH_LINENO[0]} (command: \"${BASH_COMMAND}\", exit code: ${exit_code})"
+	bashio::log.error "💡 Check system memory, CPU or configuration. For developer mode, ensure sufficient RAM (>= 2GB)."
+}
+trap '_handle_err' ERR
 
 # Define local paths
 COREFILE_PATH="/data/Corefile"
