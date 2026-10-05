@@ -25,9 +25,9 @@ Komodo is an intuitive software build, deployment, and server orchestration mana
 
 ### ✨ Features
 
-- **Multi-Server Management**: Connect and manage deployments across multiple servers and nodes.
-- **Automated Builds & Sync**: Trigger builds, manage containerized services, and monitor deployment health.
-- **Modern Web Interface**: Built-in responsive UI directly accessible via Home Assistant Ingress.
+* **Multi-Server Management**: Connect and manage deployments across multiple servers and nodes.
+* **Automated Builds & Sync**: Trigger builds, manage containerized services, and monitor deployment health.
+* **Modern Web Interface**: Built-in responsive UI directly accessible via Home Assistant Ingress.
 
 ---
 
