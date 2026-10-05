@@ -1,5 +1,41 @@
 # Changelog
 
+## 1.1.3 (2026-10-05)
+
+### ✨ Features
+- improve QR code detection by excluding logos and adding CDP clip fallback ([`918349b7`](https://github.com/FaserF/hassio-addons/commit/918349b7ff3f40d3bbc487b118a40a7bbe7cd3ab))
+- add QR-code login endpoint and UI tabs as primary authentication method ([`e541332b`](https://github.com/FaserF/hassio-addons/commit/e541332b989c93444f7ce7b9ac10e4994937d89a))
+- add form.requestSubmit and mouse events for React login button triggers (refs #1039) ([`8484964f`](https://github.com/FaserF/hassio-addons/commit/8484964f8c2737dca4c945a74b77559a1d86f980))
+- add CDP step diagnostics and explicit login stage verification (refs #1039) ([`5bc8acda`](https://github.com/FaserF/hassio-addons/commit/5bc8acda278a0fe79565e929b789a7191086b87e))
+- add optional 4-digit code input in 2FA UI (refs #1039) ([`d205ba92`](https://github.com/FaserF/hassio-addons/commit/d205ba924d16b9bd387b38b7f5d0c9a33098b53b))
+
+### 🐛 Bug Fixes
+- auto-refresh expired QR overlay with native CDP click and interval ([`595c7735`](https://github.com/FaserF/hassio-addons/commit/595c77359c21e4a52545df9d5c0417f8510e7e20))
+- support loginV2 QR code matrix and refine tab target selection ([`db0751c1`](https://github.com/FaserF/hassio-addons/commit/db0751c16c6ddfe3bf5db628b30dd0b46cb74885))
+- resolve YAML parsing and UTF-8 BOM linter errors (#1049) ([`75acb8ee`](https://github.com/FaserF/hassio-addons/commit/75acb8eefde521e241ac325f0b9e8021321bb5ec))
+- resolve media thumbnail failure and track send errors (#1077) ([`6d47a9f9`](https://github.com/FaserF/hassio-addons/commit/6d47a9f92d14b4f0dc73fa521f53c6f58df813f2))
+- support 4-box PIN inputs and prioritize v2 login endpoint ([`44680638`](https://github.com/FaserF/hassio-addons/commit/44680638a60796674e18f0e4542a0299611c5a32))
+- click expired QR reload overlay icon and refresh code ([`685b146c`](https://github.com/FaserF/hassio-addons/commit/685b146cd12b3d3d25d484274c9eeb62d691b3b7))
+- improve QR code capture heuristics and container detection ([`fe1e073a`](https://github.com/FaserF/hassio-addons/commit/fe1e073a79aad22022265875cb6d8e9953573fca))
+- return png screenshot or canvas for qr code to support markdown rendering ([`c9e313a1`](https://github.com/FaserF/hassio-addons/commit/c9e313a1f472197f7b483654589a6074ca5100f0))
+- strip country prefix if already selected in TR web input ([`457f2c43`](https://github.com/FaserF/hassio-addons/commit/457f2c4367afa4fbe241cabf8f780fbf9546a249))
+- extract SVG QR code directly instead of capturing input form box ([`e6e250ff`](https://github.com/FaserF/hassio-addons/commit/e6e250ff329b19636b1fc2986f2ed1d4de910392))
+- ensure QR challenge exclusion and phone login mode switch ([`dc876dd3`](https://github.com/FaserF/hassio-addons/commit/dc876dd3d71f7f8f3cf6ab667d28913dd378e2b3))
+- update access log filter for login endpoints ([`aac803c2`](https://github.com/FaserF/hassio-addons/commit/aac803c2f69a4b28e868f3ca3124bd1aa6468a34))
+- improve QR code capture, auto-refresh and phone login flow ([`b23edaf3`](https://github.com/FaserF/hassio-addons/commit/b23edaf33650cdf7e0a313265ff2eb7fba2e4e2c))
+- detect and switch QR challenge mode to phone login on login page ([`f212e85e`](https://github.com/FaserF/hassio-addons/commit/f212e85e424a0be75d0c86ff95b1ba2a703c2abe))
+- fix session duration and logout time preservation across restarts, improve login button clicking ([`befc9afb`](https://github.com/FaserF/hassio-addons/commit/befc9afbf3f4856168a94a52e879cd93b54c94f3))
+
+### 📦 Dependencies
+- ⬆️ Update Add-on base images ([`835dff8e`](https://github.com/FaserF/hassio-addons/commit/835dff8e77d525c2bbc80c93fe500b885da641d1))
+
+### 🎨 Style
+- format repository files with prettier ([`91331581`](https://github.com/FaserF/hassio-addons/commit/9133158127d0eb25088334a34b1f22fb9ec834a7))
+
+### 🚀 Other
+- diag(traderepublic): log TR network calls and page URL after PIN submit to identify WAF block ([`6e1cd43f`](https://github.com/FaserF/hassio-addons/commit/6e1cd43f5800246c01b944457c554c98708cadc2))
+
+
 ## 1.1.2 (2026-08-29)
 
 ### 🐛 Bug Fixes
