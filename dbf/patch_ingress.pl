@@ -89,6 +89,10 @@ my @patterns = (
     [ qr(action="/"), q(action="./") ],
     [ qr(="/_),        q(="./_) ],
     [ qr(='/_),        q(='./_) ],
+    [ qr(href="_about"), q(href="./_about") ],
+    [ qr(href="_datenschutz"), q(href="./_datenschutz") ],
+    [ qr(href="_impressum"), q(href="./_impressum") ],
+    [ qr('/static/<%=\$av%>/css/'), q('static/<%=$av%>/css/') ],
 );
 
 sub process_files {
