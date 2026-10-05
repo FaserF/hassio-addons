@@ -378,7 +378,7 @@ export function registerMessagingRoutes(app) {
       let session;
       try {
         session = getReqSession(req);
-        const { number, url, caption, gifPlayback } = req.body;
+        const { number, url, caption, gifPlayback, seconds } = req.body;
         if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
 
         const connected = await ensureConnected(session);
@@ -387,6 +387,7 @@ export function registerMessagingRoutes(app) {
         const jid = getJid(number);
         const sentMsg = await session.sock.sendMessage(jid, {
           video: { url },
+          ...(seconds ? { seconds: Number(seconds) } : {}),
           caption: caption || '',
           gifPlayback: !!gifPlayback,
         });
@@ -406,7 +407,7 @@ export function registerMessagingRoutes(app) {
       let session;
       try {
         session = getReqSession(req);
-        const { number, url, ptt } = req.body;
+        const { number, url, ptt, seconds } = req.body;
         if (!number || !url) return res.status(400).json({ detail: 'Missing number or url' });
 
         const connected = await ensureConnected(session);
@@ -415,6 +416,7 @@ export function registerMessagingRoutes(app) {
         const jid = getJid(number);
         const sentMsg = await session.sock.sendMessage(jid, {
           audio: { url },
+          ...(seconds ? { seconds: Number(seconds) } : {}),
           ptt: ptt || false,
           mimetype: 'audio/mp4',
         });

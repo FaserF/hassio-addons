@@ -209,7 +209,8 @@ Sends a video file. Set `gifPlayback: true` for looping GIF playback.
   "number": "1234567890",
   "url": "https://example.com/video.mp4",
   "caption": "Watch this!",
-  "gifPlayback": true
+  "gifPlayback": true,
+  "seconds": 12
 }
 ```
 
@@ -250,7 +251,8 @@ Sends an audio file or voice note.
 {
   "number": "1234567890",
   "url": "https://example.com/audio.mp3",
-  "ptt": true
+  "ptt": true,
+  "seconds": 30
 }
 ```
 
