@@ -1490,7 +1490,9 @@ html[data-theme='dark'] .banner-warning-icon {
   color: var(--text-muted);
   cursor: help;
   opacity: 0.75;
-  transition: opacity 0.2s, color 0.2s;
+  transition:
+    opacity 0.2s,
+    color 0.2s;
   text-transform: none;
   font-weight: 700;
 }
@@ -3568,11 +3570,12 @@ input[type='datetime-local']::-webkit-calendar-picker-indicator {
   cursor: pointer;
   filter: invert(0.6) sepia(1) saturate(5) hue-rotate(110deg);
   opacity: 0.85;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 input[type='datetime-local']::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
   transform: scale(1.15);
 }
-

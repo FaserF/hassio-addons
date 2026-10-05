@@ -25,10 +25,10 @@ Imapsync is the industry-standard utility designed for heavy-duty mail migration
 
 ### ✨ Features
 
-* **Incremental Sync**: Only transfers new and modified messages on subsequent runs.
-* **Multi-Account Support**: Configure and sync multiple independent account pairs in a single schedule.
-* **Modern OAuth2 Support**: Full OAuth2 support for Google (Gmail) and Microsoft (Outlook/Office 365).
-* **Flexible Filtering**: Granular inclusion/exclusion of folders, max age, and size limits.
+- **Incremental Sync**: Only transfers new and modified messages on subsequent runs.
+- **Multi-Account Support**: Configure and sync multiple independent account pairs in a single schedule.
+- **Modern OAuth2 Support**: Full OAuth2 support for Google (Gmail) and Microsoft (Outlook/Office 365).
+- **Flexible Filtering**: Granular inclusion/exclusion of folders, max age, and size limits.
 
 ---
 

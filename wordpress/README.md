@@ -25,9 +25,9 @@ WordPress is the world's most popular open-source content management and bloggin
 
 ### ✨ Features
 
-* **Pre-configured Environment**: Built on Apache with PHP and MariaDB database connectivity.
-* **Extensible & Customizable**: Full access to themes, plugins, and custom PHP scripts.
-* **Ingress & Direct Access**: Accessible through Home Assistant Ingress and dedicated web ports.
+- **Pre-configured Environment**: Built on Apache with PHP and MariaDB database connectivity.
+- **Extensible & Customizable**: Full access to themes, plugins, and custom PHP scripts.
+- **Ingress & Direct Access**: Accessible through Home Assistant Ingress and dedicated web ports.
 
 ---
 
