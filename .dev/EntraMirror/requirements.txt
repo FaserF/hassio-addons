@@ -1,6 +1,6 @@
 fastapi==0.142.2
 uvicorn[standard]==0.54.0
-sqlmodel==0.0.47
+sqlmodel==0.0.48
 sqlalchemy[asyncio]==2.0.54
 greenlet==3.5.6
 aiosqlite==0.22.1
