@@ -4,7 +4,7 @@ sqlmodel==0.0.48
 sqlalchemy[asyncio]==2.0.54
 greenlet==3.5.6
 aiosqlite==0.22.1
-pydantic==2.13.5
+pydantic==2.14.0
 pydantic-settings==2.15.0
 python-multipart==0.0.32
 msal==1.39.0
