@@ -3,6 +3,7 @@
 ## 2.1.5 (2026-10-05)
 
 ### 🐛 Bug Fixes
+
 - restore seconds parameter for video and audio messages (FaserF/ha-whatsapp#50) ([`80252fe0`](https://github.com/FaserF/hassio-addons/commit/80252fe07b079594f26510427301a662228e4b22))
 - optimize message querying and rate-limit UI avatar requests (#1130) ([`2e6902cc`](https://github.com/FaserF/hassio-addons/commit/2e6902cce050df3f3921074c3c13bc1a0866b13f))
 - resolve open issues for version fetch, presence patch, media handling, and chat escaping ([`e99daa16`](https://github.com/FaserF/hassio-addons/commit/e99daa16c4d5aae40235178e1afb4919ea636e55))
@@ -13,6 +14,7 @@
 - disable welcome message by default ([`81ebfda5`](https://github.com/FaserF/hassio-addons/commit/81ebfda572ac4759d6495ff818c1102f2f205bb0))
 
 ### 📦 Dependencies
+
 - ⬆️ Update Add-on base images ([`835dff8e`](https://github.com/FaserF/hassio-addons/commit/835dff8e77d525c2bbc80c93fe500b885da641d1))
 - ⬆️ Update dependency eslint to v10.12.0 (#1132) ([`d97db6ab`](https://github.com/FaserF/hassio-addons/commit/d97db6ab2a33e81f4ab50b34201f41071b02ecb3))
 - ⬆️ Update dependency pino to v10.4.0 (#1131) ([`f36d6b14`](https://github.com/FaserF/hassio-addons/commit/f36d6b145d57e7f3f4cf6f356b0f9e4e4187045a))
@@ -30,8 +32,8 @@
 - ⬆️ Update dependency brace-expansion to v5.0.12 (#1074) ([`7e5e0f51`](https://github.com/FaserF/hassio-addons/commit/7e5e0f51b29b4493265d33ede24d7d1a67175b01))
 
 ### 🎨 Style
-- format repository files with prettier ([`91331581`](https://github.com/FaserF/hassio-addons/commit/9133158127d0eb25088334a34b1f22fb9ec834a7))
 
+- format repository files with prettier ([`91331581`](https://github.com/FaserF/hassio-addons/commit/9133158127d0eb25088334a34b1f22fb9ec834a7))
 
 ## 2.1.4 (2026-09-01)
 

@@ -3,29 +3,34 @@
 ## 0.2.6 (2026-10-05)
 
 ### ✨ Features
+
 - move in-development add-ons to .dev/ directory to hide from stable repository in Home Assistant ([`2e804917`](https://github.com/FaserF/hassio-addons/commit/2e8049174658ea37ac75009502669b59c49f2404))
 
 ### 🐛 Bug Fixes
+
 - migrate user bundles from s6-rc.d to user-bundles.d to fix deprecation warning ([`73156ded`](https://github.com/FaserF/hassio-addons/commit/73156ded6152ca7cab2e34950ec95461dd4fb4dd))
 - eliminate duplicate alert blocks and standardize README notice cleaning ([`fdf7b787`](https://github.com/FaserF/hassio-addons/commit/fdf7b787f1450d3e372795a968a68b6b721181a4))
 - regenerate accurate changelogs for all addons and fix release commit matching in bump_version.py ([`b667eef9`](https://github.com/FaserF/hassio-addons/commit/b667eef9f23c882efd02c11535c2ea4c9bbad5f5))
 - fix docker build ([`f8924340`](https://github.com/FaserF/hassio-addons/commit/f892434026b36edf563754a966ead13ab1976c6f))
 
 ### 📦 Dependencies
+
 - ⬆️ Update Add-on base images ([`835dff8e`](https://github.com/FaserF/hassio-addons/commit/835dff8e77d525c2bbc80c93fe500b885da641d1))
 - ⬆️ Update mongo Docker tag to v9 (#1123) ([`235262ee`](https://github.com/FaserF/hassio-addons/commit/235262eeb4d93c6bf93ccd7c6e1f54dacb1fe125))
 - ⬆️ Update dependency moghtech/komodo to v2.3.3 (#1046) ([`aac743ed`](https://github.com/FaserF/hassio-addons/commit/aac743ed50fbe15943f5f52839652e29935bd93a))
 - ⬆️ Update ghcr.io/moghtech/komodo-core Docker tag to v2.3.3 (#1047) ([`16eadacf`](https://github.com/FaserF/hassio-addons/commit/16eadacf9bad19cc7f9deb16b776fd28fe5a126c))
 
 ### 🔧 Configuration
+
 - deactivate dev sync workflow, delete local dev branch, and point in-dev notices exclusively to Edge channel ([`eb3f45de`](https://github.com/FaserF/hassio-addons/commit/eb3f45de16d3e72806094cff745bd3a727ae3ef8))
 
 ### 📝 Documentation
+
 - ci: integrate in-development add-ons blacklist across workflows, scripts and README generators ([`6f5b41cc`](https://github.com/FaserF/hassio-addons/commit/6f5b41cc98d3fc3592543b75ad72bd7a4f331825))
 
 ### 🚀 Other
-- Standardize log_level configuration and handling across all add-ons ([`7ddda206`](https://github.com/FaserF/hassio-addons/commit/7ddda206529ef9453a58d36af03969ed975a8e66))
 
+- Standardize log_level configuration and handling across all add-ons ([`7ddda206`](https://github.com/FaserF/hassio-addons/commit/7ddda206529ef9453a58d36af03969ed975a8e66))
 
 ## 0.2.5 (2026-08-19)
 
