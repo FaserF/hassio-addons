@@ -569,13 +569,27 @@ class AuthHelper:
             in_page_fetch_script = f"""
             (async () => {{
                 try {{
+                    // Extract WAF token if available
+                    let wafToken = null;
+                    try {{
+                        const match = document.cookie.match(/aws-waf-token=([^;]+)/);
+                        if (match) wafToken = match[1];
+                    }} catch(e) {{}}
+
+                    const authHeaders = {{
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-App-Version': '4.120.0',
+                        'X-Platform': 'web'
+                    }};
+                    if (wafToken) {{
+                        authHeaders['X-Aws-Waf-Token'] = wafToken;
+                    }}
+
                     // Attempt v2 auth endpoint first (Trade Republic now uses v2 for push flow)
                     let res = await fetch('https://api.traderepublic.com/api/v2/auth/web/login', {{
                         method: 'POST',
-                        headers: {{
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        }},
+                        headers: authHeaders,
                         body: JSON.stringify({{
                             phoneNumber: "{clean_phone}",
                             pin: "{clean_pin}"
@@ -586,10 +600,7 @@ class AuthHelper:
                     if (res.status === 404) {{
                         res = await fetch('https://api.traderepublic.com/api/v1/auth/web/login', {{
                             method: 'POST',
-                            headers: {{
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json'
-                            }},
+                            headers: authHeaders,
                             body: JSON.stringify({{
                                 phoneNumber: "{clean_phone}",
                                 pin: "{clean_pin}"
