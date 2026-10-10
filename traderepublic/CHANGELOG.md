@@ -3,7 +3,6 @@
 ## 1.1.3 (2026-10-05)
 
 ### ✨ Features
-
 - improve QR code detection by excluding logos and adding CDP clip fallback ([`918349b7`](https://github.com/FaserF/hassio-addons/commit/918349b7ff3f40d3bbc487b118a40a7bbe7cd3ab))
 - add QR-code login endpoint and UI tabs as primary authentication method ([`e541332b`](https://github.com/FaserF/hassio-addons/commit/e541332b989c93444f7ce7b9ac10e4994937d89a))
 - add form.requestSubmit and mouse events for React login button triggers (refs #1039) ([`8484964f`](https://github.com/FaserF/hassio-addons/commit/8484964f8c2737dca4c945a74b77559a1d86f980))
@@ -11,7 +10,6 @@
 - add optional 4-digit code input in 2FA UI (refs #1039) ([`d205ba92`](https://github.com/FaserF/hassio-addons/commit/d205ba924d16b9bd387b38b7f5d0c9a33098b53b))
 
 ### 🐛 Bug Fixes
-
 - auto-refresh expired QR overlay with native CDP click and interval ([`595c7735`](https://github.com/FaserF/hassio-addons/commit/595c77359c21e4a52545df9d5c0417f8510e7e20))
 - support loginV2 QR code matrix and refine tab target selection ([`db0751c1`](https://github.com/FaserF/hassio-addons/commit/db0751c16c6ddfe3bf5db628b30dd0b46cb74885))
 - resolve YAML parsing and UTF-8 BOM linter errors (#1049) ([`75acb8ee`](https://github.com/FaserF/hassio-addons/commit/75acb8eefde521e241ac325f0b9e8021321bb5ec))
@@ -29,16 +27,14 @@
 - fix session duration and logout time preservation across restarts, improve login button clicking ([`befc9afb`](https://github.com/FaserF/hassio-addons/commit/befc9afbf3f4856168a94a52e879cd93b54c94f3))
 
 ### 📦 Dependencies
-
 - ⬆️ Update Add-on base images ([`835dff8e`](https://github.com/FaserF/hassio-addons/commit/835dff8e77d525c2bbc80c93fe500b885da641d1))
 
 ### 🎨 Style
-
 - format repository files with prettier ([`91331581`](https://github.com/FaserF/hassio-addons/commit/9133158127d0eb25088334a34b1f22fb9ec834a7))
 
 ### 🚀 Other
-
 - diag(traderepublic): log TR network calls and page URL after PIN submit to identify WAF block ([`6e1cd43f`](https://github.com/FaserF/hassio-addons/commit/6e1cd43f5800246c01b944457c554c98708cadc2))
+
 
 ## 1.1.2 (2026-08-29)
 

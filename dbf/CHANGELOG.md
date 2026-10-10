@@ -3,13 +3,12 @@
 ## 1.1.4 (2026-10-05)
 
 ### 🐛 Bug Fixes
-
 - fix CSS path and footer link routing under Ingress ([`901a8b32`](https://github.com/FaserF/hassio-addons/commit/901a8b32e36ec614b245988b2bca6fa192663461))
 - determine Alpine version dynamically in Dockerfile to prevent apk repository mismatch ([`120a7ca6`](https://github.com/FaserF/hassio-addons/commit/120a7ca61ca7d0fab553fd6c92ce032278f36ee7))
 
 ### 📦 Dependencies
-
 - ⬆️ Update Add-on base images ([`835dff8e`](https://github.com/FaserF/hassio-addons/commit/835dff8e77d525c2bbc80c93fe500b885da641d1))
+
 
 ## 1.1.3 (2026-08-28)
 

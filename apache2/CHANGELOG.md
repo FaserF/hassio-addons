@@ -3,13 +3,12 @@
 ## 3.4.8 (2026-10-05)
 
 ### 📦 Dependencies
-
 - ⬆️ Update Add-on base images ([`835dff8e`](https://github.com/FaserF/hassio-addons/commit/835dff8e77d525c2bbc80c93fe500b885da641d1))
 - ⬆️ Update dependency alpine_3_21/apache2 to v2.4.69-r0 ([`d1c8c445`](https://github.com/FaserF/hassio-addons/commit/d1c8c445b53c706b46defec13338154662afee34))
 
 ### 🎨 Style
-
 - format repository files with prettier ([`91331581`](https://github.com/FaserF/hassio-addons/commit/9133158127d0eb25088334a34b1f22fb9ec834a7))
+
 
 ## 3.4.7 (2026-08-28)
 

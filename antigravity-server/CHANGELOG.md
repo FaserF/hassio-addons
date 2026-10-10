@@ -1,19 +1,22 @@
 # Changelog
 
+## 1.3.3-dev-20261005-1712-a8212de (2026-10-05)
+
+- Release version 1.3.3-dev-20261005-1712-a8212de
+
+
 ## 1.3.2 (2026-10-05)
 
 ### 🐛 Bug Fixes
-
 - migrate user bundles from s6-rc.d to user-bundles.d to fix deprecation warning ([`73156ded`](https://github.com/FaserF/hassio-addons/commit/73156ded6152ca7cab2e34950ec95461dd4fb4dd))
 - regenerate accurate changelogs for all addons and fix release commit matching in bump_version.py ([`b667eef9`](https://github.com/FaserF/hassio-addons/commit/b667eef9f23c882efd02c11535c2ea4c9bbad5f5))
 
 ### 📦 Dependencies
-
 - ⬆️ Update Add-on base images ([`835dff8e`](https://github.com/FaserF/hassio-addons/commit/835dff8e77d525c2bbc80c93fe500b885da641d1))
 
 ### 🚀 Other
-
 - Standardize log_level configuration and handling across all add-ons ([`7ddda206`](https://github.com/FaserF/hassio-addons/commit/7ddda206529ef9453a58d36af03969ed975a8e66))
+
 
 ## 1.3.1 (2026-08-19)
 
