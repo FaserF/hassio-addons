@@ -7,6 +7,6 @@
     "js-yaml": "^5.4.2",
     "brace-expansion": "5.0.12",
     "smol-toml": "^1.9.0",
-    "katex": "^0.18.2"
+    "katex": "^0.19.0"
   }
 }
