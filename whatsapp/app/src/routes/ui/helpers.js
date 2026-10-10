@@ -230,7 +230,7 @@ const getInitialLanguage = () => {
     const browserLang = (navigator.language || navigator.userLanguage || '')
       .split('-')[0]
       .toLowerCase();
-    if (browserLang && ['de', 'en'].includes(browserLang)) return browserLang;
+    if (browserLang && ['de', 'en', 'it'].includes(browserLang)) return browserLang;
   }
   return 'en';
 };
@@ -312,7 +312,7 @@ async function setAppLanguage(lang) {
     if (typeof window.updateDashboard === 'function') {
       window.updateDashboard();
     }
-    const langName = lang === 'de' ? '🇩🇪 Deutsch' : '🇬🇧 English';
+    const langName = { de: '🇩🇪 Deutsch', it: '🇮🇹 Italiano' }[lang] || '🇬🇧 English';
     showToast(t('common.language_switched', { lang: langName }), 'success');
   } catch (err) {
     console.error('setAppLanguage failed:', err);
