@@ -94,7 +94,8 @@
   },
   "languages": {
     "en": "English",
-    "de": "German"
+    "de": "German",
+    "it": "Italian"
   },
   "header": {
     "title": "WhatsApp Web Gateway",
