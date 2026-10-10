@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base-python:17.0.4
+ARG BUILD_FROM=ghcr.io/hassio-addons/base-python:19.1.0
 FROM ${BUILD_FROM}
 
 # Install requirements for Python script
