@@ -253,6 +253,7 @@ export function renderDashboard(sessionId) {
                     <select id="language-select" class="session-select" style="min-width:85px;" onchange="setAppLanguage(this.value)">
                         <option value="de" data-i18n="languages.de">🇩🇪 DE</option>
                         <option value="en" data-i18n="languages.en">🇬🇧 EN</option>
+                        <option value="it" data-i18n="languages.it">🇮🇹 IT</option>
                     </select>
                 </div>
                 <button id="theme-toggle" class="theme-toggle" title="Toggle Light/Dark Mode" data-i18n-title="shell.toggle_theme_title" onclick="toggleTheme()">🌓</button>
