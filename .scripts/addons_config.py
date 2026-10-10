@@ -14,6 +14,7 @@ DEV_ADDONS: Set[str] = {
     "wiki.js3",
     "switchcraft",
     "googlehome",
+    "epicgamesfree",
 }
 
 UNSUPPORTED_ADDONS: Set[str] = {

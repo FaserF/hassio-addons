@@ -1,0 +1,10 @@
+configuration:
+  auto_claim:
+    name: "Auto Claim"
+    description: "Automatically claim free games based on the cron schedule."
+  cron_schedule:
+    name: "Cron Schedule"
+    description: "Cron expression for when to check for and claim free games (e.g. '10 17 * * 4' for Thursday 17:10)."
+  log_level:
+    name: "Log Level"
+    description: "Logging level for the addon."
