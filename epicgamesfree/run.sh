@@ -16,10 +16,10 @@ export LOG_LEVEL
 # Ensure data directory exists
 mkdir -p /data
 if [ ! -f /data/session.json ]; then
-    echo "{}" > /data/session.json
+	echo "{}" >/data/session.json
 fi
 if [ ! -f /data/config.json ]; then
-    echo "{}" > /data/config.json
+	echo "{}" >/data/config.json
 fi
 
 bashio::log.info "Running epic_server.py"

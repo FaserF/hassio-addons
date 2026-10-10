@@ -18,3 +18,4 @@ options:
   auto_claim: true
   cron_schedule: "10 17 * * 4"
   log_level: info
+stage: experimental
