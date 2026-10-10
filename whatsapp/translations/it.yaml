@@ -1,0 +1,72 @@
+configuration:
+  log_level:
+    name: "Livello di log"
+    description: Controlla il livello di dettaglio dei log.
+  reset_session:
+    name: "Reimposta la sessione"
+    description: "⚠️ PERICOLO: attivando questa opzione i dati della tua sessione WhatsApp verranno eliminati al prossimo avvio. L'interruttore si disattiva da solo dopo il ripristino."
+  mask_sensitive_data:
+    name: "Maschera i dati sensibili"
+    description: "Se attivata, i numeri di telefono nei log vengono parzialmente nascosti (es. 3934*****123). Utile quando condividi i log."
+  send_message_timeout:
+    name: "Timeout di invio (ms)"
+    description: "Tempo in millisecondi di attesa per la conferma di WhatsApp prima di interrompere l'invio (predefinito: 25000)."
+  keep_alive_interval:
+    name: "Intervallo keep-alive (ms)"
+    description: "Ogni quanto (in ms) controllare la connessione per rilevare connessioni ormai inattive (predefinito: 30000)."
+  webhook_enabled:
+    name: "Webhook attivato"
+    description: "Se attivato, i messaggi WhatsApp in arrivo vengono inoltrati all'URL del webhook indicato."
+  webhook_url:
+    name: "URL del webhook"
+    description: "L'URL di destinazione dei messaggi inoltrati (es. l'endpoint della tua app Rocket.Chat)."
+  webhook_token:
+    name: "Token del webhook"
+    description: "Un token segreto inviato con la richiesta del webhook (intestazione X-Webhook-Token) per proteggere la comunicazione."
+  ui_auth_enabled:
+    name: "Autenticazione dell'interfaccia"
+    description: "Attiva l'autenticazione Basic per l'interfaccia web (porta 8066). Consigliata se è esposta a internet."
+  ui_auth_password:
+    name: "Password dell'interfaccia"
+    description: "La password dell'interfaccia web (il nome utente è sempre 'admin')."
+  media_folder:
+    name: "Cartella dei contenuti multimediali"
+    description: "Percorso di una cartella pubblica (es. /media/whatsapp) in cui salvare i contenuti multimediali ricevuti. Se impostato, la pulizia automatica è DISATTIVATA."
+  mark_online:
+    name: "Segna come online"
+    description: "Indica se segnare il bot come online in WhatsApp."
+  admin_notifications_enabled:
+    name: "Notifiche agli amministratori"
+    description: "Se attivate, il bot invia notifiche sullo stato della connessione e sugli errori ai numeri degli amministratori elencati."
+  admin_numbers:
+    name: "Numeri di telefono degli amministratori"
+    description: "Elenco di numeri di telefono separati da virgola (con prefisso internazionale, es. 393471234567) che devono ricevere le notifiche degli amministratori."
+  welcome_message_enabled:
+    name: "Messaggio di benvenuto"
+    description: "Indica se inviare un messaggio di benvenuto una sola volta agli utenti che scrivono al bot per la prima volta."
+  message_send_interval:
+    name: "Intervallo di invio dei messaggi (ms)"
+    description: "Pausa in millisecondi tra l'invio di messaggi consecutivi per evitare i limiti di frequenza (predefinito: 1000)."
+  group_fetch_interval:
+    name: "Intervallo di aggiornamento dei gruppi (ms)"
+    description: "Intervallo in millisecondi tra gli aggiornamenti dei metadati dei gruppi (predefinito: 300000 / 5 minuti)."
+  group_fetch_cooldown_on_error:
+    name: "Attesa dopo errore nel recupero dei gruppi (ms)"
+    description: "Periodo di attesa in millisecondi dopo un errore generico nel recupero dei gruppi, prima di riprovare (predefinito: 60000)."
+  group_fetch_cooldown_on_rate_limit:
+    name: "Attesa dopo limite di frequenza nel recupero dei gruppi (ms)"
+    description: "Periodo di attesa in millisecondi dopo aver raggiunto un limite di frequenza di WhatsApp per il recupero dei gruppi (predefinito: 900000 / 15 minuti)."
+  reject_unauthorized:
+    name: "Rifiuta i certificati non autorizzati"
+    description: "Indica se rifiutare i certificati autofirmati o non autorizzati quando si scaricano URL multimediali o si chiamano API (disattivalo per consentire i certificati autofirmati)."
+  sync_full_history:
+    name: "Sincronizza la cronologia completa"
+    description: "Controlla se sincronizzare l'intera cronologia dei messaggi WhatsApp durante l'associazione iniziale del dispositivo (disattivato per impostazione predefinita)."
+  auto_install_integration:
+    name: "Installa/aggiorna automaticamente l'integrazione"
+    description: "Installa e aggiorna automaticamente l'integrazione WhatsApp di Home Assistant in custom_components."
+  github_token:
+    name: "Token GitHub (facoltativo)"
+    description: "Token di accesso personale per aumentare i limiti dell'API GitHub durante il controllo degli aggiornamenti."
+network:
+  8066/tcp: Porta API interna a cui si connette l'integrazione.
