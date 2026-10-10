@@ -448,7 +448,9 @@ export function registerConfigCommands(registry) {
       const langMsg =
         lang === 'de'
           ? `🌐 Botsprache für diese Gruppe wurde auf \`${lang}\` (Deutsch) gesetzt.`
-          : `🌐 Bot language for this group set to \`${lang}\`.`;
+          : lang === 'it'
+            ? `🌐 Lingua del bot per questo gruppo impostata su \`${lang}\` (Italiano).`
+            : `🌐 Bot language for this group set to \`${lang}\`.`;
       await reply(session, groupId, { text: langMsg }, rawMsg);
     },
     { adminOnly: true, help: 'Set the group bot response language (e.g. en, de)' }
