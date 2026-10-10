@@ -450,6 +450,29 @@ class TRWebSocketKeeper:
                         self.latest_data["api_interest_rate"] = float(api_rate)
                     except (ValueError, TypeError):
                         pass
+
+                # Parse exemption order if present in cash/account payload
+                ex_total = (
+                    target.get("availableTaxExemption")
+                    or target.get("taxExemptionTotal")
+                    or target.get("taxExemption")
+                    or target.get("exemptionTotal")
+                )
+                if ex_total is not None:
+                    try:
+                        self.latest_data["exemption_total"] = float(ex_total)
+                    except (ValueError, TypeError):
+                        pass
+
+                ex_used = (
+                    target.get("usedTaxExemption") or target.get("taxExemptionUsed") or target.get("exemptionUsed")
+                )
+                if ex_used is not None:
+                    try:
+                        self.latest_data["exemption_used"] = float(ex_used)
+                    except (ValueError, TypeError):
+                        pass
+
                 self._recalculate_portfolio()
 
         elif sub_type == "savingsPlans":
