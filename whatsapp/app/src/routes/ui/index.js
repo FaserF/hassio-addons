@@ -116,6 +116,11 @@ export function registerUIRoutes(app) {
   });
 }
 
+/**
+ * Renders the full dashboard HTML page, including the language selector.
+ * @param {string} sessionId - Active WhatsApp session identifier.
+ * @returns {string} HTML document.
+ */
 export function renderDashboard(sessionId) {
   return `<!DOCTYPE html>
 <html lang="en" data-theme="dark">
