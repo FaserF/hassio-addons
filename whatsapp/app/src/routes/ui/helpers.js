@@ -223,6 +223,11 @@ window.showConfirm = showConfirm;
 window.toggleTheme = toggleTheme;
 
 // Client-side i18n Engine
+/**
+ * Resolves the UI language: saved choice first, then the browser language
+ * (if supported: de, en, it), otherwise English.
+ * @returns {string} Two-letter language code.
+ */
 const getInitialLanguage = () => {
   const saved = localStorage.getItem('ha-whatsapp-lang');
   if (saved) return saved;
@@ -306,6 +311,12 @@ function applyI18nDOM() {
 }
 window.applyI18nDOM = applyI18nDOM;
 
+/**
+ * Switches the UI language, reloads the dictionary, refreshes the dashboard
+ * and shows a confirmation toast with the language name.
+ * @param {string} lang - Two-letter language code (de, en, it).
+ * @returns {Promise<void>}
+ */
 async function setAppLanguage(lang) {
   try {
     await initI18n(lang);
