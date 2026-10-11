@@ -605,7 +605,7 @@ function formatPreviewDateTime(isoStr) {
 
   const lang = window.currentLang || (window.t ? window.t('meta.code') : 'en') || 'en';
   try {
-    const localeCode = lang.startsWith('de') ? 'de-DE' : 'en-US';
+    const localeCode = { de: 'de-DE', it: 'it-IT' }[lang.slice(0, 2)] || 'en-US';
     return date.toLocaleString(localeCode, {
       dateStyle: 'medium',
       timeStyle: 'short',
@@ -621,8 +621,9 @@ function updateAutoResponderPreview() {
   const rawEnd = document.getElementById('ar-end-time')?.value || '';
   const oncePerContact = document.getElementById('ar-once-per-contact')?.value === 'true';
 
-  let isDe = (window.currentLang || (window.t ? window.t('meta.code') : 'en') || 'en').startsWith(
-    'de'
+  let previewLang = (window.currentLang || (window.t ? window.t('meta.code') : 'en') || 'en').slice(
+    0,
+    2
   );
   const lowerTpl = (tpl || '').toLowerCase();
   if (
@@ -632,30 +633,45 @@ function updateAutoResponderPreview() {
     lowerTpl.includes('abwesend') ||
     lowerTpl.includes('nachricht')
   ) {
-    isDe = true;
+    previewLang = 'de';
+  } else if (
+    lowerTpl.includes('ciao') ||
+    lowerTpl.includes('grazie') ||
+    lowerTpl.includes('vacanza') ||
+    lowerTpl.includes('assente')
+  ) {
+    previewLang = 'it';
   } else if (
     lowerTpl.includes('hello') ||
     lowerTpl.includes('thank you') ||
     lowerTpl.includes('vacation') ||
     lowerTpl.includes('automated reply')
   ) {
-    isDe = false;
+    previewLang = 'en';
   }
+  const isDe = previewLang === 'de';
+  const isIt = previewLang === 'it';
 
-  const senderName = isDe ? 'Max Mustermann' : 'John Doe';
+  const senderName = isDe ? 'Max Mustermann' : isIt ? 'Mario Rossi' : 'John Doe';
   const startTimeFormatted = rawStart ? formatPreviewDateTime(rawStart) : '';
   const endTimeFormatted = rawEnd ? formatPreviewDateTime(rawEnd) : '';
 
   let endTimeText = '';
   if (endTimeFormatted) {
-    endTimeText = isDe ? ` (bis ${endTimeFormatted})` : ` (until ${endTimeFormatted})`;
+    endTimeText = isDe
+      ? ` (bis ${endTimeFormatted})`
+      : isIt
+        ? ` (fino al ${endTimeFormatted})`
+        : ` (until ${endTimeFormatted})`;
   }
 
   let onceNotice = '';
   if (oncePerContact) {
     onceNotice = isDe
       ? 'ℹ️ *Hinweis:* Du erhältst diese automatische Antwort nur einmalig.'
-      : 'ℹ️ *Note:* You will only receive this automated reply once.';
+      : isIt
+        ? 'ℹ️ *Nota:* riceverai questa risposta automatica una sola volta.'
+        : 'ℹ️ *Note:* You will only receive this automated reply once.';
   }
 
   // Update live resolution table values
