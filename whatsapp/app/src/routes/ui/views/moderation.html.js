@@ -1,3 +1,7 @@
+/**
+ * Moderation tab view: group settings, content locks, captcha, federation and AI.
+ * @returns {string} HTML of the moderation panel.
+ */
 export default () => `
 <section id="tab-moderation" class="tab-panel">
 
