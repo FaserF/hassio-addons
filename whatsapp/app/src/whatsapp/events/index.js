@@ -797,7 +797,7 @@ export function handleIncomingMessages(session) {
           const evData = msg.message.eventMessage;
           const evName = evData?.name || 'Untitled Event';
           const evDesc = evData?.description || '';
-          const localeCode = lang.startsWith('de') ? 'de-DE' : 'en-US';
+          const localeCode = { de: 'de-DE', it: 'it-IT' }[lang.slice(0, 2)] || 'en-US';
           const evStart = evData?.startTime
             ? new Date(Number(evData.startTime) * 1000).toLocaleString(localeCode, {
                 dateStyle: 'full',
