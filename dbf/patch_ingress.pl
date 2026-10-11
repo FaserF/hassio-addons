@@ -15,12 +15,24 @@ close $fh;
 
 my $hook_code = <<'EOF';
 
-	# --- Ingress Patch Start (v10: Surgical Slasher) ---
+	# --- Ingress Patch Start (v11: Surgical Slasher) ---
 	$self->hook(before_dispatch => sub {
 		my ($c) = @_;
 		
 		my $prefix = $c->req->headers->header("X-Ingress-Path");
 		my $fproto = $c->req->headers->header("X-Forwarded-Proto") // 'http';
+		my $fhost  = $c->req->headers->header("X-Forwarded-Host")  // $c->req->headers->header("Host");
+
+		# Host and port detection
+		if ($fhost) {
+			if ($fhost =~ /^([^:]+):(\d+)$/) {
+				$c->req->url->base->host($1);
+				$c->req->url->base->port($2);
+			} else {
+				$c->req->url->base->host($fhost);
+				$c->req->url->base->port(undef);
+			}
+		}
 
 		# Protocol detection
 		if ($fproto && $fproto eq 'https') {
@@ -31,21 +43,30 @@ my $hook_code = <<'EOF';
 
 		# Ingress Path Support
 		if ($prefix) {
-			$prefix =~ s{/+$}{}; 
-			# Apply the prefix to the base path with trailing slash
+			$prefix =~ s{/+$}{};
 			$c->req->url->base->path->parse("$prefix/");
-			$c->req->url->base->port(undef);
 		}
 	});
 
 	$self->hook(after_dispatch => sub {
 		my ($c) = @_;
 		
+		# Rewrite redirect Location header under Ingress
+		my $prefix = $c->req->headers->header("X-Ingress-Path");
+		if ($prefix) {
+			$prefix =~ s{/+$}{};
+			if (my $loc = $c->res->headers->location) {
+				if ($loc =~ m{^/} && $loc !~ m{^\Q$prefix\E(/|$)}) {
+					$c->res->headers->location("$prefix$loc");
+				}
+			}
+		}
+
 		# Nuclear CSP cleanup
 		$c->res->headers->remove("Content-Security-Policy");
 		$c->res->headers->remove("X-Content-Security-Policy");
 		
-		# Permissive policy (v7 based)
+		# Permissive policy
 		$c->res->headers->header("Content-Security-Policy" => 
 			"connect-src *; " .
 			"script-src 'self' 'unsafe-inline' 'unsafe-eval'; " .
@@ -67,14 +88,14 @@ if ($content !~ /Ingress Patch Start/) {
         open my $wh, '>', $file or die "Can't open $file for writing: $!\n";
         print $wh $content;
         close $wh;
-        print "Successfully applied Ingress Patch v10 to $file.\n";
+        print "Successfully applied Ingress Patch v11 to $file.\n";
     } else {
         die "Error: Startup method signature not found in $file.\n";
     }
 }
 
-# 2. Surgical Template Relativizer (Sweep v10.2: Native Perl Edition)
-print "Starting Surgical Template Relativization (v10.2: Native Perl)...\n";
+# 2. Surgical Template Relativizer (Sweep v11: Native Perl Edition)
+print "Starting Surgical Template Relativization (v11: Native Perl)...\n";
 
 use File::Find;
 
@@ -87,12 +108,16 @@ my @patterns = (
     [ qr(='/Station/), q(='Station/) ],
     [ qr(href="/"),   q(href="./") ],
     [ qr(action="/"), q(action="./") ],
-    [ qr(="/_),        q(="./_) ],
-    [ qr(='/_),        q(='./_) ],
-    [ qr(href="_about"), q(href="./_about") ],
-    [ qr(href="_datenschutz"), q(href="./_datenschutz") ],
-    [ qr(href="_impressum"), q(href="./_impressum") ],
+    [ qr(href="/_backend"), q(href="_backend") ],
+    [ qr(href="/_autostop"), q(href="_autostop") ],
+    [ qr(href="/_about"), q(href="_about") ],
+    [ qr(href="/_datenschutz"), q(href="_datenschutz") ],
+    [ qr(href="/_impressum"), q(href="_impressum") ],
+    [ qr(href="\./_(about|datenschutz|impressum)"), q(href="_$1") ],
     [ qr('/static/<%=\$av%>/css/'), q('static/<%=$av%>/css/') ],
+    [ qr('\./_geolocation'), q('_geolocation') ],
+    [ qr('/_geolocation'), q('_geolocation') ],
+    [ qr('/_ajax_mapinfo/'), q('_ajax_mapinfo/') ],
 );
 
 sub process_files {
