@@ -421,6 +421,10 @@ export function registerConfigCommands(registry) {
     { adminOnly: false, help: 'Report a message or user to group admins' }
   );
 
+  /**
+   * !setlang <code>: sets the bot reply language of the group (en, de, it, ...).
+   * Replies with a localized confirmation message.
+   */
   registry.register(
     'setlang',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
