@@ -1,3 +1,7 @@
+/**
+ * Moderation tab view: group settings, content locks, captcha, federation and AI.
+ * @returns {string} HTML of the moderation panel.
+ */
 export default () => `
 <section id="tab-moderation" class="tab-panel">
 
@@ -150,6 +154,7 @@ export default () => `
                             <select id="mod-group-language-select" class="mod-select mod-select-sm" style="width:140px;">
                                 <option value="en" data-i18n="moderation.lang_en">🇬🇧 English (Default)</option>
                                 <option value="de" data-i18n="moderation.lang_de">🇩🇪 Deutsch</option>
+                                <option value="it" data-i18n="moderation.lang_it">🇮🇹 Italiano</option>
                             </select>
                         </div>
                         <div class="mod-actions"><button class="btn btn-primary btn-sm" onclick="saveGroupRules()"><i class="fas fa-save"></i> <span data-i18n="common.save">Save Rules</span></button></div>

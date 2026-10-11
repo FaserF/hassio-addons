@@ -421,6 +421,10 @@ export function registerConfigCommands(registry) {
     { adminOnly: false, help: 'Report a message or user to group admins' }
   );
 
+  /**
+   * !setlang <code>: sets the bot reply language of the group (en, de, it, ...).
+   * Replies with a localized confirmation message.
+   */
   registry.register(
     'setlang',
     async (session, groupId, userId, args, config, _isAdmin, rawMsg) => {
@@ -448,7 +452,9 @@ export function registerConfigCommands(registry) {
       const langMsg =
         lang === 'de'
           ? `🌐 Botsprache für diese Gruppe wurde auf \`${lang}\` (Deutsch) gesetzt.`
-          : `🌐 Bot language for this group set to \`${lang}\`.`;
+          : lang === 'it'
+            ? `🌐 Lingua del bot per questo gruppo impostata su \`${lang}\` (Italiano).`
+            : `🌐 Bot language for this group set to \`${lang}\`.`;
       await reply(session, groupId, { text: langMsg }, rawMsg);
     },
     { adminOnly: true, help: 'Set the group bot response language (e.g. en, de)' }

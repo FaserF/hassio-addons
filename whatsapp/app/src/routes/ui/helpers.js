@@ -223,6 +223,11 @@ window.showConfirm = showConfirm;
 window.toggleTheme = toggleTheme;
 
 // Client-side i18n Engine
+/**
+ * Resolves the UI language: saved choice first, then the browser language
+ * (if supported: de, en, it), otherwise English.
+ * @returns {string} Two-letter language code.
+ */
 const getInitialLanguage = () => {
   const saved = localStorage.getItem('ha-whatsapp-lang');
   if (saved) return saved;
@@ -230,7 +235,7 @@ const getInitialLanguage = () => {
     const browserLang = (navigator.language || navigator.userLanguage || '')
       .split('-')[0]
       .toLowerCase();
-    if (browserLang && ['de', 'en'].includes(browserLang)) return browserLang;
+    if (browserLang && ['de', 'en', 'it'].includes(browserLang)) return browserLang;
   }
   return 'en';
 };
@@ -306,13 +311,19 @@ function applyI18nDOM() {
 }
 window.applyI18nDOM = applyI18nDOM;
 
+/**
+ * Switches the UI language, reloads the dictionary, refreshes the dashboard
+ * and shows a confirmation toast with the language name.
+ * @param {string} lang - Two-letter language code (de, en, it).
+ * @returns {Promise<void>}
+ */
 async function setAppLanguage(lang) {
   try {
     await initI18n(lang);
     if (typeof window.updateDashboard === 'function') {
       window.updateDashboard();
     }
-    const langName = lang === 'de' ? '🇩🇪 Deutsch' : '🇬🇧 English';
+    const langName = { de: '🇩🇪 Deutsch', it: '🇮🇹 Italiano' }[lang] || '🇬🇧 English';
     showToast(t('common.language_switched', { lang: langName }), 'success');
   } catch (err) {
     console.error('setAppLanguage failed:', err);
