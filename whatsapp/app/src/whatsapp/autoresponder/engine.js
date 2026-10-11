@@ -14,7 +14,7 @@ export function formatLocalizedDateTime(isoStr, lang = 'en') {
   if (isNaN(date.getTime())) return String(isoStr);
 
   try {
-    const localeCode = (lang || 'en').startsWith('de') ? 'de-DE' : 'en-US';
+    const localeCode = { de: 'de-DE', it: 'it-IT' }[(lang || 'en').slice(0, 2)] || 'en-US';
     return date.toLocaleString(localeCode, {
       dateStyle: 'medium',
       timeStyle: 'short',
