@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-10-11T00:04:48.290582",
+  "timestamp": "2026-10-11T19:53:10.684996",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
@@ -530,7 +530,11 @@
           "whatsapp/rootfs/etc/s6-overlay/s6-rc.d/whatsapp/scripts/20-diagnostics.sh",
           "whatsapp/rootfs/usr/lib/bashio/banner.sh"
         ],
-        "translations": ["whatsapp/translations/de.yaml", "whatsapp/translations/en.yaml"]
+        "translations": [
+          "whatsapp/translations/de.yaml",
+          "whatsapp/translations/en.yaml",
+          "whatsapp/translations/it.yaml"
+        ]
       }
     },
     "wiki.js": {
