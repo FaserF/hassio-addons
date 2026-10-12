@@ -94,3 +94,8 @@ data/
 .data/
 /whatsapp/app/scratch
 /traderepublic/app/.mypy_cache
+.claude/
+.opencode/
+AGENTS.md
+CLAUDE.md
+opencode.json
