@@ -213,7 +213,9 @@ class TRWebSocketKeeper:
                     continue
                 _LOGGER.warning("WS Keeper: connection error: %s", first_exc)
                 if "401" in str(first_exc) or getattr(first_exc, "status_code", None) == 401:
-                    _LOGGER.info("WS Keeper: connection received 401 Unauthorized — resetting connection & retrying with refreshed session")
+                    _LOGGER.info(
+                        "WS Keeper: connection received 401 Unauthorized — resetting connection & retrying with refreshed session"
+                    )
                     if attempt < 2:
                         await asyncio.sleep(2**attempt)
                         continue

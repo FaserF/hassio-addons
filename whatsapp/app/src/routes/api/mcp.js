@@ -1,9 +1,6 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { logger } from '../../logger.js';
 import { getSession } from '../../session.js';
 import { getJid } from '../../utils/jid.js';
@@ -55,7 +52,8 @@ export function registerMcpRoutes(app) {
         },
         {
           name: 'whatsapp_send_image',
-          description: 'Send an image from an HTTP/HTTPS URL or local path to a WhatsApp recipient.',
+          description:
+            'Send an image from an HTTP/HTTPS URL or local path to a WhatsApp recipient.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -122,7 +120,12 @@ export function registerMcpRoutes(app) {
     const connected = await ensureConnected(session, 4000);
     if (!connected) {
       return {
-        content: [{ type: 'text', text: 'Error: WhatsApp is not connected. Check pairing status in Web UI.' }],
+        content: [
+          {
+            type: 'text',
+            text: 'Error: WhatsApp is not connected. Check pairing status in Web UI.',
+          },
+        ],
         isError: true,
       };
     }
@@ -218,7 +221,9 @@ export function registerMcpRoutes(app) {
   // SSE Transport endpoint
   app.get('/mcp', async (req, res) => {
     if (!checkMcpAuth(req)) {
-      return res.status(401).json({ error: 'Unauthorized', detail: 'Invalid or missing X-Auth-Token' });
+      return res
+        .status(401)
+        .json({ error: 'Unauthorized', detail: 'Invalid or missing X-Auth-Token' });
     }
 
     try {
@@ -238,7 +243,9 @@ export function registerMcpRoutes(app) {
   // SSE Message Ingestion
   app.post('/mcp/messages', async (req, res) => {
     if (!checkMcpAuth(req)) {
-      return res.status(401).json({ error: 'Unauthorized', detail: 'Invalid or missing X-Auth-Token' });
+      return res
+        .status(401)
+        .json({ error: 'Unauthorized', detail: 'Invalid or missing X-Auth-Token' });
     }
 
     if (!sseTransport) {
