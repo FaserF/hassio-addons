@@ -213,27 +213,10 @@ class TRWebSocketKeeper:
                     continue
                 _LOGGER.warning("WS Keeper: connection error: %s", first_exc)
                 if "401" in str(first_exc) or getattr(first_exc, "status_code", None) == 401:
-                    # Attempt token refresh via background Chromium callback
-                    if self._on_token_refresh and callable(self._on_token_refresh):
-                        try:
-                            _LOGGER.info("WS Keeper got 401 — triggering background Chromium session rotation...")
-                            refreshed = await self._on_token_refresh()
-                            if refreshed:
-                                _LOGGER.info(
-                                    "WS Keeper: recovered fresh valid session token from Chromium! Reconnecting..."
-                                )
-                                self._reconnect_delay = _RECONNECT_DELAY_MIN
-                                return False
-                        except Exception as rot_exc:  # noqa: BLE001
-                            _LOGGER.debug("Chromium token recovery failed: %s", rot_exc)
-
-                    self.is_authenticated = False
-                    self.last_error = f"Session expired or rejected by Trade Republic (HTTP 401: {first_exc}). Please re-authenticate."
-                    _LOGGER.warning(
-                        "WS Keeper: session rejected and token rotation exhausted — stopping reconnect loop to await re-login"
-                    )
-                    self._running = False
-                return False
+                    _LOGGER.info("WS Keeper: connection received 401 Unauthorized — resetting connection & retrying with refreshed session")
+                    if attempt < 2:
+                        await asyncio.sleep(2**attempt)
+                        continue
 
             # Handshake
             handshake = {**_HANDSHAKE_PAYLOAD, "token": clean}
