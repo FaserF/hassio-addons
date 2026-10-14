@@ -8,6 +8,7 @@ import { registerUiApiRoutes } from './ui_api.js';
 import { registerModerationRoutes } from './moderation.js';
 import { registerTelegramRoutes } from './telegram.js';
 import { registerAutoResponderRoutes } from './autoresponder.js';
+import { registerMcpRoutes } from './mcp.js';
 
 import authRouter from './auth.js';
 
@@ -23,4 +24,5 @@ export function registerAPIRoutes(app) {
   registerModerationRoutes(app);
   registerTelegramRoutes(app);
   registerAutoResponderRoutes(app);
+  registerMcpRoutes(app);
 }
