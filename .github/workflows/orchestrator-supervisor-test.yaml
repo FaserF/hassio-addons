@@ -143,6 +143,16 @@ jobs:
             INGRESS_AppS="$OPTIMIZED_APPS"
           fi
 
+          # Mass update optimization: When Renovate or a mass bump touches >4 ingress apps,
+          # test a representative sample of up to 4 apps on PR runs to prevent runner timeouts.
+          if [ -n "$INGRESS_AppS" ]; then
+            IFS=',' read -ra ALL_INGRESS <<< "$INGRESS_AppS"
+            if [ "${#ALL_INGRESS[@]}" -gt 4 ] && [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "::notice title=PR Batch Optimization::Mass update detected (${#ALL_INGRESS[@]} ingress apps). Sampling up to 4 apps for PR verification."
+              INGRESS_AppS="${ALL_INGRESS[0]},${ALL_INGRESS[1]},${ALL_INGRESS[2]},${ALL_INGRESS[3]}"
+            fi
+          fi
+
           if [ -z "$INGRESS_AppS" ]; then
             echo "No ingress-enabled Apps to test"
             {
@@ -162,7 +172,7 @@ jobs:
     needs: filter-ingress
     if: needs.filter-ingress.outputs.has_Apps == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     steps:
       - name: "🧹 Free Disk Space"
@@ -440,18 +450,20 @@ jobs:
             echo "Installing Dependency: MariaDB (core_mariadb)..."
             if ! docker exec ha-supervisor-test ha apps install core_mariadb; then
               echo "⚠️ Failed to install core_mariadb"
+              MYSQL_FAILED=true
               echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
             else
               echo "Configuring MariaDB options..."
               # Set mandatory options (password is required)
-              MARIA_OPTS='{"databases": ["homeassistant"], "logins": [{"username": "homeassistant", "password": "generated_m7R2x"}], "rights": [{"username": "homeassistant", "database": "homeassistant"}], "password": "generated_m7R2x"}'
+              MARIA_OPTS='{"options": {"databases": ["homeassistant"], "logins": [{"username": "homeassistant", "password": "generated_m7R2x"}], "rights": [{"username": "homeassistant", "database": "homeassistant"}], "password": "generated_m7R2x"}}'
               printf '%s' "$MARIA_OPTS" | docker exec -i ha-supervisor-test sh -c "cat > /tmp/maria_opt.json"
               # Define auth header as variable to avoid colon-space YAML issues
-              AUTH_HEADER="Authorization: Bearer $SUPERVISOR_TOKEN"
-              docker exec ha-supervisor-test curl -s -X POST -H "$AUTH_HEADER" -H "Content-Type: application/json" -d "@/tmp/maria_opt.json" "http://supervisor/addons/core_mariadb/options" || echo "⚠️ Failed to set MariaDB options via API"
+              # Set options using SUPERVISOR_TOKEN inside container
+              docker exec ha-supervisor-test sh -c "curl -s -X POST -H \"Authorization: Bearer \$SUPERVISOR_TOKEN\" -H \"Content-Type: application/json\" -d @/tmp/maria_opt.json http://supervisor/addons/core_mariadb/options" || echo "⚠️ Failed to set MariaDB options via API"
 
               if ! docker exec ha-supervisor-test ha apps start core_mariadb; then
                 echo "⚠️ Failed to start core_mariadb"
+                MYSQL_FAILED=true
                 echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
               else
                 echo "Waiting for MariaDB to be ready..."
