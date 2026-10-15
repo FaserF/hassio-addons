@@ -1,2 +1,0 @@
-#!/bin/bash
-/etc/s6-overlay/s6-rc.d/init-antigravity/run
