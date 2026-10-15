@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.4 (2026-10-15)
+
+### ✨ Features
+- add required headers and WAF token to v2 web auth request (#1039) ([`b2b8329c`](https://github.com/FaserF/hassio-addons/commit/b2b8329c2e17487a973effdccb80a6b6baec6243))
+
+### 🐛 Bug Fixes
+- prevent premature 401 WebSocket disconnect abort (#1166) (#1174) ([`cdd08589`](https://github.com/FaserF/hassio-addons/commit/cdd0858976d59bfb59b397bba846ab703391525b))
+- extract dynamic tax exemption order values from cash stream (FaserF/ha-traderepublic#14) ([`36e3b766`](https://github.com/FaserF/hassio-addons/commit/36e3b766421092c97b8be5daf377835be87329ed))
+
+### 📦 Dependencies
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.8](https://github.com/hassio-addons/addon-base/releases/tag/21.0.8) (#1143) ([`fb91491d`](https://github.com/FaserF/hassio-addons/commit/fb91491d911770ad22afeb32af7db9ed69a05be1))
+
+
 ## 1.1.3 (2026-10-05)
 
 ### ✨ Features
