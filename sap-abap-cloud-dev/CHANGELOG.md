@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1-dev-20261015-1804-e7478a3 (2026-10-15)
+
+### 🚀 Other
+- deprecate sap ha app ([`2597fa82`](https://github.com/FaserF/hassio-addons/commit/2597fa8208bff90d1c5a18e4a93400da078931b2))
+
+
 ## 0.3.0 (2026-06-16)
 
 ### 📦 Dependencies
