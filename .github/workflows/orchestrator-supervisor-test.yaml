@@ -455,7 +455,7 @@ jobs:
             else
               echo "Configuring MariaDB options..."
               # Set mandatory options (password is required)
-              MARIA_OPTS='{"databases": ["homeassistant"], "logins": [{"username": "homeassistant", "password": "generated_m7R2x"}], "rights": [{"username": "homeassistant", "database": "homeassistant"}], "password": "generated_m7R2x"}'
+              MARIA_OPTS='{"options": {"databases": ["homeassistant"], "logins": [{"username": "homeassistant", "password": "generated_m7R2x"}], "rights": [{"username": "homeassistant", "database": "homeassistant"}], "password": "generated_m7R2x"}}'
               printf '%s' "$MARIA_OPTS" | docker exec -i ha-supervisor-test sh -c "cat > /tmp/maria_opt.json"
               # Define auth header as variable to avoid colon-space YAML issues
               # Set options using SUPERVISOR_TOKEN inside container
