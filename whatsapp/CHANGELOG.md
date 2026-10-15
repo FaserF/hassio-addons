@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.1.6 (2026-10-15)
+
+### ✨ Features
+- add mcp support ([`030fa111`](https://github.com/FaserF/hassio-addons/commit/030fa111b0229f1e68490e693974d54fb1ff9db2))
+- add Italian (it) localization (#1161) ([`06157f36`](https://github.com/FaserF/hassio-addons/commit/06157f36ce0b4b86df1266451e7d2c63a282c5e5))
+
+### 📦 Dependencies
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.8](https://github.com/hassio-addons/addon-base/releases/tag/21.0.8) (#1143) ([`fb91491d`](https://github.com/FaserF/hassio-addons/commit/fb91491d911770ad22afeb32af7db9ed69a05be1))
+- ⬆️ Update dependency fastapi to v0.143.2 (#1182) ([`175552c5`](https://github.com/FaserF/hassio-addons/commit/175552c59a7c8253fa7c0abfecf7c28b52fabac5))
+- ⬆️ Update dependency link-preview-js to v5.0.1 (#1177) ([`d1e37133`](https://github.com/FaserF/hassio-addons/commit/d1e371330f81d687a896695c02eb3c4245870eef))
+- ⬆️ Update dependency fastapi to v0.143.1 (#1176) ([`f747630c`](https://github.com/FaserF/hassio-addons/commit/f747630c84f9656d26f94141e6e2f14b37b121ed))
+- ⬆️ Update dependency playwright to v1.64.0 (#1171) ([`813c8430`](https://github.com/FaserF/hassio-addons/commit/813c8430606735ae2267b7dfd116d4954681b7b6))
+- ⬆️ Update dependency express to v5.3.0 (#1153) ([`15c1ee70`](https://github.com/FaserF/hassio-addons/commit/15c1ee706477b2b4c827a9fb9a08dd9a89cbea04))
+- bump music-metadata from 11.13.0 to 11.16.1 in /whatsapp/app in the npm_and_yarn group across 1 directory (#1152) ([`a26a4e4c`](https://github.com/FaserF/hassio-addons/commit/a26a4e4cee53870b78ae3b6a9e6d3016a95a4bf5))
+- ⬆️ Update dependency fastapi to v0.143.0 (#1150) ([`f870e2be`](https://github.com/FaserF/hassio-addons/commit/f870e2beab5ee78cefb2b28c6cfbd36445bded25))
+- ⬆️ Update dependency fastapi to v0.142.4 (#1144) ([`5a8d213b`](https://github.com/FaserF/hassio-addons/commit/5a8d213bdcb9fba5ab2a4a0aebd988f4d133278f))
+- bump proxy-addr from 2.0.7 to 2.0.8 in /whatsapp/app in the npm_and_yarn group across 1 directory (#1138) ([`827bd6e3`](https://github.com/FaserF/hassio-addons/commit/827bd6e34ec96aba4d5fe62f942e21b4f9207c0e))
+- ⬆️ Update dependency express-rate-limit to v8.7.1 (#1137) ([`d1263d56`](https://github.com/FaserF/hassio-addons/commit/d1263d56e719a542d59308802173dc6129b84936))
+
+
 ## 2.1.5 (2026-10-05)
 
 ### 🐛 Bug Fixes
