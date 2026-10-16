@@ -30,9 +30,17 @@ def patch_web_ui_server():
     with open(server_js, "r", encoding="utf-8") as f:
         code = f.read()
 
-    # Match injectConnectionHint and replace with auto-seed logic
+    # If already patched previously, cleanly strip the injected wrapper
+    if "function _orig_injectConnectionHint_unused" in code:
+        idx_start = code.find("function injectConnectionHint(")
+        idx_orig = code.find("function _orig_injectConnectionHint_unused(")
+        if idx_start != -1 and idx_orig != -1:
+            code = code[:idx_start] + code[idx_orig:].replace(
+                "function _orig_injectConnectionHint_unused(", "function injectConnectionHint(", 1
+            )
+
     p_func = r"function injectConnectionHint\(html, req, label\) \{"
-    if re.search(p_func, code) and "ha_ingress_pfx" not in code:
+    if re.search(p_func, code):
         r_func = """function injectConnectionHint(html, req, label) {
     const host = typeof req.headers.host === "string" ? req.headers.host : "";
     const useTls = req.protocol === "https";
@@ -57,14 +65,22 @@ window.__PASEO_INITIAL_DAEMON_CONNECTION__=${serializeInlineScriptJson(hint)};
         try { sessionStorage.setItem("ha_ingress_pfx", m[1]); } catch(e) {}
       }
     }
-    var k = "@paseo:daemon-registry";
     var sid = ${JSON.stringify(serverId)};
-    var cur = localStorage.getItem(k);
+    var kReg = "@paseo:daemon-registry";
+    var cur = localStorage.getItem(kReg);
     var list = [];
     try { list = JSON.parse(cur) || []; } catch(e) {}
     if (!Array.isArray(list)) list = [];
-    if (!list.some(function(h) { return h && h.serverId === sid; })) {
-      var profile = {
+    var found = false;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i]) {
+        list[i].serverId = sid;
+        list[i].label = "Home Assistant";
+        found = true;
+      }
+    }
+    if (!found) {
+      list.unshift({
         serverId: sid,
         label: "Home Assistant",
         connections: [{
@@ -76,9 +92,22 @@ window.__PASEO_INITIAL_DAEMON_CONNECTION__=${serializeInlineScriptJson(hint)};
         preferredConnectionId: "direct:localhost:6767",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      };
-      list.unshift(profile);
-      localStorage.setItem(k, JSON.stringify(list));
+      });
+    }
+    localStorage.setItem(kReg, JSON.stringify(list));
+
+    var kSel = "paseo:last-workspace-route-selection";
+    var curSel = localStorage.getItem(kSel);
+    var sel = null;
+    try { sel = JSON.parse(curSel); } catch(e) {}
+    if (!sel || !sel.workspaceId) {
+      localStorage.setItem(kSel, JSON.stringify({
+        serverId: sid,
+        workspaceId: "wks_config_ha"
+      }));
+    } else if (sel.serverId !== sid) {
+      sel.serverId = sid;
+      localStorage.setItem(kSel, JSON.stringify(sel));
     }
   } catch(e) {}
 })();
@@ -174,6 +203,14 @@ def patch_web_bundle():
             code = code.replace(t7, r7, 1)
             changed = True
             print("  [✓] Patched target 7 (ye=30000 timeout)")
+
+        # 8. Host controller serverId reconciliation: reconcile mismatch instead of throwing & closing WebSocket
+        t8 = 'if(t!==this.host.serverId){if(!be(this.host.serverId)||!this.onReconcileServerId)throw await e.close().catch(()=>{}),new Error(`Connection resolved to ${t}, expected ${this.host.serverId}.`);this.onReconcileServerId(this.host.serverId,t)}'
+        r8 = 'if(t!==this.host.serverId){try{if(this.onReconcileServerId)this.onReconcileServerId(this.host.serverId,t);}catch(err){}this.host.serverId=t;}'
+        if t8 in code:
+            code = code.replace(t8, r8, 1)
+            changed = True
+            print("  [✓] Patched target 8 (host serverId reconciliation)")
 
         if changed:
             with open(js_path, "w", encoding="utf-8") as f:

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.7 (2026-10-16)
+
+- reconcile serverId mismatch, auto-seed last workspace, and fix websocket upgrade
+
+
 ## 0.1.6 (2026-10-16)
 
 ### 🐛 Bug Fixes
