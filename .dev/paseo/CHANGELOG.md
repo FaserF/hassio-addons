@@ -9,7 +9,6 @@
 - Patch `hostnames.js` and `bootstrap.js` in Paseo server to bypass DNS rebinding check in Ingress
 - Forward `Host 127.0.0.1:6767` with `X-Forwarded-Host` preservation in Ingress Nginx proxy
 
-
 ## 0.1.5 (2026-10-16)
 
 - Release version 0.1.5
