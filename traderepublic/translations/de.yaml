@@ -14,3 +14,12 @@ configuration:
   github_token:
     name: "GitHub API Token"
     description: "Optionaler GitHub Token zur Vermeidung von Download-Rate-Limits."
+  webhook_enabled:
+    name: "Webhooks aktivieren"
+    description: "Aktiviert ausgehende Webhook-Benachrichtigungen für Order-Ausführungen, Dividenden-Ausschüttungen und Kursalarme."
+  webhook_url:
+    name: "Webhook Ziel-URL"
+    description: "Ziel-URL für Event-Benachrichtigungen (z.B. http://100.64.0.1:8090/api/webhook/traderepublic)."
+  webhook_token:
+    name: "Webhook Bearer Token"
+    description: "Optionales Authentifizierungs-Token für ausgehende Webhook-Aufrufe."

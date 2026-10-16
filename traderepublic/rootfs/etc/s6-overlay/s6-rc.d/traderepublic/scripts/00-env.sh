@@ -38,4 +38,23 @@ if bashio::config.has_value 'github_token'; then
 fi
 export GITHUB_TOKEN
 
-bashio::log.info "Environment configured (KeepAlive: ${KEEP_ALIVE_INTERVAL}s, LogLevel: ${LOG_LEVEL}, HA_Config: ${HA_CONFIG_ROOT})"
+WEBHOOK_ENABLED="false"
+if bashio::config.true 'webhook_enabled'; then
+	WEBHOOK_ENABLED="true"
+fi
+export WEBHOOK_ENABLED
+
+WEBHOOK_URL=""
+if bashio::config.has_value 'webhook_url'; then
+	WEBHOOK_URL=$(bashio::config 'webhook_url')
+fi
+export WEBHOOK_URL
+
+WEBHOOK_TOKEN=""
+if bashio::config.has_value 'webhook_token'; then
+	WEBHOOK_TOKEN=$(bashio::config 'webhook_token')
+fi
+export WEBHOOK_TOKEN
+
+bashio::log.info "Environment configured (KeepAlive: ${KEEP_ALIVE_INTERVAL}s, LogLevel: ${LOG_LEVEL}, HA_Config: ${HA_CONFIG_ROOT}, Webhook: ${WEBHOOK_ENABLED})"
+

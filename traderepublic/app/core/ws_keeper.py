@@ -17,6 +17,7 @@ from typing import Any, Callable, Dict, Optional
 import websockets
 
 from .constants import USER_AGENT
+from .webhook import TRWebhookDispatcher
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,17 +28,11 @@ _HANDSHAKE_PAYLOAD = {
     "appVersion": "4.120.0",
     "osVersion": "10.0.0",
 }
-_USER_AGENT = USER_AGENT
-
-# Keepalive heartbeat interval — send lightweight echo/ping every 60 s to prevent idle timeout
-_HEARTBEAT_INTERVAL = 60
-
-# Data refresh interval for active categories (5 minutes) — prevents TR rate limits while keeping data fresh
 _DATA_REFRESH_INTERVAL = 300
-
-# Back-off caps
 _RECONNECT_DELAY_MIN = 5.0
 _RECONNECT_DELAY_MAX = 120.0
+
+
 
 
 class TRWebSocketKeeper:
@@ -102,6 +97,7 @@ class TRWebSocketKeeper:
         self._ticker_subs: dict[int, dict[str, Any]] = {}
         self._sub_map: dict[int, str] = {}
         self._sub_counter: int = 10
+        self.webhook: TRWebhookDispatcher = TRWebhookDispatcher()
 
     # ─── Public API ──────────────────────────────────────────────────────────
 
@@ -119,6 +115,7 @@ class TRWebSocketKeeper:
             self._task.cancel()
         if self._ws:
             asyncio.create_task(self._close_ws())
+        asyncio.create_task(self.webhook.close())
 
     def update_token(self, token: str) -> None:
         """Provide a new token; reconnect if currently disconnected."""
@@ -192,7 +189,7 @@ class TRWebSocketKeeper:
 
             ssl_ctx = ssl.create_default_context()
             headers = {
-                "User-Agent": _USER_AGENT,
+                "User-Agent": USER_AGENT,
                 "Origin": "https://app.traderepublic.com",
                 "Authorization": f"Bearer {clean}",
                 "Cookie": f"tr_session={clean}; tr_session_id={clean}; sessionToken={clean}",
@@ -253,21 +250,6 @@ class TRWebSocketKeeper:
                 self._ticker_subs = {}
                 self._prices = {}
                 self._portfolio_payload = {}
-                if not self.latest_data:
-                    self.latest_data = {
-                        "net_value": 0.0,
-                        "available_cash": 0.0,
-                        "invested_capital": 0.0,
-                        "savings_plans_count": 0,
-                        "holdings": [],
-                        "card_status": "INACTIVE",
-                        "card_saveback_earned": 0.0,
-                        "card_saveback_limit": 0.0,
-                        "recent_transactions": [],
-                        "interest_rate": 2.25,
-                        "accrued_interest_daily": 0.0,
-                        "accrued_interest_monthly_est": 0.0,
-                    }
 
                 # Register active subscriptions based on current active_categories
                 cat_type_map = {
@@ -436,7 +418,6 @@ class TRWebSocketKeeper:
                     except (ValueError, TypeError):
                         pass
 
-                # Parse exemption order if present in cash/account payload
                 ex_total = (
                     target.get("availableTaxExemption")
                     or target.get("taxExemptionTotal")
@@ -449,9 +430,7 @@ class TRWebSocketKeeper:
                     except (ValueError, TypeError):
                         pass
 
-                ex_used = (
-                    target.get("usedTaxExemption") or target.get("taxExemptionUsed") or target.get("exemptionUsed")
-                )
+                ex_used = target.get("usedTaxExemption") or target.get("taxExemptionUsed") or target.get("exemptionUsed")
                 if ex_used is not None:
                     try:
                         self.latest_data["exemption_used"] = float(ex_used)
@@ -463,10 +442,8 @@ class TRWebSocketKeeper:
         elif sub_type == "savingsPlans":
             import time
 
-            count = 0
-            if isinstance(payload, list):
-                count = len(payload)
-            elif isinstance(payload, dict):
+            count = len(payload) if isinstance(payload, list) else 0
+            if isinstance(payload, dict):
                 plans = payload.get("savingsPlans") or payload.get("items") or payload.get("data") or []
                 count = len(plans) if isinstance(plans, list) else int(payload.get("count", 0))
             self.latest_data["savings_plans_count"] = count
@@ -501,6 +478,7 @@ class TRWebSocketKeeper:
                 )
             self.latest_data["recent_transactions"] = txs
             self.last_data_update_time = time.time()
+            asyncio.create_task(self.webhook.handle_timeline_update(items))
 
         elif sub_id in self._ticker_subs:
             # Ticker price update
@@ -511,13 +489,11 @@ class TRWebSocketKeeper:
                 def _parse_p(val: Any) -> Optional[float]:
                     if isinstance(val, (int, float)):
                         return float(val)
-                    if isinstance(val, dict):
-                        p = val.get("price")
-                        if p is not None:
-                            try:
-                                return float(p)
-                            except (ValueError, TypeError):
-                                pass
+                    if isinstance(val, dict) and val.get("price") is not None:
+                        try:
+                            return float(val["price"])
+                        except (ValueError, TypeError):
+                            return None
                     return None
 
                 price = (
@@ -529,6 +505,8 @@ class TRWebSocketKeeper:
                 if price is not None:
                     self._prices[isin] = price
                     self._recalculate_portfolio()
+                    name = str(pos.get("name") or isin)
+                    asyncio.create_task(self.webhook.check_price_threshold(isin, name, price))
 
     async def _periodic_refresh_loop(self) -> None:
         """Periodically re-request active category subscriptions (every 5 min) to ensure fresh data without rate limiting."""

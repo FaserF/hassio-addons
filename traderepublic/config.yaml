@@ -21,6 +21,9 @@ options:
   cache_retention_hours: 12
   auto_install_integration: true
   github_token: ""
+  webhook_enabled: false
+  webhook_url: ""
+  webhook_token: ""
 
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
@@ -28,6 +31,9 @@ schema:
   cache_retention_hours: int
   auto_install_integration: bool
   github_token: str?
+  webhook_enabled: bool?
+  webhook_url: url?
+  webhook_token: str?
 
 ports: {}
 ports_description:
