@@ -51,12 +51,12 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ```yaml
 cpu_priority: low
+developer_recommendations: false
 log_level: info
 max_memory_mb: 0
 model: omniroute/coding-cascade
 omniroute_api_key: ''
 omniroute_url: https://omniroute.fabiseitz.de/v1
-oracle_cloud_preset: false
 remote_access: true
 small_model: omniroute/fast-cascade
 workspace: /config
