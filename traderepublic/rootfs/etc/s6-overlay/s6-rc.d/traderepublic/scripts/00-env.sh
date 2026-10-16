@@ -57,4 +57,3 @@ fi
 export WEBHOOK_TOKEN
 
 bashio::log.info "Environment configured (KeepAlive: ${KEEP_ALIVE_INTERVAL}s, LogLevel: ${LOG_LEVEL}, HA_Config: ${HA_CONFIG_ROOT}, Webhook: ${WEBHOOK_ENABLED})"
-

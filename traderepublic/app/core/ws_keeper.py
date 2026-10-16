@@ -33,8 +33,6 @@ _RECONNECT_DELAY_MIN = 5.0
 _RECONNECT_DELAY_MAX = 120.0
 
 
-
-
 class TRWebSocketKeeper:
     """Keeps a single persistent, authenticated WebSocket connection to TR.
 
@@ -430,7 +428,9 @@ class TRWebSocketKeeper:
                     except (ValueError, TypeError):
                         pass
 
-                ex_used = target.get("usedTaxExemption") or target.get("taxExemptionUsed") or target.get("exemptionUsed")
+                ex_used = (
+                    target.get("usedTaxExemption") or target.get("taxExemptionUsed") or target.get("exemptionUsed")
+                )
                 if ex_used is not None:
                     try:
                         self.latest_data["exemption_used"] = float(ex_used)

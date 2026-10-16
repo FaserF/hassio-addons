@@ -21,9 +21,7 @@ class TRWebhookDispatcher:
         enabled: Optional[bool] = None,
     ) -> None:
         self.enabled: bool = (
-            enabled
-            if enabled is not None
-            else os.getenv("WEBHOOK_ENABLED", "false").lower() in ("true", "1", "yes")
+            enabled if enabled is not None else os.getenv("WEBHOOK_ENABLED", "false").lower() in ("true", "1", "yes")
         )
         self.url: str = url or os.getenv("WEBHOOK_URL", "").strip()
         self.token: str = token or os.getenv("WEBHOOK_TOKEN", "").strip()
@@ -126,7 +124,9 @@ class TRWebhookDispatcher:
             else:
                 event = "timeline_event"
 
-            _LOGGER.info("TR Webhook: new timeline item detected [%s]: %s - %s (%.2f €)", event, title, subtitle, amount_val)
+            _LOGGER.info(
+                "TR Webhook: new timeline item detected [%s]: %s - %s (%.2f €)", event, title, subtitle, amount_val
+            )
             asyncio.create_task(self.send_event(event, clean_item))
 
     async def check_price_threshold(

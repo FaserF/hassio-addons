@@ -53,6 +53,9 @@ cache_retention_hours: 12
 github_token: ''
 keep_alive_interval: 60
 log_level: info
+webhook_enabled: false
+webhook_token: ''
+webhook_url: ''
 ```
 
 ---
