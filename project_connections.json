@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-10-16T06:45:03.021578",
+  "timestamp": "2026-10-16T06:50:23.479594",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",

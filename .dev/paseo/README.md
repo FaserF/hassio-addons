@@ -47,7 +47,17 @@ Just like the official VS Code / Studio Code Server add-on, Paseo opens directly
 
 Configure the app via the **Configuration** tab in the Home Assistant App page.
 
-### Options
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `omniroute_url` | string | `https://omniroute.fabiseitz.de/v1` | URL to your OmniRoute instance |
+| `omniroute_api_key` | string | `""` | Optional API key for OmniRoute authentication |
+| `model` | string | `omniroute/coding-cascade` | Main LLM model/cascade for complex coding tasks |
+| `small_model` | string | `omniroute/fast-cascade` | Fast model for syntax checks and quick edits |
+| `workspace` | string | `/config` | Default workspace directory opened by the IDE |
+| `remote_access` | boolean | `true` | Expose direct port 6767 for remote agents |
+| `max_memory_mb` | integer | `0` | Memory limit in MB (0 = dynamic auto-detect, reserves 1GB+ for HA OS) |
+| `cpu_priority` | string | `low` | CPU scheduling priority (`normal`, `low` [nice 10], `idle` [nice 19]) |
+| `log_level` | string | `info` | Logging verbosity (`info`, `debug`, `warning`, `error`) |
 
 ```yaml
 log_level: info

@@ -33,6 +33,8 @@ options:
   small_model: "omniroute/fast-cascade"
   workspace: "/config"
   remote_access: true
+  max_memory_mb: 0
+  cpu_priority: "low"
   log_level: "info"
 schema:
   omniroute_url: "str"
@@ -41,6 +43,8 @@ schema:
   small_model: "str"
   workspace: "str"
   remote_access: "bool"
+  max_memory_mb: "int?"
+  cpu_priority: "list(normal|low|idle)?"
   log_level: "list(trace|debug|info|notice|warning|error|fatal)?"
 stage: "experimental"
 image: "ghcr.io/faserf/hassio-addons-paseo-{arch}"

@@ -17,6 +17,12 @@ configuration:
   remote_access:
     name: "Remote API Access"
     description: "Expose direct port 6767 for external agent control from your Oracle Cloud VM, Hermes, or Tailscale."
+  max_memory_mb:
+    name: "Maximum Memory Allocation (MB)"
+    description: "Maximum RAM allocated to the Node.js/Paseo process (0 = Auto-detect dynamic maximum safely reserving RAM for Home Assistant OS)."
+  cpu_priority:
+    name: "CPU Scheduling Priority"
+    description: "CPU niceness level (low: nice 10, normal: nice 0, idle: nice 19) guaranteeing Home Assistant Core processes are never starved."
   log_level:
     name: "Log Level"
     description: "Controls the verbosity of add-on logging (info, debug, warning, error)."

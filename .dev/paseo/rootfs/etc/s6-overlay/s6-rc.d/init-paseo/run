@@ -11,15 +11,71 @@ MODEL=$(bashio::config 'model')
 SMALL_MODEL=$(bashio::config 'small_model')
 WORKSPACE=$(bashio::config 'workspace')
 LOG_LEVEL=$(bashio::config 'log_level')
+USER_MAX_MEM=$(bashio::config 'max_memory_mb')
+CPU_PRIORITY=$(bashio::config 'cpu_priority')
 
 [ -z "${WORKSPACE}" ] && WORKSPACE="/config"
 [ -z "${MODEL}" ] && MODEL="omniroute/coding-cascade"
 [ -z "${SMALL_MODEL}" ] && SMALL_MODEL="omniroute/fast-cascade"
 [ -z "${OMNIROUTE_URL}" ] && OMNIROUTE_URL="https://omniroute.fabiseitz.de/v1"
+[ -z "${USER_MAX_MEM}" ] && USER_MAX_MEM=0
+[ -z "${CPU_PRIORITY}" ] && CPU_PRIORITY="low"
 
-bashio::log.info "Target workspace: ${WORKSPACE}"
-bashio::log.info "OmniRoute upstream: ${OMNIROUTE_URL}"
-bashio::log.info "Primary coding model: ${MODEL}"
+# -----------------------------------------------------------------------------
+# Hardware Resource Protection & Dynamic Sizing
+# -----------------------------------------------------------------------------
+TOTAL_MEM_KB=0
+if [ -f /proc/meminfo ]; then
+    TOTAL_MEM_KB=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+fi
+TOTAL_MEM_MB=$((TOTAL_MEM_KB / 1024))
+if [ "${TOTAL_MEM_MB}" -le 0 ]; then
+    TOTAL_MEM_MB=4096
+fi
+
+ALLOCATED_MEM_MB=1024
+if [ "${USER_MAX_MEM}" -gt 0 ]; then
+    SAFE_CEILING=$((TOTAL_MEM_MB - 1024))
+    if [ "${SAFE_CEILING}" -lt 512 ]; then
+        SAFE_CEILING=512
+    fi
+    if [ "${USER_MAX_MEM}" -gt "${SAFE_CEILING}" ]; then
+        bashio::log.warning "Requested max_memory_mb (${USER_MAX_MEM}MB) leaves less than 1GB for Home Assistant OS!"
+        bashio::log.warning "Clamping memory allocation to safe maximum: ${SAFE_CEILING}MB"
+        ALLOCATED_MEM_MB="${SAFE_CEILING}"
+    else
+        ALLOCATED_MEM_MB="${USER_MAX_MEM}"
+    fi
+else
+    # Dynamic auto-sizing based on total host RAM
+    if [ "${TOTAL_MEM_MB}" -le 2048 ]; then
+        ALLOCATED_MEM_MB=512
+    elif [ "${TOTAL_MEM_MB}" -le 4096 ]; then
+        ALLOCATED_MEM_MB=2048
+    elif [ "${TOTAL_MEM_MB}" -le 8192 ]; then
+        ALLOCATED_MEM_MB=4096
+    else
+        ALLOCATED_MEM_MB=$((TOTAL_MEM_MB * 75 / 100))
+    fi
+fi
+
+# Determine Linux CPU Niceness to guarantee HA Core responsiveness
+case "${CPU_PRIORITY}" in
+    normal) NICE_VAL=0 ;;
+    idle) NICE_VAL=19 ;;
+    *) NICE_VAL=10 ;;
+esac
+
+bashio::log.info "Host RAM: ${TOTAL_MEM_MB}MB | Paseo Node.js heap limit: ${ALLOCATED_MEM_MB}MB"
+bashio::log.info "CPU Scheduling Priority: ${CPU_PRIORITY} (nice ${NICE_VAL})"
+
+# Persist environment variables for the paseo longrun service
+mkdir -p /run/paseo
+cat > /run/paseo/env <<EOF
+NODE_HEAP_MB=${ALLOCATED_MEM_MB}
+NICE_VAL=${NICE_VAL}
+WORKSPACE=${WORKSPACE}
+EOF
 
 # Ensure workspace and configuration directories exist
 mkdir -p "${WORKSPACE}"
