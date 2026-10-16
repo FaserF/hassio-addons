@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-10-16
+
+### Fixed
+
+- Fixed daemon runtime command to `paseo daemon run` with persistent home directory `/root/.paseo`.
+- Pre-configured `features.webUi.enabled: true` and listener configuration for seamless Home Assistant Ingress rendering.
+- Added `@kilocode/cli` and `openwiki` globally to mirror Oracle Cloud developer tooling.
+
 ## [0.1.1] - 2026-10-16
 
 ### Added

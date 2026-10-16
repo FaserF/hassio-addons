@@ -83,6 +83,35 @@ mkdir -p /root/.config/opencode
 mkdir -p /root/.paseo
 mkdir -p /run/nginx
 
+# Determine daemon listen address based on remote_access
+LISTEN_HOST="0.0.0.0"
+if ! bashio::config.true 'remote_access'; then
+    LISTEN_HOST="127.0.0.1"
+fi
+
+# Generate Paseo daemon configuration
+cat > /root/.paseo/config.json <<EOF
+{
+  "version": 1,
+  "daemon": {
+    "listen": "${LISTEN_HOST}:6767",
+    "cors": {
+      "allowedOrigins": [
+        "*"
+      ]
+    },
+    "relay": {
+      "enabled": false
+    }
+  },
+  "features": {
+    "webUi": {
+      "enabled": true
+    }
+  }
+}
+EOF
+
 # Check if Oracle Cloud & Multi-Agent preset is requested
 ORACLE_CLOUD_PRESET=false
 if bashio::config.true 'oracle_cloud_preset'; then

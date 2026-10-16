@@ -32,9 +32,9 @@ if command -v ionice >/dev/null 2>&1; then
 fi
 
 if command -v paseo >/dev/null 2>&1; then
-    exec ${EXEC_PREFIX} paseo serve --port 6767 --host 0.0.0.0
+    exec ${EXEC_PREFIX} paseo daemon run --home /root/.paseo
 elif command -v opencode >/dev/null 2>&1; then
-    exec ${EXEC_PREFIX} opencode serve --port 6767 --hostname 0.0.0.0
+    exec ${EXEC_PREFIX} opencode web --port 6767 --hostname 0.0.0.0
 else
-    exec ${EXEC_PREFIX} npx opencode-ai serve --port 6767 --hostname 0.0.0.0
+    exec ${EXEC_PREFIX} npx @getpaseo/cli daemon run --home /root/.paseo
 fi

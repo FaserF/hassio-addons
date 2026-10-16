@@ -33,7 +33,7 @@ RUN \
     && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" > /etc/apt/sources.list.d/nodesource.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends nodejs \
-    && npm install -g @getpaseo/cli opencode-ai gitnexus \
+    && npm install -g @getpaseo/cli @kilocode/cli opencode-ai gitnexus openwiki \
     && rm -fr \
         /tmp/* \
         /var/cache/* \
