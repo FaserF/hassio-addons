@@ -75,6 +75,8 @@ cat > /run/paseo/env <<EOF
 NODE_HEAP_MB=${ALLOCATED_MEM_MB}
 NICE_VAL=${NICE_VAL}
 WORKSPACE=${WORKSPACE}
+PASEO_HOSTNAMES=true
+PASEO_ALLOWED_HOSTS=true
 EOF
 
 # Ensure workspace and configuration directories exist
@@ -98,6 +100,8 @@ cat > /root/.paseo/config.json <<EOF
   },
   "daemon": {
     "listen": "${LISTEN_HOST}:6767",
+    "hostnames": true,
+    "trustedProxies": true,
     "cors": {
       "allowedOrigins": [
         "*"
@@ -120,9 +124,6 @@ DEVELOPER_RECOMMENDATIONS=false
 if bashio::config.true 'developer_recommendations' || bashio::config.true 'oracle_cloud_preset'; then
     DEVELOPER_RECOMMENDATIONS=true
     bashio::log.info "Activating Add-on Developer Recommendations (supervisor, coder, reviewer, explorer, searcher, tester, browser-qa, security-auditor)..."
-    if [ -z "${OMNIROUTE_API_KEY}" ]; then
-        OMNIROUTE_API_KEY="sk-jarvis-orchestrator-secret-key-2026"
-    fi
 fi
 
 # Generate opencode.json configuration
@@ -196,7 +197,7 @@ cat > /root/.config/opencode/opencode.json <<EOF
       "type": "remote",
       "url": "http://100.64.0.3:6767/mcp/agents",
       "headers": {
-        "Authorization": "Bearer sk-jarvis-orchestrator-secret-key-2026"
+        "Authorization": "Bearer ${OMNIROUTE_API_KEY}"
       },
       "enabled": true
     }
@@ -348,10 +349,11 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
+        proxy_set_header Host 127.0.0.1:6767;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $http_host;
         proxy_read_timeout 86400s;
         proxy_send_timeout 86400s;
         proxy_buffering off;

@@ -17,7 +17,7 @@ Configure the add-on via the **Configuration** tab in Home Assistant.
 
 ```yaml
 omniroute_url: 'https://omniroute.fabiseitz.de/v1'
-omniroute_api_key: 'sk-jarvis-orchestrator-secret-key-2026'
+omniroute_api_key: ''
 model: 'omniroute/coding-cascade'
 small_model: 'omniroute/fast-cascade'
 workspace: '/config'
