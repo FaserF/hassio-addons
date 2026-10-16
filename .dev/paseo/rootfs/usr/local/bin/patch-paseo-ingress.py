@@ -205,8 +205,8 @@ def patch_web_bundle():
             print("  [✓] Patched target 7 (ye=30000 timeout)")
 
         # 8. Host controller serverId reconciliation: reconcile mismatch instead of throwing & closing WebSocket
-        t8 = 'if(t!==this.host.serverId){if(!be(this.host.serverId)||!this.onReconcileServerId)throw await e.close().catch(()=>{}),new Error(`Connection resolved to ${t}, expected ${this.host.serverId}.`);this.onReconcileServerId(this.host.serverId,t)}'
-        r8 = 'if(t!==this.host.serverId){try{if(this.onReconcileServerId)this.onReconcileServerId(this.host.serverId,t);}catch(err){}this.host.serverId=t;}'
+        t8 = "if(t!==this.host.serverId){if(!be(this.host.serverId)||!this.onReconcileServerId)throw await e.close().catch(()=>{}),new Error(`Connection resolved to ${t}, expected ${this.host.serverId}.`);this.onReconcileServerId(this.host.serverId,t)}"
+        r8 = "if(t!==this.host.serverId){try{if(this.onReconcileServerId)this.onReconcileServerId(this.host.serverId,t);}catch(err){}this.host.serverId=t;}"
         if t8 in code:
             code = code.replace(t8, r8, 1)
             changed = True

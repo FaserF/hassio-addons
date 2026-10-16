@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-10-16T13:34:51.064971",
+  "timestamp": "2026-10-16T14:07:32.261589",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -510,7 +510,7 @@
       "slug": "paseo",
       "rel_path": ".dev/paseo",
       "name": "Paseo",
-      "version": "0.1.6",
+      "version": "0.1.7",
       "description": "Autonomous AI Code Studio & Web IDE powered by OmniRoute and OpenCode.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-paseo-{arch}",
