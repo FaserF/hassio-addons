@@ -4,7 +4,7 @@
 
 [![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=605cee21_paseo)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
-[![Docker Image](https://img.shields.io/badge/docker-0.1.0-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-paseo)
+[![Docker Image](https://img.shields.io/badge/docker-0.1.1-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-paseo)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
 > Autonomous AI Code Studio & Web IDE powered by OmniRoute and OpenCode.
@@ -56,6 +56,7 @@ max_memory_mb: 0
 model: omniroute/coding-cascade
 omniroute_api_key: ''
 omniroute_url: https://omniroute.fabiseitz.de/v1
+oracle_cloud_preset: false
 remote_access: true
 small_model: omniroute/fast-cascade
 workspace: /config
