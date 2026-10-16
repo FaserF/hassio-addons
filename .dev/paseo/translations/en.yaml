@@ -1,0 +1,24 @@
+configuration:
+  omniroute_url:
+    name: "OmniRoute URL"
+    description: "The base URL of your OmniRoute instance (e.g., https://omniroute.fabiseitz.de/v1)."
+  omniroute_api_key:
+    name: "OmniRoute API Key"
+    description: "API key used to authenticate with your OmniRoute instance."
+  model:
+    name: "Primary Model / Cascade"
+    description: "Main model cascade for complex coding, bug fixing, and automation generation (e.g., omniroute/coding-cascade)."
+  small_model:
+    name: "Small Model / Cascade"
+    description: "Fast model cascade for syntax checks and rapid edits (e.g., omniroute/fast-cascade)."
+  workspace:
+    name: "Workspace Directory"
+    description: "The root directory to open inside the Paseo editor (defaults to /config)."
+  remote_access:
+    name: "Remote API Access"
+    description: "Expose direct port 6767 for external agent control from your Oracle Cloud VM, Hermes, or Tailscale."
+  log_level:
+    name: "Log Level"
+    description: "Controls the verbosity of add-on logging (info, debug, warning, error)."
+network:
+  6767/tcp: "Direct Web & MCP Agent API Port"

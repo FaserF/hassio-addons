@@ -96,6 +96,7 @@ body:
         - openssl
         - paperless-ngx
         - planka
+        - Paseo
         - pterodactyl-panel
         - pterodactyl-wings
         - solumati

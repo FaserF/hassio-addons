@@ -88,6 +88,7 @@ The table below shows **all apps** in this repository, including unsupported one
 | **[Pterodactyl Panel](pterodactyl-panel)**                      | GameServer Panel (Beta)                         | ⚠️     | 2023-05 |
 | **[Pterodactyl Wings](pterodactyl-wings)**                      | GameServer Wings Daemon                         | ✅     | 2023-05 |
 | **[Planka](planka)**                                            | Project Tracking Tool                           | ⚠️     | 2026-01 |
+| **[Paseo](.dev/paseo)**                                         | Autonomous AI Code Studio & Web IDE             | ⚠️     | 2026-10 |
 | **[SAP ABAP Cloud Dev](.unsupported/sap-abap-cloud-dev)**       | SAP ABAP Platform Trial (deprecated by vendor)  | ❌     | 2026-01 |
 | **[ShieldDNS](ShieldDNS)**                                      | DNS-over-HTTPS & TLS Server                     | ✅     | 2026-01 |
 | **[ShieldFile](ShieldFile)**                                    | Secure File Sharing                             | ✅     | 2026-01 |

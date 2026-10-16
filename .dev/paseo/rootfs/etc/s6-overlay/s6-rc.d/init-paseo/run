@@ -1,0 +1,110 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+set -e
+
+bashio::log.info "Initializing Paseo AI Code Studio..."
+
+# Read configuration options
+OMNIROUTE_URL=$(bashio::config 'omniroute_url')
+OMNIROUTE_API_KEY=$(bashio::config 'omniroute_api_key')
+MODEL=$(bashio::config 'model')
+SMALL_MODEL=$(bashio::config 'small_model')
+WORKSPACE=$(bashio::config 'workspace')
+LOG_LEVEL=$(bashio::config 'log_level')
+
+[ -z "${WORKSPACE}" ] && WORKSPACE="/config"
+[ -z "${MODEL}" ] && MODEL="omniroute/coding-cascade"
+[ -z "${SMALL_MODEL}" ] && SMALL_MODEL="omniroute/fast-cascade"
+[ -z "${OMNIROUTE_URL}" ] && OMNIROUTE_URL="https://omniroute.fabiseitz.de/v1"
+
+bashio::log.info "Target workspace: ${WORKSPACE}"
+bashio::log.info "OmniRoute upstream: ${OMNIROUTE_URL}"
+bashio::log.info "Primary coding model: ${MODEL}"
+
+# Ensure workspace and configuration directories exist
+mkdir -p "${WORKSPACE}"
+mkdir -p /root/.config/opencode
+mkdir -p /root/.paseo
+mkdir -p /run/nginx
+
+# Generate opencode.json configuration
+cat > /root/.config/opencode/opencode.json <<EOF
+{
+  "\$schema": "https://opencode.ai/config.json",
+  "model": "${MODEL}",
+  "small_model": "${SMALL_MODEL}",
+  "provider": {
+    "omniroute": {
+      "name": "OmniRoute",
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "${OMNIROUTE_URL}",
+        "apiKey": "${OMNIROUTE_API_KEY}"
+      },
+      "models": {
+        "default": {
+          "name": "OmniRoute Coding Cascade",
+          "id": "coding-cascade"
+        },
+        "coding-cascade": {
+          "name": "OmniRoute Coding Cascade",
+          "id": "coding-cascade"
+        },
+        "fast-cascade": {
+          "name": "OmniRoute Fast Cascade",
+          "id": "fast-cascade"
+        },
+        "chat-cascade": {
+          "name": "OmniRoute Chat Cascade",
+          "id": "chat-cascade"
+        },
+        "reasoning": {
+          "name": "OmniRoute Reasoning Latest",
+          "id": "reasoning-latest"
+        },
+        "gemini-flash-latest": {
+          "name": "OmniRoute Gemini Flash Latest",
+          "id": "gemini-flash-latest"
+        },
+        "claude-latest": {
+          "name": "OmniRoute Claude Sonnet Latest",
+          "id": "claude-sonnet-latest"
+        }
+      }
+    }
+  },
+  "instructions": [
+    "You are Paseo AI Code Studio operating natively inside Home Assistant OS.",
+    "Your root workspace is ${WORKSPACE}, containing the Home Assistant configuration and automation files.",
+    "When modifying automations, scripts, or configuration files, preserve existing comments and formatting.",
+    "Ensure all YAML syntax is valid and conforms to Home Assistant schema standards before saving changes."
+  ]
+}
+EOF
+
+# Generate Nginx ingress reverse proxy configuration
+mkdir -p /etc/nginx/conf.d
+cat > /etc/nginx/conf.d/ingress.conf <<'EOF'
+server {
+    listen 8099 default_server;
+    server_name _;
+
+    client_max_body_size 0;
+
+    location / {
+        proxy_pass http://127.0.0.1:6767;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 86400s;
+        proxy_send_timeout 86400s;
+        proxy_buffering off;
+    }
+}
+EOF
+
+bashio::log.info "Paseo initialization completed successfully."

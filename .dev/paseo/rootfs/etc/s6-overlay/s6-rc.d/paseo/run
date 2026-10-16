@@ -1,0 +1,19 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+set -e
+
+WORKSPACE=$(bashio::config 'workspace')
+[ -z "${WORKSPACE}" ] && WORKSPACE="/config"
+
+mkdir -p "${WORKSPACE}"
+cd "${WORKSPACE}"
+
+bashio::log.info "Starting Paseo Server on port 6767 (Workspace: ${WORKSPACE})..."
+
+if command -v paseo >/dev/null 2>&1; then
+    exec paseo serve --port 6767 --host 0.0.0.0
+elif command -v opencode >/dev/null 2>&1; then
+    exec opencode serve --port 6767 --hostname 0.0.0.0
+else
+    exec npx opencode-ai serve --port 6767 --hostname 0.0.0.0
+fi
