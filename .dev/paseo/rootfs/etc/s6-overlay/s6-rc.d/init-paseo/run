@@ -354,11 +354,26 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Forwarded-Host $http_host;
+        proxy_set_header Accept-Encoding "";
         proxy_read_timeout 86400s;
         proxy_send_timeout 86400s;
         proxy_buffering off;
+
+        sub_filter_once off;
+        sub_filter_types application/javascript text/javascript text/css application/json;
+        sub_filter 'href="/' 'href="$http_x_ingress_path/';
+        sub_filter 'src="/' 'src="$http_x_ingress_path/';
+        sub_filter '"/_expo/' '"$http_x_ingress_path/_expo/';
+        sub_filter "'/_expo/" "'$http_x_ingress_path/_expo/";
     }
 }
 EOF
 
+# Patch Paseo Web UI bundle for Home Assistant Ingress routing and WebSockets
+if [ -f /usr/local/bin/patch-paseo-ingress.py ]; then
+    bashio::log.info "Adapting Paseo Web UI bundle for Home Assistant Ingress..."
+    python3 /usr/local/bin/patch-paseo-ingress.py || bashio::log.warning "Failed to patch Paseo Web UI bundle for Ingress"
+fi
+
 bashio::log.info "Paseo initialization completed successfully."
+

@@ -77,4 +77,4 @@ LABEL \
 HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
     CMD ["/bin/sh", "-c", "curl --fail http://127.0.0.1:8099/ || curl --fail http://127.0.0.1:6767/ || exit 1"]
 
-RUN chmod a+x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/s6-rc.d/*/up /etc/s6-overlay/s6-rc.d/*/down || true
+RUN chmod a+x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/s6-rc.d/*/up /etc/s6-overlay/s6-rc.d/*/down /usr/local/bin/* || true

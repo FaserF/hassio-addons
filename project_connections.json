@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-10-16T08:09:56.336451",
+  "timestamp": "2026-10-16T08:32:43.395226",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
@@ -725,7 +725,7 @@
     },
     "paseo": {
       "name": "Paseo",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "description": "Autonomous AI Code Studio & Web IDE powered by OmniRoute and OpenCode.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-paseo-{arch}",
@@ -738,7 +738,10 @@
           ".dev/paseo/README.md",
           ".dev/paseo/DOCS.md"
         ],
-        "rootfs": [".dev/paseo/rootfs/etc/nginx/nginx.conf"],
+        "rootfs": [
+          ".dev/paseo/rootfs/etc/nginx/nginx.conf",
+          ".dev/paseo/rootfs/usr/local/bin/patch-paseo-ingress.py"
+        ],
         "translations": [".dev/paseo/translations/de.yaml", ".dev/paseo/translations/en.yaml"]
       }
     },
