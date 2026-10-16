@@ -188,8 +188,8 @@ def patch_web_bundle():
         changed = False
 
         # 1. extractExpoPathFromURL in module 739: strip HA Ingress path so index route matches
-        t1 = 'e.extractExpoPathFromURL=function(t,o=""){return n(o).replace(/^\\//,\'\')}}'
-        r1 = 'e.extractExpoPathFromURL=function(t,o=""){return n(o).replace(/^\\/?api\\/hassio_ingress\\/[^\\/]+/,\'\').replace(/^\\//,\'\')}}'
+        t1 = "e.extractExpoPathFromURL=function(t,o=\"\"){return n(o).replace(/^\\//,'')}}"
+        r1 = "e.extractExpoPathFromURL=function(t,o=\"\"){return n(o).replace(/^\\/?api\\/hassio_ingress\\/[^\\/]+/,'').replace(/^\\//,'')}}"
         if t1 in code:
             code = code.replace(t1, r1, 1)
             changed = True
@@ -199,17 +199,17 @@ def patch_web_bundle():
         # or direct host if outside Ingress, or standard remote URL for remote hosts.
         t2_pattern = r'e\.buildDaemonWebSocketUrl=function\(t,o\)\{.*?(const\{host:n,port:s,isIpv6:l\}=c\(t\),u=o\.useTls\?"wss":"ws";return new URL\(`\$\{u\}://\$\{l\?`\[\$\{n\}\]`:n\}:\$\{s\}/ws`\)\.toString\(\)\})'
         r2 = (
-            'e.buildDaemonWebSocketUrl=function(t,o){'
+            "e.buildDaemonWebSocketUrl=function(t,o){"
             'if(typeof window!=="undefined"&&window.location){'
             'const isLocal=!t||t==="ha-local"||t==="ha-local:6767"||t==="localhost:6767"||t==="127.0.0.1:6767"||t===window.location.host;'
-            'if(isLocal){'
+            "if(isLocal){"
             'const pfx=window.__HA_INGRESS_PATH__||(window.location.pathname.match(/^(\\/api\\/hassio_ingress\\/[^\\/]+)/)?.[1])||(function(){try{return sessionStorage.getItem("ha_ingress_pfx")||"";}catch(e){return"";}})();'
             'const p=window.location.protocol==="https:"?"wss:":"ws:";'
-            'if(pfx){return `${p}//${window.location.host}${pfx}/ws`;}'
-            'return `${p}//${window.location.host}/ws`;'
-            '}'
-            '}'
-            '\\1'
+            "if(pfx){return `${p}//${window.location.host}${pfx}/ws`;}"
+            "return `${p}//${window.location.host}/ws`;"
+            "}"
+            "}"
+            "\\1"
         )
         if re.search(t2_pattern, code):
             code = re.sub(t2_pattern, r2, code, count=1)
@@ -257,8 +257,8 @@ def patch_web_bundle():
             print("  [✓] Patched target 7 (ye=30000 timeout)")
 
         # 8. Host controller serverId reconciliation: reconcile mismatch instead of throwing & closing WebSocket
-        t8 = 'if(t!==this.host.serverId){if(!be(this.host.serverId)||!this.onReconcileServerId)throw await e.close().catch(()=>{}),new Error(`Connection resolved to ${t}, expected ${this.host.serverId}.`);this.onReconcileServerId(this.host.serverId,t)}'
-        r8 = 'if(t!==this.host.serverId){try{if(this.onReconcileServerId)this.onReconcileServerId(this.host.serverId,t);}catch(err){}this.host.serverId=t;}'
+        t8 = "if(t!==this.host.serverId){if(!be(this.host.serverId)||!this.onReconcileServerId)throw await e.close().catch(()=>{}),new Error(`Connection resolved to ${t}, expected ${this.host.serverId}.`);this.onReconcileServerId(this.host.serverId,t)}"
+        r8 = "if(t!==this.host.serverId){try{if(this.onReconcileServerId)this.onReconcileServerId(this.host.serverId,t);}catch(err){}this.host.serverId=t;}"
         if t8 in code:
             code = code.replace(t8, r8, 1)
             changed = True
