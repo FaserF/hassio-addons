@@ -112,15 +112,15 @@ cat > /root/.paseo/config.json <<EOF
 }
 EOF
 
-# Check if Oracle Cloud & Multi-Agent preset is requested
-ORACLE_CLOUD_PRESET=false
-if bashio::config.true 'oracle_cloud_preset'; then
-    ORACLE_CLOUD_PRESET=true
-    bashio::log.info "Activating Oracle Cloud & Multi-Agent Preset (supervisor, coder, reviewer, explorer, searcher, tester, browser-qa, security-auditor)..."
+# Check if Add-on Developer Recommendations (Multi-Agent suite) is requested
+DEVELOPER_RECOMMENDATIONS=false
+if bashio::config.true 'developer_recommendations' || bashio::config.true 'oracle_cloud_preset'; then
+    DEVELOPER_RECOMMENDATIONS=true
+    bashio::log.info "Activating Add-on Developer Recommendations (supervisor, coder, reviewer, explorer, searcher, tester, browser-qa, security-auditor)..."
 fi
 
 # Generate opencode.json configuration
-if [ "${ORACLE_CLOUD_PRESET}" = "true" ]; then
+if [ "${DEVELOPER_RECOMMENDATIONS}" = "true" ]; then
 cat > /root/.config/opencode/opencode.json <<EOF
 {
   "\$schema": "https://opencode.ai/config.json",

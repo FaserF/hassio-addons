@@ -14,9 +14,9 @@ configuration:
   workspace:
     name: "Arbeitsverzeichnis"
     description: "Das im Paseo-Editor standardmäßig geöffnete Wurzelverzeichnis (Standard: /config)."
-  oracle_cloud_preset:
-    name: "Oracle Cloud & Multi-Agenten Vorkonfiguration"
-    description: "Richtet Paseo automatisch mit der kompletten Multi-Agenten-Suite der Oracle Cloud ein (Supervisor, Coder, Reviewer, Explorer, Searcher, Tester, Security-Auditor, Browser-QA und OmniRoute-Kaskaden)."
+  developer_recommendations:
+    name: "Add-on-Entwickler-Empfehlungen"
+    description: "Richtet Paseo automatisch mit der empfohlenen Multi-Agenten-Suite des Add-on-Entwicklers ein (Supervisor, Coder, Reviewer, Explorer, Searcher, Tester, Security-Auditor, Browser-QA und OmniRoute-Kaskaden)."
   remote_access:
     name: "Remote-API-Zugriff"
     description: "Direkten Port 6767 für externe Agenten-Steuerung von der Oracle VM, Hermes oder Tailscale freigeben."

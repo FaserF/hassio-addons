@@ -32,7 +32,7 @@ log_level: 'info'
 - `model`: Primary model or cascade for complex coding, automation fixes, and refactoring (`omniroute/coding-cascade`).
 - `small_model`: Fast model for rapid syntax checking and quick file edits (`omniroute/fast-cascade`).
 - `workspace`: Root folder to open in the IDE (default `/config`).
-- `oracle_cloud_preset`: Pre-configure Paseo with the complete multi-agent suite from Oracle Cloud (`supervisor`, `coder`, `reviewer`, `explorer`, `searcher`, `tester`, `security-auditor`, `browser-qa`, and all OmniRoute cascades). Default: `false`.
+- `developer_recommendations`: Pre-configure Paseo with the recommended multi-agent suite from the add-on developer (`supervisor`, `coder`, `reviewer`, `explorer`, `searcher`, `tester`, `security-auditor`, `browser-qa`, and all OmniRoute cascades). Default: `false`.
 - `remote_access`: Enable direct port `6767` for external API and agent control.
 - `max_memory_mb`: Maximum memory allocated to Paseo (default: `0` for dynamic auto-detection; safely reserves at least 1–1.5 GB for Home Assistant OS and Supervisor).
 - `cpu_priority`: CPU scheduling priority (`low` [nice 10], `normal` [nice 0], `idle` [nice 19]) guaranteeing that Home Assistant Core automations never freeze.

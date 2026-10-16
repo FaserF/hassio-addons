@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.2] - 2026-10-16
 
+### Changed
+
+- Renamed multi-agent preset configuration option to `developer_recommendations` ("Add-on Developer Recommendations").
+
 ### Fixed
 
 - Fixed daemon runtime command to `paseo daemon run` with persistent home directory `/root/.paseo`.

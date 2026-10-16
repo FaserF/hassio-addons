@@ -32,7 +32,7 @@ options:
   model: "omniroute/coding-cascade"
   small_model: "omniroute/fast-cascade"
   workspace: "/config"
-  oracle_cloud_preset: false
+  developer_recommendations: false
   remote_access: true
   max_memory_mb: 0
   cpu_priority: "low"
@@ -43,11 +43,10 @@ schema:
   model: "str"
   small_model: "str"
   workspace: "str"
-  oracle_cloud_preset: "bool?"
+  developer_recommendations: "bool?"
   remote_access: "bool"
   max_memory_mb: "int?"
   cpu_priority: "list(normal|low|idle)?"
   log_level: "list(trace|debug|info|notice|warning|error|fatal)?"
 stage: "experimental"
 image: "ghcr.io/faserf/hassio-addons-paseo-{arch}"
-stage: experimental
