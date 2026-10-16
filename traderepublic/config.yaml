@@ -32,7 +32,7 @@ schema:
   auto_install_integration: bool
   github_token: str?
   webhook_enabled: bool?
-  webhook_url: url?
+  webhook_url: str?
   webhook_token: str?
 
 ports: {}
