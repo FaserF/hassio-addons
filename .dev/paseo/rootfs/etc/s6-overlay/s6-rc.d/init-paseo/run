@@ -92,6 +92,7 @@ if [ ! -f /data/.paseo/server-id ]; then
     echo "srv_${RAND_SID}" > /data/.paseo/server-id
 fi
 cp -f /data/.paseo/server-id /root/.paseo/server-id
+[ -f /data/.paseo/extra-hosts.json ] && cp -f /data/.paseo/extra-hosts.json /root/.paseo/extra-hosts.json || true
 
 # Pre-register Home Assistant workspace project if not yet configured
 NOW_ISO=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
