@@ -83,7 +83,137 @@ mkdir -p /root/.config/opencode
 mkdir -p /root/.paseo
 mkdir -p /run/nginx
 
+# Check if Oracle Cloud & Multi-Agent preset is requested
+ORACLE_CLOUD_PRESET=false
+if bashio::config.true 'oracle_cloud_preset'; then
+    ORACLE_CLOUD_PRESET=true
+    bashio::log.info "Activating Oracle Cloud & Multi-Agent Preset (supervisor, coder, reviewer, explorer, searcher, tester, browser-qa, security-auditor)..."
+fi
+
 # Generate opencode.json configuration
+if [ "${ORACLE_CLOUD_PRESET}" = "true" ]; then
+cat > /root/.config/opencode/opencode.json <<EOF
+{
+  "\$schema": "https://opencode.ai/config.json",
+  "model": "${MODEL}",
+  "small_model": "${SMALL_MODEL}",
+  "provider": {
+    "omniroute": {
+      "name": "OmniRoute",
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "${OMNIROUTE_URL}",
+        "apiKey": "${OMNIROUTE_API_KEY}"
+      },
+      "models": {
+        "default": {
+          "name": "OmniRoute Default (Coding Cascade)",
+          "id": "coding-cascade"
+        },
+        "coding-cascade": {
+          "name": "OmniRoute Coding Cascade",
+          "id": "coding-cascade"
+        },
+        "fast-cascade": {
+          "name": "OmniRoute Fast Cascade",
+          "id": "fast-cascade"
+        },
+        "chat-cascade": {
+          "name": "OmniRoute Chat Cascade",
+          "id": "chat-cascade"
+        },
+        "reasoning": {
+          "name": "OmniRoute Best Reasoning",
+          "id": "reasoning-latest"
+        },
+        "gemini-flash-latest": {
+          "name": "OmniRoute Gemini Flash Latest",
+          "id": "gemini-flash-latest"
+        },
+        "gemini-flash-lite-latest": {
+          "name": "OmniRoute Gemini Flash Lite Latest",
+          "id": "gemini-flash-lite-latest"
+        },
+        "claude-latest": {
+          "name": "OmniRoute Claude Latest",
+          "id": "claude-sonnet-latest"
+        }
+      }
+    }
+  },
+  "agent": {
+    "supervisor": {
+      "mode": "primary",
+      "description": "High-level strategic architect, planning tasks, decomposing objectives, coordinating specialized subagents, and enforcing end-to-end verification.",
+      "model": "omniroute/reasoning"
+    },
+    "explorer": {
+      "mode": "subagent",
+      "description": "Fast code exploration, repository indexing, symbol search, and architectural retrieval using OmniRoute fast models",
+      "model": "omniroute/fast-cascade",
+      "permission": {
+        "edit": "deny",
+        "write": "deny"
+      }
+    },
+    "researcher": {
+      "mode": "subagent",
+      "description": "Fast research agent scanning documentation, APIs, and searching files using OmniRoute fast models",
+      "model": "omniroute/fast-cascade",
+      "permission": {
+        "edit": "deny",
+        "write": "deny"
+      }
+    },
+    "searcher": {
+      "mode": "subagent",
+      "description": "Targeted codebase search, file pattern finding, and structural inspection using OmniRoute fast models",
+      "model": "omniroute/fast-cascade",
+      "permission": {
+        "edit": "deny",
+        "write": "deny"
+      }
+    },
+    "coder": {
+      "mode": "subagent",
+      "description": "High accuracy code generation, multi-file refactoring, bugfixing, and Home Assistant automation/script editing using OmniRoute coding cascade",
+      "model": "omniroute/coding-cascade"
+    },
+    "reviewer": {
+      "mode": "subagent",
+      "description": "Deep reasoning code review, regression analysis, architecture verification, and schema checking using OmniRoute reasoning latest",
+      "model": "omniroute/reasoning",
+      "permission": {
+        "edit": "deny",
+        "write": "deny"
+      }
+    },
+    "tester": {
+      "mode": "subagent",
+      "description": "Unit/integration test execution, YAML syntax validation, and Home Assistant configuration verification using OmniRoute coding cascade",
+      "model": "omniroute/coding-cascade"
+    },
+    "browser-qa": {
+      "mode": "subagent",
+      "description": "Dedicated visual inspection and browser verification subagent checking UI layouts and frontend cards",
+      "model": "omniroute/gemini-flash-latest"
+    },
+    "security-auditor": {
+      "mode": "subagent",
+      "description": "Security & infrastructure auditor inspecting diffs for secret leaks, exposed credentials, and Home Assistant configuration security",
+      "model": "omniroute/reasoning"
+    }
+  },
+  "instructions": [
+    "You are Jarvis Autonomous System Engineer operating natively inside Home Assistant OS with full multi-agent capabilities.",
+    "Your root workspace is ${WORKSPACE}, containing the Home Assistant configuration and automation files.",
+    "Web search and fetch operations are handled via OmniRoute.",
+    "When modifying automations, scripts, or configuration files, strictly preserve existing comments and formatting.",
+    "Ensure all YAML syntax is valid and conforms to Home Assistant schema standards before saving changes."
+  ]
+}
+EOF
+else
 cat > /root/.config/opencode/opencode.json <<EOF
 {
   "\$schema": "https://opencode.ai/config.json",
@@ -137,6 +267,7 @@ cat > /root/.config/opencode/opencode.json <<EOF
   ]
 }
 EOF
+fi
 
 # Generate Nginx ingress reverse proxy configuration
 mkdir -p /etc/nginx/conf.d

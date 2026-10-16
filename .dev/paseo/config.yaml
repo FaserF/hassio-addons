@@ -1,6 +1,6 @@
 ---
 name: "Paseo"
-version: "0.1.0"
+version: "0.1.1"
 slug: "paseo"
 description: "Autonomous AI Code Studio & Web IDE powered by OmniRoute and OpenCode."
 url: "https://github.com/FaserF/hassio-addons/tree/master/.dev/paseo"
@@ -32,6 +32,7 @@ options:
   model: "omniroute/coding-cascade"
   small_model: "omniroute/fast-cascade"
   workspace: "/config"
+  oracle_cloud_preset: false
   remote_access: true
   max_memory_mb: 0
   cpu_priority: "low"
@@ -42,10 +43,10 @@ schema:
   model: "str"
   small_model: "str"
   workspace: "str"
+  oracle_cloud_preset: "bool?"
   remote_access: "bool"
   max_memory_mb: "int?"
   cpu_priority: "list(normal|low|idle)?"
   log_level: "list(trace|debug|info|notice|warning|error|fatal)?"
 stage: "experimental"
 image: "ghcr.io/faserf/hassio-addons-paseo-{arch}"
-stage: experimental
