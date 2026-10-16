@@ -54,46 +54,87 @@ def patch_web_ui_server():
         const sidPath = "/root/.paseo/server-id";
         serverId = readFileSync(sidPath, "utf8").trim() || serverId;
     } catch(e) {}
+    let extraHosts = [];
+    try {
+        const extraPath = "/root/.paseo/extra-hosts.json";
+        extraHosts = JSON.parse(readFileSync(extraPath, "utf8")) || [];
+    } catch(e) {}
     const autoSeed = `<script>
 window.__PASEO_INITIAL_DAEMON_CONNECTION__=${serializeInlineScriptJson(hint)};
 (function(){
   try {
-    if (typeof window !== "undefined" && window.location) {
-      var m = window.location.pathname.match(new RegExp("^(/api/hassio_ingress/[^/]+)"));
+    if (typeof window === "undefined" || !window.localStorage) return;
+    if (window.location && window.location.pathname) {
+      var m = window.location.pathname.match(/^(\\/api\\/hassio_ingress\\/[^\\/]+)/);
       if (m) {
         window.__HA_INGRESS_PATH__ = m[1];
         try { sessionStorage.setItem("ha_ingress_pfx", m[1]); } catch(e) {}
       }
     }
     var sid = ${JSON.stringify(serverId)};
+    var now = new Date().toISOString();
     var kReg = "@paseo:daemon-registry";
-    var cur = localStorage.getItem(kReg);
     var list = [];
-    try { list = JSON.parse(cur) || []; } catch(e) {}
+    try { list = JSON.parse(localStorage.getItem(kReg)) || []; } catch(e) { list = []; }
     if (!Array.isArray(list)) list = [];
-    var found = false;
+
+    var haIdx = -1;
     for (var i = 0; i < list.length; i++) {
-      if (list[i]) {
-        list[i].serverId = sid;
-        list[i].label = "Home Assistant";
-        found = true;
+      var it = list[i];
+      if (!it) continue;
+      if (it.serverId === sid ||
+          (it.label === "Home Assistant" && (it.serverId === "srv_homeassistant" || (typeof it.serverId === "string" && it.serverId.startsWith("local:")))) ||
+          (Array.isArray(it.connections) && it.connections.some(function(c) {
+            return c && (c.endpoint === "localhost:6767" || c.endpoint === "127.0.0.1:6767" || c.endpoint === "ha-local");
+          }))) {
+        haIdx = i;
+        break;
       }
     }
-    if (!found) {
-      list.unshift({
-        serverId: sid,
-        label: "Home Assistant",
-        connections: [{
-          id: "direct:localhost:6767",
-          type: "directTcp",
-          endpoint: "localhost:6767",
-          useTls: false
-        }],
-        preferredConnectionId: "direct:localhost:6767",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      });
+
+    var haProfile = {
+      serverId: sid,
+      label: "Home Assistant",
+      appearance: { color: "green", badgeDisplay: null },
+      lifecycle: {},
+      connections: [{
+        id: "direct:localhost:6767",
+        type: "directTcp",
+        endpoint: "localhost:6767",
+        useTls: false
+      }],
+      preferredConnectionId: "direct:localhost:6767",
+      createdAt: now,
+      updatedAt: now
+    };
+
+    if (haIdx >= 0) {
+      haProfile.createdAt = list[haIdx].createdAt || now;
+      list[haIdx] = haProfile;
+    } else {
+      list.unshift(haProfile);
     }
+
+    var extraHosts = ${JSON.stringify(extraHosts)};
+    if (Array.isArray(extraHosts)) {
+      for (var j = 0; j < extraHosts.length; j++) {
+        var extra = extraHosts[j];
+        if (!extra || !extra.serverId) continue;
+        var exIdx = -1;
+        for (var k = 0; k < list.length; k++) {
+          if (list[k] && list[k].serverId === extra.serverId) {
+            exIdx = k;
+            break;
+          }
+        }
+        if (exIdx >= 0) {
+          list[exIdx] = Object.assign({}, extra, { updatedAt: now });
+        } else {
+          list.push(Object.assign({}, extra, { createdAt: now, updatedAt: now }));
+        }
+      }
+    }
+
     localStorage.setItem(kReg, JSON.stringify(list));
 
     var kSel = "paseo:last-workspace-route-selection";
@@ -105,7 +146,7 @@ window.__PASEO_INITIAL_DAEMON_CONNECTION__=${serializeInlineScriptJson(hint)};
         serverId: sid,
         workspaceId: "wks_config_ha"
       }));
-    } else if (sel.serverId !== sid) {
+    } else if (sel.serverId && (sel.serverId === "srv_homeassistant" || sel.serverId.startsWith("local:"))) {
       sel.serverId = sid;
       localStorage.setItem(kSel, JSON.stringify(sel));
     }
@@ -118,13 +159,12 @@ window.__PASEO_INITIAL_DAEMON_CONNECTION__=${serializeInlineScriptJson(hint)};
     }
     return autoSeed + html;
 }
-function _orig_injectConnectionHint_unused(html, req, label) {"""
+function _orig_injectConnectionHint_unused(html, req, label) {
+"""
         code = re.sub(p_func, r_func, code, count=1)
         with open(server_js, "w", encoding="utf-8") as f:
             f.write(code)
-        print("[Paseo-Ingress] [✓] Successfully patched server web-ui.js for auto-seeding")
-    else:
-        print("[Paseo-Ingress] server web-ui.js already patched or target not found.")
+        print(f"[Paseo-Ingress] [✓] Successfully patched {server_js}")
 
 
 def patch_web_bundle():
@@ -148,17 +188,29 @@ def patch_web_bundle():
         changed = False
 
         # 1. extractExpoPathFromURL in module 739: strip HA Ingress path so index route matches
-        t1 = "e.extractExpoPathFromURL=function(t,o=\"\"){return n(o).replace(/^\\//,'')}}"
-        r1 = "e.extractExpoPathFromURL=function(t,o=\"\"){return n(o).replace(/^\\/?api\\/hassio_ingress\\/[^\\/]+/,'').replace(/^\\//,'')}}"
+        t1 = 'e.extractExpoPathFromURL=function(t,o=""){return n(o).replace(/^\\//,\'\')}}'
+        r1 = 'e.extractExpoPathFromURL=function(t,o=""){return n(o).replace(/^\\/?api\\/hassio_ingress\\/[^\\/]+/,\'\').replace(/^\\//,\'\')}}'
         if t1 in code:
             code = code.replace(t1, r1, 1)
             changed = True
             print("  [✓] Patched target 1 (extractExpoPathFromURL)")
 
-        # 2. buildDaemonWebSocketUrl: connect to Ingress WebSocket under /api/hassio_ingress/<token>/ws
-        # Uses cached window.__HA_INGRESS_PATH__ or sessionStorage if route pathname was updated
+        # 2. buildDaemonWebSocketUrl: connect to Ingress WebSocket under /api/hassio_ingress/<token>/ws for local daemon,
+        # or direct host if outside Ingress, or standard remote URL for remote hosts.
         t2_pattern = r'e\.buildDaemonWebSocketUrl=function\(t,o\)\{.*?(const\{host:n,port:s,isIpv6:l\}=c\(t\),u=o\.useTls\?"wss":"ws";return new URL\(`\$\{u\}://\$\{l\?`\[\$\{n\}\]`:n\}:\$\{s\}/ws`\)\.toString\(\)\})'
-        r2 = 'e.buildDaemonWebSocketUrl=function(t,o){if(typeof window!=="undefined"&&window.location){const pfx=window.__HA_INGRESS_PATH__||(window.location.pathname.match(/^(\\/api\\/hassio_ingress\\/[^\\/]+)/)?.[1])||(function(){try{return sessionStorage.getItem("ha_ingress_pfx")||"";}catch(e){return"";}})();if(pfx){const p=window.location.protocol==="https:"?"wss:":"ws:";return `${p}//${window.location.host}${pfx}/ws`;}}\\1'
+        r2 = (
+            'e.buildDaemonWebSocketUrl=function(t,o){'
+            'if(typeof window!=="undefined"&&window.location){'
+            'const isLocal=!t||t==="ha-local"||t==="ha-local:6767"||t==="localhost:6767"||t==="127.0.0.1:6767"||t===window.location.host;'
+            'if(isLocal){'
+            'const pfx=window.__HA_INGRESS_PATH__||(window.location.pathname.match(/^(\\/api\\/hassio_ingress\\/[^\\/]+)/)?.[1])||(function(){try{return sessionStorage.getItem("ha_ingress_pfx")||"";}catch(e){return"";}})();'
+            'const p=window.location.protocol==="https:"?"wss:":"ws:";'
+            'if(pfx){return `${p}//${window.location.host}${pfx}/ws`;}'
+            'return `${p}//${window.location.host}/ws`;'
+            '}'
+            '}'
+            '\\1'
+        )
         if re.search(t2_pattern, code):
             code = re.sub(t2_pattern, r2, code, count=1)
             changed = True
@@ -205,8 +257,8 @@ def patch_web_bundle():
             print("  [✓] Patched target 7 (ye=30000 timeout)")
 
         # 8. Host controller serverId reconciliation: reconcile mismatch instead of throwing & closing WebSocket
-        t8 = "if(t!==this.host.serverId){if(!be(this.host.serverId)||!this.onReconcileServerId)throw await e.close().catch(()=>{}),new Error(`Connection resolved to ${t}, expected ${this.host.serverId}.`);this.onReconcileServerId(this.host.serverId,t)}"
-        r8 = "if(t!==this.host.serverId){try{if(this.onReconcileServerId)this.onReconcileServerId(this.host.serverId,t);}catch(err){}this.host.serverId=t;}"
+        t8 = 'if(t!==this.host.serverId){if(!be(this.host.serverId)||!this.onReconcileServerId)throw await e.close().catch(()=>{}),new Error(`Connection resolved to ${t}, expected ${this.host.serverId}.`);this.onReconcileServerId(this.host.serverId,t)}'
+        r8 = 'if(t!==this.host.serverId){try{if(this.onReconcileServerId)this.onReconcileServerId(this.host.serverId,t);}catch(err){}this.host.serverId=t;}'
         if t8 in code:
             code = code.replace(t8, r8, 1)
             changed = True
