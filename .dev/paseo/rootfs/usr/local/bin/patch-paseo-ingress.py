@@ -189,6 +189,47 @@ def patch_web_bundle():
             print(f"[Paseo-Ingress] Bundle {os.path.basename(js_path)} already patched or targets matched.")
 
 
+def patch_server_hostnames():
+    candidates = [
+        "/usr/lib/node_modules/@getpaseo/cli/node_modules/@getpaseo/server/dist/server/server/hostnames.js",
+        "/usr/lib/node_modules/@getpaseo/server/dist/server/server/hostnames.js",
+    ]
+    for p in candidates:
+        if os.path.isfile(p):
+            with open(p, "r", encoding="utf-8") as f:
+                code = f.read()
+            p_func = r"export function isHostnameAllowed\(hostHeader, hostnames\) \{"
+            r_func = "export function isHostnameAllowed(hostHeader, hostnames) {\n    return true;"
+            if (
+                re.search(p_func, code)
+                and "return true;" not in code.split("export function isHostnameAllowed")[1][:60]
+            ):
+                code = re.sub(p_func, r_func, code, count=1)
+                with open(p, "w", encoding="utf-8") as f:
+                    f.write(code)
+                print(f"[Paseo-Ingress] [✓] Successfully patched {p} to allow all hostnames")
+
+
+def patch_bootstrap():
+    candidates = [
+        "/usr/lib/node_modules/@getpaseo/cli/node_modules/@getpaseo/server/dist/server/server/bootstrap.js",
+        "/usr/lib/node_modules/@getpaseo/server/dist/server/server/bootstrap.js",
+    ]
+    for p in candidates:
+        if os.path.isfile(p):
+            with open(p, "r", encoding="utf-8") as f:
+                code = f.read()
+            t = "if (!isHostnameAllowed(hostHeader, configuredHostnames)) {"
+            r = "if (false && !isHostnameAllowed(hostHeader, configuredHostnames)) {"
+            if t in code:
+                code = code.replace(t, r, 1)
+                with open(p, "w", encoding="utf-8") as f:
+                    f.write(code)
+                print(f"[Paseo-Ingress] [✓] Successfully bypassed Host header check in {p}")
+
+
 if __name__ == "__main__":
+    patch_server_hostnames()
+    patch_bootstrap()
     patch_web_ui_server()
     patch_web_bundle()

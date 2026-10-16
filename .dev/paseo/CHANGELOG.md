@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.6 (2026-10-16)
+
+### 🐛 Bug Fixes
+
+- Fix "Invalid Host header" error under Home Assistant Ingress and external reverse proxies
+- Export `PASEO_HOSTNAMES="true"` and `PASEO_ALLOWED_HOSTS="true"` in daemon environment
+- Patch `hostnames.js` and `bootstrap.js` in Paseo server to bypass DNS rebinding check in Ingress
+- Forward `Host 127.0.0.1:6767` with `X-Forwarded-Host` preservation in Ingress Nginx proxy
+
+
 ## 0.1.5 (2026-10-16)
 
 - Release version 0.1.5

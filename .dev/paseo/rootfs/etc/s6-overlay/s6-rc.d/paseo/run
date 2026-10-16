@@ -19,6 +19,8 @@ cd "${WORKSPACE}"
 export NODE_OPTIONS="--max-old-space-size=${NODE_HEAP_MB} ${NODE_OPTIONS:-}"
 CORES=$(nproc 2>/dev/null || echo 4)
 export UV_THREADPOOL_SIZE="${CORES}"
+export PASEO_HOSTNAMES="true"
+export PASEO_ALLOWED_HOSTS="true"
 
 bashio::log.info "Starting Paseo Server on port 6767 (Workspace: ${WORKSPACE}, Heap Limit: ${NODE_HEAP_MB}MB, Nice: ${NICE_VAL})..."
 

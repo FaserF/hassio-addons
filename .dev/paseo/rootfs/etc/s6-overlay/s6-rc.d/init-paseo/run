@@ -72,11 +72,11 @@ bashio::log.info "CPU Scheduling Priority: ${CPU_PRIORITY} (nice ${NICE_VAL})"
 # Persist environment variables for the paseo longrun service
 mkdir -p /run/paseo
 cat > /run/paseo/env <<EOF
-NODE_HEAP_MB=${ALLOCATED_MEM_MB}
-NICE_VAL=${NICE_VAL}
-WORKSPACE=${WORKSPACE}
-PASEO_HOSTNAMES=true
-PASEO_ALLOWED_HOSTS=true
+export NODE_HEAP_MB=${ALLOCATED_MEM_MB}
+export NICE_VAL=${NICE_VAL}
+export WORKSPACE=${WORKSPACE}
+export PASEO_HOSTNAMES="true"
+export PASEO_ALLOWED_HOSTS="true"
 EOF
 
 # Ensure workspace and configuration directories exist
