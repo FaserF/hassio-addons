@@ -1,6 +1,6 @@
 ---
 name: "Paseo"
-version: "0.1.4"
+version: "0.1.5"
 slug: "paseo"
 description: "Autonomous AI Code Studio & Web IDE powered by OmniRoute and OpenCode."
 url: "https://github.com/FaserF/hassio-addons/tree/master/.dev/paseo"

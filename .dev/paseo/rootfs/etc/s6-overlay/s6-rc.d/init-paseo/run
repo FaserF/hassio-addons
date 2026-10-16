@@ -82,8 +82,60 @@ EOF
 # Ensure workspace and configuration directories exist
 mkdir -p "${WORKSPACE}"
 mkdir -p /root/.config/opencode
-mkdir -p /root/.paseo
+mkdir -p /root/.paseo/projects
 mkdir -p /run/nginx
+
+# Ensure persistent server-id exists
+if [ ! -f /root/.paseo/server-id ]; then
+    RAND_SID=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 12 || echo "EGVu9yecHzd1")
+    echo "srv_${RAND_SID}" > /root/.paseo/server-id
+fi
+
+# Pre-register Home Assistant workspace project if not yet configured
+NOW_ISO=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
+if [ ! -f /root/.paseo/projects/projects.json ]; then
+    cat > /root/.paseo/projects/projects.json <<EOF
+[
+  {
+    "projectId": "prj_config_ha",
+    "rootPath": "${WORKSPACE}",
+    "kind": "git",
+    "displayName": "config",
+    "projectKey": null,
+    "customName": "Home Assistant Config",
+    "customIconRevision": null,
+    "createdAt": "${NOW_ISO}",
+    "updatedAt": "${NOW_ISO}",
+    "archivedAt": null
+  }
+]
+EOF
+fi
+
+if [ ! -f /root/.paseo/projects/workspaces.json ]; then
+    cat > /root/.paseo/projects/workspaces.json <<EOF
+[
+  {
+    "workspaceId": "wks_config_ha",
+    "projectId": "prj_config_ha",
+    "cwd": "${WORKSPACE}",
+    "kind": "local_checkout",
+    "displayName": "master",
+    "title": "Home Assistant",
+    "branch": "master",
+    "worktreeRoot": "${WORKSPACE}",
+    "baseBranch": null,
+    "isPaseoOwnedWorktree": false,
+    "mainRepoRoot": null,
+    "createdAt": "${NOW_ISO}",
+    "updatedAt": "${NOW_ISO}",
+    "archivedAt": null,
+    "autoArchivedChangeRequestUrl": null,
+    "pinnedAt": null
+  }
+]
+EOF
+fi
 
 # Determine daemon listen address based on remote_access
 LISTEN_HOST="0.0.0.0"

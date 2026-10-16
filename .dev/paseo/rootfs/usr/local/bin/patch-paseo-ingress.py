@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-Paseo Web UI Ingress Patcher for Home Assistant OS.
-Enables native React Navigation routing, dynamic chunk loading,
-and WebSocket daemon communication under Home Assistant Ingress subpaths (/api/hassio_ingress/<token>/).
+Paseo Web UI Ingress Patcher & Auto-Connect for Home Assistant OS.
+1. Patches Paseo Express web-ui.js to pre-seed @paseo:daemon-registry in localStorage
+   with the local daemon's serverId and cache HA Ingress path prefix.
+2. Patches Expo Router JS bundle for Ingress path stripping, Ingress WebSocket routing,
+   bypassing the Welcome onboarding screen directly to /open-project, and extending probe timeouts.
 """
 
 import glob
@@ -10,13 +12,98 @@ import os
 import re
 
 
-def patch_paseo_ingress():
+def patch_web_ui_server():
+    candidates = [
+        "/usr/lib/node_modules/@getpaseo/cli/node_modules/@getpaseo/server/dist/server/server/web-ui.js",
+        "/usr/lib/node_modules/@getpaseo/server/dist/server/server/web-ui.js",
+    ]
+    server_js = None
+    for c in candidates:
+        if os.path.isfile(c):
+            server_js = c
+            break
+
+    if not server_js:
+        print("[Paseo-Ingress] web-ui.js not found, skipping server patch.")
+        return
+
+    with open(server_js, "r", encoding="utf-8") as f:
+        code = f.read()
+
+    # Match injectConnectionHint and replace with auto-seed logic
+    p_func = r"function injectConnectionHint\(html, req, label\) \{"
+    if re.search(p_func, code) and "ha_ingress_pfx" not in code:
+        r_func = """function injectConnectionHint(html, req, label) {
+    const host = typeof req.headers.host === "string" ? req.headers.host : "";
+    const useTls = req.protocol === "https";
+    const hint = {
+        listen: host,
+        useTls,
+        label,
+    };
+    let serverId = "srv_homeassistant";
+    try {
+        const sidPath = "/root/.paseo/server-id";
+        serverId = readFileSync(sidPath, "utf8").trim() || serverId;
+    } catch(e) {}
+    const autoSeed = `<script>
+window.__PASEO_INITIAL_DAEMON_CONNECTION__=${serializeInlineScriptJson(hint)};
+(function(){
+  try {
+    if (typeof window !== "undefined" && window.location) {
+      var m = window.location.pathname.match(new RegExp("^(/api/hassio_ingress/[^/]+)"));
+      if (m) {
+        window.__HA_INGRESS_PATH__ = m[1];
+        try { sessionStorage.setItem("ha_ingress_pfx", m[1]); } catch(e) {}
+      }
+    }
+    var k = "@paseo:daemon-registry";
+    var sid = ${JSON.stringify(serverId)};
+    var cur = localStorage.getItem(k);
+    var list = [];
+    try { list = JSON.parse(cur) || []; } catch(e) {}
+    if (!Array.isArray(list)) list = [];
+    if (!list.some(function(h) { return h && h.serverId === sid; })) {
+      var profile = {
+        serverId: sid,
+        label: "Home Assistant",
+        connections: [{
+          id: "direct:localhost:6767",
+          type: "directTcp",
+          endpoint: "localhost:6767",
+          useTls: false
+        }],
+        preferredConnectionId: "direct:localhost:6767",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      list.unshift(profile);
+      localStorage.setItem(k, JSON.stringify(list));
+    }
+  } catch(e) {}
+})();
+</script>`;
+    const headClose = /<\\/head>/i;
+    if (headClose.test(html)) {
+        return html.replace(headClose, `${autoSeed}</head>`);
+    }
+    return autoSeed + html;
+}
+function _orig_injectConnectionHint_unused(html, req, label) {"""
+        code = re.sub(p_func, r_func, code, count=1)
+        with open(server_js, "w", encoding="utf-8") as f:
+            f.write(code)
+        print("[Paseo-Ingress] [✓] Successfully patched server web-ui.js for auto-seeding")
+    else:
+        print("[Paseo-Ingress] server web-ui.js already patched or target not found.")
+
+
+def patch_web_bundle():
     base_dir = (
         "/usr/lib/node_modules/@getpaseo/cli/node_modules/@getpaseo/server/dist/server/web-ui/_expo/static/js/web"
     )
     candidates = glob.glob(os.path.join(base_dir, "index-*.js"))
     if not candidates:
-        # Fallback search if installed under different node_modules path
         candidates = glob.glob("/usr/lib/node_modules/**/web-ui/_expo/static/js/web/index-*.js", recursive=True)
     if not candidates:
         print("[Paseo-Ingress] No Paseo Web UI bundle found.")
@@ -40,8 +127,9 @@ def patch_paseo_ingress():
             print("  [✓] Patched target 1 (extractExpoPathFromURL)")
 
         # 2. buildDaemonWebSocketUrl: connect to Ingress WebSocket under /api/hassio_ingress/<token>/ws
-        t2_pattern = r'e\.buildDaemonWebSocketUrl=function\(t,o\)\{const\{host:n,port:s,isIpv6:l\}=c\(t\),u=o\.useTls\?"wss":"ws";return new URL\(`\$\{u\}://\$\{l\?`\[\$\{n\}\]`:n\}:\$\{s\}/ws`\)\.toString\(\)\}'
-        r2 = 'e.buildDaemonWebSocketUrl=function(t,o){if(typeof window!=="undefined"&&window.location){const m=window.location.pathname.match(/^(\\/api\\/hassio_ingress\\/[^\\/]+)/);if(m){const p=window.location.protocol==="https:"?"wss:":"ws:";return `${p}//${window.location.host}${m[1]}/ws`;}}const{host:n,port:s,isIpv6:l}=c(t),u=o.useTls?"wss":"ws";return new URL(`${u}://${l?`[${n}]`:n}:${s}/ws`).toString()}'
+        # Uses cached window.__HA_INGRESS_PATH__ or sessionStorage if route pathname was updated
+        t2_pattern = r'e\.buildDaemonWebSocketUrl=function\(t,o\)\{.*?(const\{host:n,port:s,isIpv6:l\}=c\(t\),u=o\.useTls\?"wss":"ws";return new URL\(`\$\{u\}://\$\{l\?`\[\$\{n\}\]`:n\}:\$\{s\}/ws`\)\.toString\(\)\})'
+        r2 = 'e.buildDaemonWebSocketUrl=function(t,o){if(typeof window!=="undefined"&&window.location){const pfx=window.__HA_INGRESS_PATH__||(window.location.pathname.match(/^(\\/api\\/hassio_ingress\\/[^\\/]+)/)?.[1])||(function(){try{return sessionStorage.getItem("ha_ingress_pfx")||"";}catch(e){return"";}})();if(pfx){const p=window.location.protocol==="https:"?"wss:":"ws:";return `${p}//${window.location.host}${pfx}/ws`;}}\\1'
         if re.search(t2_pattern, code):
             code = re.sub(t2_pattern, r2, code, count=1)
             changed = True
@@ -49,7 +137,7 @@ def patch_paseo_ingress():
 
         # 3. getPathFromState in getLinkingConfig: retain Ingress prefix during in-app navigation
         t3 = "getPathFromState:(t,n)=>(0,u.getPathFromState)(t,Object.assign({},R,n,{screens:R.screens??n?.screens??{}}))??'/'"
-        r3 = "getPathFromState:(t,n)=>{const p=(0,u.getPathFromState)(t,Object.assign({},R,n,{screens:R.screens??n?.screens??{}}))??'/';if(typeof window!==\"undefined\"&&window.location){const m=window.location.pathname.match(/^(\\/api\\/hassio_ingress\\/[^\\/]+)/);if(m){const pfx=m[1];return p==='/'?pfx+'/':pfx+p;}}return p;}"
+        r3 = 'getPathFromState:(t,n)=>{const p=(0,u.getPathFromState)(t,Object.assign({},R,n,{screens:R.screens??n?.screens??{}}))??\'/\';if(typeof window!=="undefined"&&window.location){const pfx=window.__HA_INGRESS_PATH__||(window.location.pathname.match(/^(\\/api\\/hassio_ingress\\/[^\\/]+)/)?.[1])||(function(){try{return sessionStorage.getItem("ha_ingress_pfx")||"";}catch(e){return"";}})();if(pfx){return p===\'/\'?pfx+\'/\':pfx+p;}}return p;}'
         if t3 in code:
             code = code.replace(t3, r3, 1)
             changed = True
@@ -63,6 +151,30 @@ def patch_paseo_ingress():
             changed = True
             print("  [✓] Patched target 4 (module 787 URL)")
 
+        # 5. resolveKnownHostRoute: always redirect to /open-project instead of /welcome onboarding screen
+        t5 = 'if(t.hosts.length>0)return{kind:"redirect",href:"/open-project"};return{kind:"redirect",href:"/welcome"}'
+        r5 = 'return{kind:"redirect",href:"/open-project"}'
+        if t5 in code:
+            code = code.replace(t5, r5, 1)
+            changed = True
+            print("  [✓] Patched target 5 (resolveKnownHostRoute -> /open-project)")
+
+        # 6. WelcomeScreen: auto-redirect immediately to /open-project if ever mounted
+        t6 = "W[3]!==$||W[4]!==F?(ee=()=>{$&&F.replace((0,w.buildOpenProjectRoute)())},te=[$,F],W[3]=$,W[4]=F,W[5]=ee,W[6]=te):(ee=W[5],te=W[6]);(0,l.useEffect)(ee,te),"
+        r6 = "ee=()=>{F.replace((0,w.buildOpenProjectRoute)())};(0,l.useEffect)(ee,[F]),"
+        if t6 in code:
+            code = code.replace(t6, r6, 1)
+            changed = True
+            print("  [✓] Patched target 6 (WelcomeScreen auto-redirect)")
+
+        # 7. Extend connection timeout from 2.5s to 30s so Ingress WebSocket probe never aborts prematurely
+        t7 = 'pe="@paseo:daemon-registry",ge="localhost:6767",ye=2500'
+        r7 = 'pe="@paseo:daemon-registry",ge="localhost:6767",ye=30000'
+        if t7 in code:
+            code = code.replace(t7, r7, 1)
+            changed = True
+            print("  [✓] Patched target 7 (ye=30000 timeout)")
+
         if changed:
             with open(js_path, "w", encoding="utf-8") as f:
                 f.write(code)
@@ -72,10 +184,11 @@ def patch_paseo_ingress():
                 if os.path.isfile(comp):
                     os.remove(comp)
                     print(f"  [✓] Removed pre-compressed asset: {comp}")
-            print(f"[Paseo-Ingress] Bundle {os.path.basename(js_path)} successfully patched for HA Ingress.")
+            print(f"[Paseo-Ingress] Bundle {os.path.basename(js_path)} successfully patched.")
         else:
             print(f"[Paseo-Ingress] Bundle {os.path.basename(js_path)} already patched or targets matched.")
 
 
 if __name__ == "__main__":
-    patch_paseo_ingress()
+    patch_web_ui_server()
+    patch_web_bundle()
