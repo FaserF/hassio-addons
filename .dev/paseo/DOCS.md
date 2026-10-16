@@ -16,13 +16,13 @@ Configure the add-on via the **Configuration** tab in Home Assistant.
 ### Example Configuration
 
 ```yaml
-omniroute_url: "https://omniroute.fabiseitz.de/v1"
-omniroute_api_key: "sk-jarvis-orchestrator-secret-key-2026"
-model: "omniroute/coding-cascade"
-small_model: "omniroute/fast-cascade"
-workspace: "/config"
+omniroute_url: 'https://omniroute.fabiseitz.de/v1'
+omniroute_api_key: 'sk-jarvis-orchestrator-secret-key-2026'
+model: 'omniroute/coding-cascade'
+small_model: 'omniroute/fast-cascade'
+workspace: '/config'
 remote_access: true
-log_level: "info"
+log_level: 'info'
 ```
 
 ### Options

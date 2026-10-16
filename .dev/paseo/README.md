@@ -41,18 +41,27 @@ Just like the official VS Code / Studio Code Server add-on, Paseo opens directly
 - 🌐 **Remote Control & Multi-Agent**: Exposes an optional direct port (`6767`) to enable remote steering from your primary Oracle Cloud VM (`https://code.fabiseitz.de`), Hermes Telegram bot, or across Tailscale.
 - 🛡️ **Full Local Control**: Runs locally on your hardware with first-party credentials and transparent agent diffs.
 
+---
+
 ## ⚙️ Configuration
 
-Configure the add-on via the **Configuration** tab in Home Assistant.
+Configure the app via the **Configuration** tab in the Home Assistant App page.
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `omniroute_url` | string | `https://omniroute.fabiseitz.de/v1` | URL to your OmniRoute instance |
-| `omniroute_api_key` | string | `""` | Optional API key for OmniRoute authentication |
-| `model` | string | `omniroute/coding-cascade` | Main LLM model/cascade for complex coding tasks |
-| `small_model` | string | `omniroute/fast-cascade` | Fast model for syntax checks and quick edits |
-| `workspace` | string | `/config` | Default workspace directory opened by the IDE |
-| `remote_access` | boolean | `true` | Expose direct port 6767 for remote agents |
-| `log_level` | string | `info` | Logging verbosity (`info`, `debug`, `warning`, `error`) |
+### Options
 
-For full documentation and advanced setups, see [DOCS.md](DOCS.md).
+```yaml
+log_level: info
+model: omniroute/coding-cascade
+omniroute_api_key: ''
+omniroute_url: https://omniroute.fabiseitz.de/v1
+remote_access: true
+small_model: omniroute/fast-cascade
+workspace: /config
+```
+
+---
+
+## 👨‍💻 Credits & License
+
+This project is open-source and available under the MIT License.
+Maintained by **FaserF**.

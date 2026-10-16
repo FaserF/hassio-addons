@@ -44,3 +44,4 @@ schema:
   log_level: "list(trace|debug|info|notice|warning|error|fatal)?"
 stage: "experimental"
 image: "ghcr.io/faserf/hassio-addons-paseo-{arch}"
+stage: experimental

@@ -3,8 +3,8 @@
 ## 0.4.7 (2026-10-15)
 
 ### 📦 Dependencies
-- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.8](https://github.com/hassio-addons/addon-base/releases/tag/21.0.8) (#1143) ([`fb91491d`](https://github.com/FaserF/hassio-addons/commit/fb91491d911770ad22afeb32af7db9ed69a05be1))
 
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.8](https://github.com/hassio-addons/addon-base/releases/tag/21.0.8) (#1143) ([`fb91491d`](https://github.com/FaserF/hassio-addons/commit/fb91491d911770ad22afeb32af7db9ed69a05be1))
 
 ## 0.4.6 (2026-10-05)
 

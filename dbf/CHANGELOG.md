@@ -3,11 +3,12 @@
 ## 1.1.5 (2026-10-15)
 
 ### 🐛 Bug Fixes
+
 - fix link routing, redirects, and relative URLs under Ingress ([`80ffd65e`](https://github.com/FaserF/hassio-addons/commit/80ffd65e8b0b9b30e2b0e620e9fd040d8a750381))
 
 ### 📦 Dependencies
-- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.8](https://github.com/hassio-addons/addon-base/releases/tag/21.0.8) (#1143) ([`fb91491d`](https://github.com/FaserF/hassio-addons/commit/fb91491d911770ad22afeb32af7db9ed69a05be1))
 
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.8](https://github.com/hassio-addons/addon-base/releases/tag/21.0.8) (#1143) ([`fb91491d`](https://github.com/FaserF/hassio-addons/commit/fb91491d911770ad22afeb32af7db9ed69a05be1))
 
 ## 1.1.4 (2026-10-05)
 

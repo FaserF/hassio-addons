@@ -3,10 +3,12 @@
 ## 2.1.6 (2026-10-15)
 
 ### ✨ Features
+
 - add mcp support ([`030fa111`](https://github.com/FaserF/hassio-addons/commit/030fa111b0229f1e68490e693974d54fb1ff9db2))
 - add Italian (it) localization (#1161) ([`06157f36`](https://github.com/FaserF/hassio-addons/commit/06157f36ce0b4b86df1266451e7d2c63a282c5e5))
 
 ### 📦 Dependencies
+
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.8](https://github.com/hassio-addons/addon-base/releases/tag/21.0.8) (#1143) ([`fb91491d`](https://github.com/FaserF/hassio-addons/commit/fb91491d911770ad22afeb32af7db9ed69a05be1))
 - ⬆️ Update dependency fastapi to v0.143.2 (#1182) ([`175552c5`](https://github.com/FaserF/hassio-addons/commit/175552c59a7c8253fa7c0abfecf7c28b52fabac5))
 - ⬆️ Update dependency link-preview-js to v5.0.1 (#1177) ([`d1e37133`](https://github.com/FaserF/hassio-addons/commit/d1e371330f81d687a896695c02eb3c4245870eef))
@@ -18,7 +20,6 @@
 - ⬆️ Update dependency fastapi to v0.142.4 (#1144) ([`5a8d213b`](https://github.com/FaserF/hassio-addons/commit/5a8d213bdcb9fba5ab2a4a0aebd988f4d133278f))
 - bump proxy-addr from 2.0.7 to 2.0.8 in /whatsapp/app in the npm_and_yarn group across 1 directory (#1138) ([`827bd6e3`](https://github.com/FaserF/hassio-addons/commit/827bd6e34ec96aba4d5fe62f942e21b4f9207c0e))
 - ⬆️ Update dependency express-rate-limit to v8.7.1 (#1137) ([`d1263d56`](https://github.com/FaserF/hassio-addons/commit/d1263d56e719a542d59308802173dc6129b84936))
-
 
 ## 2.1.5 (2026-10-05)
 
