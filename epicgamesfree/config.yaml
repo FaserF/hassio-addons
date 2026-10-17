@@ -1,4 +1,4 @@
-name: "Epic Games Freebies Claimer"
+name: "Epic Games Freebies Claimer (Edge)"
 slug: "epicgamesfree"
 description: "Automatically login, persist session in /data, and claim promotional free games from Epic Games Store"
 version: "0.1.0"

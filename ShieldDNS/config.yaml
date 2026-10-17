@@ -1,5 +1,5 @@
-name: "ShieldDNS"
-version: "2.5.6"
+name: "ShieldDNS (Edge)"
+version: "2.5.7-dev-20261017-0840-23b6d1f"
 slug: "shielddns"
 description: "DNS-over-TLS/HTTPS proxy with ad blocking, filtering and admin UI"
 url: "https://github.com/FaserF/hassio-addons/tree/master/ShieldDNS"
@@ -42,4 +42,4 @@ schema:
 #   # Removing this section avoids the "Network" configuration tab in HA, which is misleading here.
 #   # 853/tcp: 853
 #   # 443/tcp: 3443
-image: ghcr.io/faserf/hassio-addons-shielddns-{arch}
+stage: experimental

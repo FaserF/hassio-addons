@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.5.7-dev-20261017-0840-23b6d1f (2026-10-17)
+
+- Release version 2.5.7-dev-20261017-0840-23b6d1f
+
+
 ## 2.5.6 (2026-10-17)
 
 ### 📦 Dependencies

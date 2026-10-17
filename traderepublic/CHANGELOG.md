@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.6-dev-20261017-2036-b15c01e (2026-10-17)
+
+### ✨ Features
+- add native outbound webhook support for orders, dividends, and price triggers ([`8bf5e377`](https://github.com/FaserF/hassio-addons/commit/8bf5e3771c0af978efbbd72a06a9c191aa4ab184))
+
+### 🐛 Bug Fixes
+- fix Vue 3 PIN/QR selectors, trusted CDP input, and fast QR refresh ([`b15c01e5`](https://github.com/FaserF/hassio-addons/commit/b15c01e5142118a5b64e6d9874452986733df6fc))
+- schema webhook_url str? to allow empty string default ([`d1c84521`](https://github.com/FaserF/hassio-addons/commit/d1c845216af0ea792653e4e26c2eec7f9a29950c))
+
+
 ## 1.1.4 (2026-10-15)
 
 ### ✨ Features
