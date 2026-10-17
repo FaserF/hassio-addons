@@ -184,7 +184,7 @@ class AuthHelper:
             expired_check_script = """
             (() => {
                 const exp = document.querySelector('.qrLoginCard__expired, .qrLoginCard__refreshIcon, [class*="expired"]');
-                if (exp) {
+                if (exp && exp.offsetWidth > 0) {
                     const r = exp.getBoundingClientRect();
                     return { expired: true, x: r.x + r.width / 2, y: r.y + r.height / 2 };
                 }
@@ -199,27 +199,19 @@ class AuthHelper:
                 _LOGGER.info("QR code expired overlay detected — clicking reload icon via CDP...")
                 x = exp_val.get("x", 620)
                 y = exp_val.get("y", 225)
-                await self.cdp.send_cmd(
-                    "Input.dispatchMouseEvent",
-                    {"type": "mousePressed", "x": x, "y": y, "button": "left", "clickCount": 1},
-                )
-                await self.cdp.send_cmd(
-                    "Input.dispatchMouseEvent",
-                    {"type": "mouseReleased", "x": x, "y": y, "button": "left", "clickCount": 1},
-                )
-                await asyncio.sleep(2.0)
+                await self.cdp.click_at(x, y)
+                await asyncio.sleep(1.5)
 
-            # 2. Ensure we are in QR mode (switch back if in phone mode)
+            # 2. Only switch back if no QR card is present on the page (e.g. if stuck in an error screen)
             qr_prep_script = """
             (() => {
-                const allElements = Array.from(document.querySelectorAll('button, div[role="button"], a, span, p'));
-                const qrSwitchBtn = allElements.find(el => {
-                    const txt = (el.textContent || '').trim().toLowerCase();
-                    return (txt.includes('qr-code') || txt.includes('qr code') || txt.includes('mit qr')) && el.offsetWidth > 0;
-                });
-                if (qrSwitchBtn) {
-                    qrSwitchBtn.click();
-                    return { action: 'switched_to_qr' };
+                if (document.querySelector('.qrLoginCard, .qrCode__matrix')) {
+                    return { action: 'already_present' };
+                }
+                const backBtn = document.querySelector('button[aria-label*="Back"], button[aria-label*="Zurück"], .loginFlow__backButton');
+                if (backBtn && backBtn.offsetWidth > 0) {
+                    backBtn.click();
+                    return { action: 'clicked_back' };
                 }
                 return { action: 'none' };
             })()
@@ -228,11 +220,8 @@ class AuthHelper:
                 "Runtime.evaluate", {"expression": qr_prep_script, "returnByValue": True}
             )
             action = prep_res and prep_res.get("result", {}).get("value", {}).get("action")
-            if action == "switched_to_qr":
-                await asyncio.sleep(2.0)
-
-            # 2. Prefer capturing PNG via Canvas or Page.captureScreenshot
-            # Note: HA frontend markdown ![QR Code](...) fails on SVG data URIs, so we always ensure PNG base64
+            if action == "clicked_back":
+                await asyncio.sleep(1.0)
 
             # 3. Look for Canvas element with valid dimensions
             canvas_script = """
@@ -255,13 +244,15 @@ class AuthHelper:
             if canvas_val and isinstance(canvas_val, str) and canvas_val.startswith("data:image/png"):
                 return canvas_val
 
-            # 4. Only screenshot the bounding box if it strictly contains a QR SVG/Canvas and NO input fields
+            # 4. Screenshot the QR bounding box with a slight padding
             box_script = """
             (() => {
-                const targetQrSvg = document.querySelector('.qrCode__matrix svg, [class*="qrCode"] svg');
-                if (targetQrSvg) {
-                    const r = targetQrSvg.getBoundingClientRect();
-                    return { x: r.x, y: r.y, width: r.width, height: r.height };
+                const targetQr = document.querySelector('.qrLoginCard__qrSlot, .qrCode__matrix svg, [class*="qrCode"] svg');
+                if (targetQr) {
+                    const r = targetQr.getBoundingClientRect();
+                    if (r.width >= 50 && r.height >= 50) {
+                        return { x: r.x, y: r.y, width: r.width, height: r.height };
+                    }
                 }
 
                 const qrSvg = Array.from(document.querySelectorAll('svg')).find(s => {
@@ -276,16 +267,6 @@ class AuthHelper:
                     return { x: r.x, y: r.y, width: r.width, height: r.height };
                 }
 
-                const qrCanvas = Array.from(document.querySelectorAll('canvas')).find(c => {
-                    const r = c.getBoundingClientRect();
-                    return r.width >= 60;
-                });
-                if (qrCanvas) {
-                    const r = qrCanvas.getBoundingClientRect();
-                    return { x: r.x, y: r.y, width: r.width, height: r.height };
-                }
-
-                // Fallback: look for QR container div or image with qr in class/id/data-testid
                 const qrContainer = Array.from(document.querySelectorAll('div, img')).find(el => {
                     const r = el.getBoundingClientRect();
                     const testId = (el.getAttribute('data-testid') || '').toLowerCase();
@@ -303,13 +284,14 @@ class AuthHelper:
             box_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": box_script, "returnByValue": True})
             box = box_res and box_res.get("result", {}).get("value")
             if box and isinstance(box, dict) and box.get("width", 0) >= 50:
+                pad = 8.0
                 clip_params = {
                     "format": "png",
                     "clip": {
-                        "x": max(0.0, float(box.get("x", 0))),
-                        "y": max(0.0, float(box.get("y", 0))),
-                        "width": float(box.get("width", 200)),
-                        "height": float(box.get("height", 200)),
+                        "x": max(0.0, float(box.get("x", 0)) - pad),
+                        "y": max(0.0, float(box.get("y", 0)) - pad),
+                        "width": float(box.get("width", 200)) + (pad * 2),
+                        "height": float(box.get("height", 200)) + (pad * 2),
                         "scale": 2,
                     },
                 }
@@ -322,393 +304,303 @@ class AuthHelper:
         return None
 
     async def execute_login(self, clean_phone: str, clean_pin: str) -> Dict[str, Any]:
-        """Navigate to login, enter credentials, solve challenge and trigger push/SMS."""
+        """Navigate to login, enter phone & PIN via trusted CDP events, and trigger push/SMS."""
         await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
-        await asyncio.sleep(4)
+        await asyncio.sleep(3.5)
 
-        # 0. Cookie banner & Login Mode Check (Switch from QR-Code to Phone Login if necessary)
-        prep_script = """
-        (() => {
-            // 1. Accept cookies
-            const btns = Array.from(document.querySelectorAll('button'));
-            const acceptBtn = btns.find(b => b.textContent && (b.textContent.includes('Accept') || b.textContent.includes('Akzeptieren') || b.textContent.includes('Allow')));
-            if (acceptBtn) { acceptBtn.click(); }
+        # 1. Accept cookies if present & wait for phone or PIN input to render
+        for _ in range(8):
+            prep_res = await self.cdp.send_cmd(
+                "Runtime.evaluate",
+                {
+                    "expression": """
+                    (() => {
+                        const btns = Array.from(document.querySelectorAll('button'));
+                        const acceptBtn = btns.find(b => b.textContent && (b.textContent.includes('Accept') || b.textContent.includes('Akzeptieren') || b.textContent.includes('Allow')));
+                        if (acceptBtn) { acceptBtn.click(); }
 
-            // 2. Check if already on phone input screen
-            const visibleInputs = Array.from(document.querySelectorAll('input')).filter(i => i.offsetWidth > 0 && i.offsetHeight > 0);
-            if (visibleInputs.length > 0) {
-                return { switched_mode: true, reason: 'inputs_already_visible' };
-            }
-
-            // 3. Find switch button/link (all languages & data-testids)
-            const elements = Array.from(document.querySelectorAll('button, a, div[role="button"], span, p, label'));
-            const switchBtn = elements.find(el => {
-                const txt = (el.textContent || '').trim().toLowerCase();
-                const testId = (el.getAttribute('data-testid') || '').toLowerCase();
-                const href = (el.getAttribute('href') || '').toLowerCase();
-                const aria = (el.getAttribute('aria-label') || '').toLowerCase();
-                return (
-                    txt.includes('telefon') || txt.includes('phone') || txt.includes('handy') ||
-                    txt.includes('ohne qr') || txt.includes('without qr') || txt.includes('andere') ||
-                    txt.includes('zugangsdaten') || txt.includes('credentials') || txt.includes('manuell') ||
-                    txt.includes('manual') || txt.includes('numéro') || txt.includes('número') ||
-                    txt.includes('or log in') || txt.includes('oder melde') || txt.includes('log in with') ||
-                    testId.includes('phone') || testId.includes('switch') || testId.includes('credentials') ||
-                    href.includes('phone') || href.includes('credentials') || aria.includes('phone')
-                ) && el.offsetWidth > 0;
-            });
-
-            if (switchBtn) {
-                switchBtn.click();
-                return { switched_mode: true, text: switchBtn.textContent.trim() };
-            }
-
-            // Fallback: look for clickable element below or adjacent to the QR code
-            const clickables = Array.from(document.querySelectorAll('a, button, [role="button"]')).filter(el => {
-                return el !== acceptBtn && el.offsetWidth > 0 && el.offsetHeight > 0;
-            });
-            if (clickables.length > 0) {
-                // Click the last clickable or one with text
-                const target = clickables.find(c => (c.textContent || '').trim().length > 0) || clickables[0];
-                target.click();
-                return { switched_mode: true, text: target.textContent.trim(), fallback: true };
-            }
-
-            return { switched_mode: false, total_clickables: clickables.length };
-        })()
-        """
-        prep_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": prep_script, "returnByValue": True})
-        _LOGGER.info("CDP Login Prep result: %s", prep_res)
-        await asyncio.sleep(2.5)
-
-        # Phone Number Input & Submit
-        phone_script = f"""
-        (() => {{
-            const inputs = Array.from(document.querySelectorAll('input')).filter(i => i.offsetWidth > 0 && i.offsetHeight > 0);
-            const input = inputs.find(i => {{
-                const name = (i.getAttribute('name') || '').toLowerCase();
-                const type = (i.getAttribute('type') || '').toLowerCase();
-                const auto = (i.getAttribute('autocomplete') || '').toLowerCase();
-                const place = (i.getAttribute('placeholder') || '').toLowerCase();
-                return name.includes('phone') || type === 'tel' || auto.includes('tel') || place.includes('phone') || place.includes('telefon') || place.includes('handy') || (type === 'text' && !name.includes('pin'));
-            }}) || inputs[0];
-
-            if (!input) return {{ ok: false, stage: 'phone', reason: 'input_not_found', total_inputs: inputs.length }};
-            let phoneToEnter = "{clean_phone}";
-            // If prefix +49 is already present in a country selector or static label, input the national number only
-            const pageText = document.body.innerText || "";
-            if (phoneToEnter.startsWith('+49') && (pageText.includes('+49') || document.querySelector('button:has(svg), div:has(img[alt*="flag"])', '.country-picker-trigger'))) {{
-                phoneToEnter = phoneToEnter.replace('+49', '');
-                if (phoneToEnter.startsWith('0')) {{
-                    phoneToEnter = phoneToEnter.substring(1);
-                }}
-            }}
-
-            input.focus();
-            input.click();
-            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-            nativeSetter.call(input, phoneToEnter);
-            input.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
-            input.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
-            input.dispatchEvent(new KeyboardEvent('keydown', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
-            input.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
-
-            // Find visible submit button
-            const btns = Array.from(document.querySelectorAll('button, div[role="button"]')).filter(b => b.offsetWidth > 0 && b.offsetHeight > 0);
-            const btn = btns.find(b => {{
-                const text = (b.textContent || '').trim().toLowerCase();
-                const testId = (b.getAttribute('data-testid') || '').toLowerCase();
-                const type = (b.getAttribute('type') || '').toLowerCase();
-                const isSubmit = type === 'submit' || testId.includes('submit') || testId.includes('next');
-                const hasText = ['weiter', 'next', 'continue', 'anmelden', 'login', 'senden', 'submit'].some(k => text === k || text.includes(k));
-                return isSubmit || hasText;
-            }});
-
-            if (btn) {{
-                btn.removeAttribute('disabled');
-                btn.disabled = false;
-                btn.focus();
-                const rect = btn.getBoundingClientRect();
-                const clientX = rect.left + rect.width / 2;
-                const clientY = rect.top + rect.height / 2;
-                const mouseOpts = {{ bubbles: true, cancelable: true, view: window, clientX, clientY }};
-                btn.dispatchEvent(new MouseEvent('pointerdown', mouseOpts));
-                btn.dispatchEvent(new MouseEvent('mousedown', mouseOpts));
-                btn.dispatchEvent(new MouseEvent('pointerup', mouseOpts));
-                btn.dispatchEvent(new MouseEvent('mouseup', mouseOpts));
-                btn.dispatchEvent(new MouseEvent('click', mouseOpts));
-                btn.click();
-                return {{ ok: true, stage: 'phone', clicked: true, btnText: (btn.textContent || '').trim() }};
-            }}
-
-            if (input.form) {{
-                try {{
-                    input.form.requestSubmit();
-                    return {{ ok: true, stage: 'phone', method: 'form_requestSubmit' }};
-                }} catch(e) {{}}
-            }}
-
-            return {{ ok: true, stage: 'phone', clicked: false }};
-        }})()
-        """
-        phone_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": phone_script, "returnByValue": True})
-        _LOGGER.info("CDP Phone step result: %s", phone_res)
-        await asyncio.sleep(3.0)
-
-        # PIN Input & Submit
-        pin_script = f"""
-        (() => {{
-            // 1. Check for single password / pin field
-            const singleInput = document.querySelector('input[type="password"], input[name="pin"], input[name="password"], input[inputmode="numeric"], input[autocomplete="current-password"]');
-
-            // 2. Check for multiple digit inputs (PIN boxes)
-            const digitInputs = Array.from(document.querySelectorAll('input')).filter(i => {{
-                const len = i.getAttribute('maxlength');
-                const mode = i.getAttribute('inputmode');
-                return (len === '1' || mode === 'numeric') && i.offsetWidth > 0;
-            }});
-
-            const pinStr = "{clean_pin}";
-
-            if (digitInputs.length >= 4) {{
-                for (let i = 0; i < Math.min(digitInputs.length, pinStr.length); i++) {{
-                    const dInput = digitInputs[i];
-                    dInput.focus();
-                    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                    nativeSetter.call(dInput, pinStr[i]);
-                    dInput.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
-                    dInput.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
-                }}
-            }} else if (singleInput) {{
-                singleInput.focus();
-                singleInput.click();
-                const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                nativeSetter.call(singleInput, pinStr);
-                singleInput.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
-                singleInput.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
-                singleInput.dispatchEvent(new KeyboardEvent('keydown', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
-                singleInput.dispatchEvent(new KeyboardEvent('keypress', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
-                singleInput.dispatchEvent(new KeyboardEvent('keyup', {{ bubbles: true, composed: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 }}));
-            }} else {{
-                return {{ ok: false, stage: 'pin', reason: 'input_not_found' }};
-            }}
-
-            const btns = Array.from(document.querySelectorAll('button, div[role="button"], a[role="button"]')).filter(b => b.offsetWidth > 0 && b.offsetHeight > 0);
-            const btn = btns.find(b => {{
-                const text = (b.textContent || '').trim().toLowerCase();
-                const testId = (b.getAttribute('data-testid') || '').toLowerCase();
-                const type = (b.getAttribute('type') || '').toLowerCase();
-                const isSubmit = type === 'submit' || testId.includes('submit') || testId.includes('login') || testId.includes('pin');
-                const hasText = ['anmelden', 'login', 'weiter', 'next', 'submit', 'bestätigen', 'confirm'].some(k => text === k || text.includes(k));
-                return isSubmit || hasText;
-            }});
-
-            if (btn) {{
-                btn.removeAttribute('disabled');
-                btn.disabled = false;
-                btn.focus();
-                const rect = btn.getBoundingClientRect();
-                const clientX = rect.left + rect.width / 2;
-                const clientY = rect.top + rect.height / 2;
-                const mouseOpts = {{ bubbles: true, cancelable: true, view: window, clientX, clientY }};
-                btn.dispatchEvent(new MouseEvent('pointerdown', mouseOpts));
-                btn.dispatchEvent(new MouseEvent('mousedown', mouseOpts));
-                btn.dispatchEvent(new MouseEvent('pointerup', mouseOpts));
-                btn.dispatchEvent(new MouseEvent('mouseup', mouseOpts));
-                btn.dispatchEvent(new MouseEvent('click', mouseOpts));
-                btn.click();
-                return {{ ok: true, stage: 'pin', clicked: true, btnText: (btn.textContent || '').trim() }};
-            }}
-
-            const activeInput = singleInput || digitInputs[0];
-            if (activeInput && activeInput.form) {{
-                try {{
-                    activeInput.form.requestSubmit();
-                    return {{ ok: true, stage: 'pin', method: 'form_requestSubmit' }};
-                }} catch(e) {{}}
-            }}
-
-            return {{ ok: true, stage: 'pin', clicked: false }};
-        }})()
-        """
-        pin_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": pin_script, "returnByValue": True})
-        _LOGGER.info("CDP PIN step result: %s", pin_res)
-
-        await asyncio.sleep(4.0)
-
-        # Check performance logs for auth requests (ignoring passive background qr-challenges)
-        network_spy_script = """
-        (() => {
-            const entries = performance.getEntriesByType('resource').filter(e =>
-                (e.name.includes('api.traderepublic.com') || e.name.includes('auth') || e.name.includes('login')) &&
-                !e.name.includes('qr-challenges')
-            );
-            return JSON.stringify(entries.map(e => ({
-                url: e.name,
-                duration: Math.round(e.duration),
-                transferSize: e.transferSize
-            })).slice(-10));
-        })()
-        """
-        spy_res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": network_spy_script, "returnByValue": True})
-        network_calls = spy_res and spy_res.get("result", {}).get("value")
-        has_auth_call = bool(
-            network_calls
-            and (
-                "auth/web/login" in str(network_calls)
-                or "v1/auth" in str(network_calls)
-                or "v2/auth" in str(network_calls)
+                        const phoneInput = document.querySelector('input.phone-input__input, input[type="tel"], input[name="username"], input[autocomplete="tel-national"]');
+                        const pinInput = document.querySelector('input[type="password"], input[autocomplete="current-password"]');
+                        return {
+                            hasPhone: !!(phoneInput && phoneInput.offsetWidth > 0),
+                            hasPin: !!(pinInput && pinInput.offsetWidth > 0)
+                        };
+                    })()
+                    """,
+                    "returnByValue": True,
+                },
             )
-        )
-        if network_calls:
-            _LOGGER.info("TR network calls after submit: %s (has_auth_call: %s)", network_calls, has_auth_call)
+            prep_val = (prep_res or {}).get("result", {}).get("value") or {}
+            if prep_val.get("hasPhone") or prep_val.get("hasPin"):
+                break
+            await asyncio.sleep(0.5)
 
-        # In-Page API Fallback: If DOM interaction did not trigger auth API call, execute in-page fetch with solved WAF context
-        if not has_auth_call:
-            _LOGGER.info("DOM interaction did not produce auth call, executing in-page direct API fetch...")
-            in_page_fetch_script = f"""
-            (async () => {{
-                try {{
-                    // Extract WAF token if available
-                    let wafToken = null;
-                    try {{
-                        const match = document.cookie.match(/aws-waf-token=([^;]+)/);
-                        if (match) wafToken = match[1];
-                    }} catch(e) {{}}
+        # 2. Prepare national number & preferred area code in localStorage if non-DE
+        area_code = "+49"
+        national_phone = clean_phone
+        for prefix in ("+49", "+43", "+41", "+33", "+34", "+39", "+31", "+32", "+351", "+352", "+353", "+358", "+48", "+420"):
+            if clean_phone.startswith(prefix):
+                area_code = prefix
+                national_phone = clean_phone[len(prefix) :].lstrip("0")
+                break
+        else:
+            if clean_phone.startswith("+"):
+                national_phone = clean_phone[3:].lstrip("0")
 
-                    const authHeaders = {{
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-App-Version': '4.120.0',
-                        'X-Platform': 'web'
-                    }};
-                    if (wafToken) {{
-                        authHeaders['X-Aws-Waf-Token'] = wafToken;
-                    }}
-
-                    // Attempt v2 auth endpoint first (Trade Republic now uses v2 for push flow)
-                    let res = await fetch('https://api.traderepublic.com/api/v2/auth/web/login', {{
-                        method: 'POST',
-                        headers: authHeaders,
-                        body: JSON.stringify({{
-                            phoneNumber: "{clean_phone}",
-                            pin: "{clean_pin}"
-                        }})
-                    }});
-
-                    // If v2 not accepted, try v1
-                    if (res.status === 404) {{
-                        res = await fetch('https://api.traderepublic.com/api/v1/auth/web/login', {{
-                            method: 'POST',
-                            headers: authHeaders,
-                            body: JSON.stringify({{
-                                phoneNumber: "{clean_phone}",
-                                pin: "{clean_pin}"
-                            }})
-                        }});
-                    }}
-
-                    const st = res.status;
-                    const txt = await res.text();
-                    let d = null;
-                    try {{ d = JSON.parse(txt); }} catch(e) {{}}
-                    return {{ ok: res.ok, status: st, data: d, raw: txt }};
-                }} catch(err) {{
-                    return {{ ok: false, error: err.toString() }};
-                }}
-            }})()
-            """
-            fetch_res = await self.cdp.send_cmd(
-                "Runtime.evaluate", {"expression": in_page_fetch_script, "awaitPromise": True, "returnByValue": True}
+        if area_code != "+49":
+            await self.cdp.send_cmd(
+                "Runtime.evaluate",
+                {"expression": f"try {{ localStorage.setItem('login_preferred_area_code', '{area_code}'); }} catch(e) {{}}"},
             )
-            fetch_val = fetch_res and fetch_res.get("result", {}).get("value")
-            _LOGGER.info("In-page fetch login result: %s", fetch_val)
-            if fetch_val and isinstance(fetch_val, dict):
-                if fetch_val.get("ok"):
-                    data = fetch_val.get("data") or {}
-                    if data.get("processId"):
-                        self._last_process_id = data.get("processId")
-                    return {
-                        "success": True,
-                        "message": "Push notification sent. Please tap Confirm in your Trade Republic app.",
-                    }
-                elif fetch_val.get("status") in (400, 401, 403, 429):
-                    data = fetch_val.get("data") or {}
-                    err_msg = data.get("message") or data.get("error") or f"HTTP {fetch_val.get('status')}"
-                    return {
-                        "success": False,
-                        "error": f"Trade Republic login rejected: {err_msg}",
-                    }
+            await self.cdp.send_cmd("Page.reload", {})
+            await asyncio.sleep(3.0)
 
-        # Check current page URL
-        url_res = await self.cdp.send_cmd(
-            "Runtime.evaluate", {"expression": "window.location.href", "returnByValue": True}
+        # 3. Focus, clear, and insert phone number via trusted CDP Input.insertText
+        phone_prep = await self.cdp.send_cmd(
+            "Runtime.evaluate",
+            {
+                "expression": """
+                (() => {
+                    const inp = document.querySelector('input.phone-input__input, input[type="tel"], input[name="username"], input[autocomplete="tel-national"]');
+                    if (!inp || inp.offsetWidth === 0) return { ok: false, reason: 'phone_input_not_found' };
+                    inp.focus();
+                    inp.value = '';
+                    inp.dispatchEvent(new Event('input', { bubbles: true }));
+                    const r = inp.getBoundingClientRect();
+                    return { ok: true, x: r.left + r.width / 2, y: r.top + r.height / 2 };
+                })()
+                """,
+                "returnByValue": True,
+            },
         )
-        current_url = url_res and url_res.get("result", {}).get("value", "unknown")
-        _LOGGER.info("Page URL after PIN submit: %s", current_url)
+        phone_val = (phone_prep or {}).get("result", {}).get("value") or {}
+        _LOGGER.info("CDP Phone prep result: %s", phone_val)
+        if phone_val.get("ok"):
+            await self.cdp.click_at(phone_val["x"], phone_val["y"])
+            await asyncio.sleep(0.15)
+            # Select all & delete any residual characters before inserting
+            await self.cdp.send_cmd(
+                "Runtime.evaluate",
+                {
+                    "expression": """
+                    (() => {
+                        const inp = document.querySelector('input.phone-input__input, input[type="tel"], input[name="username"]');
+                        if (inp) { inp.focus(); inp.select(); }
+                    })()
+                    """
+                },
+            )
+            await self.cdp.send_cmd(
+                "Input.dispatchKeyEvent",
+                {"type": "keyDown", "key": "Backspace", "code": "Backspace", "windowsVirtualKeyCode": 8},
+            )
+            await self.cdp.send_cmd(
+                "Input.dispatchKeyEvent",
+                {"type": "keyUp", "key": "Backspace", "code": "Backspace", "windowsVirtualKeyCode": 8},
+            )
+            await self.cdp.insert_text(national_phone)
+            await asyncio.sleep(1.0)
 
-        dom_error_script = """
-        (() => {
-            const errEl = document.querySelector('[role="alert"], [data-testid="error-message"], .error, .alert');
-            if (errEl && errEl.textContent) return errEl.textContent.trim();
-            const bodyTxt = document.body.innerText || '';
-            const m = bodyTxt.match(/(Erneut versuchen in [^\n\\.]+)/i);
-            if (m) return m[1];
-            return null;
-        })()
-        """
-        dom_err = await self.cdp.send_cmd("Runtime.evaluate", {"expression": dom_error_script, "returnByValue": True})
-        dom_err_text = dom_err and dom_err.get("result", {}).get("value")
-        if dom_err_text:
-            _LOGGER.warning("CDP DOM error detected: %s", dom_err_text)
+            # Check if PIN input appeared automatically (via Vue autofill/validity) or if we need to click submit
+            pin_check = await self.cdp.send_cmd(
+                "Runtime.evaluate",
+                {
+                    "expression": """
+                    (() => {
+                        const pin = document.querySelector('input[type="password"], input[autocomplete="current-password"]');
+                        if (pin && pin.offsetWidth > 0) return { pinVisible: true };
+                        const btn = document.querySelector('button.loginIconButton[type="submit"], form button[type="submit"]');
+                        if (btn && btn.offsetWidth > 0) {
+                            const r = btn.getBoundingClientRect();
+                            return { pinVisible: false, btnX: r.left + r.width / 2, btnY: r.top + r.height / 2, disabled: btn.disabled };
+                        }
+                        return { pinVisible: false };
+                    })()
+                    """,
+                    "returnByValue": True,
+                },
+            )
+            p_chk = (pin_check or {}).get("result", {}).get("value") or {}
+            if not p_chk.get("pinVisible") and p_chk.get("btnX"):
+                await self.cdp.click_at(p_chk["btnX"], p_chk["btnY"])
+                await asyncio.sleep(1.5)
+
+        # 4. Wait up to 3s for PIN input (`input[type="password"]`) and enter PIN via CDP Input.insertText
+        pin_box = None
+        for _ in range(6):
+            pin_res = await self.cdp.send_cmd(
+                "Runtime.evaluate",
+                {
+                    "expression": """
+                    (() => {
+                        const pin = document.querySelector('input[type="password"], input[autocomplete="current-password"]');
+                        if (!pin || pin.offsetWidth === 0) return { ok: false };
+                        pin.focus();
+                        pin.value = '';
+                        pin.dispatchEvent(new Event('input', { bubbles: true }));
+                        const r = pin.getBoundingClientRect();
+                        return { ok: true, x: r.left + r.width / 2, y: r.top + r.height / 2 };
+                    })()
+                    """,
+                    "returnByValue": True,
+                },
+            )
+            pin_box = (pin_res or {}).get("result", {}).get("value") or {}
+            if pin_box.get("ok"):
+                break
+            await asyncio.sleep(0.5)
+
+        _LOGGER.info("CDP PIN prep result: %s", pin_box)
+        if not pin_box or not pin_box.get("ok"):
+            # Check if phone validation error is shown
+            err_res = await self.cdp.send_cmd(
+                "Runtime.evaluate",
+                {
+                    "expression": """
+                    (() => {
+                        const err = document.querySelector('.loginErrorMessage, [role="alert"], .phone-input__error');
+                        return err ? err.textContent.trim() : null;
+                    })()
+                    """,
+                    "returnByValue": True,
+                },
+            )
+            err_txt = (err_res or {}).get("result", {}).get("value")
             return {
                 "success": False,
-                "error": dom_err_text,
-                "message": dom_err_text,
+                "error": err_txt or "Could not reach PIN entry step on Trade Republic login page.",
+            }
+
+        await self.cdp.click_at(pin_box["x"], pin_box["y"])
+        await asyncio.sleep(0.15)
+        await self.cdp.insert_text(clean_pin)
+        await asyncio.sleep(0.5)
+
+        # 5. Click PIN submit button or press Enter if not auto-submitted
+        submit_res = await self.cdp.send_cmd(
+            "Runtime.evaluate",
+            {
+                "expression": """
+                (() => {
+                    const btn = document.querySelector('button.loginIconButton[type="submit"], form button[type="submit"]');
+                    if (btn && btn.offsetWidth > 0 && !btn.disabled) {
+                        const r = btn.getBoundingClientRect();
+                        return { canClick: true, x: r.left + r.width / 2, y: r.top + r.height / 2 };
+                    }
+                    return { canClick: false };
+                })()
+                """,
+                "returnByValue": True,
+            },
+        )
+        sub_val = (submit_res or {}).get("result", {}).get("value") or {}
+        if sub_val.get("canClick"):
+            await self.cdp.click_at(sub_val["x"], sub_val["y"])
+
+        await asyncio.sleep(3.5)
+
+        # 6. Inspect post-submit DOM state (ConfirmInApp, OTP/SMS, Authenticator, or Error)
+        state_res = await self.cdp.send_cmd(
+            "Runtime.evaluate",
+            {
+                "expression": """
+                (() => {
+                    const errEl = document.querySelector('.loginErrorMessage, [role="alert"], [data-testid="error-message"]');
+                    const errText = (errEl && errEl.offsetWidth > 0 && errEl.textContent) ? errEl.textContent.trim() : null;
+                    const confirmApp = !!document.querySelector('.confirmInAppForm, .countdownRing');
+                    const otpForm = !!document.querySelector('.otpForm, input#sms-code-input');
+                    const totpForm = !!document.querySelector('.authenticatorForm, input#totp-input');
+                    const bodyTxt = document.body.innerText || '';
+                    return {
+                        error: errText,
+                        confirmInApp: confirmApp,
+                        otpForm: otpForm,
+                        totpForm: totpForm,
+                        bodySnippet: bodyTxt.substring(0, 400)
+                    };
+                })()
+                """,
+                "returnByValue": True,
+            },
+        )
+        st = (state_res or {}).get("result", {}).get("value") or {}
+        _LOGGER.info("Post-login DOM state: %s", st)
+
+        if st.get("error"):
+            _LOGGER.warning("Trade Republic login error shown in DOM: %s", st["error"])
+            return {
+                "success": False,
+                "error": st["error"],
+                "message": st["error"],
+            }
+
+        if st.get("otpForm"):
+            return {
+                "success": True,
+                "step": "2fa_required",
+                "flow": "otp",
+                "message": "4-digit code sent! Please enter the 4-digit push/SMS code from your Trade Republic app.",
+            }
+
+        if st.get("totpForm"):
+            return {
+                "success": True,
+                "step": "2fa_required",
+                "flow": "totp",
+                "message": "Please enter the 6-digit code from your Authenticator app.",
             }
 
         return {
             "success": True,
-            "message": "Credentials submitted. Please confirm in your Trade Republic smartphone app.",
+            "step": "2fa_required",
+            "flow": "confirmInApp",
+            "message": "Push notification sent! Please open your Trade Republic app and tap Confirm.",
         }
 
     async def submit_2fa_code(self, clean_code: str) -> None:
-        """Submit 2FA verification code to form."""
-        if clean_code:
-            code_script = f"""
-            (() => {{
-                // Try single input (e.g. name="code" or inputmode="numeric")
-                const singleOtp = document.querySelector('input[name="code"], input[type="number"], input[autocomplete="one-time-code"], input[data-testid="otp-input"], input[type="tel"]');
-                if (singleOtp) {{
-                    singleOtp.focus();
-                    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                    nativeSetter.call(singleOtp, "{clean_code}");
-                    singleOtp.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
-                    singleOtp.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
-                }}
+        """Submit 2FA verification code (4-digit OTP or 6-digit TOTP) via trusted CDP events."""
+        if not clean_code:
+            return
+        code_prep = await self.cdp.send_cmd(
+            "Runtime.evaluate",
+            {
+                "expression": """
+                (() => {
+                    const inp = document.querySelector('input#sms-code-input, input#totp-input, .otpForm input, .authenticatorForm input, input[autocomplete="one-time-code"]');
+                    if (!inp || inp.offsetWidth === 0) return { ok: false };
+                    inp.focus();
+                    inp.value = '';
+                    inp.dispatchEvent(new Event('input', { bubbles: true }));
+                    const r = inp.getBoundingClientRect();
+                    return { ok: true, x: r.left + r.width / 2, y: r.top + r.height / 2 };
+                })()
+                """,
+                "returnByValue": True,
+            },
+        )
+        c_val = (code_prep or {}).get("result", {}).get("value") or {}
+        if c_val.get("ok"):
+            await self.cdp.click_at(c_val["x"], c_val["y"])
+            await asyncio.sleep(0.1)
+            await self.cdp.insert_text(clean_code)
+            await asyncio.sleep(0.4)
+            btn_res = await self.cdp.send_cmd(
+                "Runtime.evaluate",
+                {
+                    "expression": """
+                    (() => {
+                        const btn = document.querySelector('button.loginIconButton[type="submit"], form button[type="submit"]');
+                        if (btn && btn.offsetWidth > 0 && !btn.disabled) {
+                            const r = btn.getBoundingClientRect();
+                            return { ok: true, x: r.left + r.width / 2, y: r.top + r.height / 2 };
+                        }
+                        return { ok: false };
+                    })()
+                    """,
+                    "returnByValue": True,
+                },
+            )
+            b_val = (btn_res or {}).get("result", {}).get("value") or {}
+            if b_val.get("ok"):
+                await self.cdp.click_at(b_val["x"], b_val["y"])
 
-                // Try multi-box OTP input (e.g. 4 separate single-character inputs)
-                const multiInputs = Array.from(document.querySelectorAll('input[maxlength="1"], input[data-index]'));
-                if (multiInputs.length >= 4) {{
-                    for (let i = 0; i < 4; i++) {{
-                        const char = "{clean_code}"[i] || '';
-                        const inp = multiInputs[i];
-                        if (inp && char) {{
-                            inp.focus();
-                            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-                            nativeSetter.call(inp, char);
-                            inp.dispatchEvent(new Event('input', {{ bubbles: true, composed: true }}));
-                            inp.dispatchEvent(new Event('change', {{ bubbles: true, composed: true }}));
-                        }}
-                    }}
-                }}
-
-                const btn = Array.from(document.querySelectorAll('button')).find(b => b.type === 'submit' || b.getAttribute('data-testid') === 'login-submit-button' || (b.textContent && (b.textContent.includes('Weiter') || b.textContent.includes('Confirm') || b.textContent.includes('Bestätigen') || b.textContent.includes('Next'))));
-                if (btn) {{
-                    btn.disabled = false;
-                    btn.click();
-                }}
-                return true;
-            }})()
-            """
-            await self.cdp.send_cmd("Runtime.evaluate", {"expression": code_script})

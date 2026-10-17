@@ -56,6 +56,22 @@ class CDPClient:
             _LOGGER.debug("CDP command %s failed: %s", method, e)
             return None
 
+    async def click_at(self, x: float, y: float) -> None:
+        """Dispatch a trusted mouse click at (x, y) via CDP."""
+        await self.send_cmd(
+            "Input.dispatchMouseEvent",
+            {"type": "mousePressed", "x": float(x), "y": float(y), "button": "left", "clickCount": 1},
+        )
+        await self.send_cmd(
+            "Input.dispatchMouseEvent",
+            {"type": "mouseReleased", "x": float(x), "y": float(y), "button": "left", "clickCount": 1},
+        )
+
+    async def insert_text(self, text: str) -> None:
+        """Insert text into the currently focused element via CDP Input.insertText."""
+        await self.send_cmd("Input.insertText", {"text": str(text)})
+
+
     async def wait_for_ready(self, timeout: float = 20.0, interval: float = 0.5) -> bool:
         """Poll CDP HTTP endpoint until Chromium is ready, up to timeout seconds."""
         import asyncio

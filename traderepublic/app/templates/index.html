@@ -823,19 +823,20 @@
         </div>
         <div
           style="
-            background: white;
-            padding: 1rem;
-            border-radius: 12px;
+            background: #141414;
+            padding: 0.75rem;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
             display: inline-block;
             margin: 0 auto;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
           "
         >
           <img
             id="qr-code-img"
             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
             alt="QR Code"
-            style="width: 220px; height: 220px; display: block; margin: 0 auto"
+            style="width: 220px; height: 220px; display: block; margin: 0 auto; border-radius: 8px"
           />
         </div>
         <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: center">
@@ -1125,7 +1126,7 @@
           const imgEl = document.getElementById('qr-code-img');
           if (!imgEl) return;
           try {
-            imgEl.style.opacity = '0.4';
+            if (forceRefresh) imgEl.style.opacity = '0.4';
             const url = './api/v1/login/qr' + (forceRefresh ? '?refresh=true' : '');
             const res = await fetch(url, { method: 'POST' });
             if (res.ok) {
@@ -1147,7 +1148,7 @@
                 if (qrStep && !qrStep.classList.contains('hidden')) {
                   loadQRCode(false);
                 }
-              }, 45000);
+              }, 3500);
             }
           }
         }

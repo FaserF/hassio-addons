@@ -302,6 +302,16 @@ class TradeRepublicBrowserService:
 
                 self.status_message = "Navigating to Trade Republic login..."
                 login_res = await self.auth_helper.execute_login(clean_phone, clean_pin)
+                if not login_res.get("success"):
+                    err_msg = login_res.get("error") or login_res.get("message") or "Login rejected by Trade Republic."
+                    self.status_message = f"Login failed: {err_msg}"
+                    self.last_error = err_msg
+                    self.login_started_at = None
+                    return {
+                        "success": False,
+                        "error": err_msg,
+                        "message": self.status_message,
+                    }
 
                 self.status_message = login_res.get("message", "Credentials submitted. Please confirm on smartphone.")
                 asyncio.create_task(self._poll_for_app_approval())
@@ -309,6 +319,7 @@ class TradeRepublicBrowserService:
                 return {
                     "success": True,
                     "step": "2fa_required",
+                    "flow": login_res.get("flow", "confirmInApp"),
                     "message": self.status_message,
                 }
             except Exception as e:
