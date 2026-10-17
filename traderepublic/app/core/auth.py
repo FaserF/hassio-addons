@@ -338,7 +338,22 @@ class AuthHelper:
         # 2. Prepare national number & preferred area code in localStorage if non-DE
         area_code = "+49"
         national_phone = clean_phone
-        for prefix in ("+49", "+43", "+41", "+33", "+34", "+39", "+31", "+32", "+351", "+352", "+353", "+358", "+48", "+420"):
+        for prefix in (
+            "+49",
+            "+43",
+            "+41",
+            "+33",
+            "+34",
+            "+39",
+            "+31",
+            "+32",
+            "+351",
+            "+352",
+            "+353",
+            "+358",
+            "+48",
+            "+420",
+        ):
             if clean_phone.startswith(prefix):
                 area_code = prefix
                 national_phone = clean_phone[len(prefix) :].lstrip("0")
@@ -350,7 +365,9 @@ class AuthHelper:
         if area_code != "+49":
             await self.cdp.send_cmd(
                 "Runtime.evaluate",
-                {"expression": f"try {{ localStorage.setItem('login_preferred_area_code', '{area_code}'); }} catch(e) {{}}"},
+                {
+                    "expression": f"try {{ localStorage.setItem('login_preferred_area_code', '{area_code}'); }} catch(e) {{}}"
+                },
             )
             await self.cdp.send_cmd("Page.reload", {})
             await asyncio.sleep(3.0)
@@ -381,14 +398,12 @@ class AuthHelper:
             # Select all & delete any residual characters before inserting
             await self.cdp.send_cmd(
                 "Runtime.evaluate",
-                {
-                    "expression": """
+                {"expression": """
                     (() => {
                         const inp = document.querySelector('input.phone-input__input, input[type="tel"], input[name="username"]');
                         if (inp) { inp.focus(); inp.select(); }
                     })()
-                    """
-                },
+                    """},
             )
             await self.cdp.send_cmd(
                 "Input.dispatchKeyEvent",
@@ -603,4 +618,3 @@ class AuthHelper:
             b_val = (btn_res or {}).get("result", {}).get("value") or {}
             if b_val.get("ok"):
                 await self.cdp.click_at(b_val["x"], b_val["y"])
-

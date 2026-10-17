@@ -71,7 +71,6 @@ class CDPClient:
         """Insert text into the currently focused element via CDP Input.insertText."""
         await self.send_cmd("Input.insertText", {"text": str(text)})
 
-
     async def wait_for_ready(self, timeout: float = 20.0, interval: float = 0.5) -> bool:
         """Poll CDP HTTP endpoint until Chromium is ready, up to timeout seconds."""
         import asyncio
