@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.5.7 (2026-10-18)
+
+- Manual release via Orchestrator
+
+
 ## 2.5.6 (2026-10-17)
 
 ### 📦 Dependencies
