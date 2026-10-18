@@ -1,11 +1,5 @@
 # Changelog
 
-## 2.5.7 (2026-10-18)
-
-### 📦 Dependencies
-
-- ⬆️ Update dependency FaserF/ShieldDNS to v1.12.1 (128-dim lexical vector threat intelligence, typosquatting & DGA detection, CodeQL security hardening, loopback DoH TLS fix)
-
 ## 2.5.6 (2026-10-17)
 
 ### 📦 Dependencies
