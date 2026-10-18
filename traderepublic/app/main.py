@@ -448,9 +448,9 @@ async def get_timeline(limit: int = 50, search: Optional[str] = None):
     if search:
         search_lower = search.strip().lower()
         all_txs = [
-            tx for tx in all_txs
-            if search_lower in str(tx.get("title", "")).lower()
-            or search_lower in str(tx.get("subtitle", "")).lower()
+            tx
+            for tx in all_txs
+            if search_lower in str(tx.get("title", "")).lower() or search_lower in str(tx.get("subtitle", "")).lower()
         ]
 
     effective_limit = max(1, min(limit, 500))
