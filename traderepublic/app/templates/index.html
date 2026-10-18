@@ -1175,13 +1175,20 @@
         let pollTimer = null;
 
         function toggleRelogin() {
+          const loginTabs = document.getElementById('login-tabs');
           const loginStep = document.getElementById('step-login');
+          const qrStep = document.getElementById('step-qr');
           const btn = document.getElementById('relogin-toggle-btn');
-          if (loginStep.classList.contains('hidden')) {
-            loginStep.classList.remove('hidden');
+          const isCurrentlyVisible = !loginTabs.classList.contains('hidden') || !loginStep.classList.contains('hidden') || !qrStep.classList.contains('hidden');
+
+          if (!isCurrentlyVisible) {
+            loginTabs.classList.remove('hidden');
+            switchLoginTab('qr');
             btn.textContent = t('btn_cancel_reauth');
           } else {
+            loginTabs.classList.add('hidden');
             loginStep.classList.add('hidden');
+            qrStep.classList.add('hidden');
             btn.textContent = t('btn_reauth');
           }
         }

@@ -439,6 +439,28 @@ async def get_data(categories: Optional[str] = None):
     }
 
 
+@app.get("/api/v1/timeline", dependencies=[Security(require_supervisor_auth)])
+async def get_timeline(limit: int = 50, search: Optional[str] = None):
+    """Query transactions from the timeline history with optional limit and search filtering."""
+    data = getattr(browser_service._ws_keeper, "latest_data", {})
+    all_txs = data.get("all_transactions") or data.get("recent_transactions") or []
+
+    if search:
+        search_lower = search.strip().lower()
+        all_txs = [
+            tx for tx in all_txs
+            if search_lower in str(tx.get("title", "")).lower()
+            or search_lower in str(tx.get("subtitle", "")).lower()
+        ]
+
+    effective_limit = max(1, min(limit, 500))
+    return {
+        "transactions": all_txs[:effective_limit],
+        "total_count": len(all_txs),
+        "count": min(len(all_txs), effective_limit),
+    }
+
+
 @app.post("/api/v1/session/manual", dependencies=[Security(require_supervisor_auth)])
 async def set_manual_session(req: ManualTokenRequest):
     await browser_service.save_session(req.session_token, req.phone_number)

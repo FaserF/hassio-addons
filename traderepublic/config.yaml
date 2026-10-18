@@ -33,7 +33,7 @@ schema:
   github_token: str?
   webhook_enabled: bool?
   webhook_url: str?
-  webhook_token: str?
+  webhook_token: password?
 
 ports: {}
 ports_description:

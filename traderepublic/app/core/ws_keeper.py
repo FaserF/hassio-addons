@@ -242,11 +242,10 @@ class TRWebSocketKeeper:
                         await self._close_ws()
                         return False
 
-                # Reset subscription mapping & state
+                # Reset subscription mapping & state (keep _prices cached to avoid 0 yield during reconnects)
                 self._sub_map = {}
                 self._subscribed_categories = {}
                 self._ticker_subs = {}
-                self._prices = {}
                 self._portfolio_payload = {}
 
                 # Register active subscriptions based on current active_categories
@@ -439,7 +438,7 @@ class TRWebSocketKeeper:
 
                 self._recalculate_portfolio()
 
-        elif sub_type == "savingsPlans":
+        elif sub_type in ("savings", "savingsPlans"):
             import time
 
             count = len(payload) if isinstance(payload, list) else 0
@@ -463,20 +462,24 @@ class TRWebSocketKeeper:
 
             items = payload.get("items", [])
             txs = []
-            for item in items[:5]:
+            for item in items:
                 amount_val = 0.0
                 amount_obj = item.get("amount")
                 if isinstance(amount_obj, dict):
                     amount_val = float(amount_obj.get("value") or 0.0)
+                elif isinstance(amount_obj, (int, float)):
+                    amount_val = float(amount_obj)
                 txs.append(
                     {
+                        "id": str(item.get("id") or f"{item.get('title')}_{item.get('timestamp')}"),
                         "title": item.get("title"),
                         "subtitle": item.get("subtitle"),
                         "amount": amount_val,
                         "timestamp": item.get("timestamp"),
                     }
                 )
-            self.latest_data["recent_transactions"] = txs
+            self.latest_data["recent_transactions"] = txs[:5]
+            self.latest_data["all_transactions"] = txs
             self.last_data_update_time = time.time()
             asyncio.create_task(self.webhook.handle_timeline_update(items))
 
