@@ -785,8 +785,8 @@
         <button
           type="button"
           class="btn-secondary"
-          id="tab-qr-btn"
-          onclick="switchLoginTab('qr')"
+          id="tab-phone-btn"
+          onclick="switchLoginTab('phone')"
           style="
             flex: 1;
             background: rgba(59, 130, 246, 0.2);
@@ -795,22 +795,22 @@
             font-weight: 600;
           "
         >
-          📱 <span data-i18n="tab_qr">QR Code Login (Recommended)</span>
+          📞 <span data-i18n="tab_phone">Phone &amp; PIN (Recommended)</span>
         </button>
         <button
           type="button"
           class="btn-secondary"
-          id="tab-phone-btn"
-          onclick="switchLoginTab('phone')"
+          id="tab-qr-btn"
+          onclick="switchLoginTab('qr')"
           style="flex: 1"
         >
-          📞 <span data-i18n="tab_phone">Phone Number &amp; PIN</span>
+          📱 <span data-i18n="tab_qr">QR Code</span>
         </button>
       </div>
 
       <div
         id="step-qr"
-        class="{% if (is_logged_in and not last_error) or login_in_progress %}hidden{% endif %}"
+        class="hidden"
         style="margin-top: 1rem; text-align: center"
       >
         <div class="alert alert-info" style="text-align: left; margin-bottom: 1rem">
@@ -859,7 +859,7 @@
         </div>
       </div>
 
-      <div id="step-login" class="hidden" style="margin-top: 1rem">
+      <div id="step-login" class="{% if (is_logged_in and not last_error) or login_in_progress %}hidden{% endif %}" style="margin-top: 1rem">
         <form
           onsubmit="
             event.preventDefault();
@@ -1183,7 +1183,7 @@
 
           if (!isCurrentlyVisible) {
             loginTabs.classList.remove('hidden');
-            switchLoginTab('qr');
+            switchLoginTab('phone');
             btn.textContent = t('btn_cancel_reauth');
           } else {
             loginTabs.classList.add('hidden');
