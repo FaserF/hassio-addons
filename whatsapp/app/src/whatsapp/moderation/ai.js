@@ -1,6 +1,6 @@
 import { logger } from '../../logger.js';
 import { translateTextGatewayWithReason } from '../../utils/gatewayTranslator.js';
-import { resolveEffectiveGeminiKey, resolveEffectiveOpenAIKey } from '../../ha.js';
+import { resolveEffectiveGeminiKey, resolveEffectiveOpenAIKey, resolveEffectiveOpenAIBaseUrl } from '../../ha.js';
 
 export async function processAiModeration(
   text,
@@ -12,6 +12,7 @@ export async function processAiModeration(
   const provider = groupAiConfig.provider || process.env.AI_PROVIDER || 'gemini';
   const effectiveGemini = resolveEffectiveGeminiKey(storeGeminiKey || groupAiConfig.api_key);
   const effectiveOpenAI = resolveEffectiveOpenAIKey(groupAiConfig.openai_api_key);
+  const openAiBaseUrl = resolveEffectiveOpenAIBaseUrl(groupAiConfig.openai_base_url);
   const apiKey =
     provider === 'openai'
       ? effectiveOpenAI?.key || effectiveGemini?.key
@@ -25,7 +26,7 @@ export async function processAiModeration(
         const prompt = `Translate the following text into target language code "${targetLang}". Respond ONLY with valid JSON in this exact structure: {"translation": "...", "sourceLang": "..."} (where sourceLang is the 2-letter ISO code of the input text, e.g. "de", "en", "es").\nText: "${text}"`;
         if (provider === 'openai' || groupAiConfig.openai_api_key) {
           const oaKey = groupAiConfig.openai_api_key || process.env.OPENAI_API_KEY || apiKey;
-          const res = await fetch('https://api.openai.com/v1/chat/completions', {
+          const res = await fetch(`${openAiBaseUrl}/chat/completions`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -126,7 +127,7 @@ export async function processAiModeration(
     if (provider === 'openai' || groupAiConfig.openai_api_key) {
       const oaKey = groupAiConfig.openai_api_key || process.env.OPENAI_API_KEY || apiKey;
       const model = groupAiConfig.model || 'gpt-4o-mini';
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch(`${openAiBaseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -418,6 +418,10 @@ if bashio::config.has_value 'openai_api_key'; then
 	OPENAI_API_KEY=$(bashio::config 'openai_api_key')
 	export OPENAI_API_KEY
 fi
+if bashio::config.has_value 'openai_base_url'; then
+	OPENAI_BASE_URL=$(bashio::config 'openai_base_url')
+	export OPENAI_BASE_URL
+fi
 if bashio::config.has_value 'gemini_api_key'; then
 	GEMINI_API_KEY=$(bashio::config 'gemini_api_key')
 	export GEMINI_API_KEY
@@ -910,6 +914,7 @@ bashio::log.info "Creating .env file for backend..."
 	[ -n "${TELEGRAM_BOT_TOKEN:-}" ] && echo "TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}"
 	[ -n "${TELEGRAM_BOT_USERNAME:-}" ] && echo "TELEGRAM_BOT_USERNAME=${TELEGRAM_BOT_USERNAME:-}"
 	[ -n "${OPENAI_API_KEY:-}" ] && echo "OPENAI_API_KEY=${OPENAI_API_KEY:-}"
+	[ -n "${OPENAI_BASE_URL:-}" ] && echo "OPENAI_BASE_URL=${OPENAI_BASE_URL:-}"
 	[ -n "${GEMINI_API_KEY:-}" ] && echo "GEMINI_API_KEY=${GEMINI_API_KEY:-}"
 	[ -n "${SECURITY_SCAN_API_KEY:-}" ] && echo "SECURITY_SCAN_API_KEY=${SECURITY_SCAN_API_KEY:-}"
 	[ -n "${AI_MODEL:-}" ] && echo "AI_MODEL=${AI_MODEL:-}"

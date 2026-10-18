@@ -578,3 +578,18 @@ export function resolveEffectiveOpenAIKey(explicitKey = '') {
   const haKeys = getHAApiKeys();
   return haKeys.openai || null;
 }
+
+/**
+ * Resolves the effective OpenAI / OmniRoute API Base URL.
+ */
+export function resolveEffectiveOpenAIBaseUrl(explicitUrl = '') {
+  if (explicitUrl && typeof explicitUrl === 'string' && explicitUrl.trim()) {
+    return explicitUrl.trim().replace(/\/+$/, '');
+  }
+  const envUrl = process.env.OPENAI_BASE_URL || process.env.OMNIROUTE_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
+    return envUrl.trim().replace(/\/+$/, '');
+  }
+  return 'https://api.openai.com/v1';
+}
+

@@ -1,5 +1,6 @@
 import { logger } from '../logger.js';
 import { loadModerationStore } from '../whatsapp/moderation/store.js';
+import { resolveEffectiveOpenAIBaseUrl } from '../ha.js';
 
 const cache = new Map();
 const cooldowns = new Map();
@@ -417,7 +418,8 @@ export async function translateTextGatewayWithReason(
           const isOpenAi = Boolean(process.env.OPENAI_API_KEY && !store?.gemini_api_key);
           if (isOpenAi) {
             const oaKey = process.env.OPENAI_API_KEY || apiKey;
-            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+            const openAiBaseUrl = resolveEffectiveOpenAIBaseUrl();
+            const res = await fetch(`${openAiBaseUrl}/chat/completions`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

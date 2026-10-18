@@ -2,7 +2,7 @@ import { downloadMediaMessage } from '@whiskeysockets/baileys';
 import { logger } from '../logger.js';
 import { getGroupModerationConfig } from '../whatsapp/moderation/store.js';
 import { reply } from '../whatsapp/actions.js';
-import { resolveEffectiveGeminiKey, resolveEffectiveOpenAIKey } from '../ha.js';
+import { resolveEffectiveGeminiKey, resolveEffectiveOpenAIKey, resolveEffectiveOpenAIBaseUrl } from '../ha.js';
 
 // STT Diagnostics & Error Tracking
 const recentSttErrors = [];
@@ -467,6 +467,7 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
       usedEngine = 'openai';
       try {
         const oaKey = openAiKey;
+        const openAiBaseUrl = resolveEffectiveOpenAIBaseUrl(config?.ai?.openai_base_url);
         const formData = new Blob([stream], { type: 'audio/ogg' });
         const body = new FormData();
         body.append('file', formData, 'audio.ogg');
@@ -476,7 +477,7 @@ export async function handleWhatsAppVoiceSTT(session, groupId, rawMsg) {
           body.append('language', explicitSttLang);
         }
 
-        const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        const res = await fetch(`${openAiBaseUrl}/audio/transcriptions`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${oaKey}` },
           body,

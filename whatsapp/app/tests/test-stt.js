@@ -43,10 +43,13 @@ assert.ok(diagGemini.selection_reason.includes('Gemini'));
 console.log('✅ PASSED: STT Diagnostics correctly reports active Gemini engine with reason');
 
 // Test 5: STT Diagnostics - Missing Key
+const savedOaKey = process.env.OPENAI_API_KEY;
+delete process.env.OPENAI_API_KEY;
 const diagNoKey = getSTTDiagnostics(
   { stt_enabled: true, stt_engine: 'auto' },
   { gemini_api_key: '' }
 );
+if (savedOaKey) process.env.OPENAI_API_KEY = savedOaKey;
 assert.strictEqual(diagNoKey.status, 'no_key');
 assert.ok(diagNoKey.selection_reason.toLowerCase().includes('api key'));
 console.log('✅ PASSED: STT Diagnostics correctly reports missing API key reason');
