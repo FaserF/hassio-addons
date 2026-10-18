@@ -2,7 +2,11 @@ import { downloadMediaMessage } from '@whiskeysockets/baileys';
 import { logger } from '../logger.js';
 import { getGroupModerationConfig } from '../whatsapp/moderation/store.js';
 import { reply } from '../whatsapp/actions.js';
-import { resolveEffectiveGeminiKey, resolveEffectiveOpenAIKey, resolveEffectiveOpenAIBaseUrl } from '../ha.js';
+import {
+  resolveEffectiveGeminiKey,
+  resolveEffectiveOpenAIKey,
+  resolveEffectiveOpenAIBaseUrl,
+} from '../ha.js';
 
 // STT Diagnostics & Error Tracking
 const recentSttErrors = [];

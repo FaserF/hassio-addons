@@ -592,4 +592,3 @@ export function resolveEffectiveOpenAIBaseUrl(explicitUrl = '') {
   }
   return 'https://api.openai.com/v1';
 }
-

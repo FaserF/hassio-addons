@@ -1,6 +1,10 @@
 import { logger } from '../../logger.js';
 import { translateTextGatewayWithReason } from '../../utils/gatewayTranslator.js';
-import { resolveEffectiveGeminiKey, resolveEffectiveOpenAIKey, resolveEffectiveOpenAIBaseUrl } from '../../ha.js';
+import {
+  resolveEffectiveGeminiKey,
+  resolveEffectiveOpenAIKey,
+  resolveEffectiveOpenAIBaseUrl,
+} from '../../ha.js';
 
 export async function processAiModeration(
   text,

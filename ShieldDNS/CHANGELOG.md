@@ -4,7 +4,6 @@
 
 - Manual release via Orchestrator
 
-
 ## 2.5.6 (2026-10-17)
 
 ### 📦 Dependencies
