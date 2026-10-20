@@ -164,6 +164,8 @@
   "step_extract_navigating_desc": "Navigating to Google security domain unlock URL...",
   "step_extract_waiting": "✨ Capturing E2EE Encryption Keys...",
   "step_extract_waiting_desc": "Listening for Google security callback...",
+  "step_extract_filling_pwd": "🔑 Submitting Google Password...",
+  "step_extract_filling_pwd_desc": "Security re-auth detected. Auto-submitting Google password...",
   "step_extract_challenge": "⚠️ Security Verification Required",
   "step_extract_challenge_desc": "Google requires password re-entry or screen-lock confirmation.",
   "step_extract_success": "✅ Key Successfully Extracted!",

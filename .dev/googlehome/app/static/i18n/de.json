@@ -164,6 +164,8 @@
   "step_extract_navigating_desc": "Navigiere zur Google Security-Domain-Freigabeseite...",
   "step_extract_waiting": "✨ Fange E2EE-Schlüssel ab...",
   "step_extract_waiting_desc": "Warte auf Rückruf der Google-Sicherheitsdomain...",
+  "step_extract_filling_pwd": "🔑 Übermittle Google-Passwort...",
+  "step_extract_filling_pwd_desc": "Sicherheitsabfrage erkannt. Trage Google-Passwort vollautomatisch ein...",
   "step_extract_challenge": "⚠️ Sicherheitsabfrage erforderlich",
   "step_extract_challenge_desc": "Google verlangt eine Passworteingabe oder Bildschirmsperren-Bestätigung.",
   "step_extract_success": "✅ Schlüssel erfolgreich extrahiert!",

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.3
+
+- Automatically handle Google password re-authentication challenges during E2EE Shared Key extraction without user interaction
+- Auto-generate Find My ADM Token immediately upon acquiring Master Token
+- Preserve active password in memory for background security unlocks
+- Forward credentials to `/api/findmy/extract-shared-key` from frontend if entered
+- Add `filling_password` stepper state in frontend and i18n translations
+
 ## 0.1.2
 
 - Add live progress stepper and loading indicator for Google Find My E2EE Shared Key extraction

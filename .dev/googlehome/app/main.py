@@ -543,6 +543,21 @@ def on_token_acquired(email: str, master_token: str) -> None:
     state.record_interaction("login", "Headless 2FA login successful")
     state.save()
 
+    # Automatically generate Find My ADM Token whenever master token is acquired
+    try:
+        from .core.findmy_service import generate_adm_token
+    except ImportError:
+        from core.findmy_service import generate_adm_token
+
+    try:
+        adm_res = generate_adm_token(email, master_token)
+        if adm_res.get("success") and adm_res.get("token"):
+            state.findmy_adm_token = adm_res["token"]
+            _LOGGER.info("Auto-generated Find My ADM Token on login for %s", email)
+            state.save()
+    except Exception as err:
+        _LOGGER.debug("Auto-generating ADM Token on login failed: %s", err)
+
 
 def on_shared_key_acquired(email: str, shared_key_hex: str) -> None:
     state.email = email
@@ -624,6 +639,7 @@ async def post_login(req: LoginRequest):
             raise HTTPException(status_code=500, detail="An internal error occurred during token exchange.")
 
     if password:
+        browser_service._last_password = password
         # 1. Fast path: try direct master login (works instantly for App Passwords)
         try:
             from gpsoauth import perform_master_login
@@ -881,9 +897,13 @@ async def get_findmy_extract_status():
     }
 
 
+class ExtractSharedKeyRequest(BaseModel):
+    password: Optional[str] = None
+
+
 @app.post("/api/findmy/extract-shared-key")
 @app.post("/api/v1/findmy/extract-shared-key")
-async def post_extract_shared_key():
+async def post_extract_shared_key(req: Optional[ExtractSharedKeyRequest] = None):
     """Trigger headless Chromium to automatically extract the E2EE Shared Key.
 
     Requires an active authenticated browser session (master token must already exist).
@@ -896,12 +916,18 @@ async def post_extract_shared_key():
             detail="No active Google session. Please generate a Master Token first.",
         )
 
+    pwd_override = req.password.strip() if req and req.password else None
+    if pwd_override:
+        browser_service._last_password = pwd_override
+
     # If already have a shared key, check if the user wants to refresh it
     # (we still proceed — let them call it again to refresh)
 
     # Run extraction in background and poll result
     extraction_task = asyncio.create_task(
-        browser_service._attempt_shared_key_extraction(state.email, master_token=state.master_token)
+        browser_service._attempt_shared_key_extraction(
+            state.email, master_token=state.master_token, password=pwd_override
+        )
     )
 
     # Wait for sign-in bootstrap + unlock page (extraction polls up to 45s)

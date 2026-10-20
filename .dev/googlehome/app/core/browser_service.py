@@ -28,6 +28,7 @@ class GoogleHomeBrowserService:
         self.two_factor_data: Dict[str, Any] = {}
         self._auth_task: Optional[asyncio.Task] = None
         self._target_email: Optional[str] = None
+        self._last_password: Optional[str] = None
         self._on_success_callback: Optional[Callable[[str, str], None]] = None
         self._on_shared_key_callback: Optional[Callable[[str, str], None]] = None
 
@@ -101,6 +102,7 @@ class GoogleHomeBrowserService:
         self.auth_error = None
         self.two_factor_data = {}
         self._target_email = email.strip()
+        self._last_password = password.strip()
 
         await self.start_chromium()
         self._auth_task = asyncio.create_task(self._run_auth_sequence(email.strip(), password.strip()))
@@ -555,6 +557,66 @@ class GoogleHomeBrowserService:
         val = res.get("value") if res else None
         return val if val and isinstance(val, str) else None
 
+    async def _fill_and_submit_password(self, password: str) -> bool:
+        """Fill password field and click submit on Google authentication or challenge screens."""
+        safe_password = password.replace("'", "\\'").replace("\\", "\\\\")
+        fill_pwd_script = f"""
+        (() => {{
+            const selectors = [
+                'input[type="password"]',
+                'input[name="Passwd"]',
+                'input[name="password"]',
+                'input[autocomplete="current-password"]'
+            ];
+            for (const sel of selectors) {{
+                const el = document.querySelector(sel);
+                if (el && el.offsetParent !== null) {{
+                    el.focus();
+                    const ns = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+                    ns.call(el, '{safe_password}');
+                    el.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                    el.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                    return 'filled:' + sel;
+                }}
+            }}
+            return null;
+        }})();
+        """
+        res = await self.cdp.send_cmd("Runtime.evaluate", {"expression": fill_pwd_script, "returnByValue": True})
+        val = res.get("value") if res else None
+        if not val or not str(val).startswith("filled:"):
+            return False
+
+        _LOGGER.info("Password filled on challenge/auth screen (%s), clicking next...", val)
+        await asyncio.sleep(0.5)
+
+        click_next_pwd = r"""
+        (() => {
+            const selectors = [
+                '#passwordNext button', '#passwordNext',
+                '#identifierNext button', '#identifierNext',
+                'button[jsname="LgbsSe"]', 'button[type="submit"]',
+                'button[type="button"]', 'input[type="submit"]'
+            ];
+            for (const sel of selectors) {
+                const btn = document.querySelector(sel);
+                if (btn && btn.offsetParent !== null) {
+                    btn.click();
+                    return 'clicked:' + sel;
+                }
+            }
+            const form = document.querySelector('form');
+            if (form) {
+                form.submit();
+                return 'form_submit';
+            }
+            return null;
+        })();
+        """
+        pwd_click = await self.cdp.send_cmd("Runtime.evaluate", {"expression": click_next_pwd, "returnByValue": True})
+        _LOGGER.info("Password Next click result: %s", pwd_click.get("value") if pwd_click else "none")
+        return True
+
     async def _check_page_error(self) -> Optional[str]:
         """Check for Google error elements in DOM."""
         script = r"""
@@ -673,7 +735,11 @@ class GoogleHomeBrowserService:
                 self.auth_in_progress = False
                 _LOGGER.info("Master Token successfully generated for %s", email)
                 # Attempt background retrieval of Find My E2EE shared key using the active authenticated browser session
-                asyncio.create_task(self._attempt_shared_key_extraction(email, master_token=master_token))
+                asyncio.create_task(
+                    self._attempt_shared_key_extraction(
+                        email, master_token=master_token, password=self._last_password
+                    )
+                )
             else:
                 err_code = res.get("Error", "ExchangeFailed")
                 self.auth_step = "error"
@@ -686,7 +752,11 @@ class GoogleHomeBrowserService:
             self.auth_in_progress = False
 
     async def _attempt_shared_key_extraction(
-        self, email: str, master_token: Optional[str] = None, poll_seconds: float = 45.0
+        self,
+        email: str,
+        master_token: Optional[str] = None,
+        password: Optional[str] = None,
+        poll_seconds: float = 45.0,
     ) -> Optional[str]:
         """Attempt to retrieve the Google Find My E2EE Shared Key from the headless browser.
 
@@ -696,6 +766,8 @@ class GoogleHomeBrowserService:
         2. Register the ``window.mm`` shim *before* any document loads, so the unlock
            page's early ``setVaultSharedKeys`` call is never missed.
         3. Navigate and poll for the callback.
+        4. If Google prompts for password confirmation (challenge/pwd), automatically
+           fill the password and submit without user interaction.
         """
         from .findmy_service import (
             get_browser_session_url,
@@ -725,6 +797,8 @@ class GoogleHomeBrowserService:
         self.extraction_step = "init"
         self.extraction_error = None
         last_url = ""
+        pwd_attempted = False
+        effective_pwd = password or self._last_password
 
         try:
             await self.start_chromium()
@@ -789,6 +863,31 @@ class GoogleHomeBrowserService:
                         },
                     )
                     body_snippet = (body_res.get("value") or "").strip() if body_res else ""
+
+                    # Check if Google is prompting for password verification on the challenge screen
+                    if not pwd_attempted and effective_pwd:
+                        has_pwd_input_res = await self.cdp.send_cmd(
+                            "Runtime.evaluate",
+                            {
+                                "expression": (
+                                    "!!document.querySelector('input[type=\"password\"], input[name=\"Passwd\"]')"
+                                ),
+                                "returnByValue": True,
+                            },
+                        )
+                        if has_pwd_input_res and has_pwd_input_res.get("value") is True:
+                            pwd_attempted = True
+                            self.extraction_step = "filling_password"
+                            _LOGGER.info("Google re-auth challenge detected during extraction; auto-filling password...")
+                            filled = await self._fill_and_submit_password(effective_pwd)
+                            if filled:
+                                await asyncio.sleep(3.5)
+                                await self.cdp.send_cmd(
+                                    "Runtime.evaluate", {"expression": js_shim, "returnByValue": True}
+                                )
+                                self.extraction_step = "waiting_keys"
+                                continue
+
                     self.extraction_step = "challenge_detected"
                     if (
                         "not unlocked" in body_snippet.lower()
@@ -806,9 +905,13 @@ class GoogleHomeBrowserService:
                             f"{body_snippet or 'Security verification required'}. "
                             "Please use the manual Google Unlock flow below."
                         )
-                    # Don't wait for 45s timeout when Google explicitly rejected the unlock request
-                    if i > 6 and ("rejected" in last_url or "pwd" in last_url):
+                    # Don't wait for 45s timeout when Google explicitly rejected the unlock request (after password attempt)
+                    if i > 8 and "rejected" in last_url:
                         _LOGGER.warning("Unlock explicitly rejected by Google: %s", self.extraction_error)
+                        self.extraction_in_progress = False
+                        return None
+                    if i > 8 and "pwd" in last_url and pwd_attempted:
+                        _LOGGER.warning("Password challenge remained rejected: %s", self.extraction_error)
                         self.extraction_in_progress = False
                         return None
 

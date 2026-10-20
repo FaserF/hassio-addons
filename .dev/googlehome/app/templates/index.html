@@ -2137,6 +2137,14 @@
                 currentDict.step_extract_waiting_desc ||
                 'Listening for Google security callback...',
             };
+          case 'filling_password':
+            return {
+              percent: 88,
+              title: currentDict.step_extract_filling_pwd || '🔑 Submitting Google Password...',
+              detail:
+                currentDict.step_extract_filling_pwd_desc ||
+                'Google re-auth challenge detected. Auto-submitting credentials...',
+            };
           case 'challenge_detected':
             return {
               percent: 90,
@@ -2202,7 +2210,13 @@
         }, 1000);
 
         try {
-          const res = await fetch(rootPath + '/api/findmy/extract-shared-key', { method: 'POST' });
+          const pwdField = document.getElementById('passwordInput') || document.getElementById('passwordInputFm');
+          const bodyPayload = pwdField && pwdField.value ? JSON.stringify({ password: pwdField.value }) : null;
+          const res = await fetch(rootPath + '/api/findmy/extract-shared-key', {
+            method: 'POST',
+            headers: bodyPayload ? { 'Content-Type': 'application/json' } : {},
+            body: bodyPayload
+          });
           clearInterval(pollInterval);
           const data = await res.json();
           if (res.ok && data.success) {
