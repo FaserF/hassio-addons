@@ -736,9 +736,7 @@ class GoogleHomeBrowserService:
                 _LOGGER.info("Master Token successfully generated for %s", email)
                 # Attempt background retrieval of Find My E2EE shared key using the active authenticated browser session
                 asyncio.create_task(
-                    self._attempt_shared_key_extraction(
-                        email, master_token=master_token, password=self._last_password
-                    )
+                    self._attempt_shared_key_extraction(email, master_token=master_token, password=self._last_password)
                 )
             else:
                 err_code = res.get("Error", "ExchangeFailed")
@@ -870,7 +868,7 @@ class GoogleHomeBrowserService:
                             "Runtime.evaluate",
                             {
                                 "expression": (
-                                    "!!document.querySelector('input[type=\"password\"], input[name=\"Passwd\"]')"
+                                    '!!document.querySelector(\'input[type="password"], input[name="Passwd"]\')'
                                 ),
                                 "returnByValue": True,
                             },
@@ -878,7 +876,9 @@ class GoogleHomeBrowserService:
                         if has_pwd_input_res and has_pwd_input_res.get("value") is True:
                             pwd_attempted = True
                             self.extraction_step = "filling_password"
-                            _LOGGER.info("Google re-auth challenge detected during extraction; auto-filling password...")
+                            _LOGGER.info(
+                                "Google re-auth challenge detected during extraction; auto-filling password..."
+                            )
                             filled = await self._fill_and_submit_password(effective_pwd)
                             if filled:
                                 await asyncio.sleep(3.5)
