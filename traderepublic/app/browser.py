@@ -134,7 +134,9 @@ class TradeRepublicBrowserService:
         if not self._ws_keeper.is_authenticated:
             # First give Chromium rotation a chance if keeper reported 401
             if self._ws_keeper.last_error and "401" in self._ws_keeper.last_error:
-                _LOGGER.info("Startup validation: keeper reported 401 — attempting browser session rotation before expiring...")
+                _LOGGER.info(
+                    "Startup validation: keeper reported 401 — attempting browser session rotation before expiring..."
+                )
                 rotated = await self._on_ws_token_refresh()
                 if rotated:
                     _LOGGER.info("Startup validation: successfully rotated token via browser!")

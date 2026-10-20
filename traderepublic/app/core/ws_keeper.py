@@ -239,9 +239,7 @@ class TRWebSocketKeeper:
                         "connected" not in resp_str and "26" not in resp_str and "success" not in resp_str.lower()
                     ):
                         if "401" in resp_str or "error" in resp_str.lower():
-                            _LOGGER.info(
-                                "WS Keeper: handshake rejected with 401 — attempting browser session rotation"
-                            )
+                            _LOGGER.info("WS Keeper: handshake rejected with 401 — attempting browser session rotation")
                             if self._on_token_refresh and callable(self._on_token_refresh):
                                 try:
                                     refreshed = await self._on_token_refresh()
