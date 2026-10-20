@@ -663,7 +663,7 @@ export function registerMessagingRoutes(app) {
     asyncHandler(async (req, res) => {
       try {
         const session = getReqSession(req);
-        const { number, messageId, duration = 86400 } = req.body;
+        const { number, messageId, duration = 86400, fromMe, participant } = req.body;
         if (!number || !messageId) {
           return res.status(400).json({ detail: 'Missing number or messageId' });
         }
@@ -673,14 +673,17 @@ export function registerMessagingRoutes(app) {
 
         const jid = getJid(number);
         const targetMsg = session.messageStore?.get(messageId);
-        const msgKey = targetMsg?.key ?? { remoteJid: jid, id: messageId, fromMe: false };
+        const msgKey = targetMsg?.key ?? {
+          remoteJid: jid,
+          id: messageId,
+          fromMe: fromMe ?? false,
+          ...(participant ? { participant } : {}),
+        };
 
         await session.sock.sendMessage(jid, {
-          pin: {
-            key: msgKey,
-            type: 1,
-            time: duration,
-          },
+          pin: msgKey,
+          type: 1,
+          time: duration,
         });
         res.json({ status: 'pinned', messageId });
       } catch (err) {
@@ -695,7 +698,7 @@ export function registerMessagingRoutes(app) {
     asyncHandler(async (req, res) => {
       try {
         const session = getReqSession(req);
-        const { number, messageId } = req.body;
+        const { number, messageId, fromMe, participant } = req.body;
         if (!number || !messageId) {
           return res.status(400).json({ detail: 'Missing number or messageId' });
         }
@@ -705,13 +708,16 @@ export function registerMessagingRoutes(app) {
 
         const jid = getJid(number);
         const targetMsg = session.messageStore?.get(messageId);
-        const msgKey = targetMsg?.key ?? { remoteJid: jid, id: messageId, fromMe: false };
+        const msgKey = targetMsg?.key ?? {
+          remoteJid: jid,
+          id: messageId,
+          fromMe: fromMe ?? false,
+          ...(participant ? { participant } : {}),
+        };
 
         await session.sock.sendMessage(jid, {
-          pin: {
-            key: msgKey,
-            type: 2,
-          },
+          pin: msgKey,
+          type: 2,
         });
         res.json({ status: 'unpinned', messageId });
       } catch (err) {
