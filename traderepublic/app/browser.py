@@ -124,7 +124,7 @@ class TradeRepublicBrowserService:
         that and marks the session as expired so the HA integration
         shows the correct status.
         """
-        await asyncio.sleep(15)
+        await asyncio.sleep(20)
         if self._ws_keeper.is_authenticated:
             self._is_logged_in_override = None
             self.last_error = None
@@ -132,8 +132,17 @@ class TradeRepublicBrowserService:
             return
 
         if not self._ws_keeper.is_authenticated:
-            # If the keeper explicitly got a 401, mark expired
+            # First give Chromium rotation a chance if keeper reported 401
             if self._ws_keeper.last_error and "401" in self._ws_keeper.last_error:
+                _LOGGER.info("Startup validation: keeper reported 401 — attempting browser session rotation before expiring...")
+                rotated = await self._on_ws_token_refresh()
+                if rotated:
+                    _LOGGER.info("Startup validation: successfully rotated token via browser!")
+                    self._is_logged_in_override = None
+                    self.last_error = None
+                    self.status_message = "Everything is connected and running normally."
+                    return
+
                 _LOGGER.warning("Startup validation: saved session token rejected by TR (401) — marking expired")
                 import time
 
@@ -233,7 +242,14 @@ class TradeRepublicBrowserService:
             if self.session_token:
                 await self.auth_helper.inject_session_cookies(self.session_token)
             await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com"})
-            await asyncio.sleep(5)
+            await asyncio.sleep(6)
+            await self.cdp.send_cmd(
+                "Runtime.evaluate",
+                {
+                    "expression": "window.dispatchEvent(new Event('focus')); window.dispatchEvent(new Event('mousemove'));"
+                },
+            )
+            await asyncio.sleep(2)
             new_token = await self.auth_helper.extract_token_from_cookies()
             if new_token and new_token != self.session_token:
                 from core.verifier import verify_tr_token

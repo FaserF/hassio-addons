@@ -209,8 +209,20 @@ class TRWebSocketKeeper:
                 _LOGGER.warning("WS Keeper: connection error: %s", first_exc)
                 if "401" in str(first_exc) or getattr(first_exc, "status_code", None) == 401:
                     _LOGGER.info(
-                        "WS Keeper: connection received 401 Unauthorized — resetting connection & retrying with refreshed session"
+                        "WS Keeper: connection received 401 Unauthorized — attempting browser session rotation"
                     )
+                    if self._on_token_refresh and callable(self._on_token_refresh):
+                        try:
+                            refreshed = await self._on_token_refresh()
+                            if refreshed:
+                                _LOGGER.info(
+                                    "WS Keeper: recovered fresh valid session token from Chromium! Reconnecting..."
+                                )
+                                self._reconnect_delay = _RECONNECT_DELAY_MIN
+                                continue
+                        except Exception as rot_exc:  # noqa: BLE001
+                            _LOGGER.debug("Chromium token recovery failed: %s", rot_exc)
+
                     if attempt < 2:
                         await asyncio.sleep(2**attempt)
                         continue
@@ -227,6 +239,22 @@ class TRWebSocketKeeper:
                         "connected" not in resp_str and "26" not in resp_str and "success" not in resp_str.lower()
                     ):
                         if "401" in resp_str or "error" in resp_str.lower():
+                            _LOGGER.info(
+                                "WS Keeper: handshake rejected with 401 — attempting browser session rotation"
+                            )
+                            if self._on_token_refresh and callable(self._on_token_refresh):
+                                try:
+                                    refreshed = await self._on_token_refresh()
+                                    if refreshed:
+                                        _LOGGER.info(
+                                            "WS Keeper: recovered fresh valid session token from Chromium after rejected handshake! Reconnecting..."
+                                        )
+                                        self._reconnect_delay = _RECONNECT_DELAY_MIN
+                                        await self._close_ws()
+                                        continue
+                                except Exception as rot_exc:  # noqa: BLE001
+                                    _LOGGER.debug("Chromium token recovery failed: %s", rot_exc)
+
                             if attempt < 2:
                                 await self._close_ws()
                                 await asyncio.sleep(2**attempt)
