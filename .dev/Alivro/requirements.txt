@@ -12,7 +12,7 @@ PyJWT==2.15.1
 bcrypt==5.0.0
 authlib==1.9.1
 cryptography==50.0.2
-google-genai==2.31.0
+google-genai==2.32.0
 psycopg[binary,pool]==3.3.6
 asyncpg==0.32.0
 aiosqlite==0.22.1
