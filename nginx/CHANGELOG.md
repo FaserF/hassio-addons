@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.8 (2026-10-22)
+
+### 📦 Dependencies
+- ⬆️ Update dependency alpine_edge/nginx to v1.30.6-r0 (#1219) ([`cc42c075`](https://github.com/FaserF/hassio-addons/commit/cc42c075e5491b66078d56fa1a5d472d644c0e79))
+
+
 ## 0.4.7 (2026-10-15)
 
 ### 📦 Dependencies
