@@ -2,7 +2,7 @@ fastapi==0.159.1
 uvicorn[standard]==0.54.0
 sqlalchemy==2.0.55
 sqlmodel==0.0.48
-alembic==1.20.0
+alembic==1.20.1
 pydantic==2.14.1
 pydantic-settings==2.16.1
 python-multipart==0.0.32
