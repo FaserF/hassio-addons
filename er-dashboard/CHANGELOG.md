@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.12 (2026-10-23)
+
+### 📦 Dependencies
+- ⬆️ Update ER-Startseite to v2026.10.1 (#1226) ([`ed243b18`](https://github.com/FaserF/hassio-addons/commit/ed243b18a4fa58488ec14dc874cf74ff45d597d0))
+
+
 ## 1.4.11 (2026-10-15)
 
 ### 📦 Dependencies
