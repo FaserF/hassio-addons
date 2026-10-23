@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.7 (2026-10-23)
+
+### 📦 Dependencies
+- ⬆️ Update dependency moghtech/komodo to v2.3.4 (#1221) ([`153a0764`](https://github.com/FaserF/hassio-addons/commit/153a076454a9e2e4f68c35e88776d735e7d86ecb))
+- ⬆️ Update ghcr.io/moghtech/komodo-core Docker tag to v2.3.4 (#1222) ([`42d79745`](https://github.com/FaserF/hassio-addons/commit/42d7974597a59fae45ae2de160fc7cb6dad08f23))
+
+
 ## 0.2.6 (2026-10-05)
 
 ### ✨ Features
