@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-10-23T04:45:50.390593",
+  "timestamp": "2026-10-24T10:02:57.244849",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
@@ -213,7 +213,7 @@
     },
     "er-dashboard": {
       "name": "ER-Startseite (Dashboard)",
-      "version": "1.4.11",
+      "version": "1.4.12",
       "description": "A modern, highly customizable dashboard with a neon aesthetic.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-er-dashboard-{arch}",
@@ -255,7 +255,7 @@
     },
     "komodo": {
       "name": "Komodo",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "description": "A tool to build and deploy software on many servers",
       "arch": ["amd64"],
       "image": "ghcr.io/faserf/hassio-addons-komodo-{arch}",
