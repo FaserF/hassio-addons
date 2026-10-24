@@ -21,7 +21,7 @@ jobs:
   # --------------------------------------------------------------------------------
   labeler:
     name: 🏷️ Auto Labeler
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: 👤 Auto-assign Issues
         if: github.event_name == 'issues' && github.event.action == 'opened'
@@ -151,7 +151,7 @@ jobs:
   stale:
     name: 🧹 Stale Check
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/stale@v11
         with:
@@ -169,7 +169,7 @@ jobs:
   lock:
     name: 🔒 Lock Threads
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: dessant/lock-threads@v6
         with:

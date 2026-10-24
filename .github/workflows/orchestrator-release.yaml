@@ -94,7 +94,7 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.event_name == 'repository_dispatch' ||
       (github.event_name == 'push' && contains(github.event.head_commit.message, 'release(all)'))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       Apps: ${{ steps.detect.outputs.Apps }}
       should_release: ${{ steps.detect.outputs.should_release }}
@@ -709,7 +709,7 @@ jobs:
     concurrency:
       group: release-verify-${{ matrix.App }}
       cancel-in-progress: true
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -786,7 +786,7 @@ jobs:
     concurrency:
       group: release-${{ matrix.App }}
       cancel-in-progress: true
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     continue-on-error: ${{ matrix.App == 'solumati' }}
     strategy:
       fail-fast: false
@@ -1301,7 +1301,7 @@ jobs:
     if: |
       needs.detect.outputs.is_all == 'true' &&
       needs.detect.outputs.should_release == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       actions: write
       contents: read
@@ -1423,7 +1423,7 @@ jobs:
       always() &&
       needs.detect.outputs.is_all == 'true' &&
       (needs.release.result == 'success' || needs.release.result == 'failure' || needs.release.result == 'cancelled')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write

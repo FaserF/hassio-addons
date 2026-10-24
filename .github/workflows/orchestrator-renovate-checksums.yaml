@@ -26,7 +26,7 @@ concurrency:
 jobs:
   update-checksums:
     name: 🔒 Update Binary Checksums
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Only run on Renovate PRs
     if: github.actor == 'renovate[bot]'
     steps:

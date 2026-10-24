@@ -55,7 +55,7 @@ jobs:
   # Filter to only ingress-enabled Apps
   filter-ingress:
     name: "🔍 Filter Ingress Apps"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       ingress_Apps: ${{ steps.filter.outputs.ingress_Apps }}
       has_Apps: ${{ steps.filter.outputs.has_Apps }}
@@ -171,7 +171,7 @@ jobs:
     name: "🏠 Supervisor Test"
     needs: filter-ingress
     if: needs.filter-ingress.outputs.has_Apps == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 90
 
     steps:

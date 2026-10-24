@@ -11,7 +11,7 @@ permissions:
 jobs:
   close-fixed:
     name: Close Inactive Fixed Issues
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Close issues marked as fixed with no user activity for 3 weeks
         uses: actions/github-script@v9

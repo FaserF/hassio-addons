@@ -54,7 +54,7 @@ jobs:
   lint-workflows:
     name: 🔍 Lint Workflow Files
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v7
@@ -89,7 +89,7 @@ jobs:
   check-runner-minutes:
     name: ⏱️ Check Runner Minutes
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: 📊 Check GitHub Actions Billing
         id: billing
@@ -271,7 +271,7 @@ jobs:
     if: |
       github.event_name == 'workflow_run' &&
       github.event.workflow_run.conclusion == 'failure'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v7

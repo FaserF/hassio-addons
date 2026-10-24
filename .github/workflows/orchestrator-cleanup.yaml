@@ -20,7 +20,7 @@ jobs:
     # Only run when PR is merged (not just closed)
     if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     name: 🧹 Cleanup PR Artifacts
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: 🧹 Cleanup PR Workflow Runs and Artifacts
         uses: actions/github-script@v9
@@ -121,7 +121,7 @@ jobs:
     # Run on schedule or manual trigger (not on PR events)
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     name: 🗑️ Cleanup Stale Deployments
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: 🗑️ Delete Old Deployments (Keep Recent 10)
         uses: actions/github-script@v9
@@ -203,7 +203,7 @@ jobs:
   cleanup-caches:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     name: 🧹 Cleanup Actions Caches
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: 🧹 Delete Old Actions Caches
         uses: actions/github-script@v9

@@ -27,7 +27,7 @@ jobs:
   generate-config:
     name: Generate Config
     if: github.event_name == 'pull_request' || !contains((github.event.head_commit.message || ''), '[skip-tests]')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       filters: ${{ steps.generator.outputs.filters }}
     steps:
@@ -88,7 +88,7 @@ jobs:
   filter:
     name: 🔍 Detect Changes
     needs: generate-config
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       Apps: ${{ steps.filter.outputs.changes }}
       docs_only: ${{ steps.change-type.outputs.docs_only }}
@@ -222,7 +222,7 @@ jobs:
       (needs.filter.outputs.Apps == '[]' || needs.filter.outputs.Apps == '') &&
       needs.filter.outputs.docs_only != 'true' &&
       needs.filter.outputs.is_stale != 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -256,7 +256,7 @@ jobs:
       needs.filter.outputs.Apps != '[]' &&
       needs.filter.outputs.Apps != '' &&
       needs.filter.outputs.is_stale != 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     strategy:
@@ -452,7 +452,7 @@ jobs:
       needs.filter.outputs.Apps != '' &&
       needs.filter.outputs.needs_build == 'true' &&
       needs.filter.outputs.is_stale != 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       max-parallel: 4

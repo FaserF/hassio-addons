@@ -48,7 +48,7 @@ jobs:
     if: |
       github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && (github.event.inputs.task == 'cleanup' || github.event.inputs.task == ''))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: 🗑️ Delete Old Workflow Runs
         uses: Mattraks/delete-workflow-runs@v2
@@ -80,7 +80,7 @@ jobs:
   retract:
     name: ↩️ Retract Release
     if: github.event.inputs.task == 'retract'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v7
@@ -100,7 +100,7 @@ jobs:
   unsupported-check:
     name: 🏚️ Check Unsupported
     if: github.event.inputs.task == 'cleanup' || github.event_name == 'schedule'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v7
@@ -128,7 +128,7 @@ jobs:
   toggle-support:
     name: 🔄 Toggle Support State
     if: github.event.inputs.task == 'support-toggle'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: ⤵️ Check out code
         uses: actions/checkout@v7

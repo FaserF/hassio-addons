@@ -15,7 +15,7 @@ jobs:
     name: 🚀 CI Start Notification (Privileged)
     # Only run on actual PRs
     if: github.event_name == 'pull_request_target'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: 📝 Post CI Starting Comment
         uses: actions/github-script@v9

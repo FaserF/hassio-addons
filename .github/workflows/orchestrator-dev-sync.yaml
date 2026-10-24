@@ -15,7 +15,7 @@ permissions:
 jobs:
   sync-dev:
     name: 🚥 Sync Dev Branch (Disabled)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: false
     steps:
       - name: ⤵️ Checkout master
