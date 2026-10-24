@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.1 (2026-10-24)
+
+### 🐛 Bug Fixes
+- restore persistent session via automatic Chromium token rotation on 401 ([`9359ea83`](https://github.com/FaserF/hassio-addons/commit/9359ea83a96042c948d602b81526bb6cf0712b41))
+
+### 📦 Dependencies
+- ⬆️ Update Add-on base images ([`a71a0f24`](https://github.com/FaserF/hassio-addons/commit/a71a0f24f4b8e347a94e4dce7d37511ce2cfa561))
+
+
 ## 1.2.0 (2026-10-18)
 
 ### ✨ Features
