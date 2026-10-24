@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.9
 FROM ghcr.io/plankanban/planka:2.2.1 AS planka
 
 FROM ${BUILD_FROM}
@@ -17,7 +17,7 @@ ENV APP_SLUG="planka"
 ENV APP_UNSUPPORTED="false"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.4.5"
+ENV APP_VERSION="1.4.6"
 ENV APP_NAME="Planka"
 ENV APP_SLUG="planka"
 ENV APP_UNSUPPORTED="false"

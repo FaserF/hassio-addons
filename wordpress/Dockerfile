@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.9
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -12,7 +12,7 @@ ARG WORDPRESS_VERSION="6.8"
 # hadolint ignore=DL3018,DL3003
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.4.5"
+ENV APP_VERSION="0.4.6"
 ENV APP_NAME="Wordpress"
 ENV APP_SLUG="wordpress"
 ENV APP_UNSUPPORTED="false"

@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.9
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
@@ -6,7 +6,7 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.4.9"
+ENV APP_VERSION="2.4.10"
 ENV APP_NAME="pterodactyl Wings Gameserver"
 ENV APP_SLUG="pterodactyl_wings"
 ENV APP_UNSUPPORTED="false"

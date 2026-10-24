@@ -1,11 +1,11 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.9
 FROM ${BUILD_FROM}
 
 # Setup base
 # hadolint ignore=DL3003
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.3.5"
+ENV APP_VERSION="1.3.6"
 ENV APP_NAME="Tiny Tiny RSS"
 ENV APP_SLUG="tt-rss"
 ENV APP_UNSUPPORTED="false"

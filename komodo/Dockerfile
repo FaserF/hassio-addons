@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.5.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.5.1
 ARG KOMODO_VERSION=2.3.4
 FROM mongo:9.0 AS mongo
 FROM ghcr.io/moghtech/komodo-core:${KOMODO_VERSION} AS komodo
@@ -11,7 +11,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3008,SC3009
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.2.7"
+ENV APP_VERSION="0.2.8"
 ENV APP_NAME="Komodo"
 ENV APP_SLUG="komodo"
 ENV APP_UNSUPPORTED="false"

@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.9
 # hadolint ignore=DL3006
 # renovate: datasource=docker depName=filebrowser/filebrowser
 FROM filebrowser/filebrowser:v2.63.23 AS filebrowser
@@ -18,7 +18,7 @@ ENV FILEBROWSER_VERSION="v2.53.1"
 # hadolint ignore=DL3018,DL4006
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.4.6"
+ENV APP_VERSION="2.4.7"
 ENV APP_NAME="ShieldFile"
 ENV APP_SLUG="shieldfile"
 ENV APP_UNSUPPORTED="false"

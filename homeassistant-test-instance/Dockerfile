@@ -1,7 +1,7 @@
 ARG HA_VERSION=2026.10.3
 ARG BUILD_FROM=ghcr.io/home-assistant/home-assistant:${HA_VERSION}
 # hadolint ignore=DL3006
-FROM ghcr.io/hassio-addons/base:21.0.8 AS addon-base
+FROM ghcr.io/hassio-addons/base:21.0.9 AS addon-base
 
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
@@ -16,7 +16,7 @@ ENV TERM="xterm-256color"
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.0.7"
+ENV APP_VERSION="1.0.8"
 ENV APP_NAME="Home Assistant Test Instance"
 ENV APP_SLUG="ha_test_instance"
 ENV APP_UNSUPPORTED="false"

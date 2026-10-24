@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.9
 ARG TARGETARCH
 # hadolint ignore=DL3006
 
@@ -9,7 +9,7 @@ ARG TARGETARCH
 ARG COREDNS_VERSION="1.15.0"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.5.7"
+ENV APP_VERSION="2.5.8"
 ENV APP_NAME="ShieldDNS"
 ENV APP_SLUG="shielddns"
 ENV APP_UNSUPPORTED="false"

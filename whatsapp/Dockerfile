@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.9
 # hadolint ignore=DL3006
 FROM $BUILD_FROM
 ARG BUILD_DATE="unknown"
@@ -10,7 +10,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.1.6"
+ENV APP_VERSION="2.1.7"
 ENV APP_NAME="WhatsApp Gateway"
 ENV APP_SLUG="whatsapp"
 ENV APP_UNSUPPORTED="false"

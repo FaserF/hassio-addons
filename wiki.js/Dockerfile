@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.9
 ARG WIKIJS_VERSION=2.5.317
 FROM ghcr.io/requarks/wiki:${WIKIJS_VERSION} AS wiki_release
 
@@ -12,7 +12,7 @@ ARG BUILD_DATE="unknown"
 ENV S6_CMD_WAIT_FOR_SERVICES=1
 
 # App metadata (injected by CI)
-ENV APP_VERSION="3.5.5"
+ENV APP_VERSION="3.5.6"
 ENV APP_NAME="Wiki.JS"
 ENV APP_SLUG="wiki.js"
 ENV APP_UNSUPPORTED="false"

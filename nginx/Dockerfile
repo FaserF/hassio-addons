@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.9
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 # Base image includes s6-overlay; services use /usr/bin/with-contenv
@@ -13,7 +13,7 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 ARG PHP_VERSION="8.5"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.4.8"
+ENV APP_VERSION="0.4.9"
 ENV APP_NAME="NGINX"
 ENV APP_SLUG="nginx"
 ENV APP_UNSUPPORTED="false"

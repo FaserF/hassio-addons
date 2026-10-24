@@ -1,5 +1,5 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-dockerfile
-ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.5.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base:9.5.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -16,7 +16,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Layer 1: Core System Tools & VNC Setup
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.3.2"
+ENV APP_VERSION="1.3.3"
 ENV APP_NAME="Antigravity-Server"
 ENV APP_SLUG="antigravity-server"
 ENV APP_UNSUPPORTED="false"

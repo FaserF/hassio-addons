@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.9
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
@@ -11,7 +11,7 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 ARG IMAPSYNC_VERSION=2.314
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.4.5"
+ENV APP_VERSION="0.4.6"
 ENV APP_NAME="Imapsync"
 ENV APP_SLUG="imapsync"
 ENV APP_UNSUPPORTED="false"

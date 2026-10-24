@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.9
 
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
@@ -19,7 +19,7 @@ ARG PHP_VERSION="8.5"
 ARG APACHE2_VERSION="2.4.69-r0"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="3.4.9"
+ENV APP_VERSION="3.4.10"
 ENV APP_NAME="Apache2 Minimal with MariaDB Client"
 ENV APP_SLUG="apache2-minimal-mariadb"
 ENV APP_UNSUPPORTED="false"

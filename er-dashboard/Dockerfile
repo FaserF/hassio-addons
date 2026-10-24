@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.9
 
 # Stage 1: Get Frontend Assets
 # renovate: datasource=docker depName=ghcr.io/eidolf/er-startseite/frontend
@@ -23,7 +23,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1 \
     PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.4.12"
+ENV APP_VERSION="1.4.13"
 ENV APP_NAME="ER-Startseite (Dashboard)"
 ENV APP_SLUG="er-dashboard"
 ENV APP_UNSUPPORTED="false"

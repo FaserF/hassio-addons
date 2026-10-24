@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.9
 # hadolint ignore=DL3006
 FROM $BUILD_FROM
 ARG BUILD_DATE="unknown"
@@ -16,7 +16,7 @@ ENV APP_UNSUPPORTED="false"
 # hadolint ignore=DL3018
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.2.0"
+ENV APP_VERSION="1.2.1"
 ENV APP_NAME="Trade Republic Headless Browser"
 ENV APP_SLUG="traderepublic"
 ENV APP_UNSUPPORTED="false"
