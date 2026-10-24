@@ -1,5 +1,5 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:21.0.8
-ARG WIKIJS_VERSION=2.5.316
+ARG WIKIJS_VERSION=2.5.317
 FROM ghcr.io/requarks/wiki:${WIKIJS_VERSION} AS wiki_release
 
 # hadolint ignore=DL3006
