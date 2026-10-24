@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.8 (2026-10-24)
+
+### 📦 Dependencies
+- ⬆️ Update Add-on base images ([`a71a0f24`](https://github.com/FaserF/hassio-addons/commit/a71a0f24f4b8e347a94e4dce7d37511ce2cfa561))
+
+
 ## 0.2.7 (2026-10-23)
 
 ### 📦 Dependencies
