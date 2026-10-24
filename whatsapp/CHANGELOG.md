@@ -1,5 +1,31 @@
 # Changelog
 
+## 2.1.7 (2026-10-24)
+
+### ✨ Features
+- support custom OPENAI_BASE_URL and OmniRoute cascading in WhatsApp Gateway ([`9d26e501`](https://github.com/FaserF/hassio-addons/commit/9d26e501a86dc80437c7f395920dc872046a5348))
+
+### 🐛 Bug Fixes
+- correct payload for pin and unpin message endpoints ([`616c73d6`](https://github.com/FaserF/hassio-addons/commit/616c73d6d1eab0cd39fe527c38ddb5803894fd94))
+
+### 📦 Dependencies
+- ⬆️ Update Add-on base images ([`a71a0f24`](https://github.com/FaserF/hassio-addons/commit/a71a0f24f4b8e347a94e4dce7d37511ce2cfa561))
+- ⬆️ Update dependency fastapi to v0.162.0 (#1231) ([`8d303f2b`](https://github.com/FaserF/hassio-addons/commit/8d303f2b4cea3842b8da8e3b24662c5190682586))
+- build(deps): bump ip-address from 10.7.2 to 10.7.4 in /whatsapp/app in the npm_and_yarn group across 1 directory (#1230) ([`9d41cb83`](https://github.com/FaserF/hassio-addons/commit/9d41cb830ca6d32f25c566374fba2b3f7c0dd567))
+- ⬆️ Update dependency @modelcontextprotocol/sdk to v1.32.2 (#1228) ([`f55f7d37`](https://github.com/FaserF/hassio-addons/commit/f55f7d37d9bbe30e69559a34c51c9c0e162fce95))
+- ⬆️ Update dependency fastapi to v0.161.1 (#1223) ([`cbb3b5a6`](https://github.com/FaserF/hassio-addons/commit/cbb3b5a6f1b056e521d580d0869cfe1d8a3a5844))
+- ⬆️ Update dependency playwright to v1.64.1 (#1220) ([`f6db8136`](https://github.com/FaserF/hassio-addons/commit/f6db8136ac7ff807c0f7878d7f30050d90953a07))
+- ⬆️ Update dependency fastapi to v0.159.1 (#1213) ([`575087d4`](https://github.com/FaserF/hassio-addons/commit/575087d4d4165de0c1d203aab5845fe6928d6424))
+- ⬆️ Update dependency fastapi to v0.157.0 (#1209) ([`6842ed95`](https://github.com/FaserF/hassio-addons/commit/6842ed9598f86d5ec8c3e4cc7d969024dab7d3c7))
+- ⬆️ Update dependency fastapi to v0.156.8 (#1208) ([`3ad18bc8`](https://github.com/FaserF/hassio-addons/commit/3ad18bc8472a5ac9a8570d8d34ef25dbef8422af))
+- ⬆️ Update dependency fastapi to v0.156.4 (#1204) ([`9e9c5314`](https://github.com/FaserF/hassio-addons/commit/9e9c531479c7cd689b51ef8cb1c843fd88d04b24))
+- ⬆️ Update dependency fastapi to v0.155.0 (#1203) ([`af5221cf`](https://github.com/FaserF/hassio-addons/commit/af5221cf27f061b2c0820367e600a4052016c185))
+- ⬆️ Update dependency fastapi to v0.151.0 (#1201) ([`86085f71`](https://github.com/FaserF/hassio-addons/commit/86085f7152e616c0feb05688f0646ad0c88588e6))
+- ⬆️ Update dependency fastapi to v0.150.0 (#1199) ([`49ac326e`](https://github.com/FaserF/hassio-addons/commit/49ac326e5ac729c6e13cc815447f736490894995))
+- ⬆️ Update dependency fastapi to v0.148.0 (#1197) ([`8906294f`](https://github.com/FaserF/hassio-addons/commit/8906294f433a6732e040bec1fea0ee0dca4e0b7c))
+- ⬆️ Update dependency fastapi to v0.147.0 (#1196) ([`3b0785a7`](https://github.com/FaserF/hassio-addons/commit/3b0785a78bcf8b1bf428cbcb59c2e97677d9449a))
+
+
 ## 2.1.6 (2026-10-15)
 
 ### ✨ Features
