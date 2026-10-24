@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-10-24T16:49:17.650424",
+  "timestamp": "2026-10-24T19:21:34.974720",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -147,7 +147,7 @@
       "arch": ["aarch64", "amd64"],
       "image": "",
       "has_dockerfile": true,
-      "has_run_sh": true,
+      "has_run_sh": false,
       "has_rootfs": true,
       "has_translations": true,
       "has_www": false,
@@ -621,10 +621,10 @@
       "Dockerfile",
       "README.md",
       "build.yaml",
-      "config.yaml",
-      "run.sh"
+      "config.yaml"
     ],
     "epicgamesfree/translations": ["de.yaml", "en.yaml"],
+    "epicgamesfree/rootfs": ["run.sh"],
     "epicgamesfree/rootfs/usr/lib/bashio": ["banner.sh"],
     "epicgamesfree/rootfs/usr/bin": ["epic_server.py"],
     "switch_lan_play_server": [

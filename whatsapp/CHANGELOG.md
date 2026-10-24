@@ -3,12 +3,15 @@
 ## 2.1.7 (2026-10-24)
 
 ### ✨ Features
+
 - support custom OPENAI_BASE_URL and OmniRoute cascading in WhatsApp Gateway ([`9d26e501`](https://github.com/FaserF/hassio-addons/commit/9d26e501a86dc80437c7f395920dc872046a5348))
 
 ### 🐛 Bug Fixes
+
 - correct payload for pin and unpin message endpoints ([`616c73d6`](https://github.com/FaserF/hassio-addons/commit/616c73d6d1eab0cd39fe527c38ddb5803894fd94))
 
 ### 📦 Dependencies
+
 - ⬆️ Update Add-on base images ([`a71a0f24`](https://github.com/FaserF/hassio-addons/commit/a71a0f24f4b8e347a94e4dce7d37511ce2cfa561))
 - ⬆️ Update dependency fastapi to v0.162.0 (#1231) ([`8d303f2b`](https://github.com/FaserF/hassio-addons/commit/8d303f2b4cea3842b8da8e3b24662c5190682586))
 - build(deps): bump ip-address from 10.7.2 to 10.7.4 in /whatsapp/app in the npm_and_yarn group across 1 directory (#1230) ([`9d41cb83`](https://github.com/FaserF/hassio-addons/commit/9d41cb830ca6d32f25c566374fba2b3f7c0dd567))
@@ -24,7 +27,6 @@
 - ⬆️ Update dependency fastapi to v0.150.0 (#1199) ([`49ac326e`](https://github.com/FaserF/hassio-addons/commit/49ac326e5ac729c6e13cc815447f736490894995))
 - ⬆️ Update dependency fastapi to v0.148.0 (#1197) ([`8906294f`](https://github.com/FaserF/hassio-addons/commit/8906294f433a6732e040bec1fea0ee0dca4e0b7c))
 - ⬆️ Update dependency fastapi to v0.147.0 (#1196) ([`3b0785a7`](https://github.com/FaserF/hassio-addons/commit/3b0785a78bcf8b1bf428cbcb59c2e97677d9449a))
-
 
 ## 2.1.6 (2026-10-15)
 

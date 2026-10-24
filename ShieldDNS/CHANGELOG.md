@@ -3,9 +3,9 @@
 ## 2.5.8 (2026-10-24)
 
 ### 📦 Dependencies
+
 - ⬆️ Update Add-on base images ([`a71a0f24`](https://github.com/FaserF/hassio-addons/commit/a71a0f24f4b8e347a94e4dce7d37511ce2cfa561))
 - ⬆️ Update dependency coredns/coredns to v1.15.0 (#1207) ([`bf1965c9`](https://github.com/FaserF/hassio-addons/commit/bf1965c95658c0eb119c5037ad8ab3082c3c9ba0))
-
 
 ## 2.5.7 (2026-10-18)
 

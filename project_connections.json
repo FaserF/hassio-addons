@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-10-24T16:49:18.634850",
+  "timestamp": "2026-10-24T19:21:37.310861",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
@@ -198,13 +198,13 @@
         "core": [
           "epicgamesfree/config.yaml",
           "epicgamesfree/Dockerfile",
-          "epicgamesfree/run.sh",
           "epicgamesfree/build.yaml",
           "epicgamesfree/CHANGELOG.md",
           "epicgamesfree/README.md",
           "epicgamesfree/DOCS.md"
         ],
         "rootfs": [
+          "epicgamesfree/rootfs/run.sh",
           "epicgamesfree/rootfs/usr/bin/epic_server.py",
           "epicgamesfree/rootfs/usr/lib/bashio/banner.sh"
         ],
