@@ -17,6 +17,8 @@ COPY rootfs /
 # Make scripts executable
 RUN chmod a+x /run.sh /usr/bin/epic_server.py
 
+HEALTHCHECK CMD curl --fail http://127.0.0.1:3000/ || exit 1
+
 CMD [ "/run.sh" ]
 
 # Labels
