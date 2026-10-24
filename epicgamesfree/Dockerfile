@@ -5,11 +5,16 @@ FROM ${BUILD_FROM}
 RUN \
   apk add --no-cache \
     nginx \
+  && apk add --no-cache --virtual .build-deps \
+    build-base \
+    libffi-dev \
+    python3-dev \
   && pip install --no-cache-dir \
     aiohttp \
     croniter \
     epicstore-api \
-    requests
+    requests \
+  && apk del .build-deps
 
 # Copy root filesystem
 COPY rootfs /
@@ -20,6 +25,7 @@ RUN chmod a+x /run.sh /usr/bin/epic_server.py
 CMD [ "/run.sh" ]
 
 # Labels
+ARG BUILD_DATE
 LABEL org.opencontainers.image.title="Epic Games Freebies Claimer"
 LABEL org.opencontainers.image.description="Automatically login, persist session in /data, and claim promotional free games from Epic Games Store"
 LABEL org.opencontainers.image.vendor="FaserF's Home Assistant Apps"
