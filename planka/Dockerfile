@@ -17,7 +17,7 @@ ENV APP_SLUG="planka"
 ENV APP_UNSUPPORTED="false"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.4.5"
+ENV APP_VERSION="1.4.6"
 ENV APP_NAME="Planka"
 ENV APP_SLUG="planka"
 ENV APP_UNSUPPORTED="false"
