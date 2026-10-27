@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-10-24T19:21:37.310861",
+  "timestamp": "2026-10-27T18:20:36.272266",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
@@ -447,7 +447,7 @@
     },
     "tado_aa": {
       "name": "Tado Auto Assist",
-      "version": "2.4.1",
+      "version": "2.4.2",
       "description": "Tado Auto-Assist for Geofencing and open Window detection",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-tado_aa-{arch}",
