@@ -7,6 +7,7 @@ import { getJid } from '../../utils/jid.js';
 import { ensureConnected } from './helpers.js';
 import { trackSent } from '../../whatsapp/actions.js';
 import { API_TOKEN } from '../../config.js';
+import { apiLimiter } from '../../middleware.js';
 
 function checkMcpAuth(req) {
   const token = req.header('X-Auth-Token') || req.query?.token;
@@ -219,7 +220,7 @@ export function registerMcpRoutes(app) {
   });
 
   // SSE Transport endpoint
-  app.get('/mcp', async (req, res) => {
+  app.get('/mcp', apiLimiter, async (req, res) => {
     if (!checkMcpAuth(req)) {
       return res
         .status(401)
@@ -241,7 +242,7 @@ export function registerMcpRoutes(app) {
   });
 
   // SSE Message Ingestion
-  app.post('/mcp/messages', async (req, res) => {
+  app.post('/mcp/messages', apiLimiter, async (req, res) => {
     if (!checkMcpAuth(req)) {
       return res
         .status(401)
