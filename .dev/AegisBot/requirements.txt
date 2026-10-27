@@ -13,7 +13,7 @@ python-dotenv==1.2.4
 psycopg2-binary==2.9.13
 alembic==1.20.1
 structlog==26.1.0
-pytest==9.1.1
+pytest==9.2.0
 pytest-asyncio==1.4.1
 aiosqlite==0.22.1
 asyncpg==0.32.0
