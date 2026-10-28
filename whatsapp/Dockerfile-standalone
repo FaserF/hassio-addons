@@ -1,5 +1,5 @@
 # Only for Docker (cannot be used as HA addon)
-FROM node:24-alpine
+FROM node:26-alpine
 
 # Install build dependencies, git, and media tools
 RUN apk add --no-cache \
