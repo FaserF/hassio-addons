@@ -1,15 +1,18 @@
 # Changelog
 
+## 2.4.3-dev-20261027-1811-bafe386 (2026-10-27)
+
+- Release version 2.4.3-dev-20261027-1811-bafe386
+
+
 ## 2.4.2 (2026-10-27)
 
 ### ✨ Features
-
 - add Google Antigravity Usage monitor addon ([`81495c89`](https://github.com/FaserF/hassio-addons/commit/81495c890a4d15605f44d0ac5c30ff2b85db4dd0))
 - configure specific startup phases and integration discovery for relevant addons ([`2f939fbd`](https://github.com/FaserF/hassio-addons/commit/2f939fbd8771f1d02798081dff4759e5c67fcc88))
 - add restart loop protection to startup banners and fix gt import error ([`da300834`](https://github.com/FaserF/hassio-addons/commit/da3008348fc12ea389004b10665cbae4d7a8e112))
 
 ### 🐛 Bug Fixes
-
 - regenerate accurate changelogs for all addons and fix release commit matching in bump_version.py ([`b667eef9`](https://github.com/FaserF/hassio-addons/commit/b667eef9f23c882efd02c11535c2ea4c9bbad5f5))
 - replace deprecated bashio::addon.stop with bashio::app.stop and harmonize APP_VERSION variables ([`e74d22d6`](https://github.com/FaserF/hassio-addons/commit/e74d22d66be715d3ea2efad6e4919b70bf4a81ce))
 - harden parameter expansion in startup banner for set -u strict mode ([`cb8ad15b`](https://github.com/FaserF/hassio-addons/commit/cb8ad15bd5df93dd1da6081ac20ab2332f4d3b29))
@@ -18,13 +21,12 @@
 - CI workflow improvements & linter fixes ([`5498c4d1`](https://github.com/FaserF/hassio-addons/commit/5498c4d1eced756473db6d63f5f38b7931bcca7f))
 
 ### 📦 Dependencies
-
 - bump versions for all addons with updated base image ([`9b1b24c1`](https://github.com/FaserF/hassio-addons/commit/9b1b24c1a8d83d7161d2264f52cf4e4118d821bd))
 - update icons and convert logos to official landscape banners ([`e6d061bd`](https://github.com/FaserF/hassio-addons/commit/e6d061bd8292ae6ca473fa21a2e55d5e5f4e70ea))
 
 ### 🚀 Other
-
 - Standardize log_level configuration and handling across all add-ons ([`7ddda206`](https://github.com/FaserF/hassio-addons/commit/7ddda206529ef9453a58d36af03969ed975a8e66))
+
 
 ## 2.4.0 (2026-08-19)
 

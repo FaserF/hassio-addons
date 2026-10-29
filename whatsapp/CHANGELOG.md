@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.8-dev-20261029-2123-59de5b1 (2026-10-29)
+
+### 🐛 Bug Fixes
+- resolve CodeQL missing rate limiting on MCP routes and patch Zod DoS advisory ([`6e3f130b`](https://github.com/FaserF/hassio-addons/commit/6e3f130b592bc6f98f35fff0fad0fc997681d70a))
+
+### 📦 Dependencies
+- ⬆️ Update dependency express-rate-limit to v8.7.2 (#1257) ([`59de5b13`](https://github.com/FaserF/hassio-addons/commit/59de5b13adaf78c1db0f2f9c382e2091fe7ce530))
+- ⬆️ Update dependency node to v26 (#1253) ([`1a52992b`](https://github.com/FaserF/hassio-addons/commit/1a52992b45ae9af410554696aa9af2770fce6282))
+
+
 ## 2.1.7 (2026-10-24)
 
 ### ✨ Features
