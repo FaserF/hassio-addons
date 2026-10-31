@@ -5,7 +5,7 @@ pydantic[email]==2.14.2
 pydantic-settings==2.16.2
 PyJWT[crypto]==2.15.1
 bcrypt==5.0.0
-python-multipart==0.0.32
+python-multipart==0.0.33
 httpx==0.28.1
 aiogram==3.31.0
 websockets==16.1.1

@@ -6,7 +6,7 @@ greenlet==3.5.6
 aiosqlite==0.22.1
 pydantic==2.14.2
 pydantic-settings==2.16.2
-python-multipart==0.0.32
+python-multipart==0.0.33
 msal==1.39.0
 PyJWT==2.15.1
 httpx==0.28.1
