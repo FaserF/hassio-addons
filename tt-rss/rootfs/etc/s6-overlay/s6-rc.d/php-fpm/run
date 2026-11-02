@@ -221,4 +221,4 @@ fi
 # </App_BANNER_INJECTION>
 
 bashio::log.info "Starting PHP-FPM..."
-exec php-fpm84 -F
+exec php-fpm85 -F

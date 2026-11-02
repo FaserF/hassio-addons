@@ -265,12 +265,12 @@ bashio::log.info "Waiting for PHP-FPM to be ready..."
 PHP_FPM_READY=false
 for i in {1..15}; do
 	# Check multiple ways: process name, port 9000, socket file
-	if pgrep -f "php-fpm84.*master" >/dev/null 2>&1 || \
+	if pgrep -f "php-fpm85.*master" >/dev/null 2>&1 || \
 	   pgrep -f "php-fpm.*master" >/dev/null 2>&1 || \
 	   (command -v ss >/dev/null 2>&1 && ss -tuln | grep -q ":9000 ") || \
 	   (command -v netstat >/dev/null 2>&1 && netstat -tuln | grep -q ":9000 ") || \
-	   [ -S /run/php-fpm84.sock ] 2>/dev/null || \
-	   [ -S /var/run/php-fpm84.sock ] 2>/dev/null; then
+	   [ -S /run/php-fpm85.sock ] 2>/dev/null || \
+	   [ -S /var/run/php-fpm85.sock ] 2>/dev/null; then
 		bashio::log.info "✓ PHP-FPM is running (checked: $i/15)"
 		PHP_FPM_READY=true
 		break
