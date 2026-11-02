@@ -811,6 +811,14 @@ jobs:
                         AUTH_HEADER="Authorization: Bearer $SUPERVISOR_TOKEN"
                         FULL_RESPONSE=$(docker exec ha-supervisor-test curl -i -s -H "$AUTH_HEADER" "http://localhost:8123$INGRESS_URL" 2>&1 || echo "ERROR")
                         HTTP_CODE=$(echo "$FULL_RESPONSE" | grep "HTTP/" | tail -1 | awk '{print $2}')
+                        if [ -z "$HTTP_CODE" ] || [ "$HTTP_CODE" = "000" ]; then
+                          ALT_RESPONSE=$(docker exec ha-supervisor-test curl -i -s -H "$AUTH_HEADER" "http://supervisor$INGRESS_URL" 2>&1 || echo "ERROR")
+                          ALT_CODE=$(echo "$ALT_RESPONSE" | grep "HTTP/" | tail -1 | awk '{print $2}')
+                          if [ -n "$ALT_CODE" ] && [ "$ALT_CODE" != "000" ]; then
+                            FULL_RESPONSE="$ALT_RESPONSE"
+                            HTTP_CODE="$ALT_CODE"
+                          fi
+                        fi
                         [ -z "$HTTP_CODE" ] && HTTP_CODE="000"
 
                         if echo "$HTTP_CODE" | grep -q "^[23]"; then

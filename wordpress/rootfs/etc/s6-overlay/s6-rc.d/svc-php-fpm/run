@@ -224,7 +224,7 @@ fi
 sleep 1
 
 # Verify PHP-FPM configuration
-if [ ! -f /etc/php84/php-fpm.d/www.conf ]; then
+if [ ! -f /etc/php85/php-fpm.d/www.conf ]; then
 	bashio::log.error "PHP-FPM configuration file not found!"
 	exit 1
 fi
@@ -239,7 +239,7 @@ if [ ! -d /var/www/wordpress ]; then
 fi
 
 # Test PHP-FPM configuration before starting
-if ! php-fpm84 -t 2>/dev/null; then
+if ! php-fpm85 -t 2>/dev/null; then
 	bashio::log.warning "PHP-FPM configuration test had warnings, but continuing..."
 fi
 
@@ -248,7 +248,7 @@ bashio::log.info "Starting PHP-FPM process..."
 bashio::log.info "PHP-FPM will be accessible at 127.0.0.1:9000 for Nginx"
 
 # Start PHP-FPM and capture any errors
-exec php-fpm84 -F || {
+exec php-fpm85 -F || {
 	bashio::log.error "PHP-FPM failed to start!"
 	bashio::log.error "Check PHP-FPM configuration and logs for details."
 	exit 1

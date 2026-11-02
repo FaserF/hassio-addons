@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-11-02T08:36:06.362926",
+  "timestamp": "2026-11-02T13:44:13.312797",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
@@ -584,7 +584,7 @@
           "wordpress/rootfs/etc/nginx/nginx.conf",
           "wordpress/rootfs/etc/nginx/templates/http.conf",
           "wordpress/rootfs/etc/nginx/templates/https.conf",
-          "wordpress/rootfs/etc/php84/php-fpm.d/www.conf",
+          "wordpress/rootfs/etc/php85/php-fpm.d/www.conf",
           "wordpress/rootfs/usr/lib/bashio/app.sh",
           "wordpress/rootfs/usr/lib/bashio/banner.sh"
         ],

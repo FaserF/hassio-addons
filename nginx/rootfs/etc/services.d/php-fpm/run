@@ -221,7 +221,9 @@ fi
 
 # </App_BANNER_INJECTION>
 
-if command -v php-fpm84 >/dev/null 2>&1; then
+if command -v php-fpm85 >/dev/null 2>&1; then
+    exec php-fpm85 -F
+elif command -v php-fpm84 >/dev/null 2>&1; then
     exec php-fpm84 -F
 elif command -v php-fpm >/dev/null 2>&1; then
     exec php-fpm -F
