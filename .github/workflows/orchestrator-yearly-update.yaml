@@ -1,4 +1,4 @@
-name: Orchestrator Yearly Update
+﻿name: Orchestrator Yearly Update
 
 on:
   schedule:
@@ -78,8 +78,8 @@ jobs:
       - name: 🔧 Configure Git
         if: steps.check-changes.outputs.has_changes == 'true'
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+          git config --local user.email "342667397+faserf-hermes-agent[bot]@users.noreply.github.com"
+          git config --local user.name "faserf-hermes-agent[bot]"
 
       - name: 📦 Commit changes
         if: steps.check-changes.outputs.has_changes == 'true'

@@ -1,4 +1,4 @@
-name: Orchestrator Dev Sync (Disabled)
+﻿name: Orchestrator Dev Sync (Disabled)
 
 # DISABLED: In-development add-ons are distributed via the Edge channel (#edge).
 # This workflow is kept for reference / future optional use.
@@ -27,8 +27,8 @@ jobs:
 
       - name: 🔧 Setup Git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "faserf-hermes-agent[bot]"
+          git config user.email "342667397+faserf-hermes-agent[bot]@users.noreply.github.com"
 
       - name: 🔄 Reset dev branch to master
         run: |

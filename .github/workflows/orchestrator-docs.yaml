@@ -1,4 +1,4 @@
-name: Orchestrator Docs & Standards
+﻿name: Orchestrator Docs & Standards
 
 permissions:
   contents: write
@@ -46,8 +46,8 @@ jobs:
 
       - name: 🔄 Pull latest changes (Handle non-fast-forward)
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "faserf-hermes-agent[bot]"
+          git config --global user.email "342667397+faserf-hermes-agent[bot]@users.noreply.github.com"
           git pull --rebase --autostash origin master
 
       - name: 💾 Commit Changes

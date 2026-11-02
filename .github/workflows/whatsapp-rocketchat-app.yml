@@ -1,4 +1,4 @@
-name: Package Rocket.Chat WhatsApp Bridge
+﻿name: Package Rocket.Chat WhatsApp Bridge
 
 on:
   push:
@@ -35,8 +35,8 @@ jobs:
 
       - name: Commit and Push Zip
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "faserf-hermes-agent[bot]"
+          git config --global user.email "342667397+faserf-hermes-agent[bot]@users.noreply.github.com"
           git add whatsapp/rocketchat-app/whatsapp-rocketchat-bridge.zip
           # Only commit if changed
           git diff --staged --quiet || git commit -m "chore(whatsapp): update Rocket.Chat bridge zip [skip ci]"

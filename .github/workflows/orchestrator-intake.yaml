@@ -1,4 +1,4 @@
-name: Orchestrator New App Intake
+﻿name: Orchestrator New App Intake
 
 on:
   pull_request:
@@ -127,8 +127,8 @@ jobs:
       - name: 🔄 Pull latest changes (Handle non-fast-forward)
         if: steps.new-Apps.outputs.found == 'true' && github.event_name == 'push'
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "faserf-hermes-agent[bot]"
+          git config --global user.email "342667397+faserf-hermes-agent[bot]@users.noreply.github.com"
           git pull --rebase --autostash origin master
 
       - name: 💾 Commit Changes

@@ -1,4 +1,4 @@
-name: Orchestrator Renovate Checksums
+﻿name: Orchestrator Renovate Checksums
 
 permissions:
   contents: write
@@ -84,8 +84,8 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore: update checksums for ${{ steps.detect.outputs.addon }} ${{ steps.detect.outputs.version }}"
-          commit_user_name: "github-actions[bot]"
-          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_user_name: "faserf-hermes-agent[bot]"
+          commit_user_email: "342667397+faserf-hermes-agent[bot]@users.noreply.github.com"
           file_pattern: "*/Dockerfile"
 
       - name: 🔄 Re-trigger Orchestrator CI on Checksum Update
