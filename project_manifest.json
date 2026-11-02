@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-11-02T08:36:05.424324",
+  "timestamp": "2026-11-02T10:40:49.605519",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -931,6 +931,7 @@
       "test-contact-cache.js",
       "test-export.js",
       "test-i18n.js",
+      "test-mcp-routes.js",
       "test-moderation.js",
       "test-rbac-auth.js",
       "test-stt.js",
