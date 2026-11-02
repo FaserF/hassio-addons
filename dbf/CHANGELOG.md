@@ -9,6 +9,16 @@
 - 🧹 Automated hourly and startup cache pruning (`dbf-cleanup`) to prevent disk bloat.
 - 🩺 Robust container healthcheck with increased startup grace period.
 
+### 🐛 Bug Fixes
+- dynamic worker scaling, niceness and cache cleanup (v1.1.7) ([`4e6b887c`](https://github.com/FaserF/hassio-addons/commit/4e6b887c58eaf6707b0373d0d76153e6328b3021))
+
+### 🚀 Performance & Stability
+- 🩺 Robust container healthcheck with increased startup grace period. (Manual)
+- 🧹 Automated hourly and startup cache pruning (`dbf-cleanup`) to prevent disk bloat. (Manual)
+- 🛡️ Run Hypnotoad with CPU niceness (+10) to prevent starvation of host OS services and Home Assistant Core. (Manual)
+- ⚡ Dynamic CPU-aware Hypnotoad worker scaling based on available hardware cores (`nproc`). (Manual)
+
+
 ## 1.1.6 (2026-10-24)
 
 ### 📦 Dependencies
