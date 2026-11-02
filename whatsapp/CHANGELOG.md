@@ -3,16 +3,17 @@
 ## 2.1.8 (2026-11-02)
 
 ### 🐛 Bug Fixes
+
 - forward parsed body and track sessions in MCP SSE transport (fixes #1227) ([`c42d466c`](https://github.com/FaserF/hassio-addons/commit/c42d466c297e8e8fa2e5a2314a3a67c06359f4c8))
 - resolve CodeQL missing rate limiting on MCP routes and patch Zod DoS advisory ([`6e3f130b`](https://github.com/FaserF/hassio-addons/commit/6e3f130b592bc6f98f35fff0fad0fc997681d70a))
 
 ### 📦 Dependencies
+
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.10](https://github.com/hassio-addons/addon-base/releases/tag/21.0.10) (#1249) ([`9e8edc58`](https://github.com/FaserF/hassio-addons/commit/9e8edc584addd18c3afcb56e0e89bfb19f03fd49))
 - update HACS references to Home Assistant Marketplace ([`a2fac9c1`](https://github.com/FaserF/hassio-addons/commit/a2fac9c1bc9bec6194293c8e14f116aad5ae9268))
 - ⬆️ Update dependency eslint to v10.14.0 (#1259) ([`9963a7a4`](https://github.com/FaserF/hassio-addons/commit/9963a7a41d46df9d8ecf8d63adbae5c2fed2a237))
 - ⬆️ Update dependency express-rate-limit to v8.7.2 (#1257) ([`59de5b13`](https://github.com/FaserF/hassio-addons/commit/59de5b13adaf78c1db0f2f9c382e2091fe7ce530))
 - ⬆️ Update dependency node to v26 (#1253) ([`1a52992b`](https://github.com/FaserF/hassio-addons/commit/1a52992b45ae9af410554696aa9af2770fce6282))
-
 
 ## 2.1.7 (2026-10-24)
 
