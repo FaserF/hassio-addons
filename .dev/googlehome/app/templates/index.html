@@ -2513,7 +2513,7 @@
 
               <div style="display:flex;gap:0.45rem;flex-wrap:wrap;margin-top:auto;">
                 <a href="${item.hacs_url}" target="_blank" rel="noopener noreferrer" class="btn-action" style="flex:1;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:0.35rem;padding:0.38rem 0.5rem;font-size:0.77rem;background:#2563eb;color:#fff;border-color:transparent;">
-                  <span>🛒</span> <span>${currentDict.btn_open_hacs || 'HACS Link (Recommended)'}</span>
+                  <span>🛒</span> <span>${currentDict.btn_open_hacs || 'Marketplace Link (Recommended)'}</span>
                 </a>
                 <button onclick="installIntegration('${item.slug}', '${item.name}', this)" class="btn-action" style="flex:1;display:flex;align-items:center;justify-content:center;gap:0.35rem;padding:0.38rem 0.5rem;font-size:0.77rem;background:#1e293b;">
                   <span>⬇️</span> <span>${isInstalled ? (isUpdate ? currentDict.btn_one_click_update || '1-Click Update' : currentDict.btn_reinstall || 'Reinstall') : currentDict.btn_one_click_install || '1-Click Install'}</span>

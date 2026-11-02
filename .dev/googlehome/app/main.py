@@ -108,7 +108,7 @@ INTEGRATION_SPECS = {
         "repo": "FaserF/ha-googlehome",
         "folder": "google_home",
         "manifest_slug": "google_home",
-        "hacs_url": "https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=ha-googlehome&category=integration",
+        "hacs_url": "https://my.home-assistant.io/redirect/marketplace_repository/?owner=FaserF&repository=ha-googlehome&category=integration",
         "github_url": "https://github.com/FaserF/ha-googlehome",
     },
     "googlefindmy": {
@@ -119,7 +119,7 @@ INTEGRATION_SPECS = {
         "repo": "BSkando/GoogleFindMy-HA",
         "folder": "googlefindmy",
         "manifest_slug": "googlefindmy",
-        "hacs_url": "https://my.home-assistant.io/redirect/hacs_repository/?owner=BSkando&repository=GoogleFindMy-HA&category=integration",
+        "hacs_url": "https://my.home-assistant.io/redirect/marketplace_repository/?owner=BSkando&repository=GoogleFindMy-HA&category=integration",
         "github_url": "https://github.com/BSkando/GoogleFindMy-HA",
     },
 }

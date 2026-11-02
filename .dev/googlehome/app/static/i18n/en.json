@@ -104,7 +104,7 @@
   "badge_not_installed": "Not Installed",
   "lbl_installed_ver": "Installed",
   "lbl_latest_ver": "Latest Release",
-  "btn_open_hacs": "Open in HACS (Recommended)",
+  "btn_open_hacs": "Open in Marketplace (Recommended)",
   "btn_one_click_install": "1-Click Install",
   "btn_one_click_update": "1-Click Update",
   "btn_reinstall": "Reinstall",

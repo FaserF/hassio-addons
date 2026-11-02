@@ -33,7 +33,7 @@ function openUpdateModal(type) {
     changelogText = data.integrationChangelog || 'No release notes available.';
     repoUrl = data.integrationReleaseUrl || 'https://github.com/FaserF/ha-whatsapp/releases';
     directUpdateUrl =
-      'https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=ha-whatsapp&category=integration';
+      'https://my.home-assistant.io/redirect/marketplace_repository/?owner=FaserF&repository=ha-whatsapp&category=integration';
   }
 
   // Check if latest version is actually newer than current

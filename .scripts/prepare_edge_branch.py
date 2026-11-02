@@ -326,15 +326,15 @@ def update_integration_for_edge() -> bool:
             f.write("\n")
         print(f"   ✅ Updated integration version to {manifest['version']}")
 
-        # 2. Update README HACS link
+        # 2. Update README Marketplace / HACS link
         if os.path.exists(readme_path):
             with open(readme_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             # Replace master link with edge branch link
-            new_link = "https://my.home-assistant.io/redirect/hacs_repository/?owner=FaserF&repository=hassio-addons&category=integration&branch=edge"
+            new_link = "https://my.home-assistant.io/redirect/marketplace_repository/?owner=FaserF&repository=hassio-addons&category=integration&branch=edge"
             new_content = re.sub(
-                r"https://my\.home-assistant\.io/redirect/hacs_repository/\?owner=FaserF&repository=hassio-addons&category=integration",
+                r"https://my\.home-assistant\.io/redirect/(?:marketplace_repository|hacs_repository)/\?owner=FaserF&repository=hassio-addons&category=integration",
                 new_link,
                 content,
             )
@@ -342,7 +342,7 @@ def update_integration_for_edge() -> bool:
             if new_content != content:
                 with open(readme_path, "w", encoding="utf-8") as f:
                     f.write(new_content)
-                print("   ✅ Updated HACS link in integration README to edge branch")
+                print("   ✅ Updated Marketplace/HACS link in integration README to edge branch")
 
         return True
     except Exception as e:
