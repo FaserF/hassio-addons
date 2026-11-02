@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.2 (2026-11-02)
+
+### 📦 Dependencies
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.10](https://github.com/hassio-addons/addon-base/releases/tag/21.0.10) (#1249) ([`9e8edc58`](https://github.com/FaserF/hassio-addons/commit/9e8edc584addd18c3afcb56e0e89bfb19f03fd49))
+
+### 🎨 Style
+- ruff format python scripts ([`734b4a50`](https://github.com/FaserF/hassio-addons/commit/734b4a50470ba7b22275445c567c05642b7c3abf))
+
+
 ## 1.2.1 (2026-10-24)
 
 ### 🐛 Bug Fixes
