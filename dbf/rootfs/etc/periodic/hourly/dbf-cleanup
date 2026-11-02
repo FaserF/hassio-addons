@@ -1,4 +1,3 @@
 #!/bin/sh
 find /data/irisrt_cache /data/iris_cache -type f -mmin +360 -delete 2>/dev/null || true
 find /data/irisrt_cache /data/iris_cache -mindepth 1 -type d -empty -delete 2>/dev/null || true
-
