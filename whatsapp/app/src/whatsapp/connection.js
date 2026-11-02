@@ -398,12 +398,13 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
           logger.info({ sessionId }, 'Auto-cleaning logged out session...');
           deleteSession(sessionId);
         } else {
-          // For default session, clear creds to allow fresh pairing
-          const authDir = getAuthDir(sessionId);
-          if (fs.existsSync(authDir)) {
-            logger.info({ sessionId }, '🗑️ Clearing credentials for logged out default session...');
-            fs.rmSync(authDir, { recursive: true, force: true });
-          }
+          // For default session, do NOT aggressively wipe credentials immediately on disconnect.
+          // Keep the session in memory marked disconnected so users can re-pair via QR or re-auth,
+          // and credentials will be cleanly refreshed when pairing starts.
+          logger.info(
+            { sessionId },
+            '⚠️ WhatsApp default session logged out / disconnected. Keeping session state ready for re-auth.'
+          );
         }
       } else {
         session.disconnectReason = 'connection_error';
