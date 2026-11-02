@@ -3,6 +3,7 @@
 ## 1.1.8 (2026-11-02)
 
 ### 🐛 Bug Fixes
+
 - 🌐 Resolve Ingress path routing, relative URLs, geolocation endpoint, and CSS asset loading under Home Assistant Ingress (FaserF/ha-db_infoscreen#194).
 
 ### 📦 Dependencies
