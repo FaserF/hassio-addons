@@ -23,7 +23,7 @@ ENV \
 ARG DBF_VERSION="4.37.28"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="1.1.6"
+ENV APP_VERSION="1.1.7"
 ENV APP_NAME="DBF (DB-Infoscreen)"
 ENV APP_SLUG="dbf"
 ENV APP_UNSUPPORTED="false"
@@ -95,6 +95,7 @@ RUN find /usr/bin/dbf-* /etc/s6-overlay/s6-rc.d /etc/periodic -type f -exec sed 
         /etc/s6-overlay/s6-rc.d/dbf/run \
         /etc/s6-overlay/s6-rc.d/dbf-periodic/run \
         /etc/periodic/daily/dbf-update-data \
+        /etc/periodic/hourly/dbf-cleanup \
     && rm -rf /etc/s6-overlay/s6-rc.d/dbf-nginx \
     && rm -f /etc/s6-overlay/s6-rc.d/user/contents.d/dbf-nginx
 
@@ -114,6 +115,6 @@ LABEL \
 
 WORKDIR /app
 
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+# Healthcheck with increased start-period and timeout to prevent spurious restarts under load
+HEALTHCHECK --interval=30s --timeout=15s --start-period=60s --retries=3 \
     CMD ["/bin/sh", "-c", "curl --fail http://localhost:8092/ || exit 1"]

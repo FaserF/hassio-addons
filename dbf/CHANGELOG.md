@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.7 (2026-11-02)
+
+### 🚀 Performance & Stability
+
+- ⚡ Dynamic CPU-aware Hypnotoad worker scaling based on available hardware cores (`nproc`).
+- 🛡️ Run Hypnotoad with CPU niceness (+10) to prevent starvation of host OS services and Home Assistant Core.
+- 🧹 Automated hourly and startup cache pruning (`dbf-cleanup`) to prevent disk bloat.
+- 🩺 Robust container healthcheck with increased startup grace period.
+
 ## 1.1.6 (2026-10-24)
 
 ### 📦 Dependencies

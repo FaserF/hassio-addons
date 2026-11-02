@@ -239,7 +239,23 @@ fi
 mkdir -p /data/iris_cache /data/irisrt_cache /app/share
 
 # Set environment variables from options
-export DBFAKEDISPLAY_WORKERS=$(bashio::config 'workers' '2')
+# Dynamically calculate workers based on available CPU cores to protect low-power hosts (e.g., thin clients)
+CONFIG_WORKERS=$(bashio::config 'workers' '')
+if [ -n "$CONFIG_WORKERS" ] && [ "$CONFIG_WORKERS" -gt 0 ] 2>/dev/null; then
+    NUM_WORKERS="$CONFIG_WORKERS"
+else
+    CPU_CORES=$(nproc 2>/dev/null || echo "2")
+    # Use max 2 workers, or 1 worker on single/dual core machines to avoid CPU starvation
+    if [ "$CPU_CORES" -le 2 ]; then
+        NUM_WORKERS=1
+    elif [ "$CPU_CORES" -le 4 ]; then
+        NUM_WORKERS=2
+    else
+        NUM_WORKERS=4
+    fi
+fi
+export DBFAKEDISPLAY_WORKERS="$NUM_WORKERS"
+bashio::log.info "Configured Hypnotoad worker processes: ${DBFAKEDISPLAY_WORKERS}"
 export DBFAKEDISPLAY_STATS="/data/stats.json"
 export DBFAKEDISPLAY_IRIS_CACHE="/data/iris_cache"
 export DBFAKEDISPLAY_IRISRT_CACHE="/data/irisrt_cache"
@@ -309,8 +325,15 @@ fi
 
 bashio::log.info "Starting DBF (DB-Infoscreen)..."
 
+# Clean stale cache files older than 6 hours on every startup to prevent disk bloat
+if [ -d "/data/iris_cache" ]; then
+    find /data/iris_cache /data/irisrt_cache -type f -mmin +360 -delete 2>/dev/null || true
+    find /data/iris_cache /data/irisrt_cache -mindepth 1 -type d -empty -delete 2>/dev/null || true
+fi
+
 # Change directory to app root
 cd /app || exit 1
 
-# Start Hypnotoad in foreground
-exec hypnotoad -f index.pl
+# Start Hypnotoad in foreground with nice priority to protect host system services
+bashio::log.info "Starting Hypnotoad with CPU niceness (+10)..."
+exec nice -n 10 hypnotoad -f index.pl
