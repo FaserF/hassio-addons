@@ -14,7 +14,8 @@ https://lan-play.com/
 https://github.com/login.*
 https://github.com/settings/personal-access-tokens/new
 https://github.com/settings/tokens
-https://github.com/FaserF/hassio-addons/issues/new.*
+# GitHub commit links that may produce 500 in CI or flaky responses
+https://github.com/FaserF/hassio-addons/commit/.*
 
 # Home Assistant documentation that might be flaky or redirected
 # (Pointed to /apps/ now)
@@ -25,6 +26,7 @@ https://github.com/FaserF/hassio-addons/pkgs/container/.*
 # Home Assistant base images or private repositories that are unavailable / return 404 in CI
 https://github.com/hassio-addons/addon-base/releases/tag/.*
 https://github.com/FaserF/ha-webserver
+https://github.com/FaserF/ha-epicgames
 https://github.com/FaserF/AegisBot
 https://github.com/FaserF/EntraMirror
 https://github.com/pterodactyl/wings/releases/tag/.*
