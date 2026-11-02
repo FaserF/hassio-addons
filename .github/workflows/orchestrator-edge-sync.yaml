@@ -240,12 +240,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🔄 Update version for changed Apps only
+      - name: 🔄 Synchronize edge versions for all Apps
         if: |
           github.event_name == 'workflow_dispatch' ||
           steps.check_changes.outputs.only_workflows != 'true'
         run: |
-          echo "🔍 Determining which Apps to bump..."
+          echo "🔍 Determining which Apps were changed..."
 
           # Get all App directories
           ALL_AppS=$(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" | sed 's|^\./||' | sed 's|/config.yaml||' | grep -v "^\." | sort -u)
@@ -268,47 +268,21 @@ jobs:
             fi
           fi
 
-          # Load saved versions file
-          VERSIONS_FILE="${{ steps.save_versions.outputs.versions_file }}"
+          export VERSIONS_FILE="${{ steps.save_versions.outputs.versions_file }}"
+          export CHANGED_APPS="$CHANGED_AppS"
 
-          # Bump changed Apps
+          # Synchronize versions across all edge add-ons (master stable + 1 patch + dev suffix)
+          python3 .scripts/sync_edge_versions.py
+
+          # Also generate changelog for changed apps
           if [ -n "$CHANGED_AppS" ]; then
-            echo "📦 Apps to bump (changed in this push):"
-            echo "$CHANGED_AppS" | while read -r App; do
-              [ -n "$App" ] && echo "  - $App"
-            done
-
             for App in $CHANGED_AppS; do
               if [ -f "$App/config.yaml" ]; then
-                echo ""
-                echo "📝 Bumping $App with auto-generated dev changelog..."
-                python3 .scripts/bump_version.py "$App" patch --dev --changelog || echo "⚠️ Skipping $App"
+                echo "📝 Updating dev changelog for $App..."
+                python3 .scripts/bump_version.py "$App" patch --dev --changelog --changelog-only || echo "⚠️ Skipping changelog for $App"
               fi
             done
           fi
-
-          # Restore previous edge files for UNCHANGED Apps
-          if [ -n "$VERSIONS_FILE" ] && [ -f "$VERSIONS_FILE" ] && [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
-            echo ""
-            echo "🔄 Restoring edge config and changelog files for unchanged Apps..."
-
-            for App in $ALL_AppS; do
-              # Skip if this App was changed (already bumped above)
-              if echo "$CHANGED_AppS" | grep -q "^${App}$"; then
-                continue
-              fi
-
-              # Checkout config.yaml and CHANGELOG.md from origin/edge for unchanged apps
-              if git rev-parse --verify "origin/edge:$App/config.yaml" >/dev/null 2>&1; then
-                echo "  📌 Checkout edge config for $App"
-                git checkout origin/edge -- "$App/config.yaml" 2>/dev/null || true
-              fi
-              if git rev-parse --verify "origin/edge:$App/CHANGELOG.md" >/dev/null 2>&1; then
-                git checkout origin/edge -- "$App/CHANGELOG.md" 2>/dev/null || true
-              fi
-            done
-          fi
-
       - name: 🚀 Push edge branch
         if: |
           github.event_name == 'workflow_dispatch' ||
