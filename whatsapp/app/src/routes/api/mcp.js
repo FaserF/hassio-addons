@@ -16,7 +16,7 @@ function checkMcpAuth(req) {
 }
 
 export function registerMcpRoutes(app) {
-  let sseTransport = null;
+  const sseTransports = new Map();
 
   const server = new Server(
     {
@@ -228,12 +228,16 @@ export function registerMcpRoutes(app) {
     }
 
     try {
-      sseTransport = new SSEServerTransport('/mcp/messages', res);
-      await server.connect(sseTransport);
-      logger.info('[MCP] Client connected via SSE transport');
+      const transport = new SSEServerTransport('/mcp/messages', res);
+      const sessionId = transport.sessionId;
+      sseTransports.set(sessionId, transport);
+      await server.connect(transport);
+      logger.info({ sessionId }, '[MCP] Client connected via SSE transport');
 
       req.on('close', () => {
-        logger.info('[MCP] Client SSE connection closed');
+        logger.info({ sessionId }, '[MCP] Client SSE connection closed');
+        sseTransports.delete(sessionId);
+        transport.close().catch(() => {});
       });
     } catch (err) {
       logger.error({ error: err.message }, '[MCP] Failed to establish SSE transport');
@@ -249,14 +253,19 @@ export function registerMcpRoutes(app) {
         .json({ error: 'Unauthorized', detail: 'Invalid or missing X-Auth-Token' });
     }
 
-    if (!sseTransport) {
+    const sessionId = req.query?.sessionId;
+    const transport = sessionId
+      ? sseTransports.get(sessionId)
+      : (sseTransports.values().next().value ?? null);
+
+    if (!transport) {
       return res.status(400).json({ error: 'No active MCP SSE transport session' });
     }
 
     try {
-      await sseTransport.handlePostMessage(req, res);
+      await transport.handlePostMessage(req, res, req.body);
     } catch (err) {
-      logger.error({ error: err.message }, '[MCP] Failed to handle client post message');
+      logger.error({ error: err.message, sessionId }, '[MCP] Failed to handle client post message');
       if (!res.headersSent) res.status(500).json({ error: err.message });
     }
   });
