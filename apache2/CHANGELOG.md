@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.4.11 (2026-11-02)
+
+### 📦 Dependencies
+- ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.10](https://github.com/hassio-addons/addon-base/releases/tag/21.0.10) (#1249) ([`9e8edc58`](https://github.com/FaserF/hassio-addons/commit/9e8edc584addd18c3afcb56e0e89bfb19f03fd49))
+
+
 ## 3.4.10 (2026-10-24)
 
 ### 📦 Dependencies
