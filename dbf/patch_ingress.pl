@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+use File::Find;
 
 my $file = shift or die "Usage: $0 <file>\n";
 
@@ -15,7 +16,23 @@ close $fh;
 
 my $hook_code = <<'EOF';
 
-	# --- Ingress Patch Start (v11: Surgical Slasher) ---
+	# --- Ingress Patch Start (v12: Dynamic Ingress Engine) ---
+	# Wrap url_for to ensure paths generated have leading slashes when under Ingress
+	my $orig_url_for = \&Mojolicious::Controller::url_for;
+	{
+		no warnings 'redefine';
+		*Mojolicious::Controller::url_for = sub {
+			my $c = shift;
+			my $url = $c->$orig_url_for(@_);
+			if (ref $url && $url->isa('Mojo::URL')) {
+				if (!$url->is_abs && defined $url->path && !$url->path->leading_slash) {
+					$url->path->leading_slash(1);
+				}
+			}
+			return $url;
+		};
+	}
+
 	$self->hook(before_dispatch => sub {
 		my ($c) = @_;
 		
@@ -41,10 +58,15 @@ my $hook_code = <<'EOF';
 			$c->req->url->base->scheme("http");
 		}
 
-		# Ingress Path Support
+		# Ingress Path Support & Path Normalization
 		if ($prefix) {
 			$prefix =~ s{/+$}{};
 			$c->req->url->base->path->parse("$prefix/");
+			my $req_path = $c->req->url->path->to_string;
+			if ($req_path =~ s{^\Q$prefix\E(?=/|$)}{}) {
+				$req_path = '/' if $req_path eq '';
+				$c->req->url->path->parse($req_path);
+			}
 		}
 	});
 
@@ -62,18 +84,15 @@ my $hook_code = <<'EOF';
 			}
 		}
 
-		# Nuclear CSP cleanup
+		# Permissive CSP for Ingress embedded iframes
 		$c->res->headers->remove("Content-Security-Policy");
 		$c->res->headers->remove("X-Content-Security-Policy");
-		
-		# Permissive policy
 		$c->res->headers->header("Content-Security-Policy" => 
 			"connect-src *; " .
 			"script-src 'self' 'unsafe-inline' 'unsafe-eval'; " .
 			"img-src * data:; " .
 			"style-src 'self' 'unsafe-inline'"
 		);
-		
 		$c->res->headers->header("X-Frame-Options" => "ALLOWALL");
 	});
 	# --- Ingress Patch End ---
@@ -88,36 +107,36 @@ if ($content !~ /Ingress Patch Start/) {
         open my $wh, '>', $file or die "Can't open $file for writing: $!\n";
         print $wh $content;
         close $wh;
-        print "Successfully applied Ingress Patch v11 to $file.\n";
+        print "Successfully applied Ingress Patch v12 to $file.\n";
     } else {
         die "Error: Startup method signature not found in $file.\n";
     }
 }
 
-# 2. Surgical Template Relativizer (Sweep v11: Native Perl Edition)
-print "Starting Surgical Template Relativization (v11: Native Perl)...\n";
+# 2. Template and Asset Relativization
+print "Starting Surgical Template Relativization (v12)...\n";
 
-use File::Find;
+# In public static scripts, convert root-relative API calls to relative or base-aware
+# 1) geostop.min.js: $.post("/_geolocation" -> $.post("_geolocation"
+# 2) geostop.js: $.post('/_geolocation' -> $.post('_geolocation'
+# 3) map-refresh.min.js: $.get("/_ajax_mapinfo/" -> $.get("_ajax_mapinfo/"
+# 4) map-refresh.js: $.get('/_ajax_mapinfo/' -> $.get('_ajax_mapinfo/'
 
 my @patterns = (
-    [ qr(="/static/),  q(="static/) ],
-    [ qr(='/static/),  q(='static/) ],
-    [ qr(="/dyn/),     q(="dyn/) ],
-    [ qr(='/dyn/),     q(='dyn/) ],
-    [ qr(="/Station/), q(="Station/) ],
-    [ qr(='/Station/), q(='Station/) ],
-    [ qr(href="/"),   q(href="./") ],
-    [ qr(action="/"), q(action="./") ],
-    [ qr(href="/_backend"), q(href="_backend") ],
-    [ qr(href="/_autostop"), q(href="_autostop") ],
-    [ qr(href="/_about"), q(href="_about") ],
-    [ qr(href="/_datenschutz"), q(href="_datenschutz") ],
-    [ qr(href="/_impressum"), q(href="_impressum") ],
-    [ qr(href="\./_(about|datenschutz|impressum)"), q(href="_$1") ],
-    [ qr('/static/<%=\$av%>/css/'), q('static/<%=$av%>/css/') ],
-    [ qr('\./_geolocation'), q('_geolocation') ],
-    [ qr('/_geolocation'), q('_geolocation') ],
-    [ qr('/_ajax_mapinfo/'), q('_ajax_mapinfo/') ],
+    [ qr{href="/_about"}, q{href="_about"} ],
+    [ qr{href="/_datenschutz"}, q{href="_datenschutz"} ],
+    [ qr{href="/_impressum"}, q{href="_impressum"} ],
+    [ qr{href="/_backend"}, q{href="_backend"} ],
+    [ qr{href="/_autostop"}, q{href="_autostop"} ],
+    [ qr{href="/coverage/}, q{href="coverage/} ],
+    [ qr{'\./_geolocation'}, q{'_geolocation'} ],
+    [ qr{'/_geolocation'}, q{'_geolocation'} ],
+    [ qr{"/_geolocation"}, q{"_geolocation"} ],
+    [ qr{'\./_ajax_mapinfo/'}, q{'_ajax_mapinfo/'} ],
+    [ qr{'/_ajax_mapinfo/'}, q{'_ajax_mapinfo/'} ],
+    [ qr{"/_ajax_mapinfo/"}, q{"_ajax_mapinfo/"} ],
+    [ qr{url\("/static/}, q{url("../static/} ],
+    [ qr{url\(/static/}, q{url(../static/} ],
 );
 
 sub process_files {
@@ -142,13 +161,6 @@ sub process_files {
                 $changed = 1;
             }
         }
-        
-        # Special CSS patch
-        if ($fname =~ /\.css$/) {
-            if ($fcontent =~ s/url\("?\/static\//url\("..\/static\//g) {
-                $changed = 1;
-            }
-        }
 
         # Write back if changed
         if ($changed) {
@@ -163,4 +175,4 @@ sub process_files {
 process_files("/app/templates");
 process_files("/app/public");
 
-print "Surgical Relativization complete.\n";
+print "Ingress Patch v12 complete.\n";

@@ -2,6 +2,9 @@
 
 ## 1.1.8 (2026-11-02)
 
+### 🐛 Bug Fixes
+- 🌐 Resolve Ingress path routing, relative URLs, geolocation endpoint, and CSS asset loading under Home Assistant Ingress (FaserF/ha-db_infoscreen#194).
+
 ### 📦 Dependencies
 
 - ⬆️ Update ghcr.io/hassio-addons/base Docker tag to v[21.0.10](https://github.com/hassio-addons/addon-base/releases/tag/21.0.10) (#1249) ([`9e8edc58`](https://github.com/FaserF/hassio-addons/commit/9e8edc584addd18c3afcb56e0e89bfb19f03fd49))
