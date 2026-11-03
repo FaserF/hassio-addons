@@ -13,7 +13,7 @@ bcrypt==5.0.0
 authlib==1.9.2
 cryptography==50.0.2
 google-genai==2.34.0
-psycopg[binary,pool]==3.3.6
+psycopg[binary,pool]==3.3.7
 asyncpg==0.32.0
 aiosqlite==0.22.1
 APScheduler==3.11.3
