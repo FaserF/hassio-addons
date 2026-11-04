@@ -20,5 +20,5 @@ schema:
   firmware: str
 slug: tuya-convert
 url: https://github.com/FaserF/hassio-addons/tree/master/tuya-convert
-version: 0.2.0
+version: 0.2.1-dev-20261104-0659-caea457
 stage: deprecated

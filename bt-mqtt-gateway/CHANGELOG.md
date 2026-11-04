@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.1-dev-20261104-0659-caea457 (2026-11-04)
+
+- Release version 3.0.1-dev-20261104-0659-caea457
+
+
 ## 3.0.0 (2026-01-03)
 
 🎉 **Happy New Year 2026!** 🎉
