@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.5.11 (2026-11-04)
+
+### 📦 Dependencies & Improvements
+
+- ⬆️ Update dependency FaserF/ShieldDNS to v1.12.4
+- 🗄️ Dual backend support: SQLite (default) and PostgreSQL
+- 🌐 Fixed deal & affiliate redirect blocking (communicationads, digidip, awin1, etc.)
+- ✏️ Fixed UI allow/block domain normalization and CSRF handling
+
 ## 2.5.10 (2026-11-04)
 
 ### 📦 Dependencies & Improvements
