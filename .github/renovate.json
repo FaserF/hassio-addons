@@ -462,10 +462,24 @@
       "allowedVersions": "<2.1.0"
     },
     {
-      "description": "Skip tests for patch updates only",
-      "matchUpdateTypes": ["patch"],
-      "commitMessageSuffix": " [skip-tests]",
-      "matchDepNames": ["!@whiskeysockets/baileys"]
+      "description": "Restrict cryptography <48.0.0 and pyopenssl <26.0.0 for AegisBot HA compatibility",
+      "matchDepNames": ["cryptography"],
+      "matchFileNames": [
+        ".dev/AegisBot/requirements.txt",
+        "aegisbot/requirements.txt",
+        "AegisBot/backend/requirements.txt"
+      ],
+      "allowedVersions": "<48.0.0"
+    },
+    {
+      "description": "Restrict pyOpenSSL <26.0.0 for AegisBot HA compatibility",
+      "matchDepNames": ["pyOpenSSL", "pyopenssl"],
+      "matchFileNames": [
+        ".dev/AegisBot/requirements.txt",
+        "aegisbot/requirements.txt",
+        "AegisBot/backend/requirements.txt"
+      ],
+      "allowedVersions": "<26.0.0"
     }
   ]
 }

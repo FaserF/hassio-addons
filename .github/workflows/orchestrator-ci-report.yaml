@@ -120,7 +120,7 @@ jobs:
 
                 // Get job results for the success message
                 const buildJob = allJobs.find(j => j.name.includes("Test Build"));
-                const lintJob = allJobs.find(j => j.name.includes("Lint & Validate"));
+                const lintJob = allJobs.find(j => j.name.includes("Lint & Validate") && !j.name.includes("Root"));
 
                 const buildSkipped = buildJob ? buildJob.conclusion === 'skipped' : true;
                 const lintSkipped = lintJob ? lintJob.conclusion === 'skipped' : true;
@@ -169,8 +169,8 @@ jobs:
                     labels: filteredLabels
                 });
 
-                // Enable GitHub native auto-merge if PR has 'automerge' label or is from Renovate/Dependabot/Maintainer
-                if (isMaintainer || currentLabels.some(l => l.name === 'automerge')) {
+                // Enable GitHub native auto-merge if PR has 'automerge' label or is from Renovate/Dependabot/Maintainer (only if verification actually ran)
+                if ((isMaintainer || currentLabels.some(l => l.name === 'automerge')) && !allSkipped) {
                     try {
                         await github.rest.pulls.enableAutoMerge({
                             owner: context.repo.owner,

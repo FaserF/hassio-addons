@@ -177,8 +177,13 @@ jobs:
           # Determine if tests were intentionally skipped
           SKIP_TESTS_PRESENT=false
           if gh pr view "$PR_NUMBER" --json title,body,commits --jq '.title + " " + .body + " " + (.commits[].message // "")' 2>/dev/null | grep -qiE "\[skip-tests\]|\[skip ci\]"; then
-            SKIP_TESTS_PRESENT=true
-            echo "ℹ️  [skip-tests] or [skip ci] detected in PR metadata."
+            AUTHOR="${{ steps.find-pr.outputs.pr_author }}"
+            if [ "$AUTHOR" != "renovate[bot]" ] && [ "$AUTHOR" != "dependabot[bot]" ]; then
+              SKIP_TESTS_PRESENT=true
+              echo "ℹ️  [skip-tests] or [skip ci] detected in PR metadata."
+            else
+              echo "⚠️ [skip-tests] ignored for dependency update PR by $AUTHOR - verification required."
+            fi
           fi
 
           # Count jobs by status
@@ -188,7 +193,7 @@ jobs:
           TOTAL_JOBS=0
 
           # Jobs to exclude (notification/summary only, not verification)
-          EXCLUDE_PATTERNS="CI Start|CI Success|Report|Notification|Summary|Generate Config|Detect Changes"
+          EXCLUDE_PATTERNS="CI Start|CI Success|Report|Notification|Summary|Generate Config|Detect Changes|Root Lint"
 
           echo "Analyzing jobs..."
           while IFS= read -r job; do

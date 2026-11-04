@@ -54,14 +54,12 @@ jobs:
                   # Standardize path separators
                   App_name = App_name.replace(os.path.sep, "/")
 
-                  # Skip hidden directories (including .unsupported - these are built locally from unsupported branch)
-                  # If the path starts with . (including .unsupported), skip
-                  # If the path is inside a hidden dir (like .git/foo), skip
+                  # Skip hidden directories except .dev (which contains in-development add-ons)
                   parts = App_name.split("/")
-                  if parts[0].startswith("."):
+                  if parts[0].startswith(".") and parts[0] != ".dev":
                       continue
-                  if len(parts) > 1 and any(p.startswith(".") for p in parts):
-                       # Skip any path containing hidden directories
+                  if any(p.startswith(".") and p != ".dev" for p in parts):
+                       # Skip any path containing other hidden directories
                        continue
 
                   # Skip CI-excluded Apps (heavy/long-running, only built on release)
@@ -149,7 +147,7 @@ jobs:
           needs_build="false"
 
           for file in $CHANGED_FILES; do
-            # Check if file requires build (Dockerfile, config, scripts, etc.)
+            # Check if file requires build (Dockerfile, config, scripts, dependencies, etc.)
             if [[ "$file" == */Dockerfile ]] || \
                [[ "$file" == */build.yaml ]] || \
                [[ "$file" == */build.json ]] || \
@@ -157,6 +155,12 @@ jobs:
                [[ "$file" == */config.json ]] || \
                [[ "$file" == *run.sh ]] || \
                [[ "$file" == *.py ]] || \
+               [[ "$file" == *requirements*.txt ]] || \
+               [[ "$file" == *package*.json ]] || \
+               [[ "$file" == *package-lock.json ]] || \
+               [[ "$file" == *pyproject.toml ]] || \
+               [[ "$file" == *uv.lock ]] || \
+               [[ "$file" == *yarn.lock ]] || \
                [[ "$file" == */rootfs/* ]] || \
                [[ "$file" == */root/* ]]; then
               needs_build="true"
