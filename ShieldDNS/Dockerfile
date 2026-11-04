@@ -9,7 +9,7 @@ ARG TARGETARCH
 ARG COREDNS_VERSION="1.15.0"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.5.9"
+ENV APP_VERSION="2.5.10"
 ENV APP_NAME="ShieldDNS"
 ENV APP_SLUG="shielddns"
 ENV APP_UNSUPPORTED="false"
@@ -31,7 +31,7 @@ RUN apk add --no-cache curl \
 FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS admin-build
 ARG TARGETARCH
 # renovate: datasource=github-releases depName=FaserF/ShieldDNS
-ARG SHIELDDNS_VERSION="1.12.1"
+ARG SHIELDDNS_VERSION="1.12.2"
 WORKDIR /app
 RUN apk add --no-cache curl \
     && curl -L "https://github.com/FaserF/ShieldDNS/archive/refs/tags/v${SHIELDDNS_VERSION}.tar.gz" -o source.tar.gz \

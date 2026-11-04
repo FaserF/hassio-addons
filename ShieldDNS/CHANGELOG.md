@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.5.10 (2026-11-04)
+
+### 📦 Dependencies & Improvements
+
+- ⬆️ Update dependency FaserF/ShieldDNS to v1.12.2
+- 🛡️ Dual-stack (A + AAAA) blocklist synthesis to prevent dual-stack ad leakage
+- 🛡️ Skip cosmetic adblock rules (`#@#`, `##`, etc.) and prevent false-positive domain blocks
+- 🔄 Cluster auto-sync intervals and LAN/Tailscale ingress fixes
+
 ## 2.5.9 (2026-11-02)
 
 ### 📦 Dependencies
