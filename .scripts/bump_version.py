@@ -582,6 +582,9 @@ def bump_version(
     if target_version:
         new_version = target_version
         print(f"🔹 Target version provided: {new_version}")
+    elif changelog_only:
+        new_version = current_version
+        print(f"🔹 Changelog-only mode: using current version {new_version}")
     else:
         # If current is dev, just remove -dev for release
         if is_dev and not set_dev:

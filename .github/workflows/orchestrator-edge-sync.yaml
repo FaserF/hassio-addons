@@ -1,4 +1,4 @@
-﻿name: Orchestrator Edge Sync
+name: Orchestrator Edge Sync
 
 # This workflow keeps the 'edge' branch in sync with 'master'
 # and prepares it for local development builds (removes image tags)
@@ -278,8 +278,9 @@ jobs:
           if [ -n "$CHANGED_AppS" ]; then
             for App in $CHANGED_AppS; do
               if [ -f "$App/config.yaml" ]; then
-                echo "📝 Updating dev changelog for $App..."
-                python3 .scripts/bump_version.py "$App" patch --dev --changelog --changelog-only || echo "⚠️ Skipping changelog for $App"
+                CURRENT_EDGE_VER=$(grep -E "^version:" "$App/config.yaml" | head -1 | sed 's/version:[[:space:]]*["'"'"']\?\([^"'"'"']*\)["'"'"']\?/\1/')
+                echo "📝 Updating dev changelog for $App (version: $CURRENT_EDGE_VER)..."
+                python3 .scripts/bump_version.py "$App" patch --target-version "$CURRENT_EDGE_VER" --dev --changelog --changelog-only || echo "⚠️ Skipping changelog for $App"
               fi
             done
           fi
