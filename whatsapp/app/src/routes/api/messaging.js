@@ -38,13 +38,13 @@ export function registerMessagingRoutes(app) {
         // Without this, an "@4917..." in the message is just plain text and nobody gets notified.
         const fromText = [...String(message).matchAll(/@(\d{8,15})(?=_|\b)/g)].map((m) => m[1]);
         const rawMentions = Array.isArray(mentions)
-          ? mentions.filter((item) => (typeof item === 'string' || typeof item === 'number') && item !== '')
+          ? mentions.filter(
+              (item) => (typeof item === 'string' || typeof item === 'number') && item !== ''
+            )
           : [];
         const mentionJids = [
           ...new Set(
-            [...rawMentions, ...fromText]
-              .map((m) => getJid(String(m).trim()))
-              .filter(Boolean)
+            [...rawMentions, ...fromText].map((m) => getJid(String(m).trim())).filter(Boolean)
           ),
         ];
         const content = mentionJids.length

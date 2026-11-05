@@ -7,14 +7,12 @@ console.log('\n💬 Running Messaging Mentions & JID Unit Tests\n' + '='.repeat(
 function resolveMentions(message, mentions) {
   const fromText = [...String(message).matchAll(/@(\d{8,15})(?=_|\b)/g)].map((m) => m[1]);
   const rawMentions = Array.isArray(mentions)
-    ? mentions.filter((item) => (typeof item === 'string' || typeof item === 'number') && item !== '')
+    ? mentions.filter(
+        (item) => (typeof item === 'string' || typeof item === 'number') && item !== ''
+      )
     : [];
   return [
-    ...new Set(
-      [...rawMentions, ...fromText]
-        .map((m) => getJid(String(m).trim()))
-        .filter(Boolean)
-    ),
+    ...new Set([...rawMentions, ...fromText].map((m) => getJid(String(m).trim())).filter(Boolean)),
   ];
 }
 
@@ -89,8 +87,16 @@ assert.deepStrictEqual(
 );
 
 // 5. Trunk zero handling: Italy retains zero, Germany strips zero
-assert.strictEqual(getJid('+39 06 12345678'), '390612345678@s.whatsapp.net', 'Italian numbers must retain trunk zero');
-assert.strictEqual(getJid('+49 0176 12345678'), '4917612345678@s.whatsapp.net', 'German numbers must strip trunk zero');
+assert.strictEqual(
+  getJid('+39 06 12345678'),
+  '390612345678@s.whatsapp.net',
+  'Italian numbers must retain trunk zero'
+);
+assert.strictEqual(
+  getJid('+49 0176 12345678'),
+  '4917612345678@s.whatsapp.net',
+  'German numbers must strip trunk zero'
+);
 
 // 6. Hyphenated group IDs vs formatted phone numbers
 assert.strictEqual(
