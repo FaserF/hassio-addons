@@ -36,14 +36,17 @@ export function registerMessagingRoutes(app) {
         }
         // Mentions: an optional `mentions` array (numbers or JIDs) plus any `@<number>` written in the text.
         // Without this, an "@4917..." in the message is just plain text and nobody gets notified.
-        const fromText = [...String(message).matchAll(/@(\d{8,15})\b/g)].map((m) => m[1]);
+        const fromText = [...String(message).matchAll(/@(\d{8,15})(?=_|\b)/g)].map((m) => m[1]);
+        const rawMentions = Array.isArray(mentions)
+          ? mentions.filter((item) => (typeof item === 'string' || typeof item === 'number') && item !== '')
+          : [];
         const mentionJids = [
           ...new Set(
-            [...(Array.isArray(mentions) ? mentions : []), ...fromText].map((m) =>
-              getJid(String(m))
-            )
+            [...rawMentions, ...fromText]
+              .map((m) => getJid(String(m).trim()))
+              .filter(Boolean)
           ),
-        ].filter(Boolean);
+        ];
         const content = mentionJids.length
           ? { text: message, mentions: mentionJids }
           : { text: message };

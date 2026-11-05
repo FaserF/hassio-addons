@@ -43,8 +43,11 @@ async function run() {
     console.log('\n--- 9/10 Testing RBAC & WhatsApp Login ---');
     await import('./test-rbac-auth.js');
 
-    console.log('\n--- 10/10 Testing Data Export Engine ---');
+    console.log('\n--- 10/11 Testing Data Export Engine ---');
     await import('./test-export.js');
+
+    console.log('\n--- 11/11 Testing Messaging Mentions & JID ---');
+    await import('./test-messaging-mentions.js');
 
     const duration = ((performance.now() - startTime) / 1000).toFixed(2);
     console.log(`\n🎉 ALL TEST SUITES PASSED IN ${duration}s!`);

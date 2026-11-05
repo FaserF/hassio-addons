@@ -14,6 +14,7 @@
     "test:commands": "node tests/test-commands.js",
     "test:telegram": "node --test tests/test-telegram-bridge.js",
     "test:rbac": "node --test tests/test-rbac-auth.js",
+    "test:mentions": "node tests/test-messaging-mentions.js",
     "test": "npm run lint && node tests/run-all-tests.js"
   },
   "dependencies": {

@@ -4,13 +4,15 @@
 export function getJid(number) {
   if (!number) return '';
   if (typeof number !== 'string') number = String(number);
+  number = number.trim();
+  if (!number) return '';
 
   // 1. If it already has a domain, return it as is.
   if (number.includes('@')) return number;
 
-  // 2. If it has a dash, it's an old-style group ID (creator-timestamp)
-  if (number.includes('-')) {
-    const cleanGroup = number.replace(/[^\d-]/g, '');
+  // 2. If it's an old-style group ID (creator-timestamp)
+  const cleanGroup = number.replace(/[^\d-]/g, '');
+  if (/^\d+-\d+$/.test(cleanGroup) && cleanGroup.replace(/-/g, '').length >= 16) {
     return `${cleanGroup}@g.us`;
   }
 
@@ -19,8 +21,8 @@ export function getJid(number) {
 
   // 4. Handle European/German national trunk zero in international numbers e.g. 490176... -> 49176...
   // Matches country code (1-3 digits) followed by a 0 and 8+ digits
-  if (/^(49|43|41|33|44|31|32|34|39|48)0(\d{8,})$/.test(cleanNumber)) {
-    cleanNumber = cleanNumber.replace(/^(49|43|41|33|44|31|32|34|39|48)0/, '$1');
+  if (/^(49|43|41|33|44|31|32|34|48)0(\d{8,})$/.test(cleanNumber)) {
+    cleanNumber = cleanNumber.replace(/^(49|43|41|33|44|31|32|34|48)0/, '$1');
   }
 
   // 5. Heuristic for Group IDs vs Personal Numbers
@@ -29,6 +31,7 @@ export function getJid(number) {
   }
 
   // 6. Default to the standard WhatsApp user domain
+  if (!cleanNumber) return '';
   return `${cleanNumber}@s.whatsapp.net`;
 }
 
