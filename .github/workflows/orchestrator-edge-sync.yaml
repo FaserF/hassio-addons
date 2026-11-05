@@ -53,6 +53,8 @@ jobs:
       - name: 🔍 Check if only workflow files changed
         id: check_changes
         if: github.event_name == 'push'
+        env:
+          COMMIT_MESSAGES: ${{ join(github.event.commits.*.message, ' ') }}
         run: |
           # Get changed files in the push
           CHANGED_FILES=""
@@ -131,8 +133,7 @@ jobs:
           done
 
           # Check for force sync flag in commit messages (e.g. [force-edge], [sync-edge], [force-edge:AegisBot,Alivro])
-          COMMIT_MESSAGES="${{ join(github.event.commits.*.message, ' ') }}"
-          if echo "$COMMIT_MESSAGES" | grep -qiE "\[(force-edge|sync-edge)"; then
+          if echo "${COMMIT_MESSAGES:-}" | grep -qiE "\[(force-edge|sync-edge)"; then
             echo "🚀 Force edge sync tag detected in commit message!"
             ONLY_WORKFLOWS=false
 

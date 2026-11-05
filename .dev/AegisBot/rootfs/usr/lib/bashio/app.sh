@@ -56,7 +56,14 @@ bashio::app.auto_migrate_data() {
 	if [ -d "/share" ]; then
 		mkdir -p "$share_backup"
 		# Auto-restore if /data has no databases/keys yet
-		if [ -d "$share_backup" ] && [ -z "$(ls -A /data 2>/dev/null | grep -E '\.db|\.sqlite|database|\.secret_key|sessions')" ]; then
+		local has_data="false"
+		for f in /data/*.db /data/*.sqlite /data/*.sqlite3 /data/*database* /data/.*secret* /data/*.key /data/sessions; do
+			if [ -e "$f" ]; then
+				has_data="true"
+				break
+			fi
+		done
+		if [ -d "$share_backup" ] && [ "$has_data" = "false" ]; then
 			if [ -n "$(ls -A "$share_backup" 2>/dev/null)" ]; then
 				bashio::log.info "📦 Detected existing data from previous channel installation in /share! Auto-migrating..."
 				cp -rn "$share_backup"/* /data/ 2>/dev/null || true

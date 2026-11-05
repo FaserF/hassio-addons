@@ -313,6 +313,12 @@
   ],
   "packageRules": [
     {
+      "description": "Keep pydantic compatible with aiogram in AegisBot",
+      "matchPaths": [".dev/AegisBot/**"],
+      "matchPackageNames": ["pydantic", "pydantic[email]"],
+      "allowedVersions": "<2.14"
+    },
+    {
       "description": "PHP Version Update - update docs",
       "matchDepNames": ["php/php-src"],
       "extractVersion": "^php-(?<version>\\d+\\.\\d+)"

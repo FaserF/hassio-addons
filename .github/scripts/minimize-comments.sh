@@ -13,7 +13,10 @@ fi
 echo "Minimizing comments on PR #$PR_NUMBER matching '$MATCH_STRING'..."
 
 # Get the current user/bot login
-CURRENT_USER=$(gh api user --jq .login 2>/dev/null || echo "${GITHUB_ACTOR:-github-actions[bot]}")
+CURRENT_USER=$(gh api user --jq .login 2>/dev/null || true)
+if [ -z "$CURRENT_USER" ] || [[ "$CURRENT_USER" =~ ^\{ ]]; then
+	CURRENT_USER="${GITHUB_ACTOR:-github-actions[bot]}"
+fi
 echo "Current user: $CURRENT_USER"
 
 # Function to generate GraphQL query with cursor
@@ -84,7 +87,7 @@ while [ "$HAS_NEXT_PAGE" = "true" ]; do
 			QUERY_MINIMIZE="
       mutation {
         minimizeComment(input: {subjectId: \"$comment_id\", classifier: OUTDATED}) {
-          minimizeComment {
+          minimizedComment {
             isMinimized
           }
         }

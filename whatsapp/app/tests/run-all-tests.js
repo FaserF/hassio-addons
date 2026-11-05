@@ -11,42 +11,42 @@ async function run() {
   console.log('🚀 Running WhatsApp Addon Unified Test Suite...\n');
 
   try {
-    console.log('--- 1/7 Validating UI Scope & References ---');
+    console.log('--- 1/12 Validating UI Scope & References ---');
     await import('./validate-ui-scope.js');
 
-    console.log('\n--- 2/7 Testing UI Rendering ---');
+    console.log('\n--- 2/12 Testing UI Rendering ---');
     const { runUiRenderTests } = await import('./test-ui-render.js');
     await runUiRenderTests();
 
-    console.log('\n--- 3/7 Testing Contact Cache ---');
+    console.log('\n--- 3/12 Testing Contact Cache ---');
     await import('./test-contact-cache.js');
 
-    console.log('\n--- 4/7 Testing Moderation Engine ---');
+    console.log('\n--- 4/12 Testing Moderation Engine ---');
     await import('./test-moderation.js');
 
-    console.log('\n--- 5/7 Testing Commands Engine ---');
+    console.log('\n--- 5/12 Testing Commands Engine ---');
     await import('./test-commands.js');
 
-    console.log('\n--- 6/7 Testing Telegram Bridge ---');
+    console.log('\n--- 6/12 Testing Telegram Bridge ---');
     await import('./test-telegram-bridge.js');
 
-    console.log('\n--- 7/8 Testing Auto Responder Engine ---');
+    console.log('\n--- 7/12 Testing Auto Responder Engine ---');
     await import('./test-autoresponder.js');
 
-    console.log('\n--- 8/8 Testing Dynamic i18n & Translation Parity ---');
+    console.log('\n--- 8/12 Testing Dynamic i18n & Translation Parity ---');
     const { runI18nTests } = await import('./test-i18n.js');
     await runI18nTests();
 
-    console.log('\n--- 8/8 Testing STT Engine Parsers ---');
+    console.log('\n--- 9/12 Testing STT Engine Parsers ---');
     await import('./test-stt.js');
 
-    console.log('\n--- 9/10 Testing RBAC & WhatsApp Login ---');
+    console.log('\n--- 10/12 Testing RBAC & WhatsApp Login ---');
     await import('./test-rbac-auth.js');
 
-    console.log('\n--- 10/11 Testing Data Export Engine ---');
+    console.log('\n--- 11/12 Testing Data Export Engine ---');
     await import('./test-export.js');
 
-    console.log('\n--- 11/11 Testing Messaging Mentions & JID ---');
+    console.log('\n--- 12/12 Testing Messaging Mentions & JID ---');
     await import('./test-messaging-mentions.js');
 
     const duration = ((performance.now() - startTime) / 1000).toFixed(2);
