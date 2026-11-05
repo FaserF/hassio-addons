@@ -1,8 +1,8 @@
 fastapi==0.162.0
 uvicorn[standard]==0.54.0
 sqlalchemy==2.1.8
-greenlet>=3.1.1
 pydantic[email]==2.14.3
+greenlet==3.5.6
 pydantic-settings==2.16.2
 PyJWT[crypto]==2.15.1
 bcrypt==5.0.0
@@ -29,4 +29,4 @@ jinja2==3.1.6
 SpeechRecognition==3.17.0
 zeroconf==0.153.0
 cryptography>=43.0.0,<48.0.0
-pyOpenSSL>=24.2.1,<26.0.0
+pyOpenSSL==25.3.0

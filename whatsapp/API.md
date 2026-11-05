@@ -111,6 +111,16 @@ Sends a basic text message.
 }
 ```
 
+**Mentions:** write `@<number>` in the text and the member gets a real mention (highlighted name + notification).
+You can also pass an optional `mentions` array (numbers or JIDs, e.g. `...@lid`) if the number shouldn't appear in the text:
+
+```json
+{
+  "number": "120363000000000000@g.us",
+  "message": "@491701234567 can you take care of this?"
+}
+```
+
 #### `POST /send_image`
 
 Sends an image from a public URL.
