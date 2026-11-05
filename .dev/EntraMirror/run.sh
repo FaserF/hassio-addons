@@ -230,7 +230,6 @@ set -e
 
 # --- CONFIGURATION ---
 DATA_DIR="/data"
-DB_DIR="$DATA_DIR"
 SNAPSHOTS_DIR="$DATA_DIR/snapshots"
 SECRETS_DIR="$DATA_DIR/secrets"
 
