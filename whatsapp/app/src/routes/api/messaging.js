@@ -21,7 +21,7 @@ export function registerMessagingRoutes(app) {
       let session;
       try {
         session = getReqSession(req);
-        const { number, message, quotedMessageId } = req.body;
+        const { number, message, quotedMessageId, mentions } = req.body;
         if (!number || !message)
           return res.status(400).json({ detail: 'Missing number or message' });
 
@@ -34,7 +34,20 @@ export function registerMessagingRoutes(app) {
           const quotedMsg = getQuotedMessage(session, quotedMessageId);
           if (quotedMsg) options.quoted = quotedMsg;
         }
-        const sentMsg = await session.sock.sendMessage(jid, { text: message }, options);
+        // Mentions: an optional `mentions` array (numbers or JIDs) plus any `@<number>` written in the text.
+        // Without this, an "@4917..." in the message is just plain text and nobody gets notified.
+        const fromText = [...String(message).matchAll(/@(\d{8,15})\b/g)].map((m) => m[1]);
+        const mentionJids = [
+          ...new Set(
+            [...(Array.isArray(mentions) ? mentions : []), ...fromText].map((m) =>
+              getJid(String(m))
+            )
+          ),
+        ].filter(Boolean);
+        const content = mentionJids.length
+          ? { text: message, mentions: mentionJids }
+          : { text: message };
+        const sentMsg = await session.sock.sendMessage(jid, content, options);
         if (sentMsg && sentMsg.key?.id) {
           session.messageStore?.set(sentMsg.key.id, sentMsg);
         }
