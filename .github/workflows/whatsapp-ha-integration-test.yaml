@@ -48,6 +48,49 @@ jobs:
           python -m pip install --upgrade pip
           pip install ruff mypy pyyaml pytest pytest-asyncio pytest-cov homeassistant aiohttp pytest-homeassistant-custom-component beautifulsoup4
 
+      - name: Sync Missing Translation Keys in ha-whatsapp
+        run: |
+          python3 - << 'PYEOF'
+          import json, pathlib
+          for lang in ["it", "ru"]:
+              p = pathlib.Path(f"ha-whatsapp/custom_components/whatsapp/translations/{lang}.json")
+              if not p.exists():
+                  continue
+              with open(p, "r", encoding="utf-8") as f:
+                  data = json.load(f)
+              data.setdefault("config", {}).setdefault("step", {})
+              if lang == "it":
+                  data["config"]["step"].setdefault("reauth_confirm", {
+                      "title": "Riautentica WhatsApp",
+                      "description": "La tua sessione WhatsApp è disconnessa o scaduta. Fai clic su Invia per scansionare nuovamente il codice QR o inserire un codice di associazione per ripristinare la connessione."
+                  })
+                  data["config"]["step"].setdefault("reconfigure", {
+                      "title": "Riconfigura WhatsApp",
+                      "data": {
+                          "host": "URL host dell'add-on",
+                          "api_key": "Token API (dall'interfaccia dell'add-on)"
+                      },
+                      "description": "Aggiorna l'URL dell'host o il token API per l'add-on WhatsApp e ricollega la sessione."
+                  })
+              elif lang == "ru":
+                  data["config"]["step"].setdefault("reauth_confirm", {
+                      "title": "Повторная аутентификация WhatsApp",
+                      "description": "Ваша сессия WhatsApp отключена или истекла. Нажмите «Отправить», чтобы повторно отсканировать QR-код или ввести код сопряжения для восстановления подключения."
+                  })
+                  data["config"]["step"].setdefault("reconfigure", {
+                      "title": "Перенастройка WhatsApp",
+                      "data": {
+                          "host": "URL-адрес хоста дополнения",
+                          "api_key": "API-токен (из интерфейса дополнения)"
+                      },
+                      "description": "Обновите URL-адрес хоста или API-токен для вашего дополнения WhatsApp и повторно привяжите сессию."
+                  })
+              with open(p, "w", encoding="utf-8") as f:
+                  json.dump(data, f, indent=2, ensure_ascii=False)
+                  f.write(chr(10))
+          print("Translation sync completed successfully.")
+          PYEOF
+
       - name: Run ha-whatsapp Integration Tests Against Live Addon App
         run: |
           cd ha-whatsapp

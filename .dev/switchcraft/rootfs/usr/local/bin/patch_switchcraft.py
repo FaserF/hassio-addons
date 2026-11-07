@@ -49,7 +49,7 @@ def main():
 
     # Global Header Logger Middleware (to debug Ingress)
     # Target: app = FastAPI(...)
-    middleware_search = "app = FastAPI("
+    middleware_search = "app = FastAPI(lifespan=lifespan)"
     middleware_code = """
 # --- Ingress Debug Middleware ---
 @app.middleware(\"http\")
