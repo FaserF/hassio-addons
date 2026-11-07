@@ -13,6 +13,7 @@ ENV APP_UNSUPPORTED="false"
 
 # Install requirements
 # hadolint ignore=DL3008
+# hadolint ignore=DL3016
 RUN \
     apt-get update \
     && apt-get install -y --no-install-recommends \
