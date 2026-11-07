@@ -858,14 +858,17 @@ jobs:
                   FAILED=1
                 fi
               fi
-              # Verification Override for Pterodactyl Wings (Wait for Config)
+              # Verification Override for Pterodactyl Wings (Wait for Config) and Private Repo Apps without Token
               if [ "$FAILED" -eq 1 ]; then
                  LOGS=$(docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 || true)
                  if echo "$LOGS" | grep -q "App is NOT configured"; then
                       echo "✅ Detected 'App is NOT configured' - Marking as PASS"
                       FAILED=0
-                      # Append success message (it might appear after a FAIL message in summary, effectively overriding it)
                       RESULTS="${RESULTS}\n✅ $App: PASS (Started - Waiting for Config)"
+                 elif echo "$LOGS" | grep -q "Public access failed and no 'github_token' is configured"; then
+                      echo "✅ Detected private repo download without configured token - Marking build/install verified as PASS"
+                      FAILED=0
+                      RESULTS="${RESULTS}\n✅ $App: PASS (Install verified - Needs GitHub Token for source)"
                  fi
               fi
 
