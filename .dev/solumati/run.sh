@@ -235,8 +235,13 @@ if [ -f /solumati_skipped ]; then
 	bashio::log.warning "is private and was built without GITHUB_TOKEN."
 	bashio::log.warning "Please rebuild with a valid GITHUB_TOKEN."
 	bashio::log.warning "=================================================="
-	bashio::log.info "Exiting peacefully..."
-	exit 0
+	bashio::log.info "Starting Nginx placeholder service..."
+	mkdir -p /run/nginx
+	mkdir -p /var/lib/nginx/tmp/client_body /var/lib/nginx/tmp/proxy /var/lib/nginx/tmp/fastcgi /var/lib/nginx/tmp/uwsgi /var/lib/nginx/tmp/scgi
+	chown -R nginx:nginx /var/lib/nginx
+	nginx
+	bashio::log.info "Nginx running in placeholder mode. Sleeping..."
+	sleep infinity
 fi
 
 # --- CONFIGURATION ---

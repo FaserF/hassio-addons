@@ -8,7 +8,7 @@ if [ -f /run/paseo/env ]; then
     source /run/paseo/env
 fi
 
-[ -z "${WORKSPACE}" ] && WORKSPACE="/config"
+[ -z "${WORKSPACE}" ] && { [ -d "/homeassistant" ] && WORKSPACE="/homeassistant" || WORKSPACE="/config"; }
 [ -z "${NODE_HEAP_MB}" ] && NODE_HEAP_MB=1024
 [ -z "${NICE_VAL}" ] && NICE_VAL=10
 

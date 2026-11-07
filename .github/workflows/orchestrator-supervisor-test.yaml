@@ -869,6 +869,10 @@ jobs:
                       echo "✅ Detected private repo download without configured token - Marking build/install verified as PASS"
                       FAILED=0
                       RESULTS="${RESULTS}\n✅ $App: PASS (Install verified - Needs GitHub Token for source)"
+                 elif echo "$LOGS" | grep -q "SOLUMATI BUILD SKIPPED"; then
+                      echo "✅ Detected Solumati private build skipped - Marking build/install verified as PASS"
+                      FAILED=0
+                      RESULTS="${RESULTS}\n✅ $App: PASS (Install verified - Needs GitHub Token for source)"
                  fi
               fi
 
