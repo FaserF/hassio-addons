@@ -10,14 +10,12 @@ arch:
 init: false
 startup: services
 ingress: true
-ingress_port: 8099
 panel_icon: "mdi:code-tags"
 panel_title: "Paseo"
 homeassistant_api: true
 hassio_api: true
-hassio_role: "default"
 map:
-  - config:rw
+  - homeassistant_config:rw
   - share:rw
   - ssl:rw
   - addons:rw
@@ -31,7 +29,7 @@ options:
   omniroute_api_key: ""
   model: "omniroute/coding-cascade"
   small_model: "omniroute/fast-cascade"
-  workspace: "/config"
+  workspace: "/homeassistant"
   developer_recommendations: false
   remote_access: true
   max_memory_mb: 0
@@ -50,4 +48,3 @@ schema:
   log_level: "list(trace|debug|info|notice|warning|error|fatal)?"
 stage: "experimental"
 image: "ghcr.io/faserf/hassio-addons-paseo-{arch}"
-stage: experimental

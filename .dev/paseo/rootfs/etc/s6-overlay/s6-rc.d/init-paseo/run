@@ -15,7 +15,7 @@ LOG_LEVEL=$(bashio::config 'log_level')
 USER_MAX_MEM=$(bashio::config 'max_memory_mb')
 CPU_PRIORITY=$(bashio::config 'cpu_priority')
 
-[ -z "${WORKSPACE}" ] && WORKSPACE="/config"
+[ -z "${WORKSPACE}" ] && { [ -d "/homeassistant" ] && WORKSPACE="/homeassistant" || WORKSPACE="/config"; }
 [ -z "${MODEL}" ] && MODEL="omniroute/coding-cascade"
 [ -z "${SMALL_MODEL}" ] && SMALL_MODEL="omniroute/fast-cascade"
 [ -z "${OMNIROUTE_URL}" ] && OMNIROUTE_URL="https://omniroute.fabiseitz.de/v1"
