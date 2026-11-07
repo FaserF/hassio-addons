@@ -59,7 +59,7 @@ omniroute_api_key: ''
 omniroute_url: https://omniroute.fabiseitz.de/v1
 remote_access: true
 small_model: omniroute/fast-cascade
-workspace: /config
+workspace: /homeassistant
 ```
 
 ---
