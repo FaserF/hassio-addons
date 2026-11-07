@@ -10,6 +10,7 @@ OMNIROUTE_API_KEY=$(bashio::config 'omniroute_api_key')
 MODEL=$(bashio::config 'model')
 SMALL_MODEL=$(bashio::config 'small_model')
 WORKSPACE=$(bashio::config 'workspace')
+# shellcheck disable=SC2034
 LOG_LEVEL=$(bashio::config 'log_level')
 USER_MAX_MEM=$(bashio::config 'max_memory_mb')
 CPU_PRIORITY=$(bashio::config 'cpu_priority')
@@ -92,7 +93,7 @@ if [ ! -f /data/.paseo/server-id ]; then
     echo "srv_${RAND_SID}" > /data/.paseo/server-id
 fi
 cp -f /data/.paseo/server-id /root/.paseo/server-id
-[ -f /data/.paseo/extra-hosts.json ] && cp -f /data/.paseo/extra-hosts.json /root/.paseo/extra-hosts.json || true
+if [ -f /data/.paseo/extra-hosts.json ]; then cp -f /data/.paseo/extra-hosts.json /root/.paseo/extra-hosts.json; fi
 
 # Pre-register Home Assistant workspace project if not yet configured
 NOW_ISO=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
