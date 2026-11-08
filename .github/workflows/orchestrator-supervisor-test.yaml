@@ -873,10 +873,6 @@ jobs:
                       echo "✅ Detected Solumati private build skipped - Marking build/install verified as PASS"
                       FAILED=0
                       RESULTS="${RESULTS}\n✅ $App: PASS (Install verified - Needs GitHub Token for source)"
-                 elif echo "$LOGS" | grep -E -q "Paseo initialization completed successfully|Starting Paseo Server|Server listening on"; then
-                      echo "✅ Detected Paseo Server initialized and running - Marking as PASS"
-                      FAILED=0
-                      RESULTS="${RESULTS}\n✅ $App: PASS (Paseo Server Initialized)"
                  fi
               fi
 

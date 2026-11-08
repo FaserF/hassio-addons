@@ -75,17 +75,6 @@ async def log_ingress_headers(request, call_next):
 
     patch_file(auth_config_py, load_config_search, load_config_bypass, after=True)
 
-    # 3. Patch flet_web openapi_prefix incompatibility if present
-    for py_path in Path("/usr/local/lib").glob("python3.*/dist-packages/flet_web/fastapi/flet_fastapi.py"):
-        try:
-            fc = py_path.read_text()
-            if "openapi_prefix=openapi_prefix," in fc:
-                print(f"Patching {py_path} to remove openapi_prefix parameter...")
-                py_path.write_text(fc.replace("openapi_prefix=openapi_prefix,", ""))
-                print(f"Successfully patched {py_path}")
-        except Exception as e:
-            print(f"Warning: Could not patch {py_path}: {e}")
-
 
 if __name__ == "__main__":
     main()
