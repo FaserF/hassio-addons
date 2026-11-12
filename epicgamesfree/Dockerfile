@@ -2,6 +2,13 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base-python:20.0.1
 FROM ${BUILD_FROM}
 
 # Install requirements for Python script
+
+# App metadata (injected by CI)
+ENV APP_VERSION="0.1.2"
+ENV APP_NAME="Epic Games Freebies Claimer"
+ENV APP_SLUG="epicgamesfree"
+ENV APP_UNSUPPORTED="false"
+
 RUN \
   apk add --no-cache \
     nginx \
