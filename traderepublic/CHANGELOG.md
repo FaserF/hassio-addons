@@ -3,9 +3,9 @@
 ## 1.2.3 (2026-11-12)
 
 ### 📦 Dependencies
+
 - ⬆️ Update Add-on base images ([`126087ce`](https://github.com/FaserF/hassio-addons/commit/126087ce0f4ac26b3f19ae1190011d721da01871))
 - bump version to 2.5.11 (ShieldDNS v1.12.4) ([`d6d2c51c`](https://github.com/FaserF/hassio-addons/commit/d6d2c51c11effc4b5c8c96244d6027451d3dc893))
-
 
 ## 1.2.2 (2026-11-02)
 

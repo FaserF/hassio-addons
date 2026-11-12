@@ -3,8 +3,8 @@
 ## 1.4.15 (2026-11-12)
 
 ### 📦 Dependencies
-- ⬆️ Update Add-on base images ([`126087ce`](https://github.com/FaserF/hassio-addons/commit/126087ce0f4ac26b3f19ae1190011d721da01871))
 
+- ⬆️ Update Add-on base images ([`126087ce`](https://github.com/FaserF/hassio-addons/commit/126087ce0f4ac26b3f19ae1190011d721da01871))
 
 ## 1.4.14 (2026-11-02)
 

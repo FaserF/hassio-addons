@@ -3,11 +3,12 @@
 ## 1.1.9 (2026-11-12)
 
 ### 🐛 Bug Fixes
+
 - resolve Ingress path routing, relative URLs, and asset loading (FaserF/ha-db_infoscreen#194) ([`325a5ef4`](https://github.com/FaserF/hassio-addons/commit/325a5ef435855aaccd0f610cdcb16ab286adb1ad))
 
 ### 📦 Dependencies
-- ⬆️ Update Add-on base images ([`126087ce`](https://github.com/FaserF/hassio-addons/commit/126087ce0f4ac26b3f19ae1190011d721da01871))
 
+- ⬆️ Update Add-on base images ([`126087ce`](https://github.com/FaserF/hassio-addons/commit/126087ce0f4ac26b3f19ae1190011d721da01871))
 
 ## 1.1.8 (2026-11-02)
 
