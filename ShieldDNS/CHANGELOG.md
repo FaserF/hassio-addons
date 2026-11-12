@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.13 (2026-11-12)
+
+### 📦 Dependencies
+- ⬆️ Update Add-on base images ([`126087ce`](https://github.com/FaserF/hassio-addons/commit/126087ce0f4ac26b3f19ae1190011d721da01871))
+
+
 ## 2.5.12 (2026-11-12)
 
 ### 📦 Dependencies
