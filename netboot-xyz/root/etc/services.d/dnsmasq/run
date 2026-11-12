@@ -1,3 +1,0 @@
-#!/usr/bin/with-contenv bash
-exec \
-/usr/sbin/dnsmasq --conf-dir=/etc/dnsmasq.d --no-daemon

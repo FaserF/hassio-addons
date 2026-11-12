@@ -1,6 +1,0 @@
-#!/usr/bin/with-contenv bashio
-# shellcheck shell=bash
-set -e
-
-bashio::log.info "Starting Ingress Nginx Proxy on port 8099..."
-exec nginx -c /etc/nginx/nginx.conf
