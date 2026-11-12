@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.8 (2026-11-12)
+
+### 📦 Dependencies
+- ⬆️ Update Add-on base images ([`126087ce`](https://github.com/FaserF/hassio-addons/commit/126087ce0f4ac26b3f19ae1190011d721da01871))
+- ⬆️ Update ghcr.io/plankanban/planka Docker tag to v2.3.1 (#1287) ([`ea984461`](https://github.com/FaserF/hassio-addons/commit/ea984461590dcf4acf5524ecd838e5303abbed23))
+- ⬆️ Update ghcr.io/plankanban/planka Docker tag to v2.3.0 (#1283) ([`987e0464`](https://github.com/FaserF/hassio-addons/commit/987e04646c7f902fb17b0bd5562da0ff132fdce0))
+
+
 ## 1.4.7 (2026-11-02)
 
 ### 📦 Dependencies
