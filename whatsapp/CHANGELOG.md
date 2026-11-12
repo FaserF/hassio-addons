@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.1.9 (2026-11-12)
+
+### ✨ Features
+- support mentions in /send_message (#1264) ([`30a5bf0d`](https://github.com/FaserF/hassio-addons/commit/30a5bf0d9b11be50d1be3fe2d88291848d970cb1))
+
+### 🐛 Bug Fixes
+- patch dependabot vulnerabilities, resolve pip/shellcheck errors, and harden CI scripts ([`5ba80e9a`](https://github.com/FaserF/hassio-addons/commit/5ba80e9a6720725d951397f209a52a1432e243f0))
+- handle underscore mentions, JID normalization and Italian trunk zero ([`67890cf4`](https://github.com/FaserF/hassio-addons/commit/67890cf48ade4fc09036e180194e254c6529ba82))
+- prevent aggressive credential deletion on session disconnect ([`a3a56737`](https://github.com/FaserF/hassio-addons/commit/a3a56737e34e00368ce055e904ce7e001175063d))
+
+### 📦 Dependencies
+- ⬆️ Update Add-on base images ([`126087ce`](https://github.com/FaserF/hassio-addons/commit/126087ce0f4ac26b3f19ae1190011d721da01871))
+- ⬆️ Update dependency playwright to v1.65.0 (#1306) ([`b3aab790`](https://github.com/FaserF/hassio-addons/commit/b3aab790b9517407998b6d3bca0ba7f47a4b3907))
+- ⬆️ Update dependency express-rate-limit to v8.7.4 (#1303) ([`ab736466`](https://github.com/FaserF/hassio-addons/commit/ab7364669ac04befec93721837e200385430f53e))
+- ⬆️ Update dependency fastapi to v0.162.2 (#1294) ([`1591d2c0`](https://github.com/FaserF/hassio-addons/commit/1591d2c0b76ee0e65ae1b5283eee74d551ae7b98))
+- ⬆️ Update dependency globals to v17.14.0 (#1268) ([`6021afea`](https://github.com/FaserF/hassio-addons/commit/6021afea26af31d9dacef00e52da3763d031f4eb))
+- ⬆️ Update dependency express-rate-limit to v8.7.3 (#1271) ([`eed91c26`](https://github.com/FaserF/hassio-addons/commit/eed91c26dae837bb46e60c8e70708e420f13310b))
+
+
 ## 2.1.8 (2026-11-02)
 
 ### 🐛 Bug Fixes
