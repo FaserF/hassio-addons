@@ -2,5 +2,5 @@ fastapi==0.162.2
 uvicorn==0.54.0
 httpx==0.28.1
 pydantic==2.14.3
-google-auth==2.62.1
+google-auth==2.62.2
 starlette==1.10.0
