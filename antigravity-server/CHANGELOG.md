@@ -3,8 +3,8 @@
 ## 1.3.4 (2026-11-12)
 
 ### 📦 Dependencies
-- ⬆️ Update ghcr.io/hassio-addons/debian-base Docker tag to v[9.5.2](https://github.com/hassio-addons/addon-debian-base/releases/tag/9.5.2) ([`8c105198`](https://github.com/FaserF/hassio-addons/commit/8c105198be3d3a3a8b205eaf5f3c10338e8bc487))
 
+- ⬆️ Update ghcr.io/hassio-addons/debian-base Docker tag to v[9.5.2](https://github.com/hassio-addons/addon-debian-base/releases/tag/9.5.2) ([`8c105198`](https://github.com/FaserF/hassio-addons/commit/8c105198be3d3a3a8b205eaf5f3c10338e8bc487))
 
 ## 1.3.3 (2026-10-24)
 
