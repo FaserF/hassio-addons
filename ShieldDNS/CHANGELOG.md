@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.5.12 (2026-11-12)
+
+### 📦 Dependencies
+- ⬆️ Update Add-on Softwares ([`3374e444`](https://github.com/FaserF/hassio-addons/commit/3374e444d2a6195d949d48455ae98f1e8d2646ba))
+- bump version to 2.5.11 (ShieldDNS v1.12.4) ([`d6d2c51c`](https://github.com/FaserF/hassio-addons/commit/d6d2c51c11effc4b5c8c96244d6027451d3dc893))
+
+
 ## 2.5.11 (2026-11-04)
 
 ### 📦 Dependencies & Improvements
