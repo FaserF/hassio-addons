@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-11-12T18:51:27.399650",
+  "timestamp": "2026-11-13T00:06:34.993871",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -286,7 +286,7 @@
       "slug": "pterodactyl-wings",
       "rel_path": "pterodactyl-wings",
       "name": "pterodactyl Wings Gameserver",
-      "version": "2.4.12",
+      "version": "2.4.13",
       "description": "Open Source Gameserver",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-pterodactyl_wings-{arch}",
