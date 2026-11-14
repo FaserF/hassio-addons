@@ -4,7 +4,7 @@ sqlalchemy==2.0.57
 sqlmodel==0.0.50
 alembic==1.20.1
 pydantic==2.14.3
-pydantic-settings==2.16.2
+pydantic-settings==2.16.3
 python-multipart==0.0.33
 httpx==0.28.1
 email-validator==2.4.0
