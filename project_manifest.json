@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-11-13T00:06:34.993871",
+  "timestamp": "2026-11-14T00:40:09.858479",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -398,7 +398,7 @@
       "slug": "wiki.js",
       "rel_path": "wiki.js",
       "name": "Wiki.JS",
-      "version": "3.5.9",
+      "version": "3.5.10",
       "description": "The most powerful and extensible open source Wiki software",
       "arch": ["amd64"],
       "image": "ghcr.io/faserf/hassio-addons-wiki-{arch}",
