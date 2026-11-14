@@ -1,14 +1,12 @@
 ---
-name: Imapsync
-version: 0.4.8
+name: Imapsync (Edge)
+version: 0.4.9-dev-20261112-1007-6f38ee8
 slug: imapsync
-image: ghcr.io/faserf/hassio-addons-imapsync-{arch}
 description: Sync IMAP accounts easily and reliably.
 url: https://github.com/FaserF/hassio-addons/tree/master/imapsync
 arch:
   - aarch64
   - amd64
-# image: ghcr.io/faserf/hassio-addons-imapsync-{arch}
 init: false
 startup: once
 map:

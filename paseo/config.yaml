@@ -1,6 +1,6 @@
 ---
-name: "Paseo"
-version: "0.1.8"
+name: "Paseo (Edge)"
+version: "0.1.9-dev-20261108-0050-d61da83"
 slug: "paseo"
 description: "Autonomous AI Code Studio & Web IDE powered by OmniRoute and OpenCode."
 url: "https://github.com/FaserF/hassio-addons/tree/master/.dev/paseo"
@@ -21,7 +21,7 @@ map:
   - addons:rw
   - all_addon_configs:rw
 ports:
-  6767/tcp: 6767
+  6767/tcp: 16767
 ports_description:
   6767/tcp: "Direct Web & MCP Agent API Port (for remote control / Tailscale)"
 options:
@@ -46,5 +46,4 @@ schema:
   max_memory_mb: "int?"
   cpu_priority: "list(normal|low|idle)?"
   log_level: "list(trace|debug|info|notice|warning|error|fatal)?"
-stage: "experimental"
-image: "ghcr.io/faserf/hassio-addons-paseo-{arch}"
+stage: experimental
