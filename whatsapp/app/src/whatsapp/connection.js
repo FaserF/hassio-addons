@@ -694,3 +694,70 @@ export async function stopMDNS() {
     mdnsInstance = null;
   }
 }
+
+let watchdogIntervalId = null;
+
+export function startSocketWatchdog(sessions, getSession) {
+  if (watchdogIntervalId) return;
+  const WATCHDOG_INTERVAL = 60000;
+  watchdogIntervalId = setInterval(async () => {
+    for (const [sessionId, session] of sessions.entries()) {
+      if (!session.isConnected || !session.sock) continue;
+      const ws = session.sock.ws;
+      // If WebSocket is not open or in closing/closed state
+      if (ws && (ws.isOpen === false || (typeof ws.readyState === 'number' && ws.readyState > 1))) {
+        logger.warn(
+          { sessionId, readyState: ws.readyState },
+          '🐕 Socket watchdog detected dead/closed WebSocket while session is marked connected. Reconnecting...'
+        );
+        addLog(session, 'Socket watchdog detected closed connection. Reconnecting...', 'warning');
+        session.isConnected = false;
+        session.isConnecting = false;
+        connectToWhatsApp(sessionId, sessions, getSession).catch((err) => {
+          logger.error({ sessionId, error: err.message }, 'Failed to reconnect via watchdog');
+        });
+        continue;
+      }
+
+      // Check if session has been completely silent / idle for > 2 minutes
+      const lastActivity = session.stats?.last_received_time || session._reconnectedAt || 0;
+      const now = Date.now();
+      if (now - lastActivity > 120000 && !session.isConnecting) {
+        try {
+          await Promise.race([
+            session.sock.sendPresenceUpdate(MARK_ONLINE ? 'available' : 'unavailable'),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Watchdog presence ping timeout (10s)')), 10000)
+            ),
+          ]);
+        } catch (err) {
+          logger.warn(
+            { sessionId, error: err.message },
+            '🐕 Socket watchdog ping failed (zombie connection detected). Forcing reconnect...'
+          );
+          addLog(
+            session,
+            `Socket watchdog detected unresponsive connection (${err.message}). Reconnecting...`,
+            'warning'
+          );
+          session.isConnected = false;
+          session.isConnecting = false;
+          try {
+            session.sock?.ws?.close();
+          } catch (_) {}
+          connectToWhatsApp(sessionId, sessions, getSession).catch((recErr) => {
+            logger.error({ sessionId, error: recErr.message }, 'Failed to reconnect via watchdog');
+          });
+        }
+      }
+    }
+  }, WATCHDOG_INTERVAL);
+  if (watchdogIntervalId.unref) watchdogIntervalId.unref();
+}
+
+export function stopSocketWatchdog() {
+  if (watchdogIntervalId) {
+    clearInterval(watchdogIntervalId);
+    watchdogIntervalId = null;
+  }
+}

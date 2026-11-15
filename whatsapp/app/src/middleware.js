@@ -183,7 +183,11 @@ export const uiLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again after 15 minutes',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => isPrivateIP(req.ip || req.socket?.remoteAddress),
+  skip: (req) =>
+    isPrivateIP(req.ip || req.socket?.remoteAddress) ||
+    Boolean(
+      API_TOKEN && (req.header('X-Auth-Token') === API_TOKEN || req.query?.token === API_TOKEN)
+    ),
   validate: { trustProxy: false },
 });
 
@@ -193,7 +197,11 @@ export const apiLimiter = rateLimit({
   message: 'Too many API requests from this IP, please try again after a minute',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => isPrivateIP(req.ip || req.socket?.remoteAddress),
+  skip: (req) =>
+    isPrivateIP(req.ip || req.socket?.remoteAddress) ||
+    Boolean(
+      API_TOKEN && (req.header('X-Auth-Token') === API_TOKEN || req.query?.token === API_TOKEN)
+    ),
   validate: { trustProxy: false },
 });
 

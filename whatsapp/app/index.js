@@ -19,7 +19,13 @@ import { registerRoutes } from './src/routes/index.js';
 import { SHOULD_RESET, DATA_DIR, AUTH_DIR } from './src/config.js';
 import { disableResetSession } from './src/ha.js';
 import { saveSystemState, SYSTEM_STATE, setHealthStatus } from './src/state.js';
-import { publishMDNS, connectToWhatsApp, stopMDNS } from './src/whatsapp/connection.js';
+import {
+  publishMDNS,
+  connectToWhatsApp,
+  stopMDNS,
+  startSocketWatchdog,
+  stopSocketWatchdog,
+} from './src/whatsapp/connection.js';
 import { ADDON_SLUG } from './src/config.js';
 import fs from 'fs';
 import path from 'path';
@@ -120,6 +126,7 @@ app.listen(PORT, '0.0.0.0', () => {
 
   // Start background tasks
   startSessionCleanupTask(deleteSession);
+  startSocketWatchdog(sessions, getSession);
 });
 
 async function handleShutdown(signal) {
@@ -155,7 +162,8 @@ async function handleShutdown(signal) {
     saveStats(session);
   }
 
-  // Stop mDNS
+  // Stop background watchdogs & mDNS
+  stopSocketWatchdog();
   await stopMDNS();
 
   setTimeout(() => {
