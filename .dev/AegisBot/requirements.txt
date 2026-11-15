@@ -3,7 +3,7 @@ uvicorn[standard]==0.54.0
 sqlalchemy==2.1.8
 pydantic[email]==2.13.5
 greenlet==3.5.6
-pydantic-settings==2.16.2
+pydantic-settings==2.16.3
 PyJWT[crypto]==2.15.1
 bcrypt==5.0.0
 python-multipart==0.0.33
