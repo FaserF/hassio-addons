@@ -50,6 +50,16 @@ keyfile: privkey.pem
 log_level: info
 php_ini: default
 ssl: false
+stream_gateway:
+  cache_enabled: true
+  cache_path: /share/nginx/stream_cache
+  cache_size: 10g
+  enabled: false
+  port: 8097
+  rclone_config: /share/rclone/rclone.conf
+  rclone_enabled: false
+  rclone_remote: 'cloud_pool_crypt:'
+  upstream_url: ''
 website_name: web.local
 ```
 
