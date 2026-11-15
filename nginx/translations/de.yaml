@@ -35,3 +35,33 @@ configuration:
   log_level:
     name: Log Level
     description: "Steuert die Detailgenauigkeit der Protokolle."
+  stream_gateway:
+    name: "Stream-Gateway"
+    description: "Medien-Streaming-Gateway und optionale Rclone-Proxy-Konfiguration."
+    enabled:
+      name: "Stream-Gateway aktivieren"
+      description: "Aktiviert das performante Medien-Streaming-Gateway."
+    port:
+      name: "Gateway-Port"
+      description: "Port, auf dem das Medien-Streaming-Gateway lauscht."
+    rclone_enabled:
+      name: "Rclone-Proxy aktivieren"
+      description: "Startet internen Rclone-Daemon zum Streamen von Cloud-Remotes."
+    rclone_config:
+      name: "Rclone-Konfigurationsdatei"
+      description: "Pfad zur rclone.conf-Datei."
+    rclone_remote:
+      name: "Rclone-Remote"
+      description: "Rclone Remote-Name und Pfad (z. B. cloud_pool_crypt:)."
+    cache_enabled:
+      name: "Stream-Cache aktivieren"
+      description: "Aktiviert das Caching gestreamter Medien-Chunks."
+    cache_path:
+      name: "Stream-Cache-Pfad"
+      description: "Verzeichnis zum Speichern des Stream-Caches."
+    cache_size:
+      name: "Stream-Cache-Größe"
+      description: "Maximale Größe des Stream-Caches (z. B. 10g)."
+    upstream_url:
+      name: "Benutzerdefinierte Upstream-URL"
+      description: "Optionale benutzerdefinierte Upstream-URL zum Weiterleiten von Streams."
