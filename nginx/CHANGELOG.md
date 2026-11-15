@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.13 (2026-11-15)
+
+### ✨ Features
+- make dynamic rclone chunking and vfs cache configurable with optimized defaults (0.4.13) ([`4b77f927`](https://github.com/FaserF/hassio-addons/commit/4b77f9278845cc4c134f63dc26f3e69cc083fae9))
+
+
 ## 0.4.12 (2026-11-15)
 
 ### ✨ Features
