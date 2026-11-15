@@ -1,11 +1,5 @@
 # Changelog
 
-## 0.4.13 (2026-11-15)
-
-### ✨ Features
-
-- make dynamic rclone chunking and local VFS cache configurable with optimized defaults
-
 ## 0.4.12 (2026-11-15)
 
 ### ✨ Features
