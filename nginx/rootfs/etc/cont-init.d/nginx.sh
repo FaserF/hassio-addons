@@ -434,6 +434,7 @@ if bashio::config.true 'stream_gateway.enabled'; then
 		    }
 
 		    location /stream {
+		        rewrite ^/stream/(.*)$ /\$1 break;
 		        proxy_pass ${sg_upstream};
 		        proxy_http_version 1.1;
 		        proxy_buffering off;
