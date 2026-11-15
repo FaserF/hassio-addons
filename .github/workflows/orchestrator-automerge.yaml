@@ -21,6 +21,17 @@ jobs:
     # Job runs on both success and failure to provide feedback
     # Only merges if CI succeeded (checked in steps)
     steps:
+      - name: Generate GitHub App token for Hermes
+        id: app-token
+        if: env.HAS_BOT_CREDS == 'true'
+        uses: actions/create-github-app-token@v1
+        continue-on-error: true
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+        env:
+          HAS_BOT_CREDS: ${{ secrets.BOT_APP_ID != '' && secrets.BOT_PRIVATE_KEY != '' }}
+
       - name: ⤵️ Check out code
         uses: actions/checkout@v7
         with:
@@ -29,7 +40,7 @@ jobs:
       - name: 🔍 Find PR for this commit
         id: find-pr
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
           HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           HEAD_SHA="${{ github.event.workflow_run.head_sha }}"
@@ -104,7 +115,7 @@ jobs:
           RUN_URL: "${{ github.event.workflow_run.html_url }}"
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
           script: |
             const prNumber = parseInt(process.env.PR_NUMBER);
             const { data: comments } = await github.rest.issues.listComments({
@@ -447,6 +458,7 @@ jobs:
           steps.check-label.outputs.skip != 'true'
         uses: actions/github-script@v9
         with:
+          github-token: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
           script: |
             const prNumber = parseInt('${{ steps.find-pr.outputs.pr_number }}');
             if (isNaN(prNumber)) return;

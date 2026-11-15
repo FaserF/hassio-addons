@@ -27,15 +27,27 @@ jobs:
       !contains((github.event.head_commit.message || ''), '[skip ci]') &&
       github.actor != 'git-auto-commit-action' &&
       github.actor != 'github-actions[bot]' &&
+      github.actor != 'faserf-hermes-agent[bot]' &&
       github.actor != 'coderabbitai[bot]'
     name: 🔧 Auto-Fix & Format
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App token for Hermes
+        id: app-token
+        if: env.HAS_BOT_CREDS == 'true'
+        uses: actions/create-github-app-token@v1
+        continue-on-error: true
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+        env:
+          HAS_BOT_CREDS: ${{ secrets.BOT_APP_ID != '' && secrets.BOT_PRIVATE_KEY != '' }}
+
       - name: ⤵️ Check out code
         # zizmor: ignore[artipacked]
         uses: actions/checkout@v7
         with:
-          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token || secrets.PAT || secrets.GITHUB_TOKEN }}
           ref: ${{ github.ref_name }}
           fetch-depth: 0
 
@@ -259,9 +271,12 @@ jobs:
           commit_message: ${{ steps.commit_msg.outputs.message }}
           branch: ${{ github.ref_name }}
           file_pattern: .
-          # Use PAT to trigger subsequent workflows; fallback to GITHUB_TOKEN
+          commit_user_name: "faserf-hermes-agent[bot]"
+          commit_user_email: "342667397+faserf-hermes-agent[bot]@users.noreply.github.com"
+          commit_author: "faserf-hermes-agent[bot] <342667397+faserf-hermes-agent[bot]@users.noreply.github.com>"
+          # Use App token/PAT to trigger subsequent workflows; fallback to GITHUB_TOKEN
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token || secrets.PAT || secrets.GITHUB_TOKEN }}
 
       # If commit failed due to workflow files or race conditions, recover and try again
       - name: 🔄 Fix Push & Retry
