@@ -57,6 +57,13 @@ fi
 
 # Clear throttle on success
 rm -f "$THROTTLE_FILE"
+
+# Reset boot loop protection counter on pre-flight success
+if [ -d "/data" ]; then
+	APP_VER="${ADDON_VERSION:-unknown}"
+	printf "%s\n0\n" "$APP_VER" >"/data/.boot_loop_protection" 2>/dev/null || true
+fi
+
 bashio::log.info "✅ Pre-flight checks passed."
 
 # Always re-read integration version from the live manifest.json right before starting Node.

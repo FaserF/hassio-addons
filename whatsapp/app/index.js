@@ -70,6 +70,17 @@ app.listen(PORT, '0.0.0.0', () => {
   logger.info('✅ Service ready - Health check available at /health');
   setHealthStatus('running', 'API server is listening');
 
+  // Reset boot loop protection counter immediately upon successful startup
+  try {
+    const bootLoopFile = path.join(DATA_DIR, '.boot_loop_protection');
+    if (fs.existsSync(bootLoopFile)) {
+      const ver = fs.readFileSync(bootLoopFile, 'utf8').split('\n')[0] || '';
+      fs.writeFileSync(bootLoopFile, `${ver}\n0\n`, 'utf8');
+    }
+  } catch {
+    // Ignore errors in boot loop counter reset
+  }
+
   // Auto-start session for 'default'
   const defaultSession = getSession('default');
   const defaultDir = getAuthDir('default');
