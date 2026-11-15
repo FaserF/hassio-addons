@@ -1,5 +1,6 @@
 import { anyAuthMiddleware, apiLimiter } from '../../middleware.js';
 import { ADMIN_NUMBERS } from '../../config.js';
+import { logger } from '../../logger.js';
 import {
   getReqSession,
   getSession,
@@ -23,8 +24,10 @@ export function registerSessionRoutes(app) {
       if (!session) {
         session = getSession(sessionId);
       }
-      if (!session.sock) {
-        connectToWhatsApp(sessionId, sessions, getSession);
+      if (!session.sock || !session.isConnected) {
+        connectToWhatsApp(sessionId, sessions, getSession).catch((err) => {
+          logger.warn({ sessionId, error: err.message }, 'Failed to connect in /session/start');
+        });
       }
       res.json({ status: 'starting', session_id: sessionId, isConnected: session.isConnected });
     } catch (err) {
@@ -42,6 +45,7 @@ export function registerSessionRoutes(app) {
       try {
         if (session.sock) {
           try {
+            session.sock.ev.removeAllListeners();
             await session.sock.logout();
           } catch (e) {}
           session.sock.end(undefined);
@@ -50,6 +54,7 @@ export function registerSessionRoutes(app) {
         session.isConnected = false;
         session.isConnecting = false;
         session.qr = null;
+        session.currentQR = null;
         session.disconnectReason = 'logged_out';
 
         if (fs.existsSync(authDir)) {
@@ -57,7 +62,9 @@ export function registerSessionRoutes(app) {
         }
 
         setTimeout(() => {
-          connectToWhatsApp(session);
+          connectToWhatsApp(session.id, sessions, getSession).catch((err) => {
+            logger.warn({ sessionId: session.id, error: err.message }, 'Failed to reconnect after delete');
+          });
         }, 1000);
 
         res.json({ status: 'logged_out', message: 'Session logged out and auth data deleted' });
@@ -70,6 +77,11 @@ export function registerSessionRoutes(app) {
   app.get('/qr', apiLimiter, anyAuthMiddleware, (req, res) => {
     try {
       const session = getReqSession(req);
+      try {
+        signalInterest(session.id, connectToWhatsApp);
+      } catch (e) {
+        logger.warn({ sessionId: session.id, error: e.message }, 'signalInterest threw during /qr');
+      }
       const qrData = session.qr || session.currentQR;
       if (session.isConnected) return res.json({ status: 'connected', qr: null });
       if (qrData) return res.json({ status: 'qr_ready', qr: qrData });

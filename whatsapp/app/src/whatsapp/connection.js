@@ -115,18 +115,31 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
     state = authResult.state;
     saveCreds = authResult.saveCreds;
   } catch (err) {
-    session.isConnecting = false;
-    logger.error(
+    logger.warn(
       { sessionId, error: err.message },
-      '💥 Failed to load auth state (corrupted creds?)'
+      '💥 Failed to load auth state (corrupted creds?). Wiping corrupt auth dir to allow clean pairing...'
     );
-    addLog(
-      session,
-      `Failed to load auth state: ${err.message} — try resetting credentials.`,
-      'error'
-    );
-    setHealthStatus('faulty', `Failed to load auth state: ${err.message}`);
-    return;
+    try {
+      if (fs.existsSync(sessionAuthDir)) {
+        fs.rmSync(sessionAuthDir, { recursive: true, force: true });
+      }
+      const retryResult = await useMultiFileAuthState(sessionAuthDir);
+      state = retryResult.state;
+      saveCreds = retryResult.saveCreds;
+    } catch (retryErr) {
+      session.isConnecting = false;
+      logger.error(
+        { sessionId, error: retryErr.message },
+        '💥 Failed to initialize fresh auth state after wiping corrupt dir'
+      );
+      addLog(
+        session,
+        `Failed to load auth state: ${retryErr.message} — try resetting credentials.`,
+        'error'
+      );
+      setHealthStatus('faulty', `Failed to load auth state: ${retryErr.message}`);
+      return;
+    }
   }
 
   try {
@@ -394,17 +407,43 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
         session.disconnectReason = 'logged_out';
         session.reconnectAttempts = 0;
         session.firstFailureTime = null;
+        session.currentQR = null;
+        session.qrGenerated = false;
+
+        if (session.sock) {
+          try {
+            session.sock.ev.removeAllListeners();
+            session.sock.end(undefined);
+          } catch (e) {}
+          session.sock = null;
+        }
+
+        const authDir = getAuthDir(sessionId);
+        try {
+          if (fs.existsSync(authDir)) {
+            logger.warn(
+              { sessionId, authDir },
+              '🧹 Session was logged out / revoked by WhatsApp (401). Clearing stale credentials to allow fresh QR pairing.'
+            );
+            fs.rmSync(authDir, { recursive: true, force: true });
+          }
+        } catch (rmErr) {
+          logger.error({ sessionId, error: rmErr.message }, 'Failed to remove stale authDir after logout');
+        }
+
         if (sessionId !== 'default') {
           logger.info({ sessionId }, 'Auto-cleaning logged out session...');
           deleteSession(sessionId);
         } else {
-          // For default session, do NOT aggressively wipe credentials immediately on disconnect.
-          // Keep the session in memory marked disconnected so users can re-pair via QR or re-auth,
-          // and credentials will be cleanly refreshed when pairing starts.
           logger.info(
             { sessionId },
-            '⚠️ WhatsApp default session logged out / disconnected. Keeping session state ready for re-auth.'
+            '⚠️ WhatsApp default session logged out / disconnected. Cleared stale creds, initiating fresh QR generation.'
           );
+          setTimeout(() => {
+            connectToWhatsApp(sessionId, sessions, getSession).catch((err) => {
+              logger.error({ sessionId, error: err.message }, 'Failed to initiate QR pairing after logout');
+            });
+          }, 1500);
         }
       } else {
         session.disconnectReason = 'connection_error';

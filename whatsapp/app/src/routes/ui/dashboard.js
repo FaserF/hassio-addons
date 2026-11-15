@@ -237,8 +237,13 @@ async function updateDashboard() {
       if (initPlaceholder) initPlaceholder.style.display = 'flex';
       // Show recent connection log in the placeholder so user can see what is happening
       const logEl = document.getElementById('init-log-text');
-      if (logEl && data.connectionLogs && data.connectionLogs.length > 0) {
-        logEl.textContent = data.connectionLogs[0].msg || '';
+      if (logEl) {
+        logEl.textContent =
+          data.connectionLogs && data.connectionLogs.length > 0
+            ? data.connectionLogs[0].msg || ''
+            : window.t
+              ? window.t('dashboard.waiting_qr')
+              : 'Waiting for QR code...';
       }
     } else {
       if (qrContainer) qrContainer.style.display = 'none';

@@ -205,15 +205,25 @@ export function registerSystemRoutes(app) {
       const sessionId = sanitizeSessionId(req.body?.session_id || 'default');
       const session = getSession(sessionId);
 
+      addLog(session, 'UI requested daemon restart', 'warning');
+      session.isConnecting = false;
       if (session.sock) {
-        addLog(session, 'UI requested daemon restart', 'warning');
         setTimeout(() => {
           try {
+            session.sock.ev.removeAllListeners();
             session.sock.end(new Error('UI requested restart'));
           } catch (e) {
             logger.error({ error: e.message }, 'Error ending socket during UI restart');
           }
+          session.sock = null;
+          connectToWhatsApp(sessionId, sessions, getSession).catch((err) => {
+            logger.error({ sessionId, error: err.message }, 'Error reconnecting after restart');
+          });
         }, 500);
+      } else {
+        connectToWhatsApp(sessionId, sessions, getSession).catch((err) => {
+          logger.error({ sessionId, error: err.message }, 'Error reconnecting after restart');
+        });
       }
       res.json({ status: 'restarting', session_id: sessionId });
     } catch (err) {
