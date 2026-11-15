@@ -376,6 +376,86 @@ fastcgi_param  REDIRECT_STATUS    200;
 FASTCGI_EOF
 fi
 
+# Stream Gateway Configuration (Universal & Optional)
+if bashio::config.true 'stream_gateway.enabled'; then
+	bashio::log.info "Configuring Media Stream Gateway..."
+	sg_port="8097"
+	if bashio::config.has_value 'stream_gateway.port'; then
+		sg_port=$(bashio::config 'stream_gateway.port')
+	fi
+	sg_upstream="http://127.0.0.1:8098"
+	if bashio::config.has_value 'stream_gateway.upstream_url'; then
+		custom_upstream=$(bashio::config 'stream_gateway.upstream_url')
+		if [ -n "$custom_upstream" ] && [ "$custom_upstream" != "null" ]; then
+			sg_upstream="$custom_upstream"
+		fi
+	fi
+
+	if bashio::config.true 'stream_gateway.rclone_enabled'; then
+		rc_conf="/share/rclone/rclone.conf"
+		if bashio::config.has_value 'stream_gateway.rclone_config'; then
+			rc_conf=$(bashio::config 'stream_gateway.rclone_config')
+		fi
+		rc_remote="cloud_pool_crypt:"
+		if bashio::config.has_value 'stream_gateway.rclone_remote'; then
+			rc_remote=$(bashio::config 'stream_gateway.rclone_remote')
+		fi
+
+		if [ -f "$rc_conf" ]; then
+			bashio::log.info "Enabling internal rclone streaming daemon for remote: ${rc_remote}"
+			mkdir -p /etc/services.d/rclone-stream
+			cat >/etc/services.d/rclone-stream/run <<-EOF
+				#!/usr/bin/with-contenv bashio
+				exec rclone serve http "${rc_remote}" \
+					--config "${rc_conf}" \
+					--addr 127.0.0.1:8098 \
+					--read-only \
+					--vfs-cache-mode off \
+					--buffer-size 64M \
+					--drive-chunk-size 64M \
+					--drive-pacer-min-sleep 10ms \
+					--vfs-read-ahead 128M \
+					--vfs-fast-fingerprint \
+					--no-modtime
+			EOF
+			chmod +x /etc/services.d/rclone-stream/run
+		else
+			bashio::log.warning "rclone config file not found at ${rc_conf}. rclone daemon not started."
+		fi
+	fi
+
+	mkdir -p /etc/nginx/sites-enabled
+	cat >/etc/nginx/sites-enabled/stream_gateway.conf <<-EOF
+		server {
+		    listen ${sg_port};
+		    server_name _;
+		    client_max_body_size 0;
+
+		    location /health {
+		        access_log off;
+		        default_type text/plain;
+		        return 200 "OK\n";
+		    }
+
+		    location /stream {
+		        rewrite ^/stream/(.*)$ /\$1 break;
+		        proxy_pass ${sg_upstream};
+		        proxy_http_version 1.1;
+		        proxy_buffering off;
+		        proxy_request_buffering off;
+		        proxy_read_timeout 86400s;
+		        proxy_send_timeout 86400s;
+		        proxy_set_header Range \$http_range;
+		        proxy_set_header If-Range \$http_if_range;
+		        proxy_set_header Host \$host;
+		        proxy_set_header X-Real-IP \$remote_addr;
+		        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+		    }
+		}
+	EOF
+	bashio::log.info "Stream Gateway listening on port ${sg_port}"
+fi
+
 echo "Here is your web file architecture."
 ls -l "$webrootdocker"
 

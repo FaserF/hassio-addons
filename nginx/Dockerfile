@@ -13,7 +13,7 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 ARG PHP_VERSION="8.5"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.4.11"
+ENV APP_VERSION="0.4.12"
 ENV APP_NAME="NGINX"
 ENV APP_SLUG="nginx"
 ENV APP_UNSUPPORTED="false"
@@ -31,6 +31,7 @@ RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     nginx${NGINX_VERSION:+=$NGINX_VERSION} \
     curl \
     jq \
+    rclone \
     && PHP_V=$(echo "${PHP_VERSION}" | awk -F. '{print $1$2}') \
     && apk add --no-cache \
     "php${PHP_V}-fpm" \

@@ -9,6 +9,7 @@ import {
   loadRbacConfig,
   normalizePhoneNumber,
 } from '../src/rbac.js';
+import { sanitizeSessionId, getAuthDir } from '../src/session.js';
 
 describe('RBAC & WhatsApp Login Tests', () => {
   beforeEach(() => {
@@ -17,6 +18,18 @@ describe('RBAC & WhatsApp Login Tests', () => {
       superadmin_numbers: ['491761111111'],
       blocked_numbers: [],
     });
+  });
+
+  it('Sanitizes session IDs and handles session object instances defensively', () => {
+    assert.strictEqual(sanitizeSessionId('default'), 'default');
+    assert.strictEqual(sanitizeSessionId(''), 'default');
+    assert.strictEqual(sanitizeSessionId(null), 'default');
+    assert.strictEqual(sanitizeSessionId(undefined), 'default');
+    assert.strictEqual(sanitizeSessionId({ id: 'default' }), 'default');
+    assert.strictEqual(sanitizeSessionId({ session_id: 'work-session' }), 'work-session');
+    assert.strictEqual(sanitizeSessionId({}), 'default');
+    assert.strictEqual(sanitizeSessionId('../../../etc/passwd'), 'passwd');
+    assert.ok(getAuthDir('default'));
   });
 
   it('Normalizes phone numbers correctly', () => {

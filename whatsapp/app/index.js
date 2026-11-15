@@ -19,7 +19,13 @@ import { registerRoutes } from './src/routes/index.js';
 import { SHOULD_RESET, DATA_DIR, AUTH_DIR } from './src/config.js';
 import { disableResetSession } from './src/ha.js';
 import { saveSystemState, SYSTEM_STATE, setHealthStatus } from './src/state.js';
-import { publishMDNS, connectToWhatsApp, stopMDNS } from './src/whatsapp/connection.js';
+import {
+  publishMDNS,
+  connectToWhatsApp,
+  stopMDNS,
+  startSocketWatchdog,
+  stopSocketWatchdog,
+} from './src/whatsapp/connection.js';
 import { ADDON_SLUG } from './src/config.js';
 import fs from 'fs';
 import path from 'path';
@@ -70,6 +76,17 @@ app.listen(PORT, '0.0.0.0', () => {
   logger.info('✅ Service ready - Health check available at /health');
   setHealthStatus('running', 'API server is listening');
 
+  // Reset boot loop protection counter immediately upon successful startup
+  try {
+    const bootLoopFile = path.join(DATA_DIR, '.boot_loop_protection');
+    if (fs.existsSync(bootLoopFile)) {
+      const ver = fs.readFileSync(bootLoopFile, 'utf8').split('\n')[0] || '';
+      fs.writeFileSync(bootLoopFile, `${ver}\n0\n`, 'utf8');
+    }
+  } catch {
+    // Ignore errors in boot loop counter reset
+  }
+
   // Auto-start session for 'default'
   const defaultSession = getSession('default');
   const defaultDir = getAuthDir('default');
@@ -109,6 +126,7 @@ app.listen(PORT, '0.0.0.0', () => {
 
   // Start background tasks
   startSessionCleanupTask(deleteSession);
+  startSocketWatchdog(sessions, getSession);
 });
 
 async function handleShutdown(signal) {
@@ -144,7 +162,8 @@ async function handleShutdown(signal) {
     saveStats(session);
   }
 
-  // Stop mDNS
+  // Stop background watchdogs & mDNS
+  stopSocketWatchdog();
   await stopMDNS();
 
   setTimeout(() => {

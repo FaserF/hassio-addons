@@ -15,6 +15,7 @@
     "test:telegram": "node --test tests/test-telegram-bridge.js",
     "test:rbac": "node --test tests/test-rbac-auth.js",
     "test:mentions": "node tests/test-messaging-mentions.js",
+    "postinstall": "node scripts/patch-baileys.js",
     "test": "npm run lint && node tests/run-all-tests.js"
   },
   "dependencies": {
@@ -24,7 +25,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
     "jimp": "^1.6.1",
-    "link-preview-js": "5.0.2",
+    "link-preview-js": "6.0.0",
     "lru-cache": "^11.5.1",
     "mime-types": "^3.0.2",
     "pino": "^10.3.1",
@@ -32,7 +33,7 @@
     "sharp": "^0.35.4"
   },
   "overrides": {
-    "link-preview-js": "5.0.2",
+    "link-preview-js": "6.0.0",
     "protobufjs": "^8.7.1",
     "brace-expansion": "5.0.13",
     "zod": "^4.6.7",

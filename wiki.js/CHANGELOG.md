@@ -3,8 +3,8 @@
 ## 3.5.10 (2026-11-13)
 
 ### 📦 Dependencies
-- ⬆️ Update ghcr.io/requarks/wiki Docker tag to v[3.3.1](https://github.com/requarks/wiki/releases/tag/3.3.1) ([`6b99e215`](https://github.com/FaserF/hassio-addons/commit/6b99e215c60d5a4dc31243cb3b5e38bd0253c6cb))
 
+- ⬆️ Update ghcr.io/requarks/wiki Docker tag to v[3.3.1](https://github.com/requarks/wiki/releases/tag/3.3.1) ([`6b99e215`](https://github.com/FaserF/hassio-addons/commit/6b99e215c60d5a4dc31243cb3b5e38bd0253c6cb))
 
 ## 3.5.9 (2026-11-12)
 
