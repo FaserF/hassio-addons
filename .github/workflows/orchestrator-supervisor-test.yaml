@@ -77,12 +77,12 @@ jobs:
             while IFS= read -r config_file; do
               App_dir=$(dirname "$config_file")
               App_name=$(basename "$App_dir")
-              # Skip .unsupported Apps - they are built locally from unsupported branch
+              # Skip .unsupported and .dev Apps - they are built locally from unsupported/dev branches
               # Skip CI-excluded Apps (heavy/long-running, only test on release)
-              if [ "$App_name" != "homeassistant-test-instance" ] && [ "$App_name" != ".unsupported" ] && [ "$App_name" != "sap-abap-cloud-dev" ] && [ "$App_name" != "netboot-xyz" ] && [[ "$App_dir" != ./.unsupported/* ]]; then
+              if [ "$App_name" != "homeassistant-test-instance" ] && [ "$App_name" != ".unsupported" ] && [ "$App_name" != ".dev" ] && [ "$App_name" != "sap-abap-cloud-dev" ] && [ "$App_name" != "netboot-xyz" ] && [[ "$App_dir" != ./.unsupported/* ]] && [[ "$App_dir" != ./.dev/* ]]; then
                 AppS="${AppS}${App_name}"$'\n'
               fi
-            done < <(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" -exec grep -l "^ingress: true" {} +)
+            done < <(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" -not -path "./.dev/*" -exec grep -l "^ingress: true" {} +)
           else
             # Comma-separated list
             AppS=$(echo "$INPUT" | tr ',' '\n')
@@ -92,15 +92,15 @@ jobs:
           echo "$AppS"
 
           # Filter to only ingress-enabled Apps
-          # NOTE: .unsupported Apps are excluded - they are built locally from unsupported branch
+          # NOTE: .unsupported and .dev Apps are excluded
           INGRESS_AppS=""
           while IFS= read -r App || [ -n "$App" ]; do
             App=$(echo "$App" | xargs)  # trim whitespace
             [ -z "$App" ] && continue
 
-            # Skip .unsupported Apps - they are built locally from unsupported branch
-            if [[ "$App" == .unsupported/* ]] || [[ "$App" == .unsupported* ]] || [ -f "./.unsupported/$App/config.yaml" ]; then
-              echo "⏭️ $App is unsupported - skipping (built locally from unsupported branch)"
+            # Skip .unsupported and .dev Apps - they are built locally or dev submodules
+            if [[ "$App" == .unsupported/* ]] || [[ "$App" == .unsupported* ]] || [ -f "./.unsupported/$App/config.yaml" ] || [[ "$App" == .dev/* ]] || [[ "$App" == .dev* ]] || [ -f "./.dev/$App/config.yaml" ]; then
+              echo "⏭️ $App is unsupported or dev - skipping (built locally or dev submodule)"
               continue
             fi
 
@@ -240,9 +240,9 @@ jobs:
           for App in "${App_ARRAY[@]}"; do
             App="$(echo "$App" | xargs)"  # trim whitespace
 
-            # Skip .unsupported Apps - they should not be tested here
-            if [[ "$App" == .unsupported/* ]] || [[ "$App" == .unsupported* ]] || [ -d "./.unsupported/$App" ]; then
-              echo "⏭️ Skipping .unsupported App: $App (built locally from unsupported branch)"
+            # Skip .unsupported and .dev Apps - they should not be tested here
+            if [[ "$App" == .unsupported/* ]] || [[ "$App" == .unsupported* ]] || [ -d "./.unsupported/$App" ] || [[ "$App" == .dev/* ]] || [[ "$App" == .dev* ]] || [ -d "./.dev/$App" ]; then
+              echo "⏭️ Skipping .unsupported / .dev App: $App"
               continue
             fi
 
@@ -335,6 +335,7 @@ jobs:
           # Prepare environment: remove debugpy to avoid port conflicts and ensure backward-compatible paths
           echo "🔧 Preparing container environment..."
           docker exec ha-supervisor-test bash -c "
+            echo '127.0.0.1 supervisor hassio' >> /etc/hosts || true
             find /usr/local/lib -name debugpy -type d -exec rm -rf {} + 2>/dev/null || true
             mkdir -p /mnt/supervisor/addons 2>/dev/null || true
             ln -sfn /mnt/supervisor/apps/local /mnt/supervisor/addons/local 2>/dev/null || true
@@ -699,12 +700,13 @@ jobs:
 
               if [ -n "$OPTS" ]; then
                 echo "Configuring options for $SLUG..."
-                # POST /addons/{slug}/options expects the options object directly (not wrapped in {"options": ...})
+                # POST /addons/{slug}/options expects the options object wrapped in {"options": ...}
+                OPTS_PAYLOAD=$(jq -nc --argjson opts "$OPTS" '{"options": $opts}')
                 OPTS_RESPONSE=$(docker exec ha-supervisor-test curl -s -w "\n%{http_code}" -X POST \
                   -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
                   -H "Content-Type: application/json" \
-                  -d "$OPTS" \
-                  "http://supervisor/addons/$SLUG/options" 2>&1 || echo "CURL_FAILED")
+                  -d "$OPTS_PAYLOAD" \
+                  "http://127.0.0.1:80/addons/$SLUG/options" 2>&1 || echo "CURL_FAILED")
                 OPTS_HTTP_CODE=$(echo "$OPTS_RESPONSE" | tail -1)
                 OPTS_BODY=$(echo "$OPTS_RESPONSE" | head -n -1)
                 if [ "$OPTS_HTTP_CODE" = "200" ] || echo "$OPTS_BODY" | grep -q '"result":"ok"'; then
@@ -719,15 +721,15 @@ jobs:
                 # Verify options were applied
                 ACTUAL_OPTS=$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -rc '.data.user_options // .data.options // "{}"')
                 echo "Options in Supervisor: $ACTUAL_OPTS"
-                  if [ "$App" = "whatsapp" ] && ! echo "$ACTUAL_OPTS" | grep -q "media_folder"; then
-                    echo "⚠️ Warning: media_folder not found in actual options. Retrying once via API..."
-                    docker exec ha-supervisor-test curl -s -X POST \
-                      -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
-                      -H "Content-Type: application/json" \
-                      -d "$OPTS" \
-                      "http://supervisor/addons/$SLUG/options" || echo "⚠️ Failed to update options via API (retry)"
-                    sleep 2
-                  fi
+                if [ "$App" = "whatsapp" ] && ! echo "$ACTUAL_OPTS" | grep -q "media_folder"; then
+                  echo "⚠️ Warning: media_folder not found in actual options. Retrying once via API..."
+                  docker exec ha-supervisor-test curl -s -X POST \
+                    -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
+                    -H "Content-Type: application/json" \
+                    -d "$OPTS_PAYLOAD" \
+                    "http://127.0.0.1:80/addons/$SLUG/options" || echo "⚠️ Failed to update options via API (retry)"
+                  sleep 2
+                fi
               fi
 
               # Start App
