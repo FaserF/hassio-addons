@@ -84,8 +84,8 @@ jobs:
               fi
             done < <(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" -not -path "./.dev/*" -exec grep -l "^ingress: true" {} +)
           else
-            # Comma-separated list or unquoted array string
-            AppS=$(echo "$INPUT" | tr -d '[' | tr -d ']' | tr -d '"' | tr ',' '\n')
+            # Comma-separated list
+            AppS=$(echo "$INPUT" | tr ',' '\n')
           fi
 
           echo "Input Apps:"
@@ -746,14 +746,12 @@ jobs:
                   else
                     echo "⚠️ App did not start after timeout grace period"
                     docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -50 || true
-                    docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -50 || true
                     RESULTS="$RESULTS\n⚠️ $App: WARN (Start timeout)"
                     START_EXIT=0
                   fi
                 else
                   echo "❌ Start failed: $START_OUTPUT"
                   docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -50 || true
-                  docker exec ha-supervisor-test ha supervisor logs 2>&1 | tail -50 || true
                   RESULTS="$RESULTS\n❌ $App: FAIL (Start failed)"
                   FAILED=1
                 fi
