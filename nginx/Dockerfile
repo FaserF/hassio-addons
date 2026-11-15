@@ -31,6 +31,7 @@ RUN mkdir -p /run/nginx /var/log/nginx /var/lib/nginx \
     nginx${NGINX_VERSION:+=$NGINX_VERSION} \
     curl \
     jq \
+    rclone \
     && PHP_V=$(echo "${PHP_VERSION}" | awk -F. '{print $1$2}') \
     && apk add --no-cache \
     "php${PHP_V}-fpm" \

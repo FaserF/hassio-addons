@@ -31,6 +31,16 @@ options:
   keyfile: privkey.pem
   log_level: "info"
   init_commands: []
+  stream_gateway:
+    enabled: false
+    port: 8097
+    rclone_enabled: false
+    rclone_config: "/share/rclone/rclone.conf"
+    rclone_remote: "cloud_pool_crypt:"
+    cache_enabled: true
+    cache_path: "/share/nginx/stream_cache"
+    cache_size: "10g"
+    upstream_url: ""
 schema:
   document_root: str
   php_ini: str
@@ -45,10 +55,22 @@ schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
   init_commands:
     - str?
+  stream_gateway:
+    enabled: bool?
+    port: port?
+    rclone_enabled: bool?
+    rclone_config: str?
+    rclone_remote: str?
+    cache_enabled: bool?
+    cache_path: str?
+    cache_size: str?
+    upstream_url: str?
 ports:
   80/tcp: 80
   443/tcp: 8324
+  8097/tcp: 8097
 ports_description:
   80/tcp: Web interface http
   443/tcp: SSL Web interface
+  8097/tcp: Media stream gateway & rclone proxy
 stage: experimental
