@@ -1,5 +1,26 @@
 # Changelog
 
+## 2.1.10 (2026-11-15)
+
+### ✨ Features
+- add socket watchdog and bypass rate limit for authenticated API (fixes FaserF/ha-whatsapp#114) ([`01f4cf29`](https://github.com/FaserF/hassio-addons/commit/01f4cf2977abb8082eef0acd6d4436c8a64560cd))
+
+### 🐛 Bug Fixes
+- clear stale credentials on 401 logged out and fix QR generation (fixes #1336) ([`100a8909`](https://github.com/FaserF/hassio-addons/commit/100a89094fdff37d711939447ca7984b25d0e528))
+- support channel media uploads and unencrypted forwarding (fixes FaserF/ha-whatsapp#127) ([`6483313f`](https://github.com/FaserF/hassio-addons/commit/6483313f50d789a6a7dfae6d9a7287ab6794e7ce))
+- prevent boot loop and timeout failures during system boot (fixes FaserF/ha-whatsapp#128) ([`7b79dc86`](https://github.com/FaserF/hassio-addons/commit/7b79dc8658cbb9d657fec2e7d40dc3d94d34aa40))
+- support ephemeral expiration in message sending and chat cache (fixes FaserF/ha-whatsapp#129) ([`d5cf7f98`](https://github.com/FaserF/hassio-addons/commit/d5cf7f98a489520cf13efc084b70c1510adab209))
+- filter out undefined events before queueing ([`72398042`](https://github.com/FaserF/hassio-addons/commit/72398042ed3c48a82804ccd01b86245a566365d9))
+
+### 📦 Dependencies
+- ⬆️ Update dependency fastapi to v0.163.1 ([`2d19d3bc`](https://github.com/FaserF/hassio-addons/commit/2d19d3bcbb28fbe0f71265fb0df2894016ab407a))
+- bump the npm_and_yarn group across 1 directory with 2 updates (#1332) ([`7e1e1e6e`](https://github.com/FaserF/hassio-addons/commit/7e1e1e6e465949c29164c30198df49b2f7199001))
+- ⬆️ Update dependency link-preview-js to v6 (#1329) ([`6b69c929`](https://github.com/FaserF/hassio-addons/commit/6b69c92934adbcab5ef39ffa88289b98dbc01ef4))
+- ⬆️ Update dependency playwright to v1.65.2 (#1326) ([`9b646bf9`](https://github.com/FaserF/hassio-addons/commit/9b646bf9e4570bd8fe4b88e59d1c30befb56b852))
+- ⬆️ Update dependency eslint to v10.15.0 (#1325) ([`fe8b6d39`](https://github.com/FaserF/hassio-addons/commit/fe8b6d39d1e3f965d7a37465fe3785a180401d81))
+- ⬆️ Update dependency link-preview-js to v5.0.2 ([`703f6b83`](https://github.com/FaserF/hassio-addons/commit/703f6b831265af5451f7e960316bbb977067e9ce))
+
+
 ## 2.1.9 (2026-11-12)
 
 ### ✨ Features
