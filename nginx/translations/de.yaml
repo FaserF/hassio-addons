@@ -65,3 +65,27 @@ configuration:
     upstream_url:
       name: "Benutzerdefinierte Upstream-URL"
       description: "Optionale benutzerdefinierte Upstream-URL zum Weiterleiten von Streams."
+    vfs_cache_mode:
+      name: "VFS-Cache-Modus"
+      description: "Cache-Modus für das Streaming (z. B. full, off, minimal, writes)."
+    cache_dir:
+      name: "Rclone-Cache-Verzeichnis"
+      description: "Pfad zum Speichern des lokalen Sparse-VFS-Stream-Caches."
+    vfs_cache_max_size:
+      name: "Max. VFS-Cache-Größe"
+      description: "Maximale Größe des Rclone-VFS-Caches (z. B. 10G)."
+    vfs_cache_max_age:
+      name: "Max. VFS-Cache-Alter"
+      description: "Maximales Alter gecachter Chunks vor der Freigabe (z. B. 24h)."
+    vfs_read_chunk_size:
+      name: "VFS-Lese-Chunk-Größe"
+      description: "Initiale Chunk-Größe für schnellen Videostart (z. B. 8M)."
+    vfs_read_chunk_size_limit:
+      name: "VFS-Lese-Chunk-Größenlimit"
+      description: "Maximale Chunk-Skalierung bei kontinuierlichem Stream (z. B. 64M)."
+    buffer_size:
+      name: "Rclone-Puffergröße"
+      description: "Arbeitsspeicher-Puffergröße pro aktiver Mediendatei (z. B. 32M)."
+    vfs_read_ahead:
+      name: "VFS-Read-Ahead"
+      description: "Vorauslese-Puffer für unterbrechungsfreie Wiedergabe (z. B. 64M)."

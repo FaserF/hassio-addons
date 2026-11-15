@@ -404,17 +404,63 @@ if bashio::config.true 'stream_gateway.enabled'; then
 		if [ -f "$rc_conf" ]; then
 			bashio::log.info "Enabling internal rclone streaming daemon for remote: ${rc_remote}"
 			mkdir -p /etc/services.d/rclone-stream
+
+			rc_vfs_cache_mode="full"
+			if bashio::config.has_value 'stream_gateway.vfs_cache_mode'; then
+				rc_vfs_cache_mode=$(bashio::config 'stream_gateway.vfs_cache_mode')
+			fi
+
+			rc_cache_dir="/data/rclone_cache"
+			if bashio::config.has_value 'stream_gateway.cache_dir'; then
+				rc_cache_dir=$(bashio::config 'stream_gateway.cache_dir')
+			fi
+			mkdir -p "$rc_cache_dir"
+
+			rc_vfs_cache_max_size="10G"
+			if bashio::config.has_value 'stream_gateway.vfs_cache_max_size'; then
+				rc_vfs_cache_max_size=$(bashio::config 'stream_gateway.vfs_cache_max_size')
+			fi
+
+			rc_vfs_cache_max_age="24h"
+			if bashio::config.has_value 'stream_gateway.vfs_cache_max_age'; then
+				rc_vfs_cache_max_age=$(bashio::config 'stream_gateway.vfs_cache_max_age')
+			fi
+
+			rc_vfs_read_chunk_size="8M"
+			if bashio::config.has_value 'stream_gateway.vfs_read_chunk_size'; then
+				rc_vfs_read_chunk_size=$(bashio::config 'stream_gateway.vfs_read_chunk_size')
+			fi
+
+			rc_vfs_read_chunk_size_limit="64M"
+			if bashio::config.has_value 'stream_gateway.vfs_read_chunk_size_limit'; then
+				rc_vfs_read_chunk_size_limit=$(bashio::config 'stream_gateway.vfs_read_chunk_size_limit')
+			fi
+
+			rc_buffer_size="32M"
+			if bashio::config.has_value 'stream_gateway.buffer_size'; then
+				rc_buffer_size=$(bashio::config 'stream_gateway.buffer_size')
+			fi
+
+			rc_vfs_read_ahead="64M"
+			if bashio::config.has_value 'stream_gateway.vfs_read_ahead'; then
+				rc_vfs_read_ahead=$(bashio::config 'stream_gateway.vfs_read_ahead')
+			fi
+
 			cat >/etc/services.d/rclone-stream/run <<-EOF
 				#!/usr/bin/with-contenv bashio
 				exec rclone serve http "${rc_remote}" \
 					--config "${rc_conf}" \
 					--addr 127.0.0.1:8098 \
 					--read-only \
-					--vfs-cache-mode off \
-					--buffer-size 64M \
-					--drive-chunk-size 64M \
+					--vfs-cache-mode "${rc_vfs_cache_mode}" \
+					--cache-dir "${rc_cache_dir}" \
+					--vfs-cache-max-size "${rc_vfs_cache_max_size}" \
+					--vfs-cache-max-age "${rc_vfs_cache_max_age}" \
+					--vfs-read-chunk-size "${rc_vfs_read_chunk_size}" \
+					--vfs-read-chunk-size-limit "${rc_vfs_read_chunk_size_limit}" \
+					--buffer-size "${rc_buffer_size}" \
+					--vfs-read-ahead "${rc_vfs_read_ahead}" \
 					--drive-pacer-min-sleep 10ms \
-					--vfs-read-ahead 128M \
 					--vfs-fast-fingerprint \
 					--no-modtime
 			EOF

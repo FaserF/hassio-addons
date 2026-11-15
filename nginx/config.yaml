@@ -1,6 +1,6 @@
 ---
 name: NGINX
-version: 0.4.12
+version: 0.4.13
 slug: nginx
 description: Open Source Webserver with PHP and MariaDB.
 url: https://github.com/FaserF/hassio-addons/tree/master/nginx
@@ -41,6 +41,14 @@ options:
     cache_path: "/share/nginx/stream_cache"
     cache_size: "10g"
     upstream_url: ""
+    vfs_cache_mode: "full"
+    cache_dir: "/data/rclone_cache"
+    vfs_cache_max_size: "10G"
+    vfs_cache_max_age: "24h"
+    vfs_read_chunk_size: "8M"
+    vfs_read_chunk_size_limit: "64M"
+    buffer_size: "32M"
+    vfs_read_ahead: "64M"
 schema:
   document_root: str
   php_ini: str
@@ -65,6 +73,14 @@ schema:
     cache_path: str?
     cache_size: str?
     upstream_url: str?
+    vfs_cache_mode: list(off|minimal|writes|full)?
+    cache_dir: str?
+    vfs_cache_max_size: str?
+    vfs_cache_max_age: str?
+    vfs_read_chunk_size: str?
+    vfs_read_chunk_size_limit: str?
+    buffer_size: str?
+    vfs_read_ahead: str?
 ports:
   80/tcp: 80
   443/tcp: 8324
