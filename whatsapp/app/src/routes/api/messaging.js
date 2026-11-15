@@ -822,11 +822,7 @@ export function registerMessagingRoutes(app) {
         }
 
         const options = getSendOptions(session, targetJid, req.body);
-        const sentMsg = await session.sock.sendMessage(
-          targetJid,
-          { forward: storedMsg },
-          options
-        );
+        const sentMsg = await session.sock.sendMessage(targetJid, { forward: storedMsg }, options);
         trackSent(session, targetNumber, `[Forwarded Message]`);
         res.json({ status: 'forwarded', id: sentMsg?.key?.id });
       } catch (err) {

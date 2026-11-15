@@ -113,9 +113,7 @@ assert.strictEqual(
 
 // 7. getSendOptions resolves ephemeralExpiration from req.body or chatCache
 const mockSession = {
-  chatCache: new Map([
-    ['123456789@s.whatsapp.net', { ephemeralExpiration: 604800 }],
-  ]),
+  chatCache: new Map([['123456789@s.whatsapp.net', { ephemeralExpiration: 604800 }]]),
   messageStore: new Map(),
 };
 
