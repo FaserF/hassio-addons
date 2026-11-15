@@ -193,14 +193,17 @@ if [ "$MEDIA_FOLDER" != "null" ]; then
 	fi
 fi
 
-# Detect Home Assistant config directory
+# Detect Home Assistant config directory (/config or /homeassistant)
 HA_CONFIG_ROOT=""
-for path in "/config" "/homeassistant"; do
-	if [ -d "$path" ]; then
-		HA_CONFIG_ROOT="$path"
-		break
-	fi
-done
+if [ -f "/homeassistant/configuration.yaml" ] || [ -d "/homeassistant/custom_components" ]; then
+	HA_CONFIG_ROOT="/homeassistant"
+elif [ -f "/config/configuration.yaml" ] || [ -d "/config/custom_components" ]; then
+	HA_CONFIG_ROOT="/config"
+elif [ -d "/homeassistant" ]; then
+	HA_CONFIG_ROOT="/homeassistant"
+elif [ -d "/config" ]; then
+	HA_CONFIG_ROOT="/config"
+fi
 
 if [ -z "$HA_CONFIG_ROOT" ]; then
 	bashio::log.error "Could not find Home Assistant configuration directory in /config or /homeassistant"
@@ -208,7 +211,8 @@ if [ -z "$HA_CONFIG_ROOT" ]; then
 	HA_CONFIG_ROOT="/config"
 fi
 
-INTEGRATION_DIR="${HA_CONFIG_ROOT}/custom_components/whatsapp"
+export HA_CONFIG_ROOT
+export INTEGRATION_DIR="${HA_CONFIG_ROOT}/custom_components/whatsapp"
 
 # Debug Configuration
 bashio::log.debug "--- Configurations ---"

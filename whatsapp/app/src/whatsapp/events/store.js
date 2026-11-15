@@ -69,13 +69,42 @@ export function bindStore(session, ev) {
 
   ev.on('chats.upsert', (chats) => {
     for (const chat of chats) {
-      session.chatCache?.set(chat.id, true);
+      if (chat.id) {
+        const existing = session.chatCache?.get(chat.id);
+        const obj = typeof existing === 'object' && existing !== null ? existing : {};
+        session.chatCache?.set(chat.id, {
+          ...obj,
+          ephemeralExpiration:
+            chat.ephemeralExpiration || chat.ephemeralDuration || obj.ephemeralExpiration,
+        });
+      }
+    }
+  });
+
+  ev.on('chats.update', (chats) => {
+    for (const chat of chats) {
+      if (chat.id) {
+        const existing = session.chatCache?.get(chat.id);
+        const obj = typeof existing === 'object' && existing !== null ? existing : {};
+        session.chatCache?.set(chat.id, {
+          ...obj,
+          ...(chat.ephemeralExpiration ? { ephemeralExpiration: chat.ephemeralExpiration } : {}),
+        });
+      }
     }
   });
 
   ev.on('groups.upsert', (groups) => {
     for (const group of groups) {
       session.groupCache?.set(group.id, group.subject);
+      if (group.id && group.ephemeralDuration) {
+        const existing = session.chatCache?.get(group.id);
+        const obj = typeof existing === 'object' && existing !== null ? existing : {};
+        session.chatCache?.set(group.id, {
+          ...obj,
+          ephemeralExpiration: group.ephemeralDuration,
+        });
+      }
     }
   });
 
@@ -83,6 +112,14 @@ export function bindStore(session, ev) {
     for (const group of groups) {
       if (group.subject) {
         session.groupCache?.set(group.id, group.subject);
+      }
+      if (group.id && group.ephemeralDuration) {
+        const existing = session.chatCache?.get(group.id);
+        const obj = typeof existing === 'object' && existing !== null ? existing : {};
+        session.chatCache?.set(group.id, {
+          ...obj,
+          ephemeralExpiration: group.ephemeralDuration,
+        });
       }
     }
   });

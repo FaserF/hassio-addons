@@ -35,3 +35,33 @@ configuration:
   log_level:
     name: "Log Level"
     description: "Controls the verbosity of the app logs."
+  stream_gateway:
+    name: "Stream Gateway"
+    description: "Media streaming gateway and optional rclone proxy configuration."
+    enabled:
+      name: "Enable Stream Gateway"
+      description: "Enable the high-performance media stream gateway."
+    port:
+      name: "Gateway Port"
+      description: "Port for the media stream gateway to listen on."
+    rclone_enabled:
+      name: "Enable Rclone Proxy"
+      description: "Start internal rclone daemon to stream from cloud remotes."
+    rclone_config:
+      name: "Rclone Config File"
+      description: "Path to rclone.conf file."
+    rclone_remote:
+      name: "Rclone Remote"
+      description: "Rclone remote name and path (e.g. cloud_pool_crypt:)."
+    cache_enabled:
+      name: "Enable Stream Cache"
+      description: "Enable caching of streamed media chunks."
+    cache_path:
+      name: "Stream Cache Path"
+      description: "Directory to store stream cache."
+    cache_size:
+      name: "Stream Cache Size"
+      description: "Maximum size of the stream cache (e.g. 10g)."
+    upstream_url:
+      name: "Custom Upstream URL"
+      description: "Optional custom upstream URL to proxy streams from."

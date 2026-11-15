@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 import { getJid } from '../src/utils/jid.js';
+import { getSendOptions } from '../src/routes/api/helpers.js';
 
 console.log('\n💬 Running Messaging Mentions & JID Unit Tests\n' + '='.repeat(50));
 
@@ -108,6 +109,48 @@ assert.strictEqual(
   getJid('+49-176-1234567'),
   '491761234567@s.whatsapp.net',
   'Hyphenated phone number must resolve to @s.whatsapp.net'
+);
+
+// 7. getSendOptions resolves ephemeralExpiration from req.body or chatCache
+const mockSession = {
+  chatCache: new Map([['123456789@s.whatsapp.net', { ephemeralExpiration: 604800 }]]),
+  messageStore: new Map(),
+};
+
+assert.deepStrictEqual(
+  getSendOptions(mockSession, '99999@s.whatsapp.net', { expiration: 86400 }),
+  { ephemeralExpiration: 86400 },
+  'Explicit expiration in req.body must set options.ephemeralExpiration'
+);
+
+assert.deepStrictEqual(
+  getSendOptions(mockSession, '99999@s.whatsapp.net', { expiration: '604800' }),
+  { ephemeralExpiration: 604800 },
+  'String expiration in req.body must parse to integer ephemeralExpiration'
+);
+
+assert.deepStrictEqual(
+  getSendOptions(mockSession, '99999@s.whatsapp.net', { ephemeralExpiration: 604800 }),
+  { ephemeralExpiration: 604800 },
+  'ephemeralExpiration property in req.body must be accepted'
+);
+
+assert.deepStrictEqual(
+  getSendOptions(mockSession, '99999@s.whatsapp.net', { expiration: 0 }),
+  {},
+  'Expiration of 0 must not set ephemeralExpiration'
+);
+
+assert.deepStrictEqual(
+  getSendOptions(mockSession, '123456789@s.whatsapp.net', {}),
+  { ephemeralExpiration: 604800 },
+  'Missing expiration in req.body must fall back to session.chatCache ephemeralExpiration'
+);
+
+assert.deepStrictEqual(
+  getSendOptions(mockSession, '123456789@s.whatsapp.net', { expiration: 86400 }),
+  { ephemeralExpiration: 86400 },
+  'Explicit expiration must override chatCache'
 );
 
 console.log('✅ ALL MESSAGING MENTION & JID TESTS PASSED\n');

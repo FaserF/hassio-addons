@@ -36,8 +36,8 @@ check_github_status() {
 		;;
 	esac
 
-	# If server error (5xx) or connection timeout (000), check GitHub Status API
-	if [[ "$http_code" =~ ^(000|500|502|503|504)$ ]]; then
+	# If server error (5xx), check GitHub Status API (skip if 000 / network offline to avoid boot delays)
+	if [[ "$http_code" =~ ^(500|502|503|504)$ ]]; then
 		local gh_status
 		gh_status=$(curl -s --connect-timeout 5 --max-time 10 "https://www.githubstatus.com/api/v2/status.json" 2>/dev/null || echo "")
 		if [ -n "$gh_status" ]; then
@@ -167,7 +167,7 @@ else
 	if [ -n "${GITHUB_TOKEN:-}" ] && [ "$GITHUB_TOKEN" != "null" ]; then
 		CURL_AUTH=("-H" "Authorization: Bearer ${GITHUB_TOKEN}")
 	fi
-	rel_code=$(curl -s --connect-timeout 10 --max-time 30 -w "%{http_code}" "${CURL_AUTH[@]}" -A "HomeAssistant-Addon" -o /tmp/whatsapp_releases.json "https://api.github.com/repos/FaserF/ha-whatsapp/releases" 2>/dev/null || echo "000")
+	rel_code=$(curl -s --connect-timeout 5 --max-time 15 -w "%{http_code}" "${CURL_AUTH[@]}" -A "HomeAssistant-Addon" -o /tmp/whatsapp_releases.json "https://api.github.com/repos/FaserF/ha-whatsapp/releases" 2>/dev/null || echo "000")
 	if [ "$rel_code" = "200" ] && [ -s /tmp/whatsapp_releases.json ]; then
 		RELEASES_JSON=$(cat /tmp/whatsapp_releases.json)
 	else
@@ -204,6 +204,8 @@ else
 		if [ -n "$TARGET_TAG" ]; then
 			bashio::log.info "Target version (Initial Install): $TARGET_TAG"
 			install_integration "$TARGET_TAG" "false"
+		elif [ "$rel_code" = "000" ]; then
+			bashio::log.warning "⚠️ Network unavailable during boot. Skipping integration auto-install until next restart."
 		else
 			bashio::log.info "No releases found. Installing from Main branch..."
 			install_integration "" "false"
@@ -218,8 +220,12 @@ else
 		fi
 
 		if [ "$IS_FASERF_INTEGRATION" != "true" ]; then
-			bashio::log.warning "⚠️ Existing integration at $INTEGRATION_DIR does not appear to be FaserF/ha-whatsapp (missing @FaserF codeowners / documentation / issue_tracker). Overwriting with official release..."
-			install_integration "$TARGET_TAG" "true"
+			if [ -z "$TARGET_TAG" ] && [ "$rel_code" = "000" ]; then
+				bashio::log.warning "⚠️ Existing integration at $INTEGRATION_DIR could not be verified and network is offline. Skipping overwrite."
+			else
+				bashio::log.warning "⚠️ Existing integration at $INTEGRATION_DIR does not appear to be FaserF/ha-whatsapp (missing @FaserF codeowners / documentation / issue_tracker). Overwriting with official release..."
+				install_integration "$TARGET_TAG" "true"
+			fi
 		else
 			bashio::log.info "✅ Official FaserF ha-whatsapp integration found at $INTEGRATION_DIR"
 

@@ -13,9 +13,21 @@ jobs:
     name: Close Inactive Fixed Issues
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App token for Hermes
+        id: app-token
+        if: env.HAS_BOT_CREDS == 'true'
+        uses: actions/create-github-app-token@v3
+        continue-on-error: true
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+        env:
+          HAS_BOT_CREDS: ${{ secrets.BOT_APP_ID != '' && secrets.BOT_PRIVATE_KEY != '' }}
+
       - name: Close issues marked as fixed with no user activity for 3 weeks
         uses: actions/github-script@v9
         with:
+          github-token: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
           script: |
             const THREE_WEEKS_MS = 21 * 24 * 60 * 60 * 1000;
             const now = Date.now();

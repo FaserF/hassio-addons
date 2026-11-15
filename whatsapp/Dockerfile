@@ -55,9 +55,9 @@ RUN \
         # FORCE CLEAN INSTALL: Delete lockfile and node_modules to avoid version conflicts
         rm -rf package-lock.json node_modules; \
         npm install --no-audit --no-fund --legacy-peer-deps; \
-        # Patch Baileys 7.0.0 untyped presence push notification bug (issue #1091) \
-        if [ -f "node_modules/@whiskeysockets/baileys/lib/Socket/socket.js" ]; then \
-            sed -i 's/if (creds.me?.name !== name) {/if (name \&\& creds.me?.name !== name) {/' node_modules/@whiskeysockets/baileys/lib/Socket/socket.js || true; \
+        # Patch Baileys (presence bug & WhatsApp Channel @newsletter media routing) \
+        if [ -f "scripts/patch-baileys.js" ]; then \
+            node scripts/patch-baileys.js || true; \
         fi; \
         # Extract Baileys version for runtime banner
         BAILEYS_VERSION=$(node -p "require('./node_modules/@whiskeysockets/baileys/package.json').version" 2>/dev/null || echo "unknown"); \
@@ -98,6 +98,6 @@ LABEL \
     org.opencontainers.image.documentation="https://github.com/FaserF/hassio-addons/blob/master/whatsapp/README.md" \
     org.opencontainers.image.created="${BUILD_DATE}"
 
-# Healthcheck - reduced start-period since service starts quickly
-HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=2 \
+# Healthcheck - generous start-period and retries to accommodate system boot & pre-flight checks
+HEALTHCHECK --interval=15s --timeout=5s --start-period=120s --retries=5 \
     CMD ["/bin/sh", "-c", "curl --fail -s http://127.0.0.1:8066/health || exit 1"]

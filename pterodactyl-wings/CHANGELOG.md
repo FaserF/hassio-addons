@@ -3,9 +3,9 @@
 ## 2.4.13 (2026-11-12)
 
 ### 📦 Dependencies
+
 - update checksums for pterodactyl-wings v1.13.5 ([`b8196afa`](https://github.com/FaserF/hassio-addons/commit/b8196afa6ec3c11b5bdb4bf606c8233ae3b11bcc))
 - ⬆️ Update dependency pterodactyl/wings to v[1.13.5](https://github.com/pterodactyl/wings/releases/tag/1.13.5) ([`1ba771cb`](https://github.com/FaserF/hassio-addons/commit/1ba771cb464f05bdeaf16ff353cb3c06444b279c))
-
 
 ## 2.4.12 (2026-11-12)
 

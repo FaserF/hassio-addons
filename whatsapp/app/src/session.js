@@ -14,6 +14,10 @@ export const SESSION_ID_REGEX = /^[a-zA-Z0-9_.-]+$/;
  */
 export function sanitizeSessionId(sessionId) {
   if (!sessionId) return 'default';
+  if (typeof sessionId === 'object' && sessionId !== null) {
+    sessionId = sessionId.id || sessionId.session_id || 'default';
+  }
+  if (typeof sessionId !== 'string') return 'default';
   const base = path.basename(sessionId);
   const sanitized = base.replace(/[^\w.-]/g, '');
 
