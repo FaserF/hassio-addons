@@ -3,8 +3,8 @@
 ## 3.4.13 (2026-11-15)
 
 ### 📦 Dependencies
-- ⬆️ Update dependency alpine_3_21/apache2 to v2.4.71-r0 ([`b7ddc65d`](https://github.com/FaserF/hassio-addons/commit/b7ddc65d87905409202f69dfc7c81fb719780a9a))
 
+- ⬆️ Update dependency alpine_3_21/apache2 to v2.4.71-r0 ([`b7ddc65d`](https://github.com/FaserF/hassio-addons/commit/b7ddc65d87905409202f69dfc7c81fb719780a9a))
 
 ## 3.4.12 (2026-11-12)
 
