@@ -822,7 +822,56 @@ export function registerMessagingRoutes(app) {
         }
 
         const options = getSendOptions(session, targetJid, req.body);
-        const sentMsg = await session.sock.sendMessage(targetJid, { forward: storedMsg }, options);
+        let sentMsg;
+        if (targetJid.endsWith('@newsletter')) {
+          // Channels require unencrypted raw media upload rather than E2EE forwarded stanzas
+          const msg = storedMsg.message;
+          if (msg?.imageMessage) {
+            const { downloadMediaMessage } = await import('@whiskeysockets/baileys');
+            const buffer = await downloadMediaMessage(storedMsg, 'buffer', {}, { logger: session.sock?.logger });
+            sentMsg = await session.sock.sendMessage(
+              targetJid,
+              { image: buffer, caption: msg.imageMessage.caption || '' },
+              options
+            );
+          } else if (msg?.videoMessage) {
+            const { downloadMediaMessage } = await import('@whiskeysockets/baileys');
+            const buffer = await downloadMediaMessage(storedMsg, 'buffer', {}, { logger: session.sock?.logger });
+            sentMsg = await session.sock.sendMessage(
+              targetJid,
+              { video: buffer, caption: msg.videoMessage.caption || '', gifPlayback: msg.videoMessage.gifPlayback },
+              options
+            );
+          } else if (msg?.audioMessage) {
+            const { downloadMediaMessage } = await import('@whiskeysockets/baileys');
+            const buffer = await downloadMediaMessage(storedMsg, 'buffer', {}, { logger: session.sock?.logger });
+            sentMsg = await session.sock.sendMessage(
+              targetJid,
+              { audio: buffer, ptt: msg.audioMessage.ptt },
+              options
+            );
+          } else if (msg?.documentMessage) {
+            const { downloadMediaMessage } = await import('@whiskeysockets/baileys');
+            const buffer = await downloadMediaMessage(storedMsg, 'buffer', {}, { logger: session.sock?.logger });
+            sentMsg = await session.sock.sendMessage(
+              targetJid,
+              {
+                document: buffer,
+                mimetype: msg.documentMessage.mimetype,
+                fileName: msg.documentMessage.fileName || 'file',
+                caption: msg.documentMessage.caption || '',
+              },
+              options
+            );
+          } else if (msg?.conversation || msg?.extendedTextMessage?.text) {
+            const text = msg.conversation || msg.extendedTextMessage?.text || '';
+            sentMsg = await session.sock.sendMessage(targetJid, { text }, options);
+          } else {
+            sentMsg = await session.sock.sendMessage(targetJid, { forward: storedMsg }, options);
+          }
+        } else {
+          sentMsg = await session.sock.sendMessage(targetJid, { forward: storedMsg }, options);
+        }
         trackSent(session, targetNumber, `[Forwarded Message]`);
         res.json({ status: 'forwarded', id: sentMsg?.key?.id });
       } catch (err) {

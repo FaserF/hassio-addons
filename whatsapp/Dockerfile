@@ -55,9 +55,9 @@ RUN \
         # FORCE CLEAN INSTALL: Delete lockfile and node_modules to avoid version conflicts
         rm -rf package-lock.json node_modules; \
         npm install --no-audit --no-fund --legacy-peer-deps; \
-        # Patch Baileys 7.0.0 untyped presence push notification bug (issue #1091) \
-        if [ -f "node_modules/@whiskeysockets/baileys/lib/Socket/socket.js" ]; then \
-            sed -i 's/if (creds.me?.name !== name) {/if (name \&\& creds.me?.name !== name) {/' node_modules/@whiskeysockets/baileys/lib/Socket/socket.js || true; \
+        # Patch Baileys (presence bug & WhatsApp Channel @newsletter media routing) \
+        if [ -f "scripts/patch-baileys.js" ]; then \
+            node scripts/patch-baileys.js || true; \
         fi; \
         # Extract Baileys version for runtime banner
         BAILEYS_VERSION=$(node -p "require('./node_modules/@whiskeysockets/baileys/package.json').version" 2>/dev/null || echo "unknown"); \

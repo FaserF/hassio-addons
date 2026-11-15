@@ -15,6 +15,7 @@
     "test:telegram": "node --test tests/test-telegram-bridge.js",
     "test:rbac": "node --test tests/test-rbac-auth.js",
     "test:mentions": "node tests/test-messaging-mentions.js",
+    "postinstall": "node scripts/patch-baileys.js",
     "test": "npm run lint && node tests/run-all-tests.js"
   },
   "dependencies": {
