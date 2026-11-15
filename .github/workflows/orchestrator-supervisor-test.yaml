@@ -457,10 +457,7 @@ jobs:
               echo "Configuring MariaDB options..."
               # Set mandatory options (password is required)
               MARIA_OPTS='{"options": {"databases": ["homeassistant"], "logins": [{"username": "homeassistant", "password": "generated_m7R2x"}], "rights": [{"username": "homeassistant", "database": "homeassistant"}], "password": "generated_m7R2x"}}'
-              printf '%s' "$MARIA_OPTS" | docker exec -i ha-supervisor-test sh -c "cat > /tmp/maria_opt.json"
-              # Define auth header as variable to avoid colon-space YAML issues
-              # Set options using SUPERVISOR_TOKEN inside container
-              docker exec ha-supervisor-test sh -c "curl -s -X POST -H \"Authorization: Bearer \$SUPERVISOR_TOKEN\" -H \"Content-Type: application/json\" -d @/tmp/maria_opt.json http://supervisor/addons/core_mariadb/options" || echo "⚠️ Failed to set MariaDB options via API"
+              printf '%s' "$MARIA_OPTS" | docker exec -i ha-supervisor-test docker exec -i hassio_cli sh -c 'curl -s -X POST -H "Authorization: Bearer $SUPERVISOR_TOKEN" -H "Content-Type: application/json" -d @- http://supervisor/addons/core_mariadb/options' || echo "⚠️ Failed to set MariaDB options via API"
 
               if ! docker exec ha-supervisor-test ha apps start core_mariadb; then
                 echo "⚠️ Failed to start core_mariadb"
@@ -700,13 +697,9 @@ jobs:
 
               if [ -n "$OPTS" ]; then
                 echo "Configuring options for $SLUG..."
-                # POST /addons/{slug}/options expects the options object wrapped in {"options": ...}
+                # POST /addons/{slug}/options expects schema {"options": <dict>}
                 OPTS_PAYLOAD=$(jq -nc --argjson opts "$OPTS" '{"options": $opts}')
-                OPTS_RESPONSE=$(docker exec ha-supervisor-test curl -s -w "\n%{http_code}" -X POST \
-                  -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
-                  -H "Content-Type: application/json" \
-                  -d "$OPTS_PAYLOAD" \
-                  "http://127.0.0.1:80/addons/$SLUG/options" 2>&1 || echo "CURL_FAILED")
+                OPTS_RESPONSE=$(printf '%s' "$OPTS_PAYLOAD" | docker exec -i ha-supervisor-test docker exec -i hassio_cli sh -c 'curl -s -w "\n%{http_code}" -X POST -H "Authorization: Bearer $SUPERVISOR_TOKEN" -H "Content-Type: application/json" -d @- "http://supervisor/addons/'"$SLUG"'/options"' 2>&1 || echo "CURL_FAILED")
                 OPTS_HTTP_CODE=$(echo "$OPTS_RESPONSE" | tail -1)
                 OPTS_BODY=$(echo "$OPTS_RESPONSE" | head -n -1)
                 if [ "$OPTS_HTTP_CODE" = "200" ] || echo "$OPTS_BODY" | grep -q '"result":"ok"'; then
@@ -723,11 +716,7 @@ jobs:
                 echo "Options in Supervisor: $ACTUAL_OPTS"
                 if [ "$App" = "whatsapp" ] && ! echo "$ACTUAL_OPTS" | grep -q "media_folder"; then
                   echo "⚠️ Warning: media_folder not found in actual options. Retrying once via API..."
-                  docker exec ha-supervisor-test curl -s -X POST \
-                    -H "Authorization: Bearer $SUPERVISOR_TOKEN" \
-                    -H "Content-Type: application/json" \
-                    -d "$OPTS_PAYLOAD" \
-                    "http://127.0.0.1:80/addons/$SLUG/options" || echo "⚠️ Failed to update options via API (retry)"
+                  printf '%s' "$OPTS_PAYLOAD" | docker exec -i ha-supervisor-test docker exec -i hassio_cli sh -c 'curl -s -X POST -H "Authorization: Bearer $SUPERVISOR_TOKEN" -H "Content-Type: application/json" -d @- "http://supervisor/addons/'"$SLUG"'/options"' || echo "⚠️ Failed to update options via API (retry)"
                   sleep 2
                 fi
               fi
