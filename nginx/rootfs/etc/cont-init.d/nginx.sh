@@ -411,7 +411,11 @@ if bashio::config.true 'stream_gateway.enabled'; then
 					--addr 127.0.0.1:8098 \
 					--read-only \
 					--vfs-cache-mode off \
-					--buffer-size 32M \
+					--buffer-size 64M \
+					--drive-chunk-size 64M \
+					--drive-pacer-min-sleep 10ms \
+					--vfs-read-ahead 128M \
+					--vfs-fast-fingerprint \
 					--no-modtime
 			EOF
 			chmod +x /etc/services.d/rclone-stream/run
