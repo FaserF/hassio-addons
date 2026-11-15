@@ -1357,7 +1357,7 @@ export function handleIncomingMessages(session) {
       });
 
     const resolvedEvents = await Promise.all(events);
-    session.eventQueue.push(...resolvedEvents);
+    session.eventQueue.push(...resolvedEvents.filter(Boolean));
   });
 
   if (session.sock?.ev) {

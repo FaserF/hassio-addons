@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { uiAuthMiddleware } from '../../middleware.js';
 import { getSession, sanitizeSessionId, sessions, signalInterest } from '../../session.js';
 import { API_TOKEN, PORT, DATA_DIR } from '../../config.js';
@@ -13,7 +14,7 @@ import chatsView from './views/chats.html.js';
 import moderationView from './views/moderation.html.js';
 import telegramView from './views/telegram.html.js';
 
-const uiDir = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'));
+const uiDir = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Returns the best available local IPv4 address.

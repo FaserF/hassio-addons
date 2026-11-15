@@ -142,7 +142,7 @@ export function registerSessionRoutes(app) {
   app.get('/events', apiLimiter, anyAuthMiddleware, (req, res) => {
     try {
       const session = getReqSession(req);
-      const events = [...session.eventQueue];
+      const events = session.eventQueue.filter(Boolean);
       session.eventQueue = [];
       res.json(events);
     } catch (err) {
