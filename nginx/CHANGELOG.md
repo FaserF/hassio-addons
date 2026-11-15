@@ -3,13 +3,14 @@
 ## 0.4.12 (2026-11-15)
 
 ### ✨ Features
+
 - add stream URI path rewrite for rclone backend ([`329d2941`](https://github.com/FaserF/hassio-addons/commit/329d2941ab09d98ecae5d20e20ca4d7abbae977c))
 - add stream gateway translations for en and de ([`e4735b58`](https://github.com/FaserF/hassio-addons/commit/e4735b581e0646ccfd0da94509c8661c80564ee5))
 - add universal media stream gateway and optional rclone proxy ([`a280669b`](https://github.com/FaserF/hassio-addons/commit/a280669bb0470c7b2b00fd4734a4565575ed5e70))
 
 ### 🚀 Other
-- perf(nginx): optimize rclone streaming throughput with 64M chunks and read-ahead ([`75da20c3`](https://github.com/FaserF/hassio-addons/commit/75da20c3258588e6b53118e8341cfa485986867d))
 
+- perf(nginx): optimize rclone streaming throughput with 64M chunks and read-ahead ([`75da20c3`](https://github.com/FaserF/hassio-addons/commit/75da20c3258588e6b53118e8341cfa485986867d))
 
 ## 0.4.11 (2026-11-12)
 
