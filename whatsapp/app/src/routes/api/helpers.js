@@ -1,4 +1,27 @@
 import { delay } from '@whiskeysockets/baileys';
+import { getQuotedMessage } from '../../whatsapp/events/index.js';
+
+export function getSendOptions(session, jid, reqBody = {}, extra = {}) {
+  const options = { ...extra };
+  const quotedId = reqBody?.quotedMessageId || reqBody?.quoted_message_id;
+  if (quotedId) {
+    const quotedMsg = getQuotedMessage(session, quotedId);
+    if (quotedMsg) options.quoted = quotedMsg;
+  }
+  const exp = reqBody?.expiration ?? reqBody?.ephemeralExpiration ?? reqBody?.ephemeral_expiration;
+  if (exp !== undefined && exp !== null && !isNaN(Number(exp))) {
+    const num = Number(exp);
+    if (num > 0) {
+      options.ephemeralExpiration = num;
+    }
+  } else if (session?.chatCache && jid) {
+    const cached = session.chatCache.get(jid);
+    if (cached && typeof cached === 'object' && cached.ephemeralExpiration) {
+      options.ephemeralExpiration = Number(cached.ephemeralExpiration);
+    }
+  }
+  return options;
+}
 
 export async function ensureConnected(session, maxWaitMs = 3000) {
   if (!session) return false;

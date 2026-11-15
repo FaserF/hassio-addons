@@ -890,6 +890,17 @@ export function handleIncomingMessages(session) {
 
         const innerMsgObj = msg.message?.[messageType];
         const isForwarded = Boolean(innerMsgObj?.contextInfo?.isForwarded);
+        const incomingExpiration =
+          innerMsgObj?.contextInfo?.expiration || realMsgObj?.contextInfo?.expiration;
+        if (incomingExpiration && senderJid) {
+          const chatJid = msg.key?.remoteJid || senderJid;
+          const existing = session.chatCache?.get(chatJid);
+          const obj = typeof existing === 'object' && existing !== null ? existing : {};
+          session.chatCache?.set(chatJid, {
+            ...obj,
+            ephemeralExpiration: incomingExpiration,
+          });
+        }
 
         const supportedMediaTypes = [
           'imageMessage',

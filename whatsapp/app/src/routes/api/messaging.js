@@ -4,8 +4,12 @@ import { authMiddleware } from '../../middleware.js';
 import { getReqSession } from '../../session.js';
 import { getJid } from '../../utils/jid.js';
 import { trackSent, trackFailure } from '../../whatsapp/actions.js';
-import { getQuotedMessage } from '../../whatsapp/events/index.js';
-import { ensureConnected, asyncHandler, getLastMessagesForChat } from './helpers.js';
+import {
+  ensureConnected,
+  asyncHandler,
+  getLastMessagesForChat,
+  getSendOptions,
+} from './helpers.js';
 import { generateMessageID } from '../../utils/security.js';
 import {
   syncWhatsAppDeleteToTelegram,
@@ -21,7 +25,7 @@ export function registerMessagingRoutes(app) {
       let session;
       try {
         session = getReqSession(req);
-        const { number, message, quotedMessageId, mentions } = req.body;
+        const { number, message, mentions } = req.body;
         if (!number || !message)
           return res.status(400).json({ detail: 'Missing number or message' });
 
@@ -29,11 +33,7 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected to WhatsApp' });
 
         const jid = getJid(number);
-        const options = {};
-        if (quotedMessageId) {
-          const quotedMsg = getQuotedMessage(session, quotedMessageId);
-          if (quotedMsg) options.quoted = quotedMsg;
-        }
+        const options = getSendOptions(session, jid, req.body);
         // Mentions: an optional `mentions` array (numbers or JIDs) plus any `@<number>` written in the text.
         // Without this, an "@4917..." in the message is just plain text and nobody gets notified.
         const fromText = [...String(message).matchAll(/@(\d{8,15})(?=_|\b)/g)].map((m) => m[1]);
@@ -77,10 +77,15 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
-        const sentMsg = await session.sock.sendMessage(jid, {
-          image: { url },
-          caption: caption || '',
-        });
+        const options = getSendOptions(session, jid, req.body);
+        const sentMsg = await session.sock.sendMessage(
+          jid,
+          {
+            image: { url },
+            caption: caption || '',
+          },
+          options
+        );
         trackSent(session, number, `[Image] ${caption || ''}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
@@ -127,13 +132,18 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
-        const sentMsg = await session.sock.sendMessage(jid, {
-          poll: {
-            name: pollTitle,
-            values: cleanedOptions,
-            selectableCount: selectableCount ?? 1,
+        const sendOptions = getSendOptions(session, jid, req.body);
+        const sentMsg = await session.sock.sendMessage(
+          jid,
+          {
+            poll: {
+              name: pollTitle,
+              values: cleanedOptions,
+              selectableCount: selectableCount ?? 1,
+            },
           },
-        });
+          sendOptions
+        );
         trackSent(session, number, `[Poll] ${pollTitle}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
@@ -164,9 +174,14 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
-        const sentMsg = await session.sock.sendMessage(jid, {
-          location: { degreesLatitude, degreesLongitude, name, address },
-        });
+        const options = getSendOptions(session, jid, req.body);
+        const sentMsg = await session.sock.sendMessage(
+          jid,
+          {
+            location: { degreesLatitude, degreesLongitude, name, address },
+          },
+          options
+        );
         trackSent(
           session,
           number,
@@ -198,7 +213,6 @@ export function registerMessagingRoutes(app) {
           location,
           joinLink,
           isCanceled,
-          expiration,
         } = req.body;
         if (!number || !name) return res.status(400).json({ detail: 'Missing number or name' });
 
@@ -221,22 +235,26 @@ export function registerMessagingRoutes(app) {
         const endDate = parseDate(endTime);
 
         const jid = getJid(number);
-        const sentMsg = await session.sock.sendMessage(jid, {
-          event: {
-            name,
-            description: description || '',
-            startDate,
-            endDate,
-            location: location
-              ? typeof location === 'string'
-                ? { name: location }
-                : location
-              : undefined,
-            joinLink: joinLink || undefined,
-            isCancelled: isCanceled ?? false,
-            expiration: expiration ?? undefined,
+        const options = getSendOptions(session, jid, req.body);
+        const sentMsg = await session.sock.sendMessage(
+          jid,
+          {
+            event: {
+              name,
+              description: description || '',
+              startDate,
+              endDate,
+              location: location
+                ? typeof location === 'string'
+                  ? { name: location }
+                  : location
+                : undefined,
+              joinLink: joinLink || undefined,
+              isCancelled: isCanceled ?? false,
+            },
           },
-        });
+          options
+        );
         trackSent(session, number, `[Event] ${name}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
@@ -270,12 +288,17 @@ export function registerMessagingRoutes(app) {
           buttonText: { displayText: b.text || b.displayText },
           type: 1,
         }));
-        const sentMsg = await session.sock.sendMessage(jid, {
-          text,
-          footer: footer || '',
-          buttons: formattedButtons,
-          headerType: 1,
-        });
+        const options = getSendOptions(session, jid, req.body);
+        const sentMsg = await session.sock.sendMessage(
+          jid,
+          {
+            text,
+            footer: footer || '',
+            buttons: formattedButtons,
+            headerType: 1,
+          },
+          options
+        );
         trackSent(session, number, `[Buttons] ${text}`);
         res.json({
           status: 'sent',
@@ -313,12 +336,17 @@ export function registerMessagingRoutes(app) {
           mime.lookup(url) ||
           'application/octet-stream';
 
-        const sentMsg = await session.sock.sendMessage(jid, {
-          document: { url },
-          fileName: name,
-          mimetype: resolvedMime,
-          caption: caption || '',
-        });
+        const options = getSendOptions(session, jid, req.body);
+        const sentMsg = await session.sock.sendMessage(
+          jid,
+          {
+            document: { url },
+            fileName: name,
+            mimetype: resolvedMime,
+            caption: caption || '',
+          },
+          options
+        );
         trackSent(session, number, `[Document] ${name}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
@@ -347,9 +375,14 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
-        const sentMsg = await session.sock.sendMessage(jid, {
-          sticker: { url },
-        });
+        const options = getSendOptions(session, jid, req.body);
+        const sentMsg = await session.sock.sendMessage(
+          jid,
+          {
+            sticker: { url },
+          },
+          options
+        );
         trackSent(session, number, `[Sticker]`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
@@ -373,11 +406,16 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
-        const sentMsg = await session.sock.sendMessage(jid, {
-          video: { url },
-          caption: caption || '',
-          gifPlayback: true,
-        });
+        const options = getSendOptions(session, jid, req.body);
+        const sentMsg = await session.sock.sendMessage(
+          jid,
+          {
+            video: { url },
+            caption: caption || '',
+            gifPlayback: true,
+          },
+          options
+        );
         trackSent(session, number, `[GIF] ${caption || ''}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
@@ -401,12 +439,17 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
-        const sentMsg = await session.sock.sendMessage(jid, {
-          video: { url },
-          ...(seconds ? { seconds: Number(seconds) } : {}),
-          caption: caption || '',
-          gifPlayback: !!gifPlayback,
-        });
+        const options = getSendOptions(session, jid, req.body);
+        const sentMsg = await session.sock.sendMessage(
+          jid,
+          {
+            video: { url },
+            ...(seconds ? { seconds: Number(seconds) } : {}),
+            caption: caption || '',
+            gifPlayback: !!gifPlayback,
+          },
+          options
+        );
         trackSent(session, number, `[Video] ${caption || ''}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
@@ -430,12 +473,17 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
-        const sentMsg = await session.sock.sendMessage(jid, {
-          audio: { url },
-          ...(seconds ? { seconds: Number(seconds) } : {}),
-          ptt: ptt || false,
-          mimetype: 'audio/mp4',
-        });
+        const options = getSendOptions(session, jid, req.body);
+        const sentMsg = await session.sock.sendMessage(
+          jid,
+          {
+            audio: { url },
+            ...(seconds ? { seconds: Number(seconds) } : {}),
+            ptt: ptt || false,
+            mimetype: 'audio/mp4',
+          },
+          options
+        );
         trackSent(session, number, `[Audio]`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
@@ -515,11 +563,16 @@ export function registerMessagingRoutes(app) {
         if (!connected) return res.status(503).json({ detail: 'Not connected' });
 
         const jid = getJid(number);
-        const sentMsg = await session.sock.sendMessage(jid, {
-          text: title,
-          buttonText: buttonText || 'Select Option',
-          sections,
-        });
+        const options = getSendOptions(session, jid, req.body);
+        const sentMsg = await session.sock.sendMessage(
+          jid,
+          {
+            text: title,
+            buttonText: buttonText || 'Select Option',
+            sections,
+          },
+          options
+        );
         trackSent(session, number, `[List] ${title}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
@@ -552,9 +605,14 @@ export function registerMessagingRoutes(app) {
           `TEL;type=CELL;type=VOICE;waid=${contactNumber.replace(/[^0-9]/g, '')}:+${contactNumber.replace(/[^0-9]/g, '')}\n` +
           'END:VCARD';
 
-        const sentMsg = await session.sock.sendMessage(jid, {
-          contacts: { displayName: contactName, contacts: [{ vcard }] },
-        });
+        const options = getSendOptions(session, jid, req.body);
+        const sentMsg = await session.sock.sendMessage(
+          jid,
+          {
+            contacts: { displayName: contactName, contacts: [{ vcard }] },
+          },
+          options
+        );
         trackSent(session, number, `[Contact] ${contactName}`);
         res.json({ status: 'sent', id: sentMsg?.key?.id });
       } catch (err) {
@@ -763,7 +821,12 @@ export function registerMessagingRoutes(app) {
           return res.status(404).json({ detail: 'Message not found in memory store' });
         }
 
-        const sentMsg = await session.sock.sendMessage(targetJid, { forward: storedMsg });
+        const options = getSendOptions(session, targetJid, req.body);
+        const sentMsg = await session.sock.sendMessage(
+          targetJid,
+          { forward: storedMsg },
+          options
+        );
         trackSent(session, targetNumber, `[Forwarded Message]`);
         res.json({ status: 'forwarded', id: sentMsg?.key?.id });
       } catch (err) {
