@@ -85,7 +85,7 @@ jobs:
             done < <(find . -maxdepth 2 -name "config.yaml" -not -path "./.unsupported/*" -not -path "./.dev/*" -exec grep -l "^ingress: true" {} +)
           else
             # Comma-separated list or unquoted array string
-            AppS=$(echo "$INPUT" | tr -d '[]"' | tr ',' '\n')
+            AppS=$(echo "$INPUT" | tr -d '[' | tr -d ']' | tr -d '"' | tr ',' '\n')
           fi
 
           echo "Input Apps:"
