@@ -53,7 +53,10 @@ export const NEWSLETTER_MEDIA_PATH_MAP = {
     'thumbnail-link': '/newsletter/newsletter-thumbnail-link'
 };
 `;
-    content = content.replace('export const MEDIA_PATH_MAP = {', `${mapCode}\nexport const MEDIA_PATH_MAP = {`);
+    content = content.replace(
+      'export const MEDIA_PATH_MAP = {',
+      `${mapCode}\nexport const MEDIA_PATH_MAP = {`
+    );
     fs.writeFileSync(defaultsFile, content, 'utf8');
     console.log('✅ Patched Defaults/index.js (NEWSLETTER_MEDIA_PATH_MAP)');
     patchedCount++;
@@ -64,7 +67,10 @@ export const NEWSLETTER_MEDIA_PATH_MAP = {
 const messagesFile = path.join(BAILEYS_DIR, 'lib/Utils/messages.js');
 if (fs.existsSync(messagesFile)) {
   let content = fs.readFileSync(messagesFile, 'utf8');
-  if (content.includes('timeoutMs: options.mediaUploadTimeoutMs') && !content.includes('newsletter: true')) {
+  if (
+    content.includes('timeoutMs: options.mediaUploadTimeoutMs') &&
+    !content.includes('newsletter: true')
+  ) {
     content = content.replace(
       'timeoutMs: options.mediaUploadTimeoutMs\n        });',
       'timeoutMs: options.mediaUploadTimeoutMs,\n            newsletter: true\n        });'
@@ -109,7 +115,10 @@ if (fs.existsSync(mediaFile)) {
 const sendFile = path.join(BAILEYS_DIR, 'lib/Socket/messages-send.js');
 if (fs.existsSync(sendFile)) {
   let content = fs.readFileSync(sendFile, 'utf8');
-  if (content.includes('sending newsletter message to ${jid}') && !content.includes('/* newsletter-extraAttrs-patched */')) {
+  if (
+    content.includes('sending newsletter message to ${jid}') &&
+    !content.includes('/* newsletter-extraAttrs-patched */')
+  ) {
     content = content.replace(
       /(logger\.debug\(\{ msgId \}, `sending newsletter message to \$\{jid\}`\);)/,
       '/* newsletter-extraAttrs-patched */\n                $1'

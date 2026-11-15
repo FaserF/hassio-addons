@@ -828,7 +828,12 @@ export function registerMessagingRoutes(app) {
           const msg = storedMsg.message;
           if (msg?.imageMessage) {
             const { downloadMediaMessage } = await import('@whiskeysockets/baileys');
-            const buffer = await downloadMediaMessage(storedMsg, 'buffer', {}, { logger: session.sock?.logger });
+            const buffer = await downloadMediaMessage(
+              storedMsg,
+              'buffer',
+              {},
+              { logger: session.sock?.logger }
+            );
             sentMsg = await session.sock.sendMessage(
               targetJid,
               { image: buffer, caption: msg.imageMessage.caption || '' },
@@ -836,15 +841,29 @@ export function registerMessagingRoutes(app) {
             );
           } else if (msg?.videoMessage) {
             const { downloadMediaMessage } = await import('@whiskeysockets/baileys');
-            const buffer = await downloadMediaMessage(storedMsg, 'buffer', {}, { logger: session.sock?.logger });
+            const buffer = await downloadMediaMessage(
+              storedMsg,
+              'buffer',
+              {},
+              { logger: session.sock?.logger }
+            );
             sentMsg = await session.sock.sendMessage(
               targetJid,
-              { video: buffer, caption: msg.videoMessage.caption || '', gifPlayback: msg.videoMessage.gifPlayback },
+              {
+                video: buffer,
+                caption: msg.videoMessage.caption || '',
+                gifPlayback: msg.videoMessage.gifPlayback,
+              },
               options
             );
           } else if (msg?.audioMessage) {
             const { downloadMediaMessage } = await import('@whiskeysockets/baileys');
-            const buffer = await downloadMediaMessage(storedMsg, 'buffer', {}, { logger: session.sock?.logger });
+            const buffer = await downloadMediaMessage(
+              storedMsg,
+              'buffer',
+              {},
+              { logger: session.sock?.logger }
+            );
             sentMsg = await session.sock.sendMessage(
               targetJid,
               { audio: buffer, ptt: msg.audioMessage.ptt },
@@ -852,7 +871,12 @@ export function registerMessagingRoutes(app) {
             );
           } else if (msg?.documentMessage) {
             const { downloadMediaMessage } = await import('@whiskeysockets/baileys');
-            const buffer = await downloadMediaMessage(storedMsg, 'buffer', {}, { logger: session.sock?.logger });
+            const buffer = await downloadMediaMessage(
+              storedMsg,
+              'buffer',
+              {},
+              { logger: session.sock?.logger }
+            );
             sentMsg = await session.sock.sendMessage(
               targetJid,
               {
