@@ -4,7 +4,7 @@
 
 [![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=605cee21_nginx)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
-[![Docker Image](https://img.shields.io/badge/docker-0.4.12-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-nginx)
+[![Docker Image](https://img.shields.io/badge/docker-0.4.13-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-nginx)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
 > Open Source Webserver with PHP and MariaDB.
@@ -51,6 +51,8 @@ log_level: info
 php_ini: default
 ssl: false
 stream_gateway:
+  buffer_size: 32M
+  cache_dir: /data/rclone_cache
   cache_enabled: true
   cache_path: /share/nginx/stream_cache
   cache_size: 10g
@@ -60,6 +62,12 @@ stream_gateway:
   rclone_enabled: false
   rclone_remote: 'cloud_pool_crypt:'
   upstream_url: ''
+  vfs_cache_max_age: 24h
+  vfs_cache_max_size: 10G
+  vfs_cache_mode: full
+  vfs_read_ahead: 64M
+  vfs_read_chunk_size: 8M
+  vfs_read_chunk_size_limit: 64M
 website_name: web.local
 ```
 
