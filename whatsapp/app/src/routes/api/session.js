@@ -63,7 +63,10 @@ export function registerSessionRoutes(app) {
 
         setTimeout(() => {
           connectToWhatsApp(session.id, sessions, getSession).catch((err) => {
-            logger.warn({ sessionId: session.id, error: err.message }, 'Failed to reconnect after delete');
+            logger.warn(
+              { sessionId: session.id, error: err.message },
+              'Failed to reconnect after delete'
+            );
           });
         }, 1000);
 

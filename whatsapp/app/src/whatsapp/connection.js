@@ -428,7 +428,10 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
             fs.rmSync(authDir, { recursive: true, force: true });
           }
         } catch (rmErr) {
-          logger.error({ sessionId, error: rmErr.message }, 'Failed to remove stale authDir after logout');
+          logger.error(
+            { sessionId, error: rmErr.message },
+            'Failed to remove stale authDir after logout'
+          );
         }
 
         if (sessionId !== 'default') {
@@ -441,7 +444,10 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
           );
           setTimeout(() => {
             connectToWhatsApp(sessionId, sessions, getSession).catch((err) => {
-              logger.error({ sessionId, error: err.message }, 'Failed to initiate QR pairing after logout');
+              logger.error(
+                { sessionId, error: err.message },
+                'Failed to initiate QR pairing after logout'
+              );
             });
           }, 1500);
         }
