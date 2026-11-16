@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-11-15T21:10:11.145749",
+  "timestamp": "2026-11-16T16:56:08.839845",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
@@ -291,7 +291,7 @@
     },
     "nginx": {
       "name": "NGINX",
-      "version": "0.4.12",
+      "version": "0.4.13",
       "description": "Open Source Webserver with PHP and MariaDB.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-nginx-{arch}",
