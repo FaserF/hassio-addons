@@ -3,13 +3,13 @@
   "extends": ["config:recommended"],
   "rebaseWhen": "conflicted",
   "prConcurrentLimit": 5,
-  "dependencyDashboard": true,
+  "dependencyDashboard": {
+    "enabled": true
+  },
   "labels": ["dependencies", "no-stale"],
   "commitMessagePrefix": "⬆️",
 
-  "ignorePaths": [
-    ".unsupported/sap-abap-cloud-dev/**"
-  ],
+  "ignorePaths": [".unsupported/sap-abap-cloud-dev/**"],
   "customManagers": [
     {
       "customType": "regex",
@@ -314,7 +314,7 @@
   "packageRules": [
     {
       "description": "Keep pydantic compatible with aiogram in AegisBot",
-      "matchPaths": [".dev/AegisBot/**"],
+      "matchFileNames": [".dev/AegisBot/**"],
       "matchPackageNames": ["pydantic", "pydantic[email]"],
       "allowedVersions": "<2.14"
     },
