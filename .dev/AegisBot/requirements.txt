@@ -19,7 +19,7 @@ pytest-asyncio==1.5.0
 aiosqlite==0.22.1
 asyncpg==0.32.0
 google-genai==3.3.0
-pyotp==2.11.2
+pyotp==2.12.0
 webauthn==3.0.1
 PyYAML==6.0.3
 qrcode[pil]==8.2
