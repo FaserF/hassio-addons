@@ -1,5 +1,27 @@
 import { syncWhatsAppReactionToTelegram } from '../telegram/listener.js';
 import { triggerWebhook } from '../../webhook.js';
+import { normalizeJid } from '../../utils/security.js';
+
+// Prefer a phone-number JID; otherwise resolve a LID through the contact cache.
+// An unresolved LID is returned as-is (still @lid) and gets no phone number.
+function resolveReactor(session, rKey) {
+  const candidates = [rKey.participant, rKey.participantAlt, rKey.remoteJidAlt, rKey.remoteJid]
+    .filter((c) => typeof c === 'string' && !c.endsWith('@g.us'))
+    .map(normalizeJid);
+  let pn = candidates.find((c) => c.endsWith('@s.whatsapp.net'));
+  const lid = candidates.find((c) => c.endsWith('@lid'));
+  if (!pn && lid && session.contactCache) {
+    for (const c of session.contactCache.values()) {
+      const cId = c?.id ? normalizeJid(c.id) : '';
+      if (c?.lid && normalizeJid(c.lid) === lid && cId.endsWith('@s.whatsapp.net')) {
+        pn = cId;
+        break;
+      }
+    }
+  }
+  if (pn) return { jid: pn, number: pn.split('@')[0] };
+  return { jid: lid || '', number: '' };
+}
 
 export function registerReactionListener(session) {
   session.sock.ev.on('messages.reaction', (reactions) => {
@@ -29,22 +51,20 @@ export function registerReactionListener(session) {
       if (dedupeKey) session.processedMessageIds?.set(dedupeKey, Date.now());
       if (remoteJid !== 'status@broadcast' && !isDuplicate) {
         const reactorFromMe = Boolean(rKey.fromMe);
-        let reactorRaw =
-          rKey.participant || rKey.participantAlt || rKey.remoteJidAlt || rKey.remoteJid || '';
+        let reactor = resolveReactor(session, rKey);
         if (reactorFromMe) {
           const selfUser = session.sock?.user?.id;
           const selfPn = selfUser ? selfUser.split(':')[0] : session.stats?.my_number;
-          if (selfPn) reactorRaw = `${selfPn}@s.whatsapp.net`;
+          if (selfPn) reactor = { jid: `${selfPn}@s.whatsapp.net`, number: selfPn };
         }
-        const reactorJid = reactorRaw.split(':')[0].replace(/@lid$/, '@s.whatsapp.net');
         const event = {
           id: rKey.id,
           type: 'reaction',
           content: reaction?.text || '', // empty = reaction removed
           reaction: reaction?.text || '',
           reacted_message_id: parentId,
-          sender: reactorJid,
-          sender_number: reactorJid.split('@')[0],
+          sender: reactor.jid,
+          sender_number: reactor.number,
           from: remoteJid,
           is_group: remoteJid.endsWith('@g.us'),
           from_me: reactorFromMe,
