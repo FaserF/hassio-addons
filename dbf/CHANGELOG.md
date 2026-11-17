@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.10 (2026-11-17)
+
+### 🐛 Bug Fixes
+
+- 🔇 Prevent crond periodic execution noise from leaking to HA console by respecting `log_level` and redirecting output (fixes FaserF/ha-db_infoscreen#238)
+- 🧹 Remove unused 15-minute periodic cron entries from `/etc/crontabs/root`
+
 ## 1.1.9 (2026-11-12)
 
 ### 🐛 Bug Fixes

@@ -219,4 +219,16 @@ fi
 
 # </App_BANNER_INJECTION>
 
-exec /usr/sbin/crond -f -l 8
+if ! LOG_LEVEL=$(bashio::config 'log_level') || [ -z "$LOG_LEVEL" ]; then
+    LOG_LEVEL="info"
+fi
+
+# Set crond log options based on log_level
+# Note: busybox crond logs to syslog by default, which musl libc routes to /dev/console
+# when no syslogd is present. -L redirects to standard output or /dev/null.
+if [ "$LOG_LEVEL" = "trace" ] || [ "$LOG_LEVEL" = "debug" ]; then
+    exec /usr/sbin/crond -f -d -l 0 -L /proc/self/fd/1
+else
+    # In standard/info mode, suppress periodic cron execution noise from leaking to HA console
+    exec /usr/sbin/crond -f -l 9 -L /dev/null
+fi

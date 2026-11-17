@@ -96,6 +96,7 @@ RUN find /usr/bin/dbf-* /etc/s6-overlay/s6-rc.d /etc/periodic -type f -exec sed 
         /etc/s6-overlay/s6-rc.d/dbf-periodic/run \
         /etc/periodic/daily/dbf-update-data \
         /etc/periodic/hourly/dbf-cleanup \
+    && sed -i -e '/15min/d' -e '/weekly/d' -e '/monthly/d' /etc/crontabs/root 2>/dev/null || true \
     && rm -rf /etc/s6-overlay/s6-rc.d/dbf-nginx \
     && rm -f /etc/s6-overlay/s6-rc.d/user/contents.d/dbf-nginx
 
