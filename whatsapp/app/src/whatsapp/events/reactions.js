@@ -62,6 +62,8 @@ export function registerReactionListener(session) {
           type: 'reaction',
           content: reaction?.text || '', // empty = reaction removed
           reaction: reaction?.text || '',
+          text: reaction?.text || '',
+          message: reaction?.text || '',
           reacted_message_id: parentId,
           sender: reactor.jid,
           sender_number: reactor.number,
