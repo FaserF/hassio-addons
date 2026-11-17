@@ -81,7 +81,7 @@ action:
 
 When someone reacts to a message, a `whatsapp_message_received` event of type `reaction` is fired. This works for reactions to messages sent by Home Assistant too, so a reaction can be used as a quick reply.
 
-`whatsapp.send_message` returns the ID of the sent message, which you can match against `reacted_message_id`:
+`whatsapp.send_message` returns the ID of the sent message, which you can match against `reacted_message_id`. This example is a script, not an automation, because it waits for a reaction to the message it just sent:
 
 ```yaml
 alias: Garage Close Confirmation
@@ -110,7 +110,7 @@ sequence:
 >
 > - **Fields**: `reaction` is the emoji, `reacted_message_id` is the ID of the message that was reacted to, and `sender` / `sender_number` identify who reacted. `id` is the ID of the reaction itself.
 > - **Removed reactions**: When a reaction is removed, the event is fired with an empty `reaction`.
-> - **Own reactions**: Reactions made from the linked account itself are fired as `whatsapp_message_sent` instead.
+> - **Own reactions**: Reactions made from the linked account itself are fired as `whatsapp_message_sent`. With **Allow Self-Messages** enabled in the integration they also fire `whatsapp_message_received`, with `sender` set to `me`.
 > - **Sender number**: If the sender's phone number cannot be resolved (WhatsApp LID), `sender` stays an `@lid` JID.
 
 ## 🛡️ WhatsApp Group Moderation & Defender Engine
