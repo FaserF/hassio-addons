@@ -1,4 +1,5 @@
 import { syncWhatsAppReactionToTelegram } from '../telegram/listener.js';
+import { triggerWebhook } from '../../webhook.js';
 
 export function registerReactionListener(session) {
   session.sock.ev.on('messages.reaction', (reactions) => {
@@ -9,10 +10,6 @@ export function registerReactionListener(session) {
       // Sync reaction to Telegram bridge
       syncWhatsAppReactionToTelegram(parentId, remoteJid, reaction?.text || '').catch(() => null);
 
-      const stored = session.messageStore.get(parentId);
-      if (!stored) continue;
-      if (!stored._reactions) stored._reactions = [];
-
       let rawSender =
         key.participant || key.participantAlt || key.remoteJidAlt || key.remoteJid || '';
       if (key.fromMe) {
@@ -21,6 +18,31 @@ export function registerReactionListener(session) {
         if (selfPn) rawSender = `${selfPn}@s.whatsapp.net`;
       }
       const senderJid = rawSender.split(':')[0].replace(/@lid$/, '@s.whatsapp.net');
+
+      // Forward to Home Assistant. `id` is intentionally not set to the reacted
+      // message's ID, otherwise the integration's loop guard would drop reactions
+      // to messages that HA itself sent.
+      if (remoteJid !== 'status@broadcast') {
+        const event = {
+          type: 'reaction',
+          content: reaction?.text || '', // empty = reaction removed
+          reaction: reaction?.text || '',
+          reacted_message_id: parentId,
+          sender: senderJid,
+          sender_number: senderJid.split('@')[0],
+          from: remoteJid,
+          is_group: remoteJid.endsWith('@g.us'),
+          from_me: Boolean(key.fromMe),
+          raw: { key: { remoteJid, fromMe: Boolean(key.fromMe), participant: key.participant } },
+          session_id: session.id,
+        };
+        session.eventQueue.push(event);
+        triggerWebhook(event);
+      }
+
+      const stored = session.messageStore.get(parentId);
+      if (!stored) continue;
+      if (!stored._reactions) stored._reactions = [];
 
       stored._reactions = stored._reactions.filter((r) => {
         const existingSender = String(r.sender).split(':')[0].replace(/@lid$/, '@s.whatsapp.net');
