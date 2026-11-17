@@ -81,18 +81,24 @@ action:
 
 When someone reacts to a message, a `whatsapp_message_received` event of type `reaction` is fired. This works for reactions to messages sent by Home Assistant too, so a reaction can be used as a quick reply.
 
-`whatsapp.send_message` returns the ID of the sent message, which you can match against `reacted_message_id`. This example is a script, not an automation, because it waits for a reaction to the message it just sent:
+When the garage has been open for 10 minutes, this automation sends a message and closes the garage if someone reacts with 👍. `whatsapp.send_message` returns the ID of the sent message, which is matched against `reacted_message_id`:
 
 ```yaml
 alias: Garage Close Confirmation
-sequence:
+mode: single
+trigger:
+  - platform: state
+    entity_id: cover.garage_door
+    to: 'open'
+    for: '00:10:00'
+action:
   - action: whatsapp.send_message
     data:
       target: '49171234567'
       message: 'The garage is still open. React with 👍 to close it.'
     response_variable: sent
   - wait_for_trigger:
-      - trigger: event
+      - platform: event
         event_type: whatsapp_message_received
         event_data:
           type: reaction
