@@ -23,14 +23,12 @@ jobs:
     steps:
       - name: Generate GitHub App token for Hermes
         id: app-token
-        if: env.HAS_BOT_CREDS == 'true'
+        if: ${{ secrets.BOT_APP_ID != '' && secrets.BOT_PRIVATE_KEY != '' }}
         uses: actions/create-github-app-token@v3
         continue-on-error: true
         with:
           app-id: ${{ secrets.BOT_APP_ID }}
           private-key: ${{ secrets.BOT_PRIVATE_KEY }}
-        env:
-          HAS_BOT_CREDS: ${{ secrets.BOT_APP_ID != '' && secrets.BOT_PRIVATE_KEY != '' }}
 
       - name: ⤵️ Check out code
         uses: actions/checkout@v7
@@ -155,7 +153,7 @@ jobs:
         id: check-author
         if: steps.find-pr.outputs.found == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
         run: |
           AUTHOR="${{ steps.find-pr.outputs.pr_author }}"
           ALLOWED_AUTHORS="dependabot[bot] app/dependabot renovate[bot] app/renovate github-actions[bot] github-actions FaserF faserf-hermes-agent app/faserf-hermes-agent faserf-hermes-agent[bot]"
@@ -176,7 +174,7 @@ jobs:
         id: check-ci-ran
         if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
           RUN_ID: ${{ github.event.workflow_run.id }}
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
         run: |
@@ -303,7 +301,7 @@ jobs:
         id: verify-pr-status
         if: steps.find-pr.outputs.found == 'true' && steps.check-author.outputs.allowed == 'true' && steps.check-ci-ran.outputs.ci_ran == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
           ORIGINAL_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
@@ -400,7 +398,7 @@ jobs:
           steps.check-ci-ran.outputs.ci_ran == 'true' &&
           steps.verify-pr-status.outputs.still_valid == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
         run: |
           echo "Fetching labels for PR #$PR_NUMBER..."
@@ -434,7 +432,7 @@ jobs:
           steps.verify-pr-status.outputs.still_valid == 'true' &&
           steps.check-label.outputs.skip != 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
         run: |
           echo "🚀 Enabling auto-merge for PR #$PR_NUMBER"

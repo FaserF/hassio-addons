@@ -33,6 +33,15 @@ jobs:
       contents: write
       pull-requests: write
     steps:
+      - name: Generate GitHub App token for Hermes
+        id: app-token
+        if: ${{ secrets.BOT_APP_ID != '' && secrets.BOT_PRIVATE_KEY != '' }}
+        uses: actions/create-github-app-token@v3
+        continue-on-error: true
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+
       - name: ⤵️ Check out code
         uses: actions/checkout@v7
       - name: 🔍 Detect New Apps
@@ -81,6 +90,7 @@ jobs:
         if: steps.new-Apps.outputs.found == 'true' && github.event_name == 'pull_request'
         uses: actions/github-script@v9
         with:
+          github-token: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
           script: |
             const output = process.env.CONTENT;
             const signature = "<!-- App-intake-report -->";
