@@ -118,6 +118,7 @@ action:
 > - **Removed reactions**: When a reaction is removed, the event is fired with an empty `reaction`.
 > - **Own reactions**: Reactions made from the linked account itself are fired as `whatsapp_message_sent`. With **Allow Self-Messages** enabled in the integration they also fire `whatsapp_message_received`, with `sender` set to `me`.
 > - **Sender number**: If the sender's phone number cannot be resolved (WhatsApp LID), `sender` stays an `@lid` JID.
+> - **Whitelist**: If a whitelist is configured in the integration, reactions from chats that aren't on it are dropped, like any other incoming message. This also applies to your own reactions with **Allow Self-Messages** enabled.
 
 ## 🛡️ WhatsApp Group Moderation & Defender Engine
 
