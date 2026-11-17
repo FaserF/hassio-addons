@@ -568,6 +568,22 @@ Polling endpoint for the integration. Returns a list of received messages and cl
 ]
 ```
 
+Incoming emoji reactions are queued as events of type `reaction`. An empty `reaction` means the reaction was removed.
+
+```json
+{
+  "id": "3EB0C431C26A1916E07E",
+  "type": "reaction",
+  "reaction": "👍",
+  "reacted_message_id": "3EB0B4307F18A95AA1C2",
+  "sender": "491234567890@s.whatsapp.net",
+  "sender_number": "491234567890",
+  "from": "491234567890@s.whatsapp.net",
+  "is_group": false,
+  "from_me": false
+}
+```
+
 #### `GET /logs`
 
 Returns the recent internal connection logs (used by dashboard).

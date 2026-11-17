@@ -77,6 +77,42 @@ action:
 > - **Vote List**: `trigger.event.data.vote` is a **list** of selected option names.
 > - **Decryption requirement**: Poll vote decryption only works if the addon has the original poll in its store (either the bot sent the poll, or the poll was received while the bot was online).
 
+### Reacting to Emoji Reactions
+
+When someone reacts to a message, a `whatsapp_message_received` event of type `reaction` is fired. This works for reactions to messages sent by Home Assistant too, so a reaction can be used as a quick reply.
+
+`whatsapp.send_message` returns the ID of the sent message, which you can match against `reacted_message_id`:
+
+```yaml
+alias: Garage Close Confirmation
+sequence:
+  - action: whatsapp.send_message
+    data:
+      target: '49171234567'
+      message: 'The garage is still open. React with 👍 to close it.'
+    response_variable: sent
+  - wait_for_trigger:
+      - trigger: event
+        event_type: whatsapp_message_received
+        event_data:
+          type: reaction
+          reacted_message_id: '{{ sent.message_id }}'
+    timeout: '00:30:00'
+    continue_on_timeout: false
+  - condition: template
+    value_template: "{{ wait.trigger.event.data.reaction == '👍' }}"
+  - action: cover.close_cover
+    target:
+      entity_id: cover.garage_door
+```
+
+> [!IMPORTANT]
+>
+> - **Fields**: `reaction` is the emoji, `reacted_message_id` is the ID of the message that was reacted to, and `sender` / `sender_number` identify who reacted. `id` is the ID of the reaction itself.
+> - **Removed reactions**: When a reaction is removed, the event is fired with an empty `reaction`.
+> - **Own reactions**: Reactions made from the linked account itself are fired as `whatsapp_message_sent` instead.
+> - **Sender number**: If the sender's phone number cannot be resolved (WhatsApp LID), `sender` stays an `@lid` JID.
+
 ## 🛡️ WhatsApp Group Moderation & Defender Engine
 
 The WhatsApp Addon incorporates a full-featured group moderation, defender, and command engine.
