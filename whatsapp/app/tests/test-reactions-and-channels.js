@@ -11,12 +11,15 @@ console.log('🧪 Running Reaction Events & Newsletter Channel Unit Tests...');
     messageStore: new Map(),
   };
 
-  const optionsChannel = getSendOptions(
-    session,
-    '120363000000000000@newsletter',
-    { quotedMessageId: 'XYZ', expiration: 3600 }
+  const optionsChannel = getSendOptions(session, '120363000000000000@newsletter', {
+    quotedMessageId: 'XYZ',
+    expiration: 3600,
+  });
+  assert.strictEqual(
+    optionsChannel.quoted,
+    undefined,
+    'quoted option must be omitted for channels'
   );
-  assert.strictEqual(optionsChannel.quoted, undefined, 'quoted option must be omitted for channels');
   assert.strictEqual(
     optionsChannel.ephemeralExpiration,
     undefined,
@@ -24,12 +27,14 @@ console.log('🧪 Running Reaction Events & Newsletter Channel Unit Tests...');
   );
   console.log('✅ PASSED: getSendOptions correctly strips quoted and ephemeral for channels');
 
-  const optionsRegular = getSendOptions(
-    session,
-    '491761234567@s.whatsapp.net',
-    { expiration: 3600 }
+  const optionsRegular = getSendOptions(session, '491761234567@s.whatsapp.net', {
+    expiration: 3600,
+  });
+  assert.strictEqual(
+    optionsRegular.ephemeralExpiration,
+    3600,
+    'ephemeral preserved for regular chats'
   );
-  assert.strictEqual(optionsRegular.ephemeralExpiration, 3600, 'ephemeral preserved for regular chats');
   console.log('✅ PASSED: getSendOptions preserves options for regular chats');
 }
 

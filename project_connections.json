@@ -1,11 +1,11 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-11-16T16:56:08.839845",
+  "timestamp": "2026-11-17T12:59:05.750989",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
-      "version": "2.5.13",
+      "version": "2.5.14",
       "description": "DNS-over-TLS/HTTPS proxy with ad blocking, filtering and admin UI",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-shielddns-{arch}",
