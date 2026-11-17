@@ -2,10 +2,12 @@
  * Baileys Patch Script
  * Fixes:
  * 1. Untyped presence push notification bug (issue #1091)
- * 2. WhatsApp Channels (@newsletter) media uploads & smax-invalid 479 rejection:
+ * 2. WhatsApp Channels (@newsletter) media uploads & smax-invalid 479 rejection (Baileys issue #2199, #2562, PR #2434):
  *    - Routes media to NEWSLETTER_MEDIA_PATH_MAP (/newsletter/newsletter-image, etc.)
  *    - Appends server_thumb_gen=1 for channel media
- *    - Includes extraAttrs (mediatype) in newsletter <message> stanzas
+ *    - Returns thumbnailDirectPath / thumbnailSha256 from upload response
+ *    - Sets url: null, fileEncSha256 = fileSha256 in newsletter media protobuf
+ *    - Includes mediatype in plaintext node and extraAttrs in newsletter <message> stanzas
  */
 
 import fs from 'fs';
@@ -63,10 +65,11 @@ export const NEWSLETTER_MEDIA_PATH_MAP = {
   }
 }
 
-// 3. Patch Utils/messages.js: pass newsletter: true to options.upload
+// 3. Patch Utils/messages.js: pass newsletter: true, url: null, fileEncSha256, thumbnails
 const messagesFile = path.join(BAILEYS_DIR, 'lib/Utils/messages.js');
 if (fs.existsSync(messagesFile)) {
   let content = fs.readFileSync(messagesFile, 'utf8');
+  let changed = false;
   if (
     content.includes('timeoutMs: options.mediaUploadTimeoutMs') &&
     !content.includes('newsletter: true')
@@ -75,13 +78,54 @@ if (fs.existsSync(messagesFile)) {
       'timeoutMs: options.mediaUploadTimeoutMs\n        });',
       'timeoutMs: options.mediaUploadTimeoutMs,\n            newsletter: true\n        });'
     );
+    changed = true;
+  }
+  if (!content.includes('fileEncSha256: fileSha256,')) {
+    // Unencrypted newsletter media requires url: null and fileEncSha256: fileSha256
+    content = content.replace(
+      /const \{ mediaUrl, directPath \} = await options\.upload\(filePath, \{\s*fileEncSha256B64: fileSha256B64,\s*mediaType: mediaType,\s*timeoutMs: options\.mediaUploadTimeoutMs,?\s*(newsletter: true)?\s*\}\);/,
+      `const uploadResult = await options.upload(filePath, {
+            fileEncSha256B64: fileSha256B64,
+            mediaType: mediaType,
+            timeoutMs: options.mediaUploadTimeoutMs,
+            newsletter: true
+        });
+        const mediaUrl = uploadResult.mediaUrl;
+        const directPath = uploadResult.directPath;
+        const thumbnailDirectPath = uploadResult.thumbnailDirectPath;
+        const thumbnailSha256 = uploadResult.thumbnailSha256;`
+    );
+    content = content.replace(
+      `[\`\${mediaType}Message\`]: MessageTypeProto[mediaType].fromObject({
+                url: mediaUrl,
+                directPath,
+                fileSha256,
+                fileLength,
+                ...uploadData,
+                media: undefined
+            })`,
+      `[\`\${mediaType}Message\`]: MessageTypeProto[mediaType].fromObject({
+                url: null,
+                directPath,
+                fileSha256,
+                fileEncSha256: fileSha256,
+                fileLength,
+                ...(thumbnailDirectPath && { thumbnailDirectPath }),
+                ...(thumbnailSha256 && { thumbnailSha256 }),
+                ...uploadData,
+                media: undefined
+            })`
+    );
+    changed = true;
+  }
+  if (changed) {
     fs.writeFileSync(messagesFile, content, 'utf8');
-    console.log('✅ Patched Utils/messages.js (newsletter upload flag)');
+    console.log('✅ Patched Utils/messages.js (newsletter media protobuf & upload)');
     patchedCount++;
   }
 }
 
-// 4. Patch Utils/messages-media.js: use NEWSLETTER_MEDIA_PATH_MAP and server_thumb_gen
+// 4. Patch Utils/messages-media.js: use NEWSLETTER_MEDIA_PATH_MAP, server_thumb_gen, thumbnail info
 const mediaFile = path.join(BAILEYS_DIR, 'lib/Utils/messages-media.js');
 if (fs.existsSync(mediaFile)) {
   let content = fs.readFileSync(mediaFile, 'utf8');
@@ -104,17 +148,32 @@ if (fs.existsSync(mediaFile)) {
     );
     changed = true;
   }
+  if (!content.includes('urls.thumbnailDirectPath = result.thumbnail_info')) {
+    content = content.replace(
+      'urls = {\n                        mediaUrl: result.url,\n                        directPath: result.direct_path,',
+      'urls = {\n                        mediaUrl: result.url,\n                        directPath: result.direct_path,\n                        ...(result.thumbnail_info && {\n                            thumbnailDirectPath: result.thumbnail_info.thumbnail_direct_path,\n                            thumbnailSha256: result.thumbnail_info.thumbnail_sha256\n                        }),'
+    );
+    changed = true;
+  }
   if (changed) {
     fs.writeFileSync(mediaFile, content, 'utf8');
-    console.log('✅ Patched Utils/messages-media.js (newsletter media endpoints)');
+    console.log('✅ Patched Utils/messages-media.js (newsletter media endpoints & thumbnails)');
     patchedCount++;
   }
 }
 
-// 5. Patch Socket/messages-send.js: spread extraAttrs in newsletter stanza
+// 5. Patch Socket/messages-send.js: plaintext mediatype attr & newsletter extraAttrs
 const sendFile = path.join(BAILEYS_DIR, 'lib/Socket/messages-send.js');
 if (fs.existsSync(sendFile)) {
   let content = fs.readFileSync(sendFile, 'utf8');
+  let changed = false;
+  if (!content.includes('mediatype: mediaType')) {
+    content = content.replace(
+      "binaryNodeContent.push({\n                    tag: 'plaintext',\n                    attrs: {},\n                    content: bytes\n                });",
+      "binaryNodeContent.push({\n                    tag: 'plaintext',\n                    attrs: mediaType ? { mediatype: mediaType } : {},\n                    content: bytes\n                });"
+    );
+    changed = true;
+  }
   if (
     content.includes('sending newsletter message to ${jid}') &&
     !content.includes('/* newsletter-extraAttrs-patched */')
@@ -127,8 +186,11 @@ if (fs.existsSync(sendFile)) {
       /(type: getMessageType\(message\),\r?\n\s*\.\.\.\(additionalAttributes \|\| \{\}\))(\r?\n\s*\},)/,
       '$1,\n                        ...(extraAttrs || {})$2'
     );
+    changed = true;
+  }
+  if (changed) {
     fs.writeFileSync(sendFile, content, 'utf8');
-    console.log('✅ Patched Socket/messages-send.js (newsletter extraAttrs)');
+    console.log('✅ Patched Socket/messages-send.js (newsletter plaintext mediatype & extraAttrs)');
     patchedCount++;
   }
 }

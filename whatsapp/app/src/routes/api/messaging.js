@@ -78,10 +78,17 @@ export function registerMessagingRoutes(app) {
 
         const jid = getJid(number);
         const options = getSendOptions(session, jid, req.body);
+        let imagePayload = { url };
+        if (jid.endsWith('@newsletter') && typeof url === 'string' && url.startsWith('http')) {
+          const resp = await fetch(url);
+          if (!resp.ok) throw new Error(`Failed to fetch image from ${url}: ${resp.statusText}`);
+          const buf = Buffer.from(await resp.arrayBuffer());
+          imagePayload = buf;
+        }
         const sentMsg = await session.sock.sendMessage(
           jid,
           {
-            image: { url },
+            image: imagePayload,
             caption: caption || '',
           },
           options

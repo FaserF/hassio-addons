@@ -3,6 +3,10 @@ import { getQuotedMessage } from '../../whatsapp/events/index.js';
 
 export function getSendOptions(session, jid, reqBody = {}, extra = {}) {
   const options = { ...extra };
+  if (typeof jid === 'string' && jid.endsWith('@newsletter')) {
+    // WhatsApp channels (@newsletter) do not support quoted replies or ephemeral expiration
+    return options;
+  }
   const quotedId = reqBody?.quotedMessageId || reqBody?.quoted_message_id;
   if (quotedId) {
     const quotedMsg = getQuotedMessage(session, quotedId);

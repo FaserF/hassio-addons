@@ -46,8 +46,11 @@ async function run() {
     console.log('\n--- 11/12 Testing Data Export Engine ---');
     await import('./test-export.js');
 
-    console.log('\n--- 12/12 Testing Messaging Mentions & JID ---');
+    console.log('\n--- 12/13 Testing Messaging Mentions & JID ---');
     await import('./test-messaging-mentions.js');
+
+    console.log('\n--- 13/13 Testing Reaction Events & Newsletter Channels ---');
+    await import('./test-reactions-and-channels.js');
 
     const duration = ((performance.now() - startTime) / 1000).toFixed(2);
     console.log(`\n🎉 ALL TEST SUITES PASSED IN ${duration}s!`);
