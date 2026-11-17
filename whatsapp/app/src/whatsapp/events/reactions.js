@@ -19,12 +19,15 @@ export function registerReactionListener(session) {
       }
       const senderJid = rawSender.split(':')[0].replace(/@lid$/, '@s.whatsapp.net');
 
-      // Forward to Home Assistant. `id` is intentionally not set to the reacted
-      // message's ID, otherwise the integration's loop guard would drop reactions
-      // to messages that HA itself sent.
-      if (remoteJid !== 'status@broadcast') {
-        // `key` is the reacted message; the reactor is identified by `reaction.key`.
-        const rKey = reaction?.key || {};
+      // Forward to Home Assistant. `key` is the reacted message; the reaction itself
+      // (and the reactor) is identified by `reaction.key`. `id` is the reaction's own
+      // ID, not the reacted message's, otherwise the integration's loop guard would
+      // drop reactions to messages that HA itself sent.
+      const rKey = reaction?.key || {};
+      const dedupeKey = rKey.id ? `reaction:${rKey.id}` : null;
+      const isDuplicate = dedupeKey ? session.processedMessageIds?.has(dedupeKey) : false;
+      if (dedupeKey) session.processedMessageIds?.set(dedupeKey, Date.now());
+      if (remoteJid !== 'status@broadcast' && !isDuplicate) {
         const reactorFromMe = Boolean(rKey.fromMe);
         let reactorRaw =
           rKey.participant || rKey.participantAlt || rKey.remoteJidAlt || rKey.remoteJid || '';
@@ -35,6 +38,7 @@ export function registerReactionListener(session) {
         }
         const reactorJid = reactorRaw.split(':')[0].replace(/@lid$/, '@s.whatsapp.net');
         const event = {
+          id: rKey.id,
           type: 'reaction',
           content: reaction?.text || '', // empty = reaction removed
           reaction: reaction?.text || '',
