@@ -23,17 +23,28 @@ export function registerReactionListener(session) {
       // message's ID, otherwise the integration's loop guard would drop reactions
       // to messages that HA itself sent.
       if (remoteJid !== 'status@broadcast') {
+        // `key` is the reacted message; the reactor is identified by `reaction.key`.
+        const rKey = reaction?.key || {};
+        const reactorFromMe = Boolean(rKey.fromMe);
+        let reactorRaw =
+          rKey.participant || rKey.participantAlt || rKey.remoteJidAlt || rKey.remoteJid || '';
+        if (reactorFromMe) {
+          const selfUser = session.sock?.user?.id;
+          const selfPn = selfUser ? selfUser.split(':')[0] : session.stats?.my_number;
+          if (selfPn) reactorRaw = `${selfPn}@s.whatsapp.net`;
+        }
+        const reactorJid = reactorRaw.split(':')[0].replace(/@lid$/, '@s.whatsapp.net');
         const event = {
           type: 'reaction',
           content: reaction?.text || '', // empty = reaction removed
           reaction: reaction?.text || '',
           reacted_message_id: parentId,
-          sender: senderJid,
-          sender_number: senderJid.split('@')[0],
+          sender: reactorJid,
+          sender_number: reactorJid.split('@')[0],
           from: remoteJid,
           is_group: remoteJid.endsWith('@g.us'),
-          from_me: Boolean(key.fromMe),
-          raw: { key: { remoteJid, fromMe: Boolean(key.fromMe), participant: key.participant } },
+          from_me: reactorFromMe,
+          raw: { key: { remoteJid, fromMe: reactorFromMe, participant: rKey.participant } },
           session_id: session.id,
         };
         session.eventQueue.push(event);
