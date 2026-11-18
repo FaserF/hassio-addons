@@ -98,6 +98,8 @@ Configure the app via the **Configuration** tab in the Home Assistant App page.
 
 ```yaml
 certfile: fullchain.pem
+database_type: sqlite
+database_url: ''
 developer_mode: false
 doh_port: 443
 dot_port: 8853
