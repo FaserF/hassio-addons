@@ -29,7 +29,7 @@ options:
   ssl: false
   certfile: fullchain.pem
   keyfile: privkey.pem
-  log_level: "info"
+  log_level: "notice"
   init_commands: []
   stream_gateway:
     enabled: false
