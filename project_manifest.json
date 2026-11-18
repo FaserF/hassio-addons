@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-11-17T13:02:03.286728",
+  "timestamp": "2026-11-18T02:13:36.608302",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -14,7 +14,7 @@
       "slug": "ShieldDNS",
       "rel_path": "ShieldDNS",
       "name": "ShieldDNS",
-      "version": "2.5.14",
+      "version": "2.5.15",
       "description": "DNS-over-TLS/HTTPS proxy with ad blocking, filtering and admin UI",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-shielddns-{arch}",
