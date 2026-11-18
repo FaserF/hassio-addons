@@ -93,7 +93,7 @@ jobs:
     steps:
       - name: Generate GitHub App token for Hermes
         id: app-token
-        if: ${{ secrets.BOT_APP_ID != '' && secrets.BOT_PRIVATE_KEY != '' }}
+        if: secrets.BOT_APP_ID != '' && secrets.BOT_PRIVATE_KEY != ''
         uses: actions/create-github-app-token@v3
         continue-on-error: true
         with:
