@@ -1,10 +1,10 @@
 # Paseo
 
-<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/.dev/paseo/logo.png" width="100" alt="Logo" />
+<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/paseo/logo.png" width="100" alt="Logo" />
 
 [![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=605cee21_paseo)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
-[![Docker Image](https://img.shields.io/badge/docker-0.1.8-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-paseo)
+[![Docker Image](https://img.shields.io/badge/docker-0.1.9-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-paseo)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
 > Autonomous AI Code Studio & Web IDE powered by OmniRoute and OpenCode.
@@ -12,19 +12,10 @@
 ---
 
 > [!CAUTION]
-> **In-Development Add-on (Edge Channel Only)**
+> **Experimental / Beta Status**
 >
-> This add-on is currently in active development and excluded from the stable repository channel.
-> While the Home Assistant add-on wrapper itself may be functional, the underlying upstream software is either in an early development stage or hosted within a private repository.
->
-> ### 📦 How to Install via Edge Channel
-> 1. Click to add the Edge repository:
->    [![Add Edge Repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFaserF%2Fhassio-addons%23edge)
-> 2. Or manually add repository in Home Assistant (**Settings** → **Add-ons** → **Add-on Store** → **⋮** → **Repositories**):
->    ```text
->    https://github.com/FaserF/hassio-addons#edge
->    ```
-> 3. Refresh the Add-on Store (⋮ → **Check for updates**), find this add-on under **FaserF's Home Assistant Apps (Edge)**, and click **Install**.
+> This App is still in development and/or primarily developed for personal use.
+> It is not extensively tested yet, but is expected to work fundamentally.
 
 ---
 

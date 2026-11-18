@@ -47,7 +47,7 @@ default_ssl_conf: default
 document_root: /share/htdocs
 init_commands: []
 keyfile: privkey.pem
-log_level: info
+log_level: notice
 php_ini: default
 ssl: false
 stream_gateway:
