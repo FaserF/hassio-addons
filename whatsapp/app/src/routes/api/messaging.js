@@ -10,7 +10,7 @@ import {
   getLastMessagesForChat,
   getSendOptions,
 } from './helpers.js';
-import { generateMessageID } from '../../utils/security.js';
+import { generateMessageID, validateSafeHttpUrl } from '../../utils/security.js';
 import {
   syncWhatsAppDeleteToTelegram,
   syncWhatsAppEditToTelegram,
@@ -79,9 +79,11 @@ export function registerMessagingRoutes(app) {
         const jid = getJid(number);
         const options = getSendOptions(session, jid, req.body);
         let imagePayload = { url };
-        if (jid.endsWith('@newsletter') && typeof url === 'string' && url.startsWith('http')) {
-          const resp = await fetch(url);
-          if (!resp.ok) throw new Error(`Failed to fetch image from ${url}: ${resp.statusText}`);
+        if (jid.endsWith('@newsletter') && typeof url === 'string') {
+          const safeUrl = validateSafeHttpUrl(url);
+          if (!safeUrl) return res.status(400).json({ detail: 'Invalid or forbidden URL' });
+          const resp = await fetch(safeUrl.cleanUrl);
+          if (!resp.ok) throw new Error(`Failed to fetch image from ${safeUrl.cleanUrl}: ${resp.statusText}`);
           const buf = Buffer.from(await resp.arrayBuffer());
           imagePayload = buf;
         }
