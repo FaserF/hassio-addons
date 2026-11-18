@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event.workflow_run.event == 'pull_request'
+    env:
+      BOT_APP_ID: ${{ secrets.BOT_APP_ID }}
+      BOT_PRIVATE_KEY: ${{ secrets.BOT_PRIVATE_KEY }}
     steps:
       - name: ⤵️ Check out master code
         uses: actions/checkout@v7
@@ -37,12 +40,12 @@ jobs:
 
       - name: Generate GitHub App token for Hermes
         id: app-token
-        if: secrets.BOT_APP_ID != '' && secrets.BOT_PRIVATE_KEY != ''
+        if: env.BOT_APP_ID != '' && env.BOT_PRIVATE_KEY != ''
         uses: actions/create-github-app-token@v3
         continue-on-error: true
         with:
-          app-id: ${{ secrets.BOT_APP_ID }}
-          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+          app-id: ${{ env.BOT_APP_ID }}
+          private-key: ${{ env.BOT_PRIVATE_KEY }}
 
       - name: 📝 Post Results Comment
         uses: actions/github-script@v9

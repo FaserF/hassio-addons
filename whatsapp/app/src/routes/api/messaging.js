@@ -78,13 +78,21 @@ export function registerMessagingRoutes(app) {
 
         const jid = getJid(number);
         const options = getSendOptions(session, jid, req.body);
-        let imagePayload = { url };
-        if (jid.endsWith('@newsletter') && typeof url === 'string') {
-          const safeUrl = validateSafeHttpUrl(url);
+
+        let urlToUse = url;
+        if (typeof urlToUse === 'string') {
+          const safeUrl = validateSafeHttpUrl(urlToUse);
           if (!safeUrl) return res.status(400).json({ detail: 'Invalid or forbidden URL' });
-          const resp = await fetch(safeUrl.cleanUrl);
-          if (!resp.ok)
-            throw new Error(`Failed to fetch image from ${safeUrl.cleanUrl}: ${resp.statusText}`);
+          urlToUse = safeUrl.cleanUrl;
+        }
+
+        let imagePayload = { url: urlToUse };
+        if (jid.endsWith('@newsletter') && typeof urlToUse === 'string') {
+          const resp = await fetch(urlToUse);
+          if (!resp.ok) throw new Error(`Failed to fetch image from ${urlToUse}: ${resp.statusText}`);
+          const buf = Buffer.from(await resp.arrayBuffer());
+          imagePayload = buf;
+        }
           const buf = Buffer.from(await resp.arrayBuffer());
           imagePayload = buf;
         }

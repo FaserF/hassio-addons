@@ -12,15 +12,18 @@ jobs:
   close-fixed:
     name: Close Inactive Fixed Issues
     runs-on: ubuntu-latest
+    env:
+      BOT_APP_ID: ${{ secrets.BOT_APP_ID }}
+      BOT_PRIVATE_KEY: ${{ secrets.BOT_PRIVATE_KEY }}
     steps:
       - name: Generate GitHub App token for Hermes
         id: app-token
-        if: secrets.BOT_APP_ID != '' && secrets.BOT_PRIVATE_KEY != ''
+        if: env.BOT_APP_ID != '' && env.BOT_PRIVATE_KEY != ''
         uses: actions/create-github-app-token@v3
         continue-on-error: true
         with:
-          app-id: ${{ secrets.BOT_APP_ID }}
-          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+          app-id: ${{ env.BOT_APP_ID }}
+          private-key: ${{ env.BOT_PRIVATE_KEY }}
 
       - name: Close issues marked as fixed with no user activity for 3 weeks
         uses: actions/github-script@v9
