@@ -117,5 +117,5 @@ LABEL \
 WORKDIR /app
 
 # Healthcheck with increased start-period and timeout to prevent spurious restarts under load
-HEALTHCHECK --interval=30s --timeout=15s --start-period=60s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=15s --start-period=120s --retries=3 \
     CMD ["/bin/sh", "-c", "curl --fail http://localhost:8092/ || exit 1"]
