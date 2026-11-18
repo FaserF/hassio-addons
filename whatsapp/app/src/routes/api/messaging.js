@@ -83,7 +83,8 @@ export function registerMessagingRoutes(app) {
           const safeUrl = validateSafeHttpUrl(url);
           if (!safeUrl) return res.status(400).json({ detail: 'Invalid or forbidden URL' });
           const resp = await fetch(safeUrl.cleanUrl);
-          if (!resp.ok) throw new Error(`Failed to fetch image from ${safeUrl.cleanUrl}: ${resp.statusText}`);
+          if (!resp.ok)
+            throw new Error(`Failed to fetch image from ${safeUrl.cleanUrl}: ${resp.statusText}`);
           const buf = Buffer.from(await resp.arrayBuffer());
           imagePayload = buf;
         }

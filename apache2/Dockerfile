@@ -17,7 +17,6 @@ ENV APP_SLUG="apache2"
 ENV APP_UNSUPPORTED="false"
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
-
 WORKDIR /tmp
 
 # renovate: datasource=github-releases depName=php/php-src
