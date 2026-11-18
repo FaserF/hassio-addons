@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.16 (2026-11-18)
+
+### 📦 Dependencies
+- ⬆️ Update dependency FaserF/ShieldDNS to v1.13.5 (#1361) ([`88c2a327`](https://github.com/FaserF/hassio-addons/commit/88c2a327efb75643a3011f3a05684c05a4c42fab))
+
+
 ## 2.5.15 (2026-11-17)
 
 ### 📦 Dependencies
