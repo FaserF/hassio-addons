@@ -81,15 +81,12 @@ RUN \
 
 # Copy the patch script and apply it
 COPY patch_ingress.pl /usr/bin/patch_ingress.pl
-RUN perl /usr/bin/patch_ingress.pl /app/lib/DBInfoscreen.pm
-
-# Clean up build dependencies
-RUN apk del --no-cache .build-dependencies
+RUN perl /usr/bin/patch_ingress.pl /app/lib/DBInfoscreen.pm \
+    && apk del --no-cache .build-dependencies
 
 # Copy rootfs
 COPY rootfs /
 
-# Ensure scripts are executable and have Unix line endings
 RUN find /usr/bin/dbf-* /etc/s6-overlay/s6-rc.d /etc/periodic -type f -exec sed -i 's/\r$//' {} + \
     && chmod a+x /usr/bin/dbf-update-data /usr/bin/dbf-integration-manager /usr/bin/dbf-mdns.pl \
         /etc/s6-overlay/s6-rc.d/dbf/run \
