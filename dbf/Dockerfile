@@ -17,7 +17,7 @@ ENV \
     DBFAKEDISPLAY_IRISRT_CACHE="/data/irisrt_cache" \
     DBFAKEDISPLAY_STATS="/data/stats.json" \
     DBFAKEDISPLAY_LISTEN="http://*:8092" \
-    DBFAKEDISPLAY_WORKERS=2
+    DBFAKEDISPLAY_WORKERS=1
 
 # Build arguments
 ARG DBF_VERSION="4.37.28"
