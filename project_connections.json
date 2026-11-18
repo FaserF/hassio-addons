@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-11-18T14:53:44.339173",
+  "timestamp": "2026-11-18T18:34:04.972014",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
@@ -171,7 +171,7 @@
     },
     "dbf": {
       "name": "DBF (DB-Infoscreen)",
-      "version": "1.1.10",
+      "version": "1.1.11",
       "description": "Railway departure display (formerly db-fakescreen) as a Home Assistant App.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-dbf-{arch}",
@@ -334,7 +334,7 @@
     },
     "paseo": {
       "name": "Paseo",
-      "version": "0.1.9",
+      "version": "0.3.0",
       "description": "Autonomous AI Code Studio & Web IDE powered by OmniRoute and OpenCode.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-paseo-{arch}",

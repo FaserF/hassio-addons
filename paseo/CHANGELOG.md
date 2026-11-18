@@ -3,8 +3,8 @@
 ## 0.3.0 (2026-11-18)
 
 ### ✨ Features
-- move to stable root, bump to 0.1.9, fix ingress route ([`011d85f1`](https://github.com/FaserF/hassio-addons/commit/011d85f1c36cbf299d180bc3e120ba368abb8e38))
 
+- move to stable root, bump to 0.1.9, fix ingress route ([`011d85f1`](https://github.com/FaserF/hassio-addons/commit/011d85f1c36cbf299d180bc3e120ba368abb8e38))
 
 ## 0.1.9 (2026-11-18)
 
