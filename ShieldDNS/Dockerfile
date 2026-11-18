@@ -70,6 +70,7 @@ RUN \
     curl \
     unzip \
     jq \
+    mariadb-client \
     ca-certificates \
     go
 

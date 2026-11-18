@@ -12,6 +12,8 @@ ingress: true
 ingress_entry: "admin/"
 panel_icon: "mdi:shield-check-outline"
 startup: system
+services:
+  - mysql:want
 discovery:
   - shielddns
 map:
@@ -26,6 +28,8 @@ options:
   # SETUP: Map WAN Port 853 -> LAN Port 8853 in your Router for Android to work.
   dot_port: 8853
   doh_port: 443
+  database_type: "sqlite"
+  database_url: ""
   developer_mode: false
   github_token: ""
 schema:
@@ -34,6 +38,8 @@ schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
   dot_port: port?
   doh_port: port?
+  database_type: list(sqlite|mariadb|external)?
+  database_url: password?
   developer_mode: bool?
   github_token: password?
 # ports:

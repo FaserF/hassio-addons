@@ -253,7 +253,61 @@ if [ -f "/data/options.json" ] && [ -n "$(command -v bashio::config)" ]; then
 	bashio::log.level "${LOG_LEVEL}"
 	DOT_PORT=$(bashio::config 'dot_port')
 	DOH_PORT=$(bashio::config 'doh_port')
+	DATABASE_TYPE=$(bashio::config 'database_type' 'sqlite')
+	[ -z "$DATABASE_TYPE" ] || [ "$DATABASE_TYPE" = "null" ] && DATABASE_TYPE="sqlite"
+	CUSTOM_DATABASE_URL=""
+	if bashio::config.has_value 'database_url'; then
+		CUSTOM_DATABASE_URL=$(bashio::config 'database_url')
+	fi
 	export DATA_DIR="/data"
+
+	# Database Backend Configuration (Advanced: mariadb / external)
+	if [ "$DATABASE_TYPE" = "mariadb" ]; then
+		if ! bashio::services.available "mysql"; then
+			bashio::log.error "❌ Database type is set to 'mariadb', but the official MariaDB service is not available!"
+			bashio::exit.nok "Please install and start the official MariaDB addon or switch database_type back to 'sqlite'."
+		fi
+		DB_HOST=$(bashio::services "mysql" "host")
+		DB_PORT=$(bashio::services "mysql" "port")
+		DB_USER=$(bashio::services "mysql" "username")
+		DB_PASS=$(bashio::services "mysql" "password")
+		[ -z "$DB_PORT" ] || [ "$DB_PORT" = "null" ] && DB_PORT="3306"
+
+		# With host_network: true, core-mariadb may not resolve via container DNS; fallback to 127.0.0.1
+		if ! nc -z "$DB_HOST" "$DB_PORT" 2>/dev/null; then
+			if nc -z 127.0.0.1 "$DB_PORT" 2>/dev/null; then
+				bashio::log.info "ℹ️  Host '${DB_HOST}' unreachable on host network; using 127.0.0.1:${DB_PORT} for MariaDB."
+				DB_HOST="127.0.0.1"
+			fi
+		fi
+
+		MYSQL_CLI=$(command -v mariadb || command -v mysql || true)
+		if [ -n "$MYSQL_CLI" ]; then
+			bashio::log.info "🗄️  Ensuring 'shielddns' database exists in MariaDB (${DB_HOST}:${DB_PORT})..."
+			for attempt in $(seq 1 15); do
+				if "$MYSQL_CLI" -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASS" -e "CREATE DATABASE IF NOT EXISTS \`shielddns\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null; then
+					break
+				fi
+				if [ "$attempt" -eq 15 ]; then
+					bashio::log.warning "⚠️  Could not auto-create 'shielddns' database in MariaDB; attempting startup anyway."
+				else
+					sleep 2
+				fi
+			done
+		else
+			bashio::log.warning "⚠️  mariadb-client not found; assuming 'shielddns' database already exists."
+		fi
+
+		ENC_USER=$(jq -rn --arg v "$DB_USER" '$v|@uri')
+		ENC_PASS=$(jq -rn --arg v "$DB_PASS" '$v|@uri')
+		export DATABASE_URL="mariadb://${ENC_USER}:${ENC_PASS}@${DB_HOST}:${DB_PORT}/shielddns"
+		bashio::log.info "✅ MariaDB backend configured (${DB_HOST}:${DB_PORT}/shielddns)."
+	elif [ "$DATABASE_TYPE" = "external" ] && [ -n "$CUSTOM_DATABASE_URL" ] && [ "$CUSTOM_DATABASE_URL" != "null" ]; then
+		export DATABASE_URL="$CUSTOM_DATABASE_URL"
+		bashio::log.info "✅ External database backend configured."
+	else
+		bashio::log.info "🗄️  Using default embedded SQLite database backend."
+	fi
 
 	# Prepend /ssl/ to cert paths if they are just filenames
 	if [[ "$CERT_FILE" != /* ]]; then CERT_FILE="/ssl/$CERT_FILE"; fi

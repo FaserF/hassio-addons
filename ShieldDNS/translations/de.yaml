@@ -14,6 +14,12 @@ configuration:
   doh_port:
     name: DoH Port
     description: "Port für DNS-over-HTTPS (Standard: 3443)."
+  database_type:
+    name: Datenbank-Backend
+    description: "Wähle 'sqlite' (Standard), 'mariadb' (verbindet sich automatisch mit dem offiziellen Home Assistant MariaDB Addon) oder 'external' (eigene PostgreSQL/MariaDB-URL)."
+  database_url:
+    name: Externe Datenbank-URL
+    description: "Optionale Verbindungs-URL (postgres://... oder mariadb://...), wenn als Datenbank-Backend 'external' gewählt ist."
   developer_mode:
     name: Entwickler-Modus
     description: "Wenn aktiviert, lädt das Addon bei jedem Start den aktuellen GitHub-Code herunter und kompiliert ihn."
