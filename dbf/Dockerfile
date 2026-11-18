@@ -80,8 +80,8 @@ RUN \
     && ln -sf ../ext-templates/privacy.html.ep templates/privacy.html.ep
 
 # Copy the patch script and apply it
-COPY patch_ingress.pl /app/patch_ingress.pl
-RUN perl /app/patch_ingress.pl /app/lib/DBInfoscreen.pm && rm /app/patch_ingress.pl
+COPY patch_ingress.pl /usr/bin/patch_ingress.pl
+RUN perl /usr/bin/patch_ingress.pl /app/lib/DBInfoscreen.pm
 
 # Clean up build dependencies
 RUN apk del --no-cache .build-dependencies

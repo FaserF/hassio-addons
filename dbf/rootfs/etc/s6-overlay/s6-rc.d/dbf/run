@@ -271,6 +271,11 @@ escape_html() {
 
 # Prepare templates (imprint and privacy)
 bashio::log.info "Preparing templates..."
+# Verify and apply Ingress Patch if missing
+if ! grep -q "Ingress Patch Start" /app/lib/DBInfoscreen.pm; then
+    bashio::log.warning "Ingress Patch missing, applying now..."
+    perl /usr/bin/patch_ingress.pl /app/lib/DBInfoscreen.pm
+fi
 IMPRINT_NAME=$(bashio::config 'imprint_name' 'Home Assistant User')
 IMPRINT_ADDRESS=$(bashio::config 'imprint_address' 'Localhost')
 
