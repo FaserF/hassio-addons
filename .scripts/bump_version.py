@@ -405,6 +405,10 @@ def generate_changelog_entry(version, addon_path, changelog_message=None, existi
     heading = f"## {version} ({entry_date})"
     entry = f"{heading}\n\n"
 
+    # Add mandatory re-authentication warning for Trade Republic
+    if "traderepublic" in addon_path:
+        entry += "> [!CAUTION]\n> **RE-AUTHENTICATION REQUIRED:** After every add-on update or restart, you MUST re-authenticate in the Trade Republic Web UI to sync your session.\n\n"
+
     repo_url = get_git_remote_url()
 
     commits = get_git_log_for_addon(addon_path, ignore_tag=f"v{version}")
