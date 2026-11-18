@@ -273,11 +273,14 @@ if [ -f "/data/options.json" ] && [ -n "$(command -v bashio::config)" ]; then
 		DB_PASS=$(bashio::services "mysql" "password")
 		[ -z "$DB_PORT" ] || [ "$DB_PORT" = "null" ] && DB_PORT="3306"
 
-		# With host_network: true, core-mariadb may not resolve via container DNS; fallback to 127.0.0.1
+		# With host_network: true, core-mariadb may not resolve via container DNS; fallback to 127.0.0.1 and 172.30.32.1
 		if ! nc -z "$DB_HOST" "$DB_PORT" 2>/dev/null; then
 			if nc -z 127.0.0.1 "$DB_PORT" 2>/dev/null; then
-				bashio::log.info "ℹ️  Host '${DB_HOST}' unreachable on host network; using 127.0.0.1:${DB_PORT} for MariaDB."
+				bashio::log.info "ℹ️  Host '${DB_HOST}' unreachable; using 127.0.0.1:${DB_PORT} for MariaDB."
 				DB_HOST="127.0.0.1"
+			elif nc -z 172.30.32.1 "$DB_PORT" 2>/dev/null; then
+				bashio::log.info "ℹ️  Host '${DB_HOST}' unreachable; using 172.30.32.1:${DB_PORT} for MariaDB."
+				DB_HOST="172.30.32.1"
 			fi
 		fi
 
