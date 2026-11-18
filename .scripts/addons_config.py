@@ -15,7 +15,6 @@ DEV_ADDONS: Set[str] = {
     "switchcraft",
     "googlehome",
     "epicgamesfree",
-    "paseo",
 }
 
 UNSUPPORTED_ADDONS: Set[str] = {

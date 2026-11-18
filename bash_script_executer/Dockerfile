@@ -9,6 +9,7 @@ ARG BUILD_DATE="unknown"
 ENV APP_VERSION="2.5.8"
 ENV APP_NAME="Bash Script Executer"
 ENV APP_SLUG="bashscriptexecuter"
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV APP_UNSUPPORTED="false"
 
 RUN \

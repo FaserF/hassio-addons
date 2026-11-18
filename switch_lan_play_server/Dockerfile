@@ -10,6 +10,7 @@ FROM ${BUILD_FROM} AS builder
 ENV APP_VERSION="2.4.8"
 ENV APP_NAME="Switch LAN Play Server"
 ENV APP_SLUG="switch-lan-play-server"
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV APP_UNSUPPORTED="false"
 
 RUN \

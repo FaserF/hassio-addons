@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.9 (2026-11-18)
+
+- Moved addon from `.dev/` to stable root channel.
+- Fix SSRF vulnerability in `/send_image` route.
+
 ## 0.1.7 (2026-10-16)
 
 - reconcile serverId mismatch, auto-seed last workspace, and fix websocket upgrade

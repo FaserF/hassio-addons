@@ -19,6 +19,7 @@ ENV TERM="xterm-256color"
 ENV APP_VERSION="1.0.13"
 ENV APP_NAME="Home Assistant Test Instance"
 ENV APP_SLUG="ha_test_instance"
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV APP_UNSUPPORTED="false"
 
 RUN \

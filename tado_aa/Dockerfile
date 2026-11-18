@@ -18,6 +18,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV APP_VERSION="2.4.2"
 ENV APP_NAME="Tado Auto Assist"
 ENV APP_SLUG="tado_aa"
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV APP_UNSUPPORTED="false"
 
 RUN \

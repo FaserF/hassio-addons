@@ -17,6 +17,7 @@ SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 ENV APP_VERSION="2.4.8"
 ENV APP_NAME="Netboot.xyz"
 ENV APP_SLUG="netboot-xyz"
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV APP_UNSUPPORTED="false"
 
 RUN \

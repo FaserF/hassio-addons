@@ -22,6 +22,7 @@ ARG APACHE2_VERSION="2.4.71-r0"
 ENV APP_VERSION="3.4.13"
 ENV APP_NAME="Apache2 Minimal with MariaDB Client"
 ENV APP_SLUG="apache2-minimal-mariadb"
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV APP_UNSUPPORTED="false"
 
 RUN mkdir /run/apache2 \
