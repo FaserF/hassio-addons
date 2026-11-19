@@ -89,7 +89,8 @@ export function registerMessagingRoutes(app) {
         let imagePayload = { url: urlToUse };
         if (jid.endsWith('@newsletter') && typeof urlToUse === 'string') {
           const resp = await fetch(urlToUse);
-          if (!resp.ok) throw new Error(`Failed to fetch image from ${urlToUse}: ${resp.statusText}`);
+          if (!resp.ok)
+            throw new Error(`Failed to fetch image from ${urlToUse}: ${resp.statusText}`);
           const buf = Buffer.from(await resp.arrayBuffer());
           imagePayload = buf;
         }
