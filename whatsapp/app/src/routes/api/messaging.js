@@ -93,9 +93,6 @@ export function registerMessagingRoutes(app) {
           const buf = Buffer.from(await resp.arrayBuffer());
           imagePayload = buf;
         }
-          const buf = Buffer.from(await resp.arrayBuffer());
-          imagePayload = buf;
-        }
         const sentMsg = await session.sock.sendMessage(
           jid,
           {
