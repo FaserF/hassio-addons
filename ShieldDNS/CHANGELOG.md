@@ -3,15 +3,17 @@
 ## 2.5.17 (2026-11-19)
 
 ### ✨ Features
+
 - add fallback for mariadb host resolution in host network mode ([`cdf085e8`](https://github.com/FaserF/hassio-addons/commit/cdf085e8bfdc078b3f95ff9eaaf4a8983593f6df))
 - move to stable root, bump to 0.1.9, fix ingress route ([`011d85f1`](https://github.com/FaserF/hassio-addons/commit/011d85f1c36cbf299d180bc3e120ba368abb8e38))
 
 ### 🐛 Bug Fixes
+
 - pre-resolve DB_HOST to IP to prevent MariaDB disconnects ([`8fe22e62`](https://github.com/FaserF/hassio-addons/commit/8fe22e626dc67e5c8e602772d60dee80e3f7f435))
 
 ### 📦 Dependencies
-- ⬆️ Update Add-on Softwares (#1367) ([`1e9f9748`](https://github.com/FaserF/hassio-addons/commit/1e9f9748bd5d879514426ef2caf66ef7a60da31a))
 
+- ⬆️ Update Add-on Softwares (#1367) ([`1e9f9748`](https://github.com/FaserF/hassio-addons/commit/1e9f9748bd5d879514426ef2caf66ef7a60da31a))
 
 ## 2.5.16 (2026-11-18)
 
