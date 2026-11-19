@@ -1,13 +1,29 @@
 # Antigravity-Server
 
-<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/antigravity-server/logo.png" width="100" alt="Logo" />
+> [!CAUTION]
+> **UNSUPPORTED ADD-ON**
+>
+> This add-on is currently **UNSUPPORTED**.
+> It is no longer actively developed or maintained.
+> - No new features will be added.
+> - Bugs will likely not be fixed.
+> - Automatic workflows (like Base Image updates) may still run, but are not guaranteed.
+>
+> **USE AT YOUR OWN RISK.**
+
+> [!NOTE]
+> **Superseded by Antigravity Remote & Paseo**
+>
+> This add-on is deprecated because [Antigravity Remote (antigravity.google.com)](https://antigravity.google.com) is now officially available for browser-based remote access, and the [Paseo Add-on](https://github.com/FaserF/hassio-addons/tree/master/paseo) provides full autonomous AI Code Studio and web IDE capabilities.
+
+<img src="https://raw.githubusercontent.com/FaserF/hassio-addons/master/.unsupported/antigravity-server/logo.png" width="100" alt="Logo" />
 
 [![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=605cee21_antigravity-server)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
-[![Docker Image](https://img.shields.io/badge/docker-1.3.4-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-antigravity-server)
+[![Docker Image](https://img.shields.io/badge/docker-1.3.5-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-antigravity-server)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
-> Stream the Antigravity AI IDE (Linux Desktop with XFCE4) via NoVNC in your browser.
+> Stream the Antigravity AI IDE (Linux Desktop with XFCE4) via NoVNC in your browser. (Unsupported)
 
 ---
 

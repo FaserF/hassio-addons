@@ -1,5 +1,10 @@
 # Antigravity-Server Documentation
 
+> [!CAUTION]
+> **UNSUPPORTED ADD-ON**
+>
+> This add-on is deprecated and no longer supported. Please use [Antigravity Remote (antigravity.google.com)](https://antigravity.google.com) or the [Paseo Add-on](https://github.com/FaserF/hassio-addons/tree/master/paseo) instead.
+
 Stream the Antigravity AI IDE (Linux Desktop with XFCE4) via NoVNC in your browser.
 
 ## ⚙️ Configuration

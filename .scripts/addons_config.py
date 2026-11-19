@@ -18,6 +18,7 @@ DEV_ADDONS: Set[str] = {
 }
 
 UNSUPPORTED_ADDONS: Set[str] = {
+    "antigravity-server",
     "bt-mqtt-gateway",
     "freenom-dns-updater",
     "matterbridge",

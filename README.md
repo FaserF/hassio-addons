@@ -67,7 +67,7 @@ The table below shows **all apps** in this repository, including unsupported one
 | **[AegisBot](.dev/AegisBot)**                                   | Telegram Bot Management Server                  | ⚠️     | 2026-01 |
 | **[Alivro](.dev/Alivro)**                                       | AI-Powered Mental Health & Well-being Companion | ⚠️     | 2026-08 |
 | **[Antigravity](.dev/antigravity)**                             | Google Antigravity Quota Monitor & API Proxy    | ⚠️     | 2026-08 |
-| **[Antigravity Server](antigravity-server)**                    | Antigravity AI IDE via NoVNC                    | ⚠️     | 2026-01 |
+| **[Antigravity Server](.unsupported/antigravity-server)**        | Antigravity AI IDE via NoVNC (superseded by Antigravity Remote antigravity.google.com & Paseo) | ❌     | 2026-01 |
 | **[Apache2](apache2)**                                          | Webserver with PHP and MariaDB                  | ✅     | 2023-03 |
 | **[Apache2 Minimal](apache2-minimal)**                          | Webserver (Minimal, no PHP)                     | ✅     | 2023-03 |
 | **[Apache2 Minimal + MariaDB](apache2-minimal-mariadb)**        | Webserver with MariaDB and PHP                  | ✅     | 2023-03 |

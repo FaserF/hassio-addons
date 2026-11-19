@@ -39,7 +39,6 @@ body:
         - EntraMirror
         - ShieldDNS
         - ShieldFile
-        - antigravity-server
         - apache2
         - apache2-minimal
         - apache2-minimal-mariadb

@@ -215,7 +215,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["/antigravity-server/Dockerfile$/"],
+      "managerFilePatterns": ["/(.unsupported/)?antigravity-server/Dockerfile$/"],
       "matchStrings": [
         "ARG ANTIGRAVITY_VERSION=[\"']?(?<currentValue>.+?)[\"']?\\s+"
       ],
