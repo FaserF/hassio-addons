@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.5 (2026-11-19)
+
+### 📦 Dependencies
+- ⬆️ Update Add-on Softwares (#1367) ([`1e9f9748`](https://github.com/FaserF/hassio-addons/commit/1e9f9748bd5d879514426ef2caf66ef7a60da31a))
+
+
 ## 1.3.4 (2026-11-12)
 
 ### 📦 Dependencies
