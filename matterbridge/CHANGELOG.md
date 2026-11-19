@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.1-dev-20261119-1007-3923d84 (2026-11-19)
+
+- Release version 2.0.1-dev-20261119-1007-3923d84
+
+
 > [!CAUTION]
 > **DEPRECATED App**
 >

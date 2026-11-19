@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.6-dev-20261119-1007-3923d84 (2026-11-19)
+
+### ✨ Features
+- move to unsupported channel ([`91e8a2e2`](https://github.com/FaserF/hassio-addons/commit/91e8a2e2c16053886d24ecd67a70e6615cc7dd66))
+
+### 📦 Dependencies
+- ⬆️ Update Add-on Softwares (#1367) ([`1e9f9748`](https://github.com/FaserF/hassio-addons/commit/1e9f9748bd5d879514426ef2caf66ef7a60da31a))
+
+
 ## 1.3.5 (2026-11-19)
 
 ### 📦 Dependencies
