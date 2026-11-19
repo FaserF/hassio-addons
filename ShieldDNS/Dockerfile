@@ -15,6 +15,12 @@ ENV APP_SLUG="shielddns"
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV APP_UNSUPPORTED="false"
 
+# App metadata (injected by CI)
+ENV APP_VERSION="2.5.17"
+ENV APP_NAME="ShieldDNS"
+ENV APP_SLUG="shielddns"
+ENV APP_UNSUPPORTED="false"
+
 RUN apk add --no-cache curl \
     && case "${TARGETARCH}" in \
         "amd64") \
