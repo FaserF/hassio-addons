@@ -3,17 +3,19 @@
 ## 2.5.18 (2026-11-19)
 
 ### ✨ Features
+
 - add fallback for mariadb host resolution in host network mode ([`cdf085e8`](https://github.com/FaserF/hassio-addons/commit/cdf085e8bfdc078b3f95ff9eaaf4a8983593f6df))
 - move to stable root, bump to 0.1.9, fix ingress route ([`011d85f1`](https://github.com/FaserF/hassio-addons/commit/011d85f1c36cbf299d180bc3e120ba368abb8e38))
 
 ### 🐛 Bug Fixes
+
 - pre-resolve DB_HOST to IP to prevent MariaDB disconnects ([`8fe22e62`](https://github.com/FaserF/hassio-addons/commit/8fe22e626dc67e5c8e602772d60dee80e3f7f435))
 
 ### 📦 Dependencies
+
 - ⬆️ Update dependency FaserF/ShieldDNS to v1.13.7 ([`3788cc3e`](https://github.com/FaserF/hassio-addons/commit/3788cc3edaaa83d3e0eb3fdbeb32e7f810e7c734))
 - ⬆️ Update Add-on Softwares (#1367) ([`1e9f9748`](https://github.com/FaserF/hassio-addons/commit/1e9f9748bd5d879514426ef2caf66ef7a60da31a))
 - ⬆️ Update dependency FaserF/ShieldDNS to v1.13.5 (#1361) ([`88c2a327`](https://github.com/FaserF/hassio-addons/commit/88c2a327efb75643a3011f3a05684c05a4c42fab))
-
 
 ## 2.5.17 (2026-11-19)
 

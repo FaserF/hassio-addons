@@ -4,7 +4,7 @@
 
 [![Open your Home Assistant instance and show the app dashboard.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=605cee21_ShieldDNS)
 [![Home Assistant App](https://img.shields.io/badge/home%20assistant-app-blue.svg)](https://www.home-assistant.io/apps/)
-[![Docker Image](https://img.shields.io/badge/docker-2.5.17-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-shielddns)
+[![Docker Image](https://img.shields.io/badge/docker-2.5.18-blue.svg?logo=docker&style=flat-square)](https://github.com/FaserF/hassio-addons/pkgs/container/hassio-addons-shielddns)
 ![Project Maintenance](https://img.shields.io/badge/maintainer-FaserF-blue?style=flat-square)
 
 > DNS-over-TLS/HTTPS proxy with ad blocking, filtering and admin UI
@@ -102,7 +102,7 @@ database_type: sqlite
 database_url: ''
 developer_mode: false
 doh_port: 443
-dot_port: 8853
+dot_port: 853
 github_token: ''
 keyfile: privkey.pem
 log_level: info
