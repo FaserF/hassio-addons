@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.14 (2026-11-19)
+
+### 📦 Dependencies
+- ⬆️ Update dependency alpine_edge/nginx to v1.30.7-r0 (#1365) ([`65a5f6ce`](https://github.com/FaserF/hassio-addons/commit/65a5f6ce163524f6b05d6ea001e50f3b06a2572f))
+
+### 🚀 Other
+- reduce log noise by setting log_level to notice ([`05025f7f`](https://github.com/FaserF/hassio-addons/commit/05025f7f7e814b8d745b8657c70cab01385932ea))
+
+
 ## 0.4.13 (2026-11-15)
 
 ### ✨ Features
