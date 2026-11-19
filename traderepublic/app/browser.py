@@ -375,11 +375,16 @@ class TradeRepublicBrowserService:
 
                 qr_data = await self.auth_helper.extract_qr_code()
 
-                # If QR code was not found (e.g. page was in stale/idle state), force a clean reload and retry once
-                if not qr_data and not force_refresh:
-                    _LOGGER.info("QR code missing or stale, performing clean reload...")
+                # If QR code was not found (e.g. page was in stale/expired session state), clear stale session storage and reload
+                if not qr_data:
+                    _LOGGER.info("QR code missing or stale, clearing storage and performing clean reload...")
+                    await self.cdp.send_cmd("Network.clearBrowserCookies")
+                    await self.cdp.send_cmd(
+                        "Runtime.evaluate",
+                        {"expression": "localStorage.clear(); sessionStorage.clear();", "returnByValue": True},
+                    )
                     await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
-                    await asyncio.sleep(3.5)
+                    await asyncio.sleep(4.0)
                     await self.cdp.send_cmd("Runtime.evaluate", {"expression": banner_script})
                     qr_data = await self.auth_helper.extract_qr_code()
 
