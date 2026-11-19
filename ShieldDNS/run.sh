@@ -273,6 +273,13 @@ if [ -f "/data/options.json" ] && [ -n "$(command -v bashio::config)" ]; then
 		DB_PASS=$(bashio::services "mysql" "password")
 		[ -z "$DB_PORT" ] || [ "$DB_PORT" = "null" ] && DB_PORT="3306"
 
+		# Resolve DB_HOST to numeric IP if possible so DNS changes never break MySQL connectivity
+		RESOLVED_IP=$(getent hosts "$DB_HOST" 2>/dev/null | awk '{print $1}' | head -n 1)
+		if [ -n "$RESOLVED_IP" ]; then
+			bashio::log.info "ℹ️  Resolved MariaDB host '${DB_HOST}' to IP ${RESOLVED_IP}."
+			DB_HOST="$RESOLVED_IP"
+		fi
+
 		# With host_network: true, core-mariadb may not resolve via container DNS; fallback to 127.0.0.1 and 172.30.32.1
 		if ! nc -z "$DB_HOST" "$DB_PORT" 2>/dev/null; then
 			if nc -z 127.0.0.1 "$DB_PORT" 2>/dev/null; then
