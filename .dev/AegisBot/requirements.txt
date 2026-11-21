@@ -21,7 +21,7 @@ asyncpg==0.32.0
 google-genai==3.6.1
 pyotp==2.12.1
 webauthn==3.0.1
-PyYAML==6.0.3
+PyYAML==6.0.4
 qrcode[pil]==8.2
 Pillow==13.0.0
 openai==3.57.0
