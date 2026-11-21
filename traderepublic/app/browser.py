@@ -368,25 +368,12 @@ class TradeRepublicBrowserService:
                 """
                 await self.cdp.send_cmd("Runtime.evaluate", {"expression": banner_script})
 
-                # Start background watcher for QR scan without triggering 2FA countdown
-                if not getattr(self, "_qr_polling_active", False):
-                    self._qr_polling_active = True
-                    asyncio.create_task(self._poll_for_qr_approval())
-
                 qr_data = await self.auth_helper.extract_qr_code()
 
-                # If QR code was not found (e.g. page was in stale/expired session state), clear stale session storage and reload
-                if not qr_data:
-                    _LOGGER.info("QR code missing or stale, clearing storage and performing clean reload...")
-                    await self.cdp.send_cmd("Network.clearBrowserCookies")
-                    await self.cdp.send_cmd(
-                        "Runtime.evaluate",
-                        {"expression": "localStorage.clear(); sessionStorage.clear();", "returnByValue": True},
-                    )
-                    await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
-                    await asyncio.sleep(4.0)
-                    await self.cdp.send_cmd("Runtime.evaluate", {"expression": banner_script})
-                    qr_data = await self.auth_helper.extract_qr_code()
+                # Start background watcher for QR scan only if QR code was actually extracted
+                if qr_data and not getattr(self, "_qr_polling_active", False):
+                    self._qr_polling_active = True
+                    asyncio.create_task(self._poll_for_qr_approval())
 
                 return {
                     "success": bool(qr_data),

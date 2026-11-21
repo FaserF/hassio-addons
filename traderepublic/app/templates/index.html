@@ -237,6 +237,21 @@
         color: #dbeafe;
       }
 
+      .alert-warning {
+        background: rgba(234, 179, 8, 0.12);
+        border: 1px solid #eab308;
+        color: #fef08a;
+      }
+
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
       .lang-switcher {
         display: flex;
         gap: 0.4rem;
@@ -822,22 +837,75 @@
           >
         </div>
         <div
+          id="qr-container"
           style="
-            background: #141414;
+            background: #ffffff;
             padding: 0.75rem;
             border-radius: 14px;
             border: 1px solid rgba(255, 255, 255, 0.14);
             display: inline-block;
             margin: 0 auto;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+            min-width: 220px;
+            min-height: 220px;
+            position: relative;
           "
         >
+          <div
+            id="qr-loading"
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              height: 220px;
+              width: 220px;
+              color: #1e293b;
+            "
+          >
+            <div
+              style="
+                width: 36px;
+                height: 36px;
+                border: 4px solid #cbd5e1;
+                border-top-color: #3b82f6;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 0.75rem;
+              "
+            ></div>
+            <span
+              data-i18n="qr_loading"
+              style="font-size: 0.85rem; color: #475569; font-weight: 500;"
+            >
+              Loading QR code...
+            </span>
+          </div>
           <img
             id="qr-code-img"
-            src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+            src=""
             alt="QR Code"
-            style="width: 220px; height: 220px; display: block; margin: 0 auto; border-radius: 8px"
+            style="width: 220px; height: 220px; display: none; margin: 0 auto; border-radius: 8px"
           />
+        </div>
+        <div
+          id="qr-unavailable-alert"
+          class="alert alert-warning hidden"
+          style="margin-top: 1rem; text-align: left;"
+        >
+          ⚠️ <span data-i18n="qr_not_available">
+            QR code login is currently not provided by Trade Republic. Please use the recommended Phone &amp; PIN login.
+          </span>
+          <div style="margin-top: 0.75rem;">
+            <button
+              type="button"
+              onclick="switchLoginTab('phone')"
+              class="btn-primary"
+              style="margin: 0;"
+            >
+              📞 <span data-i18n="btn_switch_to_phone">Switch to Phone &amp; PIN</span>
+            </button>
+          </div>
         </div>
         <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: center">
           <button
@@ -1117,6 +1185,10 @@
             qrBtn.style.borderColor = '';
             qrBtn.style.color = '';
             qrBtn.style.fontWeight = '';
+            if (qrAutoRefreshTimer) {
+              clearInterval(qrAutoRefreshTimer);
+              qrAutoRefreshTimer = null;
+            }
           }
         }
 
@@ -1124,32 +1196,46 @@
 
         async function loadQRCode(forceRefresh = false) {
           const imgEl = document.getElementById('qr-code-img');
+          const loadingEl = document.getElementById('qr-loading');
+          const alertEl = document.getElementById('qr-unavailable-alert');
           if (!imgEl) return;
           try {
             if (forceRefresh) imgEl.style.opacity = '0.4';
+            if (loadingEl && !imgEl.src) loadingEl.style.display = 'flex';
+            if (alertEl) alertEl.classList.add('hidden');
             const url = './api/v1/login/qr' + (forceRefresh ? '?refresh=true' : '');
             const res = await fetch(url, { method: 'POST' });
             if (res.ok) {
               const data = await res.json();
               if (data.qr_code) {
                 imgEl.src = data.qr_code;
+                imgEl.style.display = 'block';
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (alertEl) alertEl.classList.add('hidden');
+              } else {
+                imgEl.style.display = 'none';
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (alertEl) alertEl.classList.remove('hidden');
+                if (qrAutoRefreshTimer) {
+                  clearInterval(qrAutoRefreshTimer);
+                  qrAutoRefreshTimer = null;
+                }
               }
               if (data.is_logged_in) {
                 location.reload();
               }
+            } else {
+              imgEl.style.display = 'none';
+              if (loadingEl) loadingEl.style.display = 'none';
+              if (alertEl) alertEl.classList.remove('hidden');
             }
           } catch (err) {
             console.debug('Failed to fetch QR code:', err);
+            imgEl.style.display = 'none';
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (alertEl) alertEl.classList.remove('hidden');
           } finally {
             imgEl.style.opacity = '1';
-            if (!qrAutoRefreshTimer) {
-              qrAutoRefreshTimer = setInterval(() => {
-                const qrStep = document.getElementById('step-qr');
-                if (qrStep && !qrStep.classList.contains('hidden')) {
-                  loadQRCode(false);
-                }
-              }, 3500);
-            }
           }
         }
 
@@ -1163,11 +1249,6 @@
           const remainingSec = {{ login_remaining_sec | tojson }} || 0;
           if (inProgress && remainingSec > 0) {
             startTwoFaCountdown(remainingSec);
-          } else {
-            const isLoggedIn = {{ is_logged_in | tojson }};
-            if (!isLoggedIn) {
-              loadQRCode();
-            }
           }
         })();
 

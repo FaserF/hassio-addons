@@ -227,6 +227,9 @@ class TRWebSocketKeeper:
                         await asyncio.sleep(2**attempt)
                         continue
 
+            if not self._ws:
+                return False
+
             # Handshake
             handshake = {**_HANDSHAKE_PAYLOAD, "token": clean}
             try:

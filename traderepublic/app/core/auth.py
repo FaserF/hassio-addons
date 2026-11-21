@@ -247,7 +247,7 @@ class AuthHelper:
             # 4. Screenshot the QR bounding box with a slight padding
             box_script = """
             (() => {
-                const targetQr = document.querySelector('.qrLoginCard__qrSlot, .qrCode__matrix svg, [class*="qrCode"] svg');
+                const targetQr = document.querySelector('.qrLoginCard__qrSlot, .qrCode__matrix svg, .qrCode__matrix canvas, .qrCode__matrix, [class*="qrCode"] svg, [class*="qrCode"] canvas, [class*="qrCode"]');
                 if (targetQr) {
                     const r = targetQr.getBoundingClientRect();
                     if (r.width >= 50 && r.height >= 50) {
@@ -398,12 +398,14 @@ class AuthHelper:
             # Select all & delete any residual characters before inserting
             await self.cdp.send_cmd(
                 "Runtime.evaluate",
-                {"expression": """
+                {
+                    "expression": """
                     (() => {
                         const inp = document.querySelector('input.phone-input__input, input[type="tel"], input[name="username"]');
                         if (inp) { inp.focus(); inp.select(); }
                     })()
-                    """},
+                    """
+                },
             )
             await self.cdp.send_cmd(
                 "Input.dispatchKeyEvent",
