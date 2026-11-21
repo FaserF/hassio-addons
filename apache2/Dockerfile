@@ -20,7 +20,7 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 WORKDIR /tmp
 
 # renovate: datasource=github-releases depName=php/php-src
-ARG PHP_VERSION="8.5"
+ARG PHP_VERSION="8.6"
 
 # renovate: datasource=repology depName=alpine_3_21/apache2 versioning=loose
 ARG APACHE2_VERSION="2.4.71-r0"
