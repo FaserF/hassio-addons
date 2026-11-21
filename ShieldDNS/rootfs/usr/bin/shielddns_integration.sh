@@ -83,8 +83,24 @@ check_github_status() {
 	fi
 }
 
+GITHUB_TOKEN=""
+if [ -f "/data/options.json" ] && command -v jq >/dev/null 2>&1; then
+	TOKEN_VALUE=$(jq -r '.github_token // empty' /data/options.json 2>/dev/null || echo "")
+	TOKEN_VALUE=$(echo "$TOKEN_VALUE" | xargs)
+	if [ -n "$TOKEN_VALUE" ] && [ "$TOKEN_VALUE" != "null" ]; then
+		GITHUB_TOKEN="$TOKEN_VALUE"
+	fi
+fi
+
 bashio::log.info "Fetching release information from GitHub..."
-rel_code=$(curl -s --connect-timeout 10 --max-time 30 -w "%{http_code}" -A "HomeAssistant-Addon" -o /tmp/shielddns_releases.json "https://api.github.com/repos/FaserF/ha-shielddns/releases" 2>/dev/null || echo "000")
+GH_CURL_ARGS=(-s --connect-timeout 10 --max-time 30 -w "%{http_code}" -A "HomeAssistant-Addon" -o /tmp/shielddns_releases.json)
+if [ -n "$GITHUB_TOKEN" ]; then
+	echo "Authorization: token ${GITHUB_TOKEN}" >/tmp/gh_int_token_header
+	GH_CURL_ARGS+=(-H "@/tmp/gh_int_token_header")
+fi
+rel_code=$(curl "${GH_CURL_ARGS[@]}" "https://api.github.com/repos/FaserF/ha-shielddns/releases" 2>/dev/null) || true
+rm -f /tmp/gh_int_token_header
+rel_code="${rel_code:-000}"
 
 if [ "$rel_code" = "200" ] && [ -s /tmp/shielddns_releases.json ]; then
 	RELEASES_JSON=$(cat /tmp/shielddns_releases.json)
@@ -131,14 +147,20 @@ if [ "$UPDATE_NEEDED" = "true" ]; then
 	rm -rf "/tmp/shielddns_install"
 	mkdir -p "/tmp/shielddns_install"
 
-	ZIP_URL="https://github.com/FaserF/ha-shielddns/releases/download/${TARGET_TAG}/shielddns.zip"
-	dl_code=$(curl -L -s --connect-timeout 10 --max-time 60 -w "%{http_code}" -o "/tmp/shielddns.zip" "$ZIP_URL" 2>/dev/null)
+	dl_code="000"
+	if [ -n "$TARGET_TAG" ]; then
+		ZIP_URL="https://github.com/FaserF/ha-shielddns/releases/download/${TARGET_TAG}/shielddns.zip"
+		dl_code=$(curl -L -s --connect-timeout 10 --max-time 60 -w "%{http_code}" -o "/tmp/shielddns.zip" "$ZIP_URL" 2>/dev/null) || true
+		dl_code="${dl_code:-000}"
+	fi
 	if [ "$dl_code" != "200" ] || [ ! -s "/tmp/shielddns.zip" ]; then
-		check_github_status "$dl_code" "Release package download"
+		if [ -n "$TARGET_TAG" ]; then
+			check_github_status "$dl_code" "Release package download"
+		fi
 		# Fallback to main branch zip if no target tag or error
 		ZIP_URL="https://github.com/FaserF/ha-shielddns/archive/refs/heads/main.zip"
 		bashio::log.info "Attempting main branch zip fallback: $ZIP_URL"
-		curl -L -s --connect-timeout 10 --max-time 60 -o "/tmp/shielddns.zip" "$ZIP_URL" 2>/dev/null
+		curl -L -s --connect-timeout 10 --max-time 60 -o "/tmp/shielddns.zip" "$ZIP_URL" 2>/dev/null || true
 	fi
 
 	if [ -f "/tmp/shielddns.zip" ]; then
