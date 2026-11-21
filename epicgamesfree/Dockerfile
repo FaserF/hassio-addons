@@ -11,6 +11,12 @@ ENV APP_SLUG="epicgamesfree"
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV APP_UNSUPPORTED="false"
 
+# App metadata (injected by CI)
+ENV APP_VERSION="0.1.3"
+ENV APP_NAME="Epic Games Freebies Claimer"
+ENV APP_SLUG="epicgamesfree"
+ENV APP_UNSUPPORTED="false"
+
 RUN \
   apk upgrade --no-cache --available \
   && apk add --no-cache \
