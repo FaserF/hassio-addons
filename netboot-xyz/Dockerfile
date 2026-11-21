@@ -20,6 +20,12 @@ ENV APP_SLUG="netboot-xyz"
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV APP_UNSUPPORTED="false"
 
+# App metadata (injected by CI)
+ENV APP_VERSION="2.4.9"
+ENV APP_NAME="Netboot.xyz"
+ENV APP_SLUG="netboot-xyz"
+ENV APP_UNSUPPORTED="false"
+
 RUN \
   echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
   && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
