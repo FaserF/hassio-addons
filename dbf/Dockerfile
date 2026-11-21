@@ -36,6 +36,7 @@ RUN \
     ALPINE_VERSION=$(cat /etc/alpine-release 2>/dev/null | cut -d. -f1,2 || echo "3.24") \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main" > /etc/apk/repositories \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/community" >> /etc/apk/repositories \
+    && sed -i -E 's/(libcrypto3|libssl3)=.*/\1/' /etc/apk/world \
     && apk add --no-cache musl musl-dev \
     && apk upgrade --no-cache --available \
     && apk add --no-cache --virtual .build-dependencies \
