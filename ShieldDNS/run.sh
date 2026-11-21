@@ -395,6 +395,22 @@ bashio::log.info "🔗 Ingress (Home Assistant) active on Port 8099 (Plain HTTP)
 # 3.5. Developer Mode (Download and Compile Latest Code from GitHub)
 # ------------------------------------------------------------------------------
 if bashio::config.true 'developer_mode'; then
+	BOOTSTRAP_COREDNS_PID=""
+	if command -v coredns >/dev/null 2>&1; then
+		cat <<EOF >/tmp/Corefile.bootstrap
+.:${DNS_PORT} {
+    bind 0.0.0.0
+    cache 60
+    forward . 100.64.0.1 89.168.74.120 1.1.1.1 8.8.8.8 {
+        health_check 5s
+    }
+    errors
+}
+EOF
+		bashio::log.info "🛡️  Starting temporary bootstrap CoreDNS on port ${DNS_PORT} during developer_mode compilation..."
+		coredns -conf /tmp/Corefile.bootstrap >/dev/null 2>&1 &
+		BOOTSTRAP_COREDNS_PID=$!
+	fi
 	bashio::log.warning "=================================================="
 	bashio::log.warning "   ⚠️  DEVELOPER MODE ENABLED  ⚠️"
 	bashio::log.warning "=================================================="
@@ -506,6 +522,12 @@ if bashio::config.true 'developer_mode'; then
 	# Clean up
 	cd / || exit 1
 	rm -rf "$DEV_BUILD_DIR"
+	if [ -n "${BOOTSTRAP_COREDNS_PID:-}" ]; then
+		bashio::log.info "🛑 Stopping temporary bootstrap CoreDNS before starting ShieldDNS backend..."
+		kill "$BOOTSTRAP_COREDNS_PID" 2>/dev/null || true
+		wait "$BOOTSTRAP_COREDNS_PID" 2>/dev/null || true
+		rm -f /tmp/Corefile.bootstrap
+	fi
 fi
 
 # ------------------------------------------------------------------------------
