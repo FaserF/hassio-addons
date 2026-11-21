@@ -3,14 +3,16 @@
 ## 0.3.1 (2026-11-21)
 
 ### ✨ Features
+
 - move to stable root, bump to 0.1.9, fix ingress route ([`011d85f1`](https://github.com/FaserF/hassio-addons/commit/011d85f1c36cbf299d180bc3e120ba368abb8e38))
 
 ### 🐛 Bug Fixes
+
 - enforce patched nginx for CVE-2026-123007 across 10 addons ([`2aa47a45`](https://github.com/FaserF/hassio-addons/commit/2aa47a4566f54f2634f53dd87bfa1f46cf707e7c))
 
 ### 📌 Release Note
-- Security: enforce patched nginx (>=1.28.3-r8 / >=1.30.7-r0 / >=1.26.3-3+deb13u11) against CVE-2026-123007
 
+- Security: enforce patched nginx (>=1.28.3-r8 / >=1.30.7-r0 / >=1.26.3-3+deb13u11) against CVE-2026-123007
 
 ## 0.3.0 (2026-11-18)
 
