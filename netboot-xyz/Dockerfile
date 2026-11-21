@@ -30,7 +30,7 @@ RUN \
     bash \
     curl \
     dnsmasq \
-    nginx \
+    "nginx>=1.28.3-r8" \
     nodejs \
     procps \
     tftp-hpa && \

@@ -28,7 +28,7 @@ RUN \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
     && apk add --no-cache musl musl-dev \
     && apk upgrade --no-cache --available \
-    && apk add --no-cache libssl3 libcrypto3 curl bash dos2unix openssl nginx \
+    && apk add --no-cache libssl3 libcrypto3 curl bash dos2unix openssl "nginx>=1.28.3-r8" \
     && mkdir -p /data/database
 
 COPY --from=filebrowser /bin/filebrowser /usr/local/bin/filebrowser

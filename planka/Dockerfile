@@ -34,7 +34,7 @@ RUN \
         py3-pip \
         postgresql \
         postgresql-contrib \
-        nginx \
+        "nginx>=1.28.3-r8" \
         curl \
         su-exec \
         openssl \

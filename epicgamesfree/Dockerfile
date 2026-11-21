@@ -12,8 +12,9 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV APP_UNSUPPORTED="false"
 
 RUN \
-  apk add --no-cache \
-    nginx \
+  apk upgrade --no-cache --available \
+  && apk add --no-cache \
+    "nginx>=1.30.7-r0" \
   && pip install --no-cache-dir \
     aiohttp \
     croniter \

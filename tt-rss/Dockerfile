@@ -16,7 +16,7 @@ RUN \
     && apk add --no-cache musl musl-dev \
     && apk upgrade --no-cache --available \
     && apk add --no-cache libssl3 libcrypto3 \
-        nginx \
+        "nginx>=1.28.3-r8" \
         postgresql \
         postgresql-contrib \
         php85 \

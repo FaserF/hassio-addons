@@ -36,7 +36,7 @@ RUN \
     && apk upgrade --no-cache --available \
     && apk add --no-cache libssl3 libcrypto3 \
         curl \
-        nginx \
+        "nginx>=1.28.3-r8" \
         openssl \
         postgresql17 \
         postgresql17-contrib \

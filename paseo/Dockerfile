@@ -16,6 +16,7 @@ ENV APP_UNSUPPORTED="false"
 
 RUN \
     apt-get update \
+    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
@@ -30,6 +31,7 @@ RUN \
         python3-pip \
         python3-venv \
         bzip2 \
+    && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' nginx)" ge "1.26.3-3+deb13u11" \
     && mkdir -p /etc/apt/keyrings \
     && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
     && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" > /etc/apt/sources.list.d/nodesource.list \

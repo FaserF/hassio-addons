@@ -24,7 +24,7 @@ RUN \
     curl \
     gettext \
     mariadb-client \
-    nginx \
+    "nginx>=1.28.3-r8" \
     php85 \
     php85-bcmath \
     php85-common \
