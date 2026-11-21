@@ -12,5 +12,5 @@ permissions:
 
 jobs:
   ci:
-    uses: FaserF/repo-template/.github/workflows/reusable-ci.yml@main
+    uses: FaserF/repo-template/.github/workflows/reusable-ci.yml@v1
     secrets: inherit

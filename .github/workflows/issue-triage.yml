@@ -11,4 +11,4 @@ permissions:
 
 jobs:
   triage:
-    uses: FaserF/repo-template/.github/workflows/reusable-issue-triage.yml@main
+    uses: FaserF/repo-template/.github/workflows/reusable-issue-triage.yml@v1

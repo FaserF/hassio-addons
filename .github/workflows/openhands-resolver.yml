@@ -14,5 +14,5 @@ permissions:
 jobs:
   resolve:
     if: github.event.label.name == 'openhands:ready'
-    uses: FaserF/repo-template/.github/workflows/reusable-openhands-resolver.yml@main
+    uses: FaserF/repo-template/.github/workflows/reusable-openhands-resolver.yml@v1
     secrets: inherit
