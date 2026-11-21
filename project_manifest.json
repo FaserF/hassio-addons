@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-11-21T00:38:08.034227",
+  "timestamp": "2026-11-21T04:15:51.923190",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -414,7 +414,7 @@
       "slug": "wiki.js",
       "rel_path": "wiki.js",
       "name": "Wiki.JS",
-      "version": "3.5.10",
+      "version": "3.5.11",
       "description": "The most powerful and extensible open source Wiki software",
       "arch": ["amd64"],
       "image": "ghcr.io/faserf/hassio-addons-wiki-{arch}",
@@ -613,34 +613,6 @@
       "pyproject.toml",
       "repository.json"
     ],
-    "apache2": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml",
-      "index.html",
-      "run.sh"
-    ],
-    "apache2/rootfs/etc/cont-init.d": ["apache2.sh"],
-    "apache2/rootfs/usr/bin": ["webserver_app_integration.sh"],
-    "apache2/rootfs/usr/lib/bashio": ["banner.sh"],
-    "apache2/translations": ["de.yaml", "en.yaml"],
-    "apache2-minimal": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml",
-      "index.html"
-    ],
-    "apache2-minimal/rootfs": ["run.sh"],
-    "apache2-minimal/rootfs/etc/cont-init.d": ["apache2.sh"],
-    "apache2-minimal/rootfs/usr/bin": ["webserver_app_integration.sh"],
-    "apache2-minimal/rootfs/usr/lib/bashio": ["banner.sh"],
-    "apache2-minimal/translations": ["de.yaml", "en.yaml"],
     "apache2-minimal-mariadb": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -651,43 +623,24 @@
       "index.html",
       "run.sh"
     ],
-    "apache2-minimal-mariadb/rootfs/etc/cont-init.d": ["apache2.sh"],
     "apache2-minimal-mariadb/rootfs/usr/bin": ["webserver_app_integration.sh"],
     "apache2-minimal-mariadb/rootfs/usr/lib/bashio": ["banner.sh"],
+    "apache2-minimal-mariadb/rootfs/etc/cont-init.d": ["apache2.sh"],
     "apache2-minimal-mariadb/translations": ["de.yaml", "en.yaml"],
-    "bash_script_executer": [
+    "apache2-minimal": [
       "CHANGELOG.md",
       "DOCS.md",
       "Dockerfile",
       "README.md",
       "build.yaml",
       "config.yaml",
-      "run.sh"
+      "index.html"
     ],
-    "bash_script_executer/integration": ["__init__.py", "button.py", "manifest.json"],
-    "bash_script_executer/rootfs/usr/lib/bashio": ["banner.sh"],
-    "bash_script_executer/translations": ["de.yaml", "en.yaml"],
-    "bentopdf": ["CHANGELOG.md", "DOCS.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
-    "bentopdf/rootfs/etc/nginx": ["nginx.conf"],
-    "bentopdf/rootfs/usr/lib/bashio": ["banner.sh"],
-    "bentopdf/translations": ["de.yaml", "en.yaml"],
-    "dbf": ["CHANGELOG.md", "DOCS.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
-    "dbf/rootfs/usr/lib/bashio": ["banner.sh"],
-    "dbf/translations": ["de.yaml", "en.yaml"],
-    "docs": ["index.html", "requests.html", "support.html"],
-    "docs/css": ["style.css"],
-    "epicgamesfree": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml"
-    ],
-    "epicgamesfree/rootfs": ["run.sh"],
-    "epicgamesfree/rootfs/usr/bin": ["epic_server.py"],
-    "epicgamesfree/rootfs/usr/lib/bashio": ["banner.sh"],
-    "epicgamesfree/translations": ["de.yaml", "en.yaml"],
+    "apache2-minimal/rootfs": ["run.sh"],
+    "apache2-minimal/rootfs/usr/bin": ["webserver_app_integration.sh"],
+    "apache2-minimal/rootfs/usr/lib/bashio": ["banner.sh"],
+    "apache2-minimal/rootfs/etc/cont-init.d": ["apache2.sh"],
+    "apache2-minimal/translations": ["de.yaml", "en.yaml"],
     "er-dashboard": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -696,23 +649,50 @@
       "build.yaml",
       "config.yaml"
     ],
-    "er-dashboard/rootfs/etc/nginx/http.d": ["ingress.conf"],
     "er-dashboard/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
+    "er-dashboard/rootfs/etc/nginx/http.d": ["ingress.conf"],
     "er-dashboard/translations": ["de.yaml", "en.yaml"],
-    "imapsync": [
+    "traderepublic": [
       "CHANGELOG.md",
       "DOCS.md",
-      "DOCS_OAUTH.md",
       "Dockerfile",
       "README.md",
       "build.yaml",
       "config.yaml"
     ],
-    "imapsync/rootfs/usr/lib/bashio": ["banner.sh"],
-    "imapsync/translations": ["de.yaml", "en.yaml"],
-    "komodo": ["CHANGELOG.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
-    "komodo/rootfs/usr/lib/bashio": ["banner.sh"],
-    "komodo/translations": ["de.yaml", "en.yaml"],
+    "traderepublic/rootfs/usr/lib/bashio": ["banner.sh"],
+    "traderepublic/rootfs/etc/s6-overlay/s6-rc.d/traderepublic/scripts": [
+      "00-env.sh",
+      "10-integration.sh"
+    ],
+    "traderepublic/translations": ["de.yaml", "en.yaml"],
+    "traderepublic/app": ["browser.py", "main.py"],
+    "traderepublic/app/templates": ["index.html"],
+    "traderepublic/app/static/i18n": ["de.json", "en.json"],
+    "traderepublic/app/core": [
+      "__init__.py",
+      "auth.py",
+      "cdp.py",
+      "constants.py",
+      "session_manager.py",
+      "verifier.py",
+      "webhook.py",
+      "ws_keeper.py"
+    ],
+    "apache2": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml",
+      "index.html",
+      "run.sh"
+    ],
+    "apache2/rootfs/usr/bin": ["webserver_app_integration.sh"],
+    "apache2/rootfs/usr/lib/bashio": ["banner.sh"],
+    "apache2/rootfs/etc/cont-init.d": ["apache2.sh"],
+    "apache2/translations": ["de.yaml", "en.yaml"],
     "netboot-xyz": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -722,23 +702,40 @@
       "config.yaml"
     ],
     "netboot-xyz/root": ["donate.txt"],
+    "netboot-xyz/root/usr/lib/bashio": ["banner.sh"],
     "netboot-xyz/root/defaults": ["dnsmasq.conf", "nginx.conf"],
     "netboot-xyz/root/etc/cont-init.d": ["10-prerequisite.sh"],
-    "netboot-xyz/root/usr/lib/bashio": ["banner.sh"],
     "netboot-xyz/translations": ["de.yaml", "en.yaml"],
-    "nginx": [
+    "switch_lan_play": [
       "CHANGELOG.md",
       "DOCS.md",
       "Dockerfile",
       "README.md",
       "build.yaml",
       "config.yaml",
-      "index.html"
+      "run.sh"
     ],
-    "nginx/rootfs/etc/cont-init.d": ["nginx.sh"],
-    "nginx/rootfs/usr/bin": ["webserver_app_integration.sh"],
-    "nginx/rootfs/usr/lib/bashio": ["banner.sh"],
-    "nginx/translations": ["de.yaml", "en.yaml"],
+    "switch_lan_play/rootfs/usr/lib/bashio": ["banner.sh"],
+    "switch_lan_play/translations": ["de.yaml", "en.yaml"],
+    "wordpress": ["CHANGELOG.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
+    "wordpress/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
+    "wordpress/rootfs/etc/php85/php-fpm.d": ["www.conf"],
+    "wordpress/rootfs/etc/nginx": ["nginx.conf"],
+    "wordpress/rootfs/etc/nginx/http.d": ["ingress.conf"],
+    "wordpress/rootfs/etc/nginx/includes": ["php.conf", "server_params.conf"],
+    "wordpress/rootfs/etc/nginx/templates": ["http.conf", "https.conf"],
+    "wordpress/translations": ["de.yaml", "en.yaml"],
+    "switch_lan_play_server": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml",
+      "run.sh"
+    ],
+    "switch_lan_play_server/rootfs/usr/lib/bashio": ["banner.sh"],
+    "switch_lan_play_server/translations": ["de.yaml", "en.yaml"],
     "openssl": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -750,14 +747,34 @@
     ],
     "openssl/rootfs/usr/lib/bashio": ["banner.sh"],
     "openssl/translations": ["de.yaml", "en.yaml"],
-    "paseo": ["CHANGELOG.md", "DOCS.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
-    "paseo/rootfs/etc/nginx": ["nginx.conf"],
-    "paseo/rootfs/usr/lib/bashio": ["banner.sh"],
-    "paseo/rootfs/usr/local/bin": ["patch-paseo-ingress.py"],
-    "paseo/translations": ["de.yaml", "en.yaml"],
     "planka": ["CHANGELOG.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
     "planka/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
     "planka/translations": ["de.yaml", "en.yaml"],
+    "tado_aa": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "LICENSE.txt",
+      "README.md",
+      "build.yaml",
+      "config.yaml",
+      "patch.py",
+      "run.sh"
+    ],
+    "tado_aa/rootfs/usr/lib/bashio": ["banner.sh"],
+    "tado_aa/translations": ["de.yaml", "en.yaml"],
+    "tests": ["test_agents.py", "test_cleanup_migration_helpers.py", "test_sync_edge_versions.py"],
+    "wiki.js": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml",
+      "run.sh"
+    ],
+    "wiki.js/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
+    "wiki.js/translations": ["de.yaml", "en.yaml"],
     "pterodactyl-panel": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -773,18 +790,6 @@
     "pterodactyl-panel/root/etc/php83/php-fpm.d": ["www.conf"],
     "pterodactyl-panel/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
     "pterodactyl-panel/translations": ["de.yaml", "en.yaml"],
-    "pterodactyl-wings": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml",
-      "run.sh"
-    ],
-    "pterodactyl-wings/examples": ["addon_config.yaml", "wings_config.yml"],
-    "pterodactyl-wings/rootfs/usr/lib/bashio": ["banner.sh"],
-    "pterodactyl-wings/translations": ["de.yaml", "en.yaml"],
     "ShieldDNS": [
       "CHANGELOG.md",
       "DOCS.md",
@@ -798,17 +803,7 @@
     "ShieldDNS/rootfs/usr/lib/bashio": ["banner.sh"],
     "ShieldDNS/translations": ["de.yaml", "en.yaml"],
     "ShieldDNS/www": ["index.html"],
-    "ShieldFile": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml"
-    ],
-    "ShieldFile/rootfs/usr/lib/bashio": ["banner.sh"],
-    "ShieldFile/translations": ["de.yaml", "en.yaml"],
-    "switch_lan_play": [
+    "bash_script_executer": [
       "CHANGELOG.md",
       "DOCS.md",
       "Dockerfile",
@@ -817,66 +812,47 @@
       "config.yaml",
       "run.sh"
     ],
-    "switch_lan_play/rootfs/usr/lib/bashio": ["banner.sh"],
-    "switch_lan_play/translations": ["de.yaml", "en.yaml"],
-    "switch_lan_play_server": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml",
-      "run.sh"
-    ],
-    "switch_lan_play_server/rootfs/usr/lib/bashio": ["banner.sh"],
-    "switch_lan_play_server/translations": ["de.yaml", "en.yaml"],
-    "tado_aa": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "LICENSE.txt",
-      "README.md",
-      "build.yaml",
-      "config.yaml",
-      "patch.py",
-      "run.sh"
-    ],
-    "tado_aa/rootfs/usr/lib/bashio": ["banner.sh"],
-    "tado_aa/translations": ["de.yaml", "en.yaml"],
-    "tests": ["test_agents.py", "test_cleanup_migration_helpers.py", "test_sync_edge_versions.py"],
-    "traderepublic": [
-      "CHANGELOG.md",
-      "DOCS.md",
-      "Dockerfile",
-      "README.md",
-      "build.yaml",
-      "config.yaml"
-    ],
-    "traderepublic/app": ["browser.py", "main.py"],
-    "traderepublic/app/core": [
-      "__init__.py",
-      "auth.py",
-      "cdp.py",
-      "constants.py",
-      "session_manager.py",
-      "verifier.py",
-      "webhook.py",
-      "ws_keeper.py"
-    ],
-    "traderepublic/app/static/i18n": ["de.json", "en.json"],
-    "traderepublic/app/templates": ["index.html"],
-    "traderepublic/rootfs/etc/s6-overlay/s6-rc.d/traderepublic/scripts": [
-      "00-env.sh",
-      "10-integration.sh"
-    ],
-    "traderepublic/rootfs/usr/lib/bashio": ["banner.sh"],
-    "traderepublic/translations": ["de.yaml", "en.yaml"],
+    "bash_script_executer/rootfs/usr/lib/bashio": ["banner.sh"],
+    "bash_script_executer/translations": ["de.yaml", "en.yaml"],
+    "bash_script_executer/integration": ["__init__.py", "button.py", "manifest.json"],
+    "paseo": ["CHANGELOG.md", "DOCS.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
+    "paseo/rootfs/usr/local/bin": ["patch-paseo-ingress.py"],
+    "paseo/rootfs/usr/lib/bashio": ["banner.sh"],
+    "paseo/rootfs/etc/nginx": ["nginx.conf"],
+    "paseo/translations": ["de.yaml", "en.yaml"],
     "tt-rss": ["CHANGELOG.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
+    "tt-rss/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
+    "tt-rss/rootfs/etc/php/php-fpm.d": ["www.conf"],
     "tt-rss/rootfs/etc/nginx": ["nginx.conf"],
     "tt-rss/rootfs/etc/nginx/servers": ["ingress.conf"],
-    "tt-rss/rootfs/etc/php/php-fpm.d": ["www.conf"],
-    "tt-rss/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
     "tt-rss/translations": ["de.yaml", "en.yaml"],
+    "pterodactyl-wings": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml",
+      "run.sh"
+    ],
+    "pterodactyl-wings/rootfs/usr/lib/bashio": ["banner.sh"],
+    "pterodactyl-wings/translations": ["de.yaml", "en.yaml"],
+    "pterodactyl-wings/examples": ["addon_config.yaml", "wings_config.yml"],
+    "docs": ["index.html", "requests.html", "support.html"],
+    "docs/css": ["style.css"],
+    "nginx": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml",
+      "index.html"
+    ],
+    "nginx/rootfs/usr/bin": ["webserver_app_integration.sh"],
+    "nginx/rootfs/usr/lib/bashio": ["banner.sh"],
+    "nginx/rootfs/etc/cont-init.d": ["nginx.sh"],
+    "nginx/translations": ["de.yaml", "en.yaml"],
     "whatsapp": [
       "API.md",
       "CHANGELOG.md",
@@ -886,138 +862,15 @@
       "build.yaml",
       "config.yaml"
     ],
+    "whatsapp/rootfs/usr/lib/bashio": ["banner.sh"],
+    "whatsapp/rootfs/etc/s6-overlay/s6-rc.d/whatsapp/scripts": [
+      "00-env.sh",
+      "10-integration.sh",
+      "20-diagnostics.sh"
+    ],
+    "whatsapp/rocketchat-app": ["app.json"],
+    "whatsapp/translations": ["de.yaml", "en.yaml", "it.yaml"],
     "whatsapp/app": ["eslint.config.js", "index.js", "package.json", "requirements.txt"],
-    "whatsapp/app/data": [
-      "autoresponder_config.json",
-      "moderation_config.json",
-      "rbac.json",
-      "telegram_config.json"
-    ],
-    "whatsapp/app/scripts": ["generate-icons.js", "generate-icons.py", "patch-baileys.js"],
-    "whatsapp/app/src": [
-      "config.js",
-      "ha.js",
-      "logger.js",
-      "middleware.js",
-      "rbac.js",
-      "session.js",
-      "state.js",
-      "webhook.js"
-    ],
-    "whatsapp/app/src/locales": ["de.json", "en.json", "it.json", "loader.js"],
-    "whatsapp/app/src/routes": ["index.js"],
-    "whatsapp/app/src/routes/api": [
-      "auth.js",
-      "autoresponder.js",
-      "channels.js",
-      "contacts.js",
-      "groups.js",
-      "helpers.js",
-      "index.js",
-      "mcp.js",
-      "messaging.js",
-      "moderation.js",
-      "session.js",
-      "system.js",
-      "telegram.js",
-      "ui_api.js"
-    ],
-    "whatsapp/app/src/routes/ui": [
-      "chat.js",
-      "dashboard.js",
-      "helpers.js",
-      "index.js",
-      "styles.css",
-      "sw.js"
-    ],
-    "whatsapp/app/src/routes/ui/dashboard": [
-      "10_overview.js",
-      "20_system_sessions.js",
-      "30_modals_updates.js",
-      "40_moderation_core.js",
-      "50_moderation_security.js",
-      "60_moderation_intelligence.js",
-      "70_moderation_federation.js",
-      "80_telegram.js",
-      "99_exports.js"
-    ],
-    "whatsapp/app/src/routes/ui/styles": ["moderation.css"],
-    "whatsapp/app/src/routes/ui/views": [
-      "chats.html.js",
-      "dashboard.html.js",
-      "login.html.js",
-      "logs.html.js",
-      "moderation.html.js",
-      "telegram.html.js"
-    ],
-    "whatsapp/app/src/utils": [
-      "format.js",
-      "freeTranslator.js",
-      "gatewayTranslator.js",
-      "jid.js",
-      "security.js",
-      "versionCheck.js"
-    ],
-    "whatsapp/app/src/whatsapp": ["actions.js", "connection.js", "export.js", "sttHandler.js"],
-    "whatsapp/app/src/whatsapp/autoresponder": ["engine.js", "store.js"],
-    "whatsapp/app/src/whatsapp/events": [
-      "ack.js",
-      "index.js",
-      "poll.js",
-      "presence.js",
-      "reactions.js",
-      "store.js",
-      "system.js"
-    ],
-    "whatsapp/app/src/whatsapp/moderation": [
-      "ai.js",
-      "commands.js",
-      "engine.js",
-      "migration.js",
-      "securityScanner.js",
-      "store.js"
-    ],
-    "whatsapp/app/src/whatsapp/moderation/commands": [
-      "admin.js",
-      "config.js",
-      "info.js",
-      "suggestions.js"
-    ],
-    "whatsapp/app/src/whatsapp/moderation/commands/admin": [
-      "content.js",
-      "mutes.js",
-      "punishments.js",
-      "roles.js"
-    ],
-    "whatsapp/app/src/whatsapp/moderation/commands/config": [
-      "federation.js",
-      "security.js",
-      "settings.js"
-    ],
-    "whatsapp/app/src/whatsapp/moderation/engine": [
-      "captcha.js",
-      "filters.js",
-      "participants.js",
-      "penalties.js",
-      "pipeline.js",
-      "translation_cache.js",
-      "translations.js"
-    ],
-    "whatsapp/app/src/whatsapp/startup": ["missedMessages.js"],
-    "whatsapp/app/src/whatsapp/telegram": [
-      "audit.js",
-      "bot.js",
-      "format.js",
-      "headers.js",
-      "listener.js",
-      "message_map.js",
-      "queue.js",
-      "regex.js",
-      "store.js",
-      "transcribe.js"
-    ],
-    "whatsapp/app/src/whatsapp/telegram/inbound": ["polling.js", "processor.js"],
-    "whatsapp/app/src/whatsapp/telegram/outbound": ["events.js", "messages.js", "mutations.js"],
     "whatsapp/app/tests": [
       "run-all-tests.js",
       "test-aegisbot-stt.js",
@@ -1036,32 +889,173 @@
       "test-ui-render.js",
       "validate-ui-scope.js"
     ],
-    "whatsapp/rocketchat-app": ["app.json"],
-    "whatsapp/rootfs/etc/s6-overlay/s6-rc.d/whatsapp/scripts": [
-      "00-env.sh",
-      "10-integration.sh",
-      "20-diagnostics.sh"
+    "whatsapp/app/src": [
+      "config.js",
+      "ha.js",
+      "logger.js",
+      "middleware.js",
+      "rbac.js",
+      "session.js",
+      "state.js",
+      "webhook.js"
     ],
-    "whatsapp/rootfs/usr/lib/bashio": ["banner.sh"],
-    "whatsapp/translations": ["de.yaml", "en.yaml", "it.yaml"],
-    "wiki.js": [
+    "whatsapp/app/src/routes": ["index.js"],
+    "whatsapp/app/src/routes/ui": [
+      "chat.js",
+      "dashboard.js",
+      "helpers.js",
+      "index.js",
+      "styles.css",
+      "sw.js"
+    ],
+    "whatsapp/app/src/routes/ui/views": [
+      "chats.html.js",
+      "dashboard.html.js",
+      "login.html.js",
+      "logs.html.js",
+      "moderation.html.js",
+      "telegram.html.js"
+    ],
+    "whatsapp/app/src/routes/ui/styles": ["moderation.css"],
+    "whatsapp/app/src/routes/ui/dashboard": [
+      "10_overview.js",
+      "20_system_sessions.js",
+      "30_modals_updates.js",
+      "40_moderation_core.js",
+      "50_moderation_security.js",
+      "60_moderation_intelligence.js",
+      "70_moderation_federation.js",
+      "80_telegram.js",
+      "99_exports.js"
+    ],
+    "whatsapp/app/src/routes/api": [
+      "auth.js",
+      "autoresponder.js",
+      "channels.js",
+      "contacts.js",
+      "groups.js",
+      "helpers.js",
+      "index.js",
+      "mcp.js",
+      "messaging.js",
+      "moderation.js",
+      "session.js",
+      "system.js",
+      "telegram.js",
+      "ui_api.js"
+    ],
+    "whatsapp/app/src/utils": [
+      "format.js",
+      "freeTranslator.js",
+      "gatewayTranslator.js",
+      "jid.js",
+      "security.js",
+      "versionCheck.js"
+    ],
+    "whatsapp/app/src/whatsapp": ["actions.js", "connection.js", "export.js", "sttHandler.js"],
+    "whatsapp/app/src/whatsapp/telegram": [
+      "audit.js",
+      "bot.js",
+      "format.js",
+      "headers.js",
+      "listener.js",
+      "message_map.js",
+      "queue.js",
+      "regex.js",
+      "store.js",
+      "transcribe.js"
+    ],
+    "whatsapp/app/src/whatsapp/telegram/inbound": ["polling.js", "processor.js"],
+    "whatsapp/app/src/whatsapp/telegram/outbound": ["events.js", "messages.js", "mutations.js"],
+    "whatsapp/app/src/whatsapp/startup": ["missedMessages.js"],
+    "whatsapp/app/src/whatsapp/moderation": [
+      "ai.js",
+      "commands.js",
+      "engine.js",
+      "migration.js",
+      "securityScanner.js",
+      "store.js"
+    ],
+    "whatsapp/app/src/whatsapp/moderation/commands": [
+      "admin.js",
+      "config.js",
+      "info.js",
+      "suggestions.js"
+    ],
+    "whatsapp/app/src/whatsapp/moderation/commands/config": [
+      "federation.js",
+      "security.js",
+      "settings.js"
+    ],
+    "whatsapp/app/src/whatsapp/moderation/commands/admin": [
+      "content.js",
+      "mutes.js",
+      "punishments.js",
+      "roles.js"
+    ],
+    "whatsapp/app/src/whatsapp/moderation/engine": [
+      "captcha.js",
+      "filters.js",
+      "participants.js",
+      "penalties.js",
+      "pipeline.js",
+      "translation_cache.js",
+      "translations.js"
+    ],
+    "whatsapp/app/src/whatsapp/autoresponder": ["engine.js", "store.js"],
+    "whatsapp/app/src/whatsapp/events": [
+      "ack.js",
+      "index.js",
+      "poll.js",
+      "presence.js",
+      "reactions.js",
+      "store.js",
+      "system.js"
+    ],
+    "whatsapp/app/src/locales": ["de.json", "en.json", "it.json", "loader.js"],
+    "whatsapp/app/scripts": ["generate-icons.js", "generate-icons.py", "patch-baileys.js"],
+    "bentopdf": ["CHANGELOG.md", "DOCS.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
+    "bentopdf/rootfs/usr/lib/bashio": ["banner.sh"],
+    "bentopdf/rootfs/etc/nginx": ["nginx.conf"],
+    "bentopdf/translations": ["de.yaml", "en.yaml"],
+    "komodo": ["CHANGELOG.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
+    "komodo/rootfs/usr/lib/bashio": ["banner.sh"],
+    "komodo/translations": ["de.yaml", "en.yaml"],
+    "imapsync": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "DOCS_OAUTH.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "imapsync/rootfs/usr/lib/bashio": ["banner.sh"],
+    "imapsync/translations": ["de.yaml", "en.yaml"],
+    "epicgamesfree": [
       "CHANGELOG.md",
       "DOCS.md",
       "Dockerfile",
       "README.md",
       "build.yaml",
-      "config.yaml",
-      "run.sh"
+      "config.yaml"
     ],
-    "wiki.js/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
-    "wiki.js/translations": ["de.yaml", "en.yaml"],
-    "wordpress": ["CHANGELOG.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
-    "wordpress/rootfs/etc/nginx": ["nginx.conf"],
-    "wordpress/rootfs/etc/nginx/http.d": ["ingress.conf"],
-    "wordpress/rootfs/etc/nginx/includes": ["php.conf", "server_params.conf"],
-    "wordpress/rootfs/etc/nginx/templates": ["http.conf", "https.conf"],
-    "wordpress/rootfs/etc/php85/php-fpm.d": ["www.conf"],
-    "wordpress/rootfs/usr/lib/bashio": ["app.sh", "banner.sh"],
-    "wordpress/translations": ["de.yaml", "en.yaml"]
+    "epicgamesfree/rootfs": ["run.sh"],
+    "epicgamesfree/rootfs/usr/bin": ["epic_server.py"],
+    "epicgamesfree/rootfs/usr/lib/bashio": ["banner.sh"],
+    "epicgamesfree/translations": ["de.yaml", "en.yaml"],
+    "dbf": ["CHANGELOG.md", "DOCS.md", "Dockerfile", "README.md", "build.yaml", "config.yaml"],
+    "dbf/rootfs/usr/lib/bashio": ["banner.sh"],
+    "dbf/translations": ["de.yaml", "en.yaml"],
+    "ShieldFile": [
+      "CHANGELOG.md",
+      "DOCS.md",
+      "Dockerfile",
+      "README.md",
+      "build.yaml",
+      "config.yaml"
+    ],
+    "ShieldFile/rootfs/usr/lib/bashio": ["banner.sh"],
+    "ShieldFile/translations": ["de.yaml", "en.yaml"]
   }
 }
