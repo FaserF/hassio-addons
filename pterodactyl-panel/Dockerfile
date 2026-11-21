@@ -15,6 +15,12 @@ ENV APP_SLUG="pterodactyl_panel"
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV APP_UNSUPPORTED="false"
 
+# App metadata (injected by CI)
+ENV APP_VERSION="1.3.9"
+ENV APP_NAME="pterodactyl Panel Gameserver"
+ENV APP_SLUG="pterodactyl_panel"
+ENV APP_UNSUPPORTED="false"
+
 RUN \
     echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
