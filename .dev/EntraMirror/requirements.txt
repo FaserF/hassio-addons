@@ -20,4 +20,4 @@ mkdocs-material==9.8.2
 pymdown-extensions==13.1.2
 Pillow==13.0.0
 python-dotenv==1.2.4
-PyYAML==6.0.3
+PyYAML==6.0.4
