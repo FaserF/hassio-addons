@@ -169,7 +169,11 @@ console.log('🧪 Running Reaction Events & Newsletter Channel Unit Tests...');
   const listener = mockSession.sock.ws.listeners('CB:status')[0];
   await listener(statusNode);
 
-  assert.strictEqual(ackedNode, statusNode, 'Status stanza must be acknowledged via sendMessageAck');
+  assert.strictEqual(
+    ackedNode,
+    statusNode,
+    'Status stanza must be acknowledged via sendMessageAck'
+  );
   assert.strictEqual(ackedNode.attrs.id, 'STATUS_MSG_999');
   assert.strictEqual(ackedNode.attrs.type, 'media');
   console.log('✅ PASSED: Status stanzas correctly acknowledged via sendMessageAck (#136)');
