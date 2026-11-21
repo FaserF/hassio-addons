@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.2.5 (2026-11-21)
+
+> [!CAUTION]
+> **RE-AUTHENTICATION REQUIRED:** After every add-on update or restart, you MUST re-authenticate in the Trade Republic Web UI to sync your session.
+
+### ✨ Features
+- unify QR code and credentials into single setup step ([`5a2e2f9a`](https://github.com/FaserF/hassio-addons/commit/5a2e2f9a337f62dc2ccc9bfb060eb18eb7ae5995))
+
+### 🐛 Bug Fixes
+- resolve black QR code display and prioritize phone login (fixes #1380) ([`5054f966`](https://github.com/FaserF/hassio-addons/commit/5054f96692b255964351f4e64360d5d6e0145ad5))
+- clear stale storage to ensure fresh QR code on login page ([`b4f9f744`](https://github.com/FaserF/hassio-addons/commit/b4f9f744246ae3dbfe6f9a538cf612af0678aa89))
+
+### 🚀 Other
+- small fix ([`5e2c1305`](https://github.com/FaserF/hassio-addons/commit/5e2c13057a7e2995efbcbca53bdfc897cd8022d4))
+
+
 ## 1.2.4 (2026-11-21)
 
 > [!CAUTION]
