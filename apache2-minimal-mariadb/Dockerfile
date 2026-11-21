@@ -12,7 +12,7 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # renovate: datasource=github-releases depName=php/php-src
-ARG PHP_VERSION="8.5"
+ARG PHP_VERSION="8.6"
 
 # hadolint ignore=DL4006,DL3018
 # renovate: datasource=repology depName=alpine_3_21/apache2 versioning=loose
