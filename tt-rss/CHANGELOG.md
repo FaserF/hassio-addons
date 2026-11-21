@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.10-dev-20261121-1331-5ce140b (2026-11-21)
+
+### 🐛 Bug Fixes
+- enforce patched nginx for CVE-2026-123007 across 10 addons ([`2aa47a45`](https://github.com/FaserF/hassio-addons/commit/2aa47a4566f54f2634f53dd87bfa1f46cf707e7c))
+
+
 ## 1.3.9 (2026-11-21)
 
 ### 🐛 Bug Fixes
