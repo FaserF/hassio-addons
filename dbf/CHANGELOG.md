@@ -3,16 +3,17 @@
 ## 1.1.12 (2026-11-21)
 
 ### ✨ Features
+
 - add s6 dependencies to fix race condition (#1359) (#1360) ([`8f327bdd`](https://github.com/FaserF/hassio-addons/commit/8f327bdd07eb6849daf49989e01c225f5c492d45))
 
 ### 🐛 Bug Fixes
+
 - unpin libcrypto3/libssl3 in /etc/apk/world to allow upgrade during build ([`24ab37bc`](https://github.com/FaserF/hassio-addons/commit/24ab37bc626d71130ce046031d8d1652a42b1568))
 - crond arguments in debug mode and avoid duplicate banner (fixes #1377, fixes FaserF/ha-db_infoscreen#248) ([`63b1b7c2`](https://github.com/FaserF/hassio-addons/commit/63b1b7c2d30a64ba93657207fc74502081567bd1))
 - ci linter fixes ([`ee7a0d7e`](https://github.com/FaserF/hassio-addons/commit/ee7a0d7efa86c13ad6ba1b350a38a7217b6be3ff))
 - reduce workers to 1 to prevent OOM/restarts ([`afc1dbc1`](https://github.com/FaserF/hassio-addons/commit/afc1dbc1d3c7a41dabd65ec1fd695e5ad4d170d7))
 - increase healthcheck start-period to 120s ([`1731e827`](https://github.com/FaserF/hassio-addons/commit/1731e82794fce7ba4755811c9c26f1d301e78a9a))
 - ensure ingress patch is applied and persistent ([`762a2609`](https://github.com/FaserF/hassio-addons/commit/762a260953ff6b0d58a7db9d564dd3aacac0f181))
-
 
 ## 1.1.11 (2026-11-18)
 
