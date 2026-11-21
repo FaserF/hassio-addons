@@ -1,8 +1,15 @@
-name: OpenHands Issue Resolver
+name: OpenHands Issue & PR Resolver
 
 on:
   issues:
     types: [labeled]
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
 
 jobs:
   resolve:

@@ -6,7 +6,9 @@ on:
   pull_request:
     branches: [main, master]
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     uses: FaserF/repo-template/.github/workflows/reusable-linter.yml@main
-    secrets: inherit
