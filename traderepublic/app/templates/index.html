@@ -787,147 +787,105 @@
       {% endif %} {% endif %}
 
       <div
-        id="login-tabs"
+        id="step-login"
         class="{% if (is_logged_in and not last_error) or login_in_progress %}hidden{% endif %}"
-        style="
-          margin-top: 1rem;
-          display: flex;
-          gap: 0.5rem;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          padding-bottom: 0.5rem;
-        "
+        style="margin-top: 1rem"
       >
-        <button
-          type="button"
-          class="btn-secondary"
-          id="tab-phone-btn"
-          onclick="switchLoginTab('phone')"
-          style="
-            flex: 1;
-            background: rgba(59, 130, 246, 0.2);
-            border-color: #3b82f6;
-            color: #93c5fd;
-            font-weight: 600;
-          "
-        >
-          📞 <span data-i18n="tab_phone">Phone &amp; PIN (Recommended)</span>
-        </button>
-        <button
-          type="button"
-          class="btn-secondary"
-          id="tab-qr-btn"
-          onclick="switchLoginTab('qr')"
-          style=""
-        >
-          📱 <span data-i18n="tab_qr">QR Code</span>
-        </button>
-      </div>
-
-      <div
-        id="step-qr"
-        class="hidden"
-        style="margin-top: 1rem; text-align: center"
-      >
-        <div class="alert alert-info" style="text-align: left; margin-bottom: 1rem">
-          <b data-i18n="qr_title">📷 QR Code Login:</b><br />
-          <span data-i18n="qr_step1">1. Open the Trade Republic app on your phone.</span><br />
-          <span data-i18n="qr_step2">2. Go to Profile → Settings → Web Login / Scan QR.</span><br />
-          <span data-i18n="qr_step3"
-            >3. Scan the QR code below to automatically link your session.</span
+        <div class="alert alert-info" style="text-align: left; margin-bottom: 1.25rem">
+          <b data-i18n="login_unified_title">📷 QR-Code Scan oder Zugangsdaten:</b><br />
+          <span data-i18n="login_unified_hint"
+            >Scanne den QR-Code mit deiner Trade Republic App. Solange du unten nichts eintippst, gilt der QR-Code. Alternativ kannst du dich darunter direkt per Telefonnummer &amp; PIN anmelden.</span
           >
         </div>
-        <div
-          id="qr-container"
-          style="
-            background: #ffffff;
-            padding: 0.75rem;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            display: inline-block;
-            margin: 0 auto;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
-            min-width: 220px;
-            min-height: 220px;
-            position: relative;
-          "
-        >
+
+        <div id="step-qr" style="text-align: center; margin-bottom: 1.25rem">
           <div
-            id="qr-loading"
+            id="qr-container"
             style="
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              height: 220px;
-              width: 220px;
-              color: #1e293b;
+              background: #ffffff;
+              padding: 0.75rem;
+              border-radius: 14px;
+              border: 1px solid rgba(255, 255, 255, 0.14);
+              display: inline-block;
+              margin: 0 auto;
+              box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+              min-width: 220px;
+              min-height: 220px;
+              position: relative;
             "
           >
             <div
+              id="qr-loading"
               style="
-                width: 36px;
-                height: 36px;
-                border: 4px solid #cbd5e1;
-                border-top-color: #3b82f6;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin-bottom: 0.75rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 220px;
+                width: 220px;
+                color: #1e293b;
               "
-            ></div>
-            <span
-              data-i18n="qr_loading"
-              style="font-size: 0.85rem; color: #475569; font-weight: 500;"
             >
-              Loading QR code...
+              <div
+                style="
+                  width: 36px;
+                  height: 36px;
+                  border: 4px solid #cbd5e1;
+                  border-top-color: #3b82f6;
+                  border-radius: 50%;
+                  animation: spin 1s linear infinite;
+                  margin-bottom: 0.75rem;
+                "
+              ></div>
+              <span
+                data-i18n="qr_loading"
+                style="font-size: 0.85rem; color: #475569; font-weight: 500;"
+              >
+                Loading QR code...
+              </span>
+            </div>
+            <img
+              id="qr-code-img"
+              src=""
+              alt="QR Code"
+              style="width: 220px; height: 220px; display: none; margin: 0 auto; border-radius: 8px"
+            />
+          </div>
+          <div
+            id="qr-unavailable-alert"
+            class="alert alert-warning hidden"
+            style="margin-top: 1rem; text-align: left;"
+          >
+            ⚠️ <span data-i18n="qr_not_available">
+              QR code login is currently not provided by Trade Republic. Please use the fields below to sign in with your phone number &amp; PIN.
             </span>
           </div>
-          <img
-            id="qr-code-img"
-            src=""
-            alt="QR Code"
-            style="width: 220px; height: 220px; display: none; margin: 0 auto; border-radius: 8px"
-          />
-        </div>
-        <div
-          id="qr-unavailable-alert"
-          class="alert alert-warning hidden"
-          style="margin-top: 1rem; text-align: left;"
-        >
-          ⚠️ <span data-i18n="qr_not_available">
-            QR code login is currently not provided by Trade Republic. Please use the recommended Phone &amp; PIN login.
-          </span>
-          <div style="margin-top: 0.75rem;">
+          <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; justify-content: center">
             <button
               type="button"
-              onclick="switchLoginTab('phone')"
-              class="btn-primary"
-              style="margin: 0;"
+              onclick="loadQRCode(true)"
+              class="btn-secondary"
+              style="margin-top: 0; width: auto; padding: 0.55rem 1rem;"
             >
-              📞 <span data-i18n="btn_switch_to_phone">Switch to Phone &amp; PIN</span>
+              🔄 <span data-i18n="btn_refresh_qr">Reload QR Code</span>
+            </button>
+            <button
+              type="button"
+              onclick="checkSession()"
+              class="btn-primary"
+              style="margin-top: 0; background: #22c55e; width: auto; padding: 0.55rem 1rem;"
+            >
+              ✓ <span data-i18n="btn_check_qr">Check Status</span>
             </button>
           </div>
         </div>
-        <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: center">
-          <button
-            type="button"
-            onclick="loadQRCode(true)"
-            class="btn-secondary"
-            style="margin-top: 0"
-          >
-            🔄 <span data-i18n="btn_refresh_qr">Reload QR Code</span>
-          </button>
-          <button
-            type="button"
-            onclick="checkSession()"
-            class="btn-primary"
-            style="margin-top: 0; background: #22c55e"
-          >
-            ✓ <span data-i18n="btn_check_qr">Check Status</span>
-          </button>
-        </div>
-      </div>
 
-      <div id="step-login" class="{% if (is_logged_in and not last_error) or login_in_progress %}hidden{% endif %}" style="margin-top: 1rem">
+        <div style="display: flex; align-items: center; margin: 1.5rem 0; text-align: center; color: var(--muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
+          <div style="flex: 1; border-bottom: 1px solid var(--border);"></div>
+          <span style="padding: 0 0.85rem;" data-i18n="divider_or_credentials">— ODER MIT TELEFONNUMMER &amp; PIN —</span>
+          <div style="flex: 1; border-bottom: 1px solid var(--border);"></div>
+        </div>
+
         <form
           onsubmit="
             event.preventDefault();
@@ -1157,39 +1115,7 @@
         }
 
         function switchLoginTab(tab) {
-          const qrStep = document.getElementById('step-qr');
-          const phoneStep = document.getElementById('step-login');
-          const qrBtn = document.getElementById('tab-qr-btn');
-          const phoneBtn = document.getElementById('tab-phone-btn');
-
-          if (tab === 'qr') {
-            qrStep.classList.remove('hidden');
-            phoneStep.classList.add('hidden');
-            qrBtn.style.background = 'rgba(59,130,246,0.2)';
-            qrBtn.style.borderColor = '#3b82f6';
-            qrBtn.style.color = '#93c5fd';
-            qrBtn.style.fontWeight = '600';
-            phoneBtn.style.background = '';
-            phoneBtn.style.borderColor = '';
-            phoneBtn.style.color = '';
-            phoneBtn.style.fontWeight = '';
-            loadQRCode();
-          } else {
-            qrStep.classList.add('hidden');
-            phoneStep.classList.remove('hidden');
-            phoneBtn.style.background = 'rgba(59,130,246,0.2)';
-            phoneBtn.style.borderColor = '#3b82f6';
-            phoneBtn.style.color = '#93c5fd';
-            phoneBtn.style.fontWeight = '600';
-            qrBtn.style.background = '';
-            qrBtn.style.borderColor = '';
-            qrBtn.style.color = '';
-            qrBtn.style.fontWeight = '';
-            if (qrAutoRefreshTimer) {
-              clearInterval(qrAutoRefreshTimer);
-              qrAutoRefreshTimer = null;
-            }
-          }
+          // Backward compatibility helper
         }
 
         let qrAutoRefreshTimer = null;
@@ -1249,6 +1175,12 @@
           const remainingSec = {{ login_remaining_sec | tojson }} || 0;
           if (inProgress && remainingSec > 0) {
             startTwoFaCountdown(remainingSec);
+          } else {
+            const isLoggedIn = {{ is_logged_in | tojson }};
+            const lastError = {{ last_error | tojson }};
+            if (!isLoggedIn || lastError) {
+              loadQRCode();
+            }
           }
         })();
 
@@ -1256,21 +1188,21 @@
         let pollTimer = null;
 
         function toggleRelogin() {
-          const loginTabs = document.getElementById('login-tabs');
           const loginStep = document.getElementById('step-login');
-          const qrStep = document.getElementById('step-qr');
           const btn = document.getElementById('relogin-toggle-btn');
-          const isCurrentlyVisible = !loginTabs.classList.contains('hidden') || !loginStep.classList.contains('hidden') || !qrStep.classList.contains('hidden');
+          const isCurrentlyVisible = loginStep && !loginStep.classList.contains('hidden');
 
           if (!isCurrentlyVisible) {
-            loginTabs.classList.remove('hidden');
-            switchLoginTab('phone');
+            loginStep.classList.remove('hidden');
             btn.textContent = t('btn_cancel_reauth');
+            loadQRCode();
           } else {
-            loginTabs.classList.add('hidden');
             loginStep.classList.add('hidden');
-            qrStep.classList.add('hidden');
             btn.textContent = t('btn_reauth');
+            if (qrAutoRefreshTimer) {
+              clearInterval(qrAutoRefreshTimer);
+              qrAutoRefreshTimer = null;
+            }
           }
         }
 
@@ -1343,6 +1275,10 @@
             });
             const data = await res.json();
             if (data.success) {
+              if (qrAutoRefreshTimer) {
+                clearInterval(qrAutoRefreshTimer);
+                qrAutoRefreshTimer = null;
+              }
               document.getElementById('step-login').classList.add('hidden');
               document.getElementById('step-2fa').classList.remove('hidden');
               resEl.innerHTML = '<span style="color:#60a5fa;">' + data.message + '</span>';

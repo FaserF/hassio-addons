@@ -25,25 +25,23 @@ def test_i18n_files_exist_and_valid():
 
 
 def test_i18n_qr_and_phone_labels():
-    """Verify phone login is recommended and QR login does not claim to be recommended."""
+    """Verify unified login text, hint and credentials divider exist."""
     de_data = json.loads((I18N_DIR / "de.json").read_text(encoding="utf-8"))
     en_data = json.loads((I18N_DIR / "en.json").read_text(encoding="utf-8"))
 
-    # Phone login should be the recommended option
-    assert "Empfohlen" in de_data["tab_phone"]
-    assert "Recommended" in en_data["tab_phone"]
-
-    # QR code login should not claim to be recommended
-    assert "Empfohlen" not in de_data["tab_qr"]
-    assert "Recommended" not in en_data["tab_qr"]
+    # Unified login headers and hints
+    assert "login_unified_title" in de_data
+    assert "login_unified_title" in en_data
+    assert "login_unified_hint" in de_data
+    assert "login_unified_hint" in en_data
+    assert "divider_or_credentials" in de_data
+    assert "divider_or_credentials" in en_data
 
     # Necessary keys for fallback and loading state
     assert "qr_not_available" in de_data
     assert "qr_not_available" in en_data
     assert "qr_loading" in de_data
     assert "qr_loading" in en_data
-    assert "btn_switch_to_phone" in de_data
-    assert "btn_switch_to_phone" in en_data
 
 
 def test_i18n_keys_parity():
@@ -62,7 +60,7 @@ def test_i18n_keys_parity():
 
 
 def test_index_html_structure():
-    """Verify index.html contains necessary DOM elements and does not have a pure black placeholder."""
+    """Verify index.html contains unified step-login with both QR code and Phone/PIN input."""
     index_html = (TEMPLATES_DIR / "index.html").read_text(encoding="utf-8")
 
     # Assert rendered HTML contains necessary DOM elements
@@ -71,15 +69,17 @@ def test_index_html_structure():
     assert 'id="qr-loading"' in index_html
     assert 'id="qr-unavailable-alert"' in index_html
     assert 'id="qr-code-img"' in index_html
-    assert 'data-i18n="tab_phone"' in index_html
-    assert 'data-i18n="tab_qr"' in index_html
-    assert 'data-i18n="qr_not_available"' in index_html
-    assert 'data-i18n="qr_loading"' in index_html
-    assert 'data-i18n="btn_switch_to_phone"' in index_html
+    assert 'data-i18n="login_unified_title"' in index_html
+    assert 'data-i18n="login_unified_hint"' in index_html
+    assert 'data-i18n="divider_or_credentials"' in index_html
+    assert 'id="phone"' in index_html
+    assert 'id="pin"' in index_html
 
-    # Ensure phone login is the default active button and step
-    assert 'id="tab-phone-btn"' in index_html
-    assert 'id="tab-qr-btn"' in index_html
+    # Ensure step-qr is inside step-login for single unified step
+    step_login_block = index_html.split('id="step-login"')[1].split('id="step-2fa"')[0]
+    assert 'id="step-qr"' in step_login_block
+    assert 'id="phone"' in step_login_block
+    assert 'id="pin"' in step_login_block
 
-    # Verify transparent gif in black background is removed
-    assert "background: #141414;" not in index_html.split('id="step-qr"')[1].split('id="step-login"')[0]
+    # Verify transparent gif in pitch-black background is removed
+    assert "background: #141414;" not in step_login_block

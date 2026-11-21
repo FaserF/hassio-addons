@@ -398,12 +398,14 @@ class AuthHelper:
             # Select all & delete any residual characters before inserting
             await self.cdp.send_cmd(
                 "Runtime.evaluate",
-                {"expression": """
+                {
+                    "expression": """
                     (() => {
                         const inp = document.querySelector('input.phone-input__input, input[type="tel"], input[name="username"]');
                         if (inp) { inp.focus(); inp.select(); }
                     })()
-                    """},
+                    """
+                },
             )
             await self.cdp.send_cmd(
                 "Input.dispatchKeyEvent",
