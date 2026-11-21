@@ -8,6 +8,7 @@
  *    - Returns thumbnailDirectPath / thumbnailSha256 from upload response
  *    - Sets url: null, fileEncSha256 = fileSha256 in newsletter media protobuf
  *    - Includes mediatype in plaintext node and extraAttrs in newsletter <message> stanzas
+ * 3. Ack top-level <status> stanzas (fixes FaserF/ha-whatsapp#136, Baileys issue #2858)
  */
 
 import fs from 'fs';
@@ -191,6 +192,47 @@ if (fs.existsSync(sendFile)) {
   if (changed) {
     fs.writeFileSync(sendFile, content, 'utf8');
     console.log('✅ Patched Socket/messages-send.js (newsletter plaintext mediatype & extraAttrs)');
+    patchedCount++;
+  }
+}
+
+// 6. Patch Socket/messages-recv.js: ack top-level <status> stanzas (fixes FaserF/ha-whatsapp#136, Baileys issue #2858)
+const recvFile = path.join(BAILEYS_DIR, 'lib/Socket/messages-recv.js');
+if (fs.existsSync(recvFile)) {
+  let content = fs.readFileSync(recvFile, 'utf8');
+  let changed = false;
+  if (!content.includes('handleStatus')) {
+    const handleStatusCode = `
+    const handleStatus = async (node) => {
+        try {
+            if (isJidGroup(node.attrs.from) && getBinaryNodeChild(node, 'enc')) {
+                await handleMessage(node);
+            } else {
+                await sendMessageAck(node);
+            }
+        }
+        catch (error) {
+            logger.error({ error, node: binaryNodeToString(node) }, 'error in handling status');
+        }
+    };
+`;
+    content = content.replace(
+      /(const offlineNodeProcessor = makeOfflineNodeProcessor\(new Map\(\[)/,
+      `${handleStatusCode}\n    $1`
+    );
+    content = content.replace(
+      /(\['notification',\s*handleNotification\])/,
+      "$1,\n        ['status', handleStatus]"
+    );
+    content = content.replace(
+      /(ws\.on\('CB:notification',\s*async\s*\(node\)\s*=>\s*\{)/,
+      "ws.on('CB:status', async (node) => {\n        await processNode('status', node, 'handling status', handleStatus);\n    });\n    $1"
+    );
+    changed = true;
+  }
+  if (changed) {
+    fs.writeFileSync(recvFile, content, 'utf8');
+    console.log('✅ Patched Socket/messages-recv.js (ack top-level <status> stanzas)');
     patchedCount++;
   }
 }

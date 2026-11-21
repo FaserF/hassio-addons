@@ -223,6 +223,23 @@ export async function connectToWhatsApp(sessionId = 'default', sessions, getSess
   }
 
   bindStore(session, session.sock.ev);
+
+  // Fallback: Ensure top-level <status> stanzas are always acknowledged (prevents 50-minute stream error #136)
+  if (session.sock?.ws) {
+    const existingStatusListeners = session.sock.ws.listeners ? session.sock.ws.listeners('CB:status') : [];
+    if (!existingStatusListeners || existingStatusListeners.length === 0) {
+      session.sock.ws.on('CB:status', async (node) => {
+        try {
+          if (session.sock.sendMessageAck) {
+            await session.sock.sendMessageAck(node);
+          }
+        } catch (err) {
+          logger.debug({ error: err?.message }, 'Fallback status stanza ack failed');
+        }
+      });
+    }
+  }
+
   session.sock.ev.on('creds.update', async (creds) => {
     logger.debug(
       { sessionId },

@@ -184,6 +184,7 @@ export function registerSessionRoutes(app) {
         connected: isConnected,
         isConnected,
         isConnecting: Boolean(session.isConnecting),
+        disconnect_reason: session.disconnectReason || session.stats?.last_disconnect_reason || null,
         my_number: session.stats?.my_number || session.sock?.user?.id?.split(':')[0] || null,
       });
     } catch (err) {

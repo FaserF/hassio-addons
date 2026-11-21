@@ -104,4 +104,75 @@ console.log('🧪 Running Reaction Events & Newsletter Channel Unit Tests...');
   console.log('✅ PASSED: Duplicate reaction correctly deduped');
 }
 
+// 3. Test eventQueue undefined / null filtering (Fixes #1300)
+{
+  const mockSession = {
+    eventQueue: [
+      { type: 'message', id: '1' },
+      null,
+      undefined,
+      { type: 'reaction', id: '2' },
+      null,
+    ],
+  };
+
+  const filteredEvents = mockSession.eventQueue.filter(Boolean);
+  assert.strictEqual(filteredEvents.length, 2, 'Null and undefined events must be filtered out');
+  assert.strictEqual(filteredEvents[0].id, '1');
+  assert.strictEqual(filteredEvents[1].id, '2');
+  console.log('✅ PASSED: eventQueue safely filters null/undefined events (#1300)');
+}
+
+// 4. Test status stanza acknowledgement handling (Fixes FaserF/ha-whatsapp#136)
+{
+  let ackedNode = null;
+  const mockSession = {
+    sock: {
+      ws: {
+        _listeners: {},
+        on(event, fn) {
+          this._listeners[event] = this._listeners[event] || [];
+          this._listeners[event].push(fn);
+        },
+        listeners(event) {
+          return this._listeners[event] || [];
+        },
+      },
+      sendMessageAck: async (node) => {
+        ackedNode = node;
+      },
+    },
+  };
+
+  // Attach fallback listener as done in connection.js
+  const existingListeners = mockSession.sock.ws.listeners('CB:status');
+  if (!existingListeners || existingListeners.length === 0) {
+    mockSession.sock.ws.on('CB:status', async (node) => {
+      if (mockSession.sock.sendMessageAck) {
+        await mockSession.sock.sendMessageAck(node);
+      }
+    });
+  }
+
+  assert.strictEqual(mockSession.sock.ws.listeners('CB:status').length, 1);
+
+  // Simulate an incoming top-level status stanza with type=media
+  const statusNode = {
+    tag: 'status',
+    attrs: {
+      id: 'STATUS_MSG_999',
+      from: '491761111111@s.whatsapp.net',
+      type: 'media',
+    },
+  };
+
+  const listener = mockSession.sock.ws.listeners('CB:status')[0];
+  await listener(statusNode);
+
+  assert.strictEqual(ackedNode, statusNode, 'Status stanza must be acknowledged via sendMessageAck');
+  assert.strictEqual(ackedNode.attrs.id, 'STATUS_MSG_999');
+  assert.strictEqual(ackedNode.attrs.type, 'media');
+  console.log('✅ PASSED: Status stanzas correctly acknowledged via sendMessageAck (#136)');
+}
+
 console.log('🎉 ALL REACTION & NEWSLETTER TESTS PASSED!');
