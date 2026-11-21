@@ -1,1 +1,8 @@
 blank_issues_enabled: false
+contact_links:
+  - name: 🤖 Hermes AI Fleet Assistant
+    url: https://github.com/apps/faserf-hermes-agent
+    about: Learn more about autonomous triage, AI PR reviews, and bot commands powered by faserf-hermes-agent[bot].
+  - name: 💬 GitHub Discussions
+    url: https://github.com/FaserF/repo-template/discussions
+    about: Ask questions, share ideas, and connect with other users.

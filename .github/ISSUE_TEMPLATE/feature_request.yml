@@ -1,87 +1,42 @@
----
-name: Feature request
-description: Suggest an idea for this project for one of FaserF's Custom App's
-title: "[Feature Request]: "
+name: 🚀 Feature Request
+description: Suggest an idea or enhancement for this project.
+title: "[Feature]: "
 labels: ["enhancement"]
-assignees:
-  - FaserF
 body:
   - type: markdown
     attributes:
       value: |
-        This feature request request form is for feature requests only!
+        Feature proposals help shape future releases. Automated triage is managed by [faserf-hermes-agent[bot]](https://github.com/apps/faserf-hermes-agent).
 
-        If you have a bug or issue request, please use the bug report template!
   - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a specific problem or friction point?
+      placeholder: "I'm always frustrated when..."
     validations:
       required: true
+
+  - type: textarea
+    id: solution
     attributes:
-      label: The request
-      description: >-
-        A clear and concise description of what you want to happen.
-  - type: markdown
-    attributes:
-      value: |
-        ## Environment
-  - type: dropdown
-    id: app_name
+      label: Proposed Solution
+      description: Describe the solution you'd like to see implemented.
     validations:
       required: true
-    attributes:
-      label: For which App
-      description: >
-        The name of the App you are wishing a new feature.
-        For example: Apache2
-      options:
-        - Other
-        - Alivro
-        - AegisBot
-        - EntraMirror
-        - ShieldDNS
-        - ShieldFile
-        - apache2
-        - apache2-minimal
-        - apache2-minimal-mariadb
-        - bash_script_executer
-        - bentopdf
-        - er-dashboard
-        - dbf
-        - googlehome
-        - homeassistant-test-instance
-        - imapsync
-        - komodo
-        - matterbridge
-        - n8n
-        - netboot-xyz
-        - nginx
-        - openssl
-        - paperless-ngx
-        - pterodactyl-panel
-        - pterodactyl-wings
-        - solumati
-        - switchcraft
-        - switch_lan_play
-        - switch_lan_play_server
-        - tado_aa
-        - traderepublic
-        - whatsapp
-        - wiki.js
-        - wiki.js3
-        - wordpress
 
-  - type: markdown
-    attributes:
-      value: |
-        # Details
   - type: textarea
+    id: alternatives
     attributes:
-      label: Is your feature request related to a problem?
-      render: txt
-      description: >-
-        A clear and concise description of what the problem is.
-        Ex. I'm always frustrated when [...]
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds you've considered.
+    validations:
+      required: false
+
   - type: textarea
+    id: additional_context
     attributes:
-      label: Additional information
-      description: >
-        If you have any additional information for us, use the field below.
+      label: Additional Context
+      description: Add any other context, mockups, or screenshots about the feature request here.
+    validations:
+      required: false

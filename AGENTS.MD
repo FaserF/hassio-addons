@@ -1,35 +1,38 @@
-# AI Agent Reference: hassio-addons
+# AI Agent Operational Reference & Guidelines
 
-## 1. Rules & Token Efficiency
-- Output: Bullet points only (<=5 items for changes), no pleasantries/filler/narration, default English (EN).
-- Code/Files: Targeted reads (`StartLine`/`EndLine`). Markdown links only, no code echo. No unrequested plans/walkthroughs.
-- Manifest First: Consult `project_manifest.json` and `project_connections.json` before codebase exploration.
-- Linters/Tests: Report failures only. Verify before concluding tasks.
+Mandatory operational guidelines and standards for AI coding agents (Antigravity, Hermes Agent, OpenHands, Claude Code, Paseo) working across `@FaserF` repositories.
 
-## 2. Addon Architecture & Layout
-```text
-<addon-slug>/
-├── config.yaml          # HA schema: name, version, arch, options, schema, image
-├── Dockerfile           # Multi-arch (ghcr.io/hassio-addons/base), single RUN per block
-├── run.sh               # #!/usr/bin/with-contenv bashio, set -e, quoted vars
-├── build.yaml           # Base image pins
-├── rootfs/etc/s6-overlay/s6-rc.d/<service>/ # s6 lifecycle: type, run, finish
-└── translations/        # HA UI translations (en.yaml, de.yaml)
-```
+---
 
-## 3. Mandatory Standards & Quality
-- **Bashio**: Use `bashio::config <key>` and `bashio::log.*`. Never raw `echo` for user messages.
-- **Base Images**: Pinned `ghcr.io/hassio-addons/base` or `base-python`. Multi-arch minimum: `aarch64`, `amd64`.
-- **Quality**: No `raise e` (use `raise ... from e` or naked `raise`). `except: pass` strictly forbidden. No third-party bot names.
-- **Lifecycle & Versioning**:
-  - New add-ons start strictly at `0.1.0` in `.dev/<addon-slug>` on `master`.
-  - Slug must be listed in `DEV_ADDONS` in `.scripts/addons_config.py` (blacklist for stable releases).
-  - Unpacked to root on `edge` branch by `.scripts/prepare_edge_branch.py`.
-  - Warning emitted if add-on in `DEV_ADDONS` reaches `>= 1.0.0`.
+## 1. Identity & Commits
+* **Bot Identity:** Automated actions, reviews, commits, and pull requests must be executed as `faserf-hermes-agent[bot]`.
+* **Author Details:**
+  * Git Name: `faserf-hermes-agent[bot]`
+  * Git Email: `342667397+faserf-hermes-agent[bot]@users.noreply.github.com`
+* **Conventional Commits:** All commits must follow conventional format (`feat(...)`, `fix(...)`, `chore(...)`, `refactor(...)`, `test(...)`, `docs(...)`).
+* **Pull Requests:** PR descriptions must link to corresponding issues (`Closes #123`, `Fixes #123`) and include an automated change summary.
 
-## 4. Verification CLI Commands
-- Dockerfile lint: `hadolint <addon>/Dockerfile`
-- Shell script lint: `shellcheck <addon>/run.sh`
-- YAML lint: `yamllint <addon>/config.yaml`
-- Tests: `pytest tests/`
-- Manifest regen: `python .scripts/generate_manifest.py`
+---
+
+## 2. Token & Execution Efficiency
+* **Minimal Prose:** Explanations and PR comments must be concise, structured with bullet points, and free of filler phrases.
+* **Targeted Reads & Diffs:** Read specific line ranges when analyzing code. Never re-print large existing source files in comments or logs.
+* **No Hardcoded Secrets:** Never hardcode or commit tokens, private keys, passwords, or credentials. All secrets must reside in GitHub Secrets or Infisical.
+* **English Default (EN):** All code, variable names, commit messages, pull requests, issue templates, and AI comments must strictly default to English (EN).
+
+---
+
+## 3. Code Quality & Architectural Hygiene
+* **File Limits:** Source files should strictly adhere to $\le 600$ lines (ideal target: $< 300$ lines). Break monolithic modules into cohesive sub-modules.
+* **Exception Hygiene:**
+  * NEVER use `raise e`. ALWAYS use `raise ... from e` or a naked `raise` to preserve tracebacks.
+  * Silent failures (`except: pass`) are strictly forbidden. Always log at `warning` or `debug` level.
+* **Type Safety & Linting:** Strict typing (`mypy` / `pyright`), Python `ruff` format and linting, Go `golangci-lint`, JavaScript/TypeScript `eslint`.
+* **Testing:** All new features or bug fixes must include corresponding unit tests (`pytest`, `go test`, `npm test`). Never weaken existing test assertions.
+
+---
+
+## 4. Privacy & Attribution Guardrails
+* **No Personal Domain Exposure:** Do NOT insert links to `fabiseitz.de` or internal Tailscale endpoints in public repositories or PR reviews.
+* **Bot Verification Link:** Reference the official GitHub App for information on automated agent actions:
+  [Hermes Agent GitHub App](https://github.com/apps/faserf-hermes-agent)

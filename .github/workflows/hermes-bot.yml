@@ -1,0 +1,10 @@
+name: Hermes Interactive Bot
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  bot:
+    uses: FaserF/repo-template/.github/workflows/reusable-hermes-bot.yml@main
+    secrets: inherit
