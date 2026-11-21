@@ -351,10 +351,13 @@ ENV APP_UNSUPPORTED="{str(unsupported).lower()}" """
 
 def find_run_script(addon_path: str) -> Optional[str]:
     """Find the main run script for the addon."""
+    addon_name = os.path.basename(addon_path.rstrip("/\\"))
     candidates = [
         os.path.join(addon_path, "run.sh"),
         os.path.join(addon_path, "rootfs", "run.sh"),
+        os.path.join(addon_path, "rootfs", "etc", "s6-overlay", "s6-rc.d", addon_name, "run"),
         os.path.join(addon_path, "rootfs", "etc", "services.d", "addon", "run"),
+        os.path.join(addon_path, "rootfs", "etc", "services.d", addon_name, "run"),
     ]
 
     for candidate in candidates:
