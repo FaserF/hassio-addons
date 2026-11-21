@@ -1,0 +1,24 @@
+# Hermes Fleet Configuration
+type: ha-addon
+profile: full
+openhands:
+  enabled: true
+  auto_triage: true
+  interactive_commands: true
+code_review:
+  enabled: true
+releases:
+  enabled: true
+permissions:
+  # admins: (optional — omit to auto-detect from repo owner + collaborator write/admin permissions)
+  # admins:
+  #   - FaserF
+  #   - Eidolf
+  allow_collaborators: true
+  public_actions:
+    - review
+    - help
+  restricted_actions:
+    - resolve
+    - autofix
+    - pause

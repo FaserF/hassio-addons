@@ -1,0 +1,11 @@
+name: OpenHands Issue Resolver
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  resolve:
+    if: github.event.label.name == 'openhands:ready'
+    uses: FaserF/repo-template/.github/workflows/reusable-openhands-resolver.yml@main
+    secrets: inherit

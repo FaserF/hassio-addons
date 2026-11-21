@@ -1,0 +1,10 @@
+name: PR Reviewer
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  review:
+    uses: FaserF/repo-template/.github/workflows/reusable-pr-reviewer.yml@main
+    secrets: inherit

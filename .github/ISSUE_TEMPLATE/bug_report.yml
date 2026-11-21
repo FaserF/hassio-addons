@@ -1,128 +1,83 @@
-name: Report an issue
-description: Report an issue with one of FaserF's Custom App's
-title: '[Bug]: '
-labels:
-  - bug
-assignees:
-  - FaserF
+name: 🐛 Bug Report
+description: Create a report to help improve this project.
+title: "[Bug]: "
+labels: ["bug"]
 body:
   - type: markdown
     attributes:
-      value: | # yamllint disable-line rule:line-length
-        This issue form is for reporting bugs only!
-
-        If you have a feature or enhancement request, please use the feature
-        request template!
-  - type: textarea
-    validations:
-      required: true
-    attributes:
-      label: The problem
-      description: 'Describe the issue you are experiencing here, to communicate to
-        the maintainers. Tell us what you were trying to do and what happened.
-
-        Provide a clear and concise description of what the problem is.'
-  - type: markdown
-    attributes:
       value: |
-        ## Environment
+        Thanks for opening an issue! Automated triage and diagnostics are provided by [faserf-hermes-agent[bot]](https://github.com/apps/faserf-hermes-agent).
+
   - type: input
     id: version
+    attributes:
+      label: Version / Release
+      description: Which version of this repository/component are you using? (e.g. v1.2.0, latest commit)
+      placeholder: "e.g. 1.2.0"
     validations:
       required: true
-    attributes:
-      label: What version of Home Assistant Core has the issue?
-      placeholder: core-
-      description: | # yamllint disable-line rule:line-length
-        Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
 
-        [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
   - type: input
-    id: version_integration
-    validations:
-      required: true
+    id: env_version
     attributes:
-      label: What version of the app has the issue?
-      placeholder: null
-      description: |
-        The version of the app you are currently using.
-  - type: dropdown
-    id: installation_type
+      label: Environment Version (Home Assistant / Python / OS)
+      description: Applicable runtime environment details (e.g. Home Assistant 2026.11.2, Python 3.14, Ubuntu 24.04).
+      placeholder: "e.g. Home Assistant 2026.11.2"
     validations:
-      required: true
-    attributes:
-      label: What type of installation are you running?
-      description: | # yamllint disable-line rule:line-length
-        Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
+      required: false
 
-        [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
+  - type: checkboxes
+    id: pre_release
+    attributes:
+      label: Release Channel
       options:
-        - Home Assistant OS
-        - Home Assistant Container
-        - Home Assistant Supervised
-        - Home Assistant Core
-      default: 0
-  - type: dropdown
-    id: app_name
+        - label: I am using a Beta or Pre-release version
+          required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what went wrong.
     validations:
       required: true
-    attributes:
-      label: App causing the issue
-      description: |
-        The name of the App. For example: Apache2
-      options:
-        - Other
-        - Alivro
-        - AegisBot
-        - EntraMirror
-        - ShieldDNS
-        - ShieldFile
-        - antigravity
-        - apache2
-        - apache2-minimal
-        - apache2-minimal-mariadb
-        - bash_script_executer
-        - bentopdf
-        - er-dashboard
-        - dbf
-        - googlehome
-        - homeassistant-test-instance
-        - imapsync
-        - komodo
-        - n8n
-        - netboot-xyz
-        - nginx
-        - openssl
-        - paperless-ngx
-        - planka
-        - Paseo
-        - pterodactyl-panel
-        - pterodactyl-wings
-        - solumati
-        - switch_lan_play
-        - switch_lan_play_server
-        - switchcraft
-        - tado_aa
-        - traderepublic
-        - tt-rss
-        - whatsapp
-        - wiki.js
-        - wiki.js3
-        - wordpress
 
-  - type: markdown
-    attributes:
-      value: |
-        # Details
   - type: textarea
-    id: log_information
+    id: reproduction
     attributes:
-      label: Log information
-      render: txt
-      description: Please go to the app within your Homeassistant Instance -> Log
-        and copy the output here
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
   - type: textarea
+    id: expected
     attributes:
-      label: Additional information
-      description: |
-        If you have any additional information for us, use the field below.
+      label: Expected Behavior
+      description: What did you expect to happen instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Diagnostic Logs & Tracebacks
+      description: Paste relevant debug logs or stack traces here (enclosed in code blocks).
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have checked existing issues and documentation for duplicates.
+          required: true
+        - label: I understand this project is maintained in free time by @FaserF with assistance from Hermes Fleet AI.
+          required: true

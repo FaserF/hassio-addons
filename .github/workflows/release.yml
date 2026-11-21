@@ -1,0 +1,11 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    uses: FaserF/repo-template/.github/workflows/reusable-release.yml@main
+    secrets: inherit
