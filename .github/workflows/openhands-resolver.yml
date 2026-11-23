@@ -1,4 +1,4 @@
-name: OpenHands Issue & PR Resolver
+name: OpenHands Issue Resolver
 
 on:
   issues:

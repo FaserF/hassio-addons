@@ -13,4 +13,6 @@ permissions:
 jobs:
   ci:
     uses: FaserF/repo-template/.github/workflows/reusable-ci.yml@v1
+    with:
+      project_type: "ha-addon"
     secrets: inherit
