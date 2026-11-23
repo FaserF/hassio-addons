@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-11-21T20:42:29.604335",
+  "timestamp": "2026-11-23T14:02:54.884234",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
@@ -565,7 +565,7 @@
     },
     "wiki.js": {
       "name": "Wiki.JS",
-      "version": "3.5.11",
+      "version": "3.5.12",
       "description": "The most powerful and extensible open source Wiki software",
       "arch": ["amd64"],
       "image": "ghcr.io/faserf/hassio-addons-wiki-{arch}",
