@@ -43,6 +43,7 @@ RUN go mod download \
     && GOOS=linux GOARCH=$TARGETARCH go build -o shielddns-admin .
 
 # --- STAGE 3: RUNTIME IMAGE ---
+# hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
