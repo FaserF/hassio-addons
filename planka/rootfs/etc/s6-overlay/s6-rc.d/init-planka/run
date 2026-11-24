@@ -341,7 +341,7 @@ if ! bashio::fs.file_exists "${PLANKA_DATA_DIR}/admin_created"; then
 
     # Set environment variables for the Planka seed
     export DEFAULT_ADMIN_EMAIL="admin@planka.local"
-    export DEFAULT_ADMIN_PASSWORD="$ADMIN_PASSWORD"
+    export DEFAULT_ADMIN_[REDACTED_SECRET_31060]
     export DEFAULT_ADMIN_NAME="Administrator"
     export DEFAULT_ADMIN_USERNAME="admin"
     export NODE_ENV=production
