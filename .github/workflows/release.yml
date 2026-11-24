@@ -4,11 +4,97 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: "Version bump level"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      draft:
+        description: "Create as draft release"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
 
 jobs:
+  prepare:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.bump.outputs.tag_name }}
+    steps:
+      - name: Generate Bot Token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        continue-on-error: true
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+
+      - name: Checkout Code
+        uses: actions/checkout@v7
+        with:
+          token: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Bump Version & Push Tag
+        id: bump
+        run: |
+          if [ -f .github/scripts/version_manager.py ]; then
+            NEW_VER=$(python3 .github/scripts/version_manager.py bump --type stable --level "${{ inputs.release_type }}")
+          else
+            NEW_VER=$(python3 - <<'PY'
+          import glob, json, os, re, subprocess
+          level = os.environ.get("RELEASE_TYPE", "patch")
+          tags = subprocess.check_output(["git", "tag", "--sort=-version:refname"], text=True).splitlines()
+          latest = next((t.lstrip("v") for t in tags if re.match(r"^v?\d+\.\d+\.\d+$", t.strip())), "1.0.0")
+          maj, min_, pat = (int(x) for x in latest.split("."))
+          if level == "major":
+              maj, min_, pat = maj + 1, 0, 0
+          elif level == "minor":
+              min_, pat = min_ + 1, 0
+          else:
+              pat += 1
+          ver = f"{maj}.{min_}.{pat}"
+          for mf in glob.glob("custom_components/*/manifest.json"):
+              data = json.load(open(mf, encoding="utf-8"))
+              data["version"] = ver
+              with open(mf, "w", encoding="utf-8") as fh:
+                  json.dump(data, fh, indent=2)
+                  fh.write("\n")
+          if os.path.exists("pyproject.toml"):
+              txt = open("pyproject.toml", encoding="utf-8").read()
+              txt = re.sub(r'^version\s*=\s*".*?"', f'version = "{ver}"', txt, count=1, flags=re.MULTILINE)
+              open("pyproject.toml", "w", encoding="utf-8").write(txt)
+          print(ver)
+          PY
+          )
+          fi
+          TAG="v${NEW_VER}"
+          git config user.name "faserf-hermes-agent[bot]"
+          git config user.email "342667397+faserf-hermes-agent[bot]@users.noreply.github.com"
+          git add custom_components/*/manifest.json pyproject.toml 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "chore(release): ${TAG} [skip ci]"
+          git tag -f "${TAG}"
+          git push origin "HEAD:${{ github.ref_name }}"
+          git push origin "${TAG}" --force
+          echo "tag_name=${TAG}" >> "$GITHUB_OUTPUT"
+        env:
+          RELEASE_TYPE: ${{ inputs.release_type }}
+
   release:
+    needs: prepare
+    if: always() && (github.event_name == 'push' || needs.prepare.result == 'success')
     uses: FaserF/repo-template/.github/workflows/reusable-release.yml@v1
+    with:
+      tag_name: ${{ github.event_name == 'workflow_dispatch' && needs.prepare.outputs.tag_name || github.ref_name }}
+      draft: ${{ github.event_name == 'workflow_dispatch' && inputs.draft || false }}
     secrets: inherit

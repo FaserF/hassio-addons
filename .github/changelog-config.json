@@ -1,0 +1,59 @@
+{
+  "categories": [
+    {
+      "title": "🚀 Features",
+      "labels": ["feat", "feature", "enhancement"]
+    },
+    {
+      "title": "🐛 Bug Fixes",
+      "labels": ["fix", "bug"]
+    },
+    {
+      "title": "📚 Documentation",
+      "labels": ["docs", "documentation"]
+    },
+    {
+      "title": "🔧 Maintenance",
+      "labels": ["chore", "refactor", "perf"]
+    },
+    {
+      "title": "🧪 Tests",
+      "labels": ["test"]
+    },
+    {
+      "title": "📦 Dependencies",
+      "labels": ["dependencies"]
+    }
+  ],
+  "ignore_labels": ["ignore", "skip-changelog"],
+  "sort": "ASC",
+  "template": "${{CHANGELOG}}\n\n${{UNCATEGORIZED}}",
+  "pr_template": "- ${{TITLE}} (#${{NUMBER}}) by @${{AUTHOR}}",
+  "empty_template": "No significant changes since last release.",
+  "label_extractor": [
+    {
+      "pattern": "^(feat|feature|enhancement).*$",
+      "target": "$1"
+    },
+    {
+      "pattern": "^(fix|bug).*$",
+      "target": "fix"
+    },
+    {
+      "pattern": "^(docs|documentation).*$",
+      "target": "docs"
+    },
+    {
+      "pattern": "^(chore|refactor|perf).*$",
+      "target": "chore"
+    },
+    {
+      "pattern": "^(test).*$",
+      "target": "test"
+    },
+    {
+      "pattern": "^(dependencies).*$",
+      "target": "dependencies"
+    }
+  ]
+}
