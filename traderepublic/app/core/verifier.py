@@ -54,15 +54,19 @@ async def verify_tr_token(token: str) -> bool:
                     sub_resp = await ws.recv()
                     if not sub_resp:
                         continue
-                    _LOGGER.info("Token subscription test response: %s", sub_resp)
                     parts = str(sub_resp).split(" ", 2)
                     if len(parts) >= 2:
                         sub_id_str, status = parts[0], parts[1]
                         if sub_id_str == "1":
                             if status == "A":
+                                _LOGGER.info("Token subscription test succeeded (sub_id=1, status=A)")
                                 return True
                             if status == "E":
-                                _LOGGER.warning("Token subscription rejected with error: %s", sub_resp)
+                                err_detail = parts[2] if len(parts) > 2 else ""
+                                _LOGGER.warning(
+                                    "Token subscription rejected with error (sub_id=1, status=E): %s",
+                                    err_detail[:200],
+                                )
                                 return False
                 return True
         finally:

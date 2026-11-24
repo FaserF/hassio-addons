@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import time
@@ -16,42 +17,54 @@ class CDPClient:
 
     def __init__(self, port: int = CDP_PORT) -> None:
         self.port = port
+        self._session: Optional[aiohttp.ClientSession] = None
+
+    async def _get_session(self) -> aiohttp.ClientSession:
+        if self._session is None or self._session.closed:
+            self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5))
+        return self._session
+
+    async def close(self) -> None:
+        if self._session and not self._session.closed:
+            await self._session.close()
+            self._session = None
 
     async def send_cmd(self, method: str, params: Optional[Dict[str, Any]] = None) -> Any:
         """Send command via Chrome DevTools Protocol."""
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(f"http://127.0.0.1:{self.port}/json") as resp:
-                    pages = await resp.json()
-                    if not pages:
-                        return None
-                    page_tab = next(
-                        (
-                            p
-                            for p in pages
-                            if p.get("type") == "page"
-                            and "chrome-extension://" not in p.get("url", "")
-                            and p.get("webSocketDebuggerUrl")
-                        ),
-                        None,
-                    )
-                    if not page_tab:
-                        page_tab = next((p for p in pages if p.get("webSocketDebuggerUrl")), None)
-                    if not page_tab:
-                        return None
-                    ws_url = page_tab.get("webSocketDebuggerUrl")
-                    if not ws_url:
-                        return None
+            session = await self._get_session()
+            async with session.get(f"http://127.0.0.1:{self.port}/json") as resp:
+                pages = await resp.json()
+                if not pages:
+                    return None
+                page_tab = next(
+                    (
+                        p
+                        for p in pages
+                        if p.get("type") == "page"
+                        and "chrome-extension://" not in p.get("url", "")
+                        and p.get("webSocketDebuggerUrl")
+                    ),
+                    None,
+                )
+                if not page_tab:
+                    page_tab = next((p for p in pages if p.get("webSocketDebuggerUrl")), None)
+                if not page_tab:
+                    return None
+                ws_url = page_tab.get("webSocketDebuggerUrl")
+                if not ws_url:
+                    return None
 
-            async with websockets.connect(ws_url) as ws:
-                msg_id = int(time.time() * 1000) % 100000
-                req = {"id": msg_id, "method": method, "params": params or {}}
-                await ws.send(json.dumps(req))
-                while True:
-                    raw = await ws.recv()
-                    data = json.loads(raw)
-                    if data.get("id") == msg_id:
-                        return data.get("result")
+            async with asyncio.timeout(15):
+                async with websockets.connect(ws_url, open_timeout=5, close_timeout=3) as ws:
+                    msg_id = int(time.time() * 1000) % 100000
+                    req = {"id": msg_id, "method": method, "params": params or {}}
+                    await ws.send(json.dumps(req))
+                    while True:
+                        raw = await ws.recv()
+                        data = json.loads(raw)
+                        if data.get("id") == msg_id:
+                            return data.get("result")
         except Exception as e:
             _LOGGER.debug("CDP command %s failed: %s", method, e)
             return None
@@ -73,23 +86,21 @@ class CDPClient:
 
     async def wait_for_ready(self, timeout: float = 20.0, interval: float = 0.5) -> bool:
         """Poll CDP HTTP endpoint until Chromium is ready, up to timeout seconds."""
-        import asyncio
-
         deadline = time.monotonic() + timeout
         attempt = 0
         while time.monotonic() < deadline:
             try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(
-                        f"http://127.0.0.1:{self.port}/json",
-                        timeout=aiohttp.ClientTimeout(total=2),
-                    ) as resp:
-                        pages = await resp.json()
-                        if pages and pages[0].get("webSocketDebuggerUrl"):
-                            _LOGGER.info("CDP ready after %d probe(s)", attempt + 1)
-                            return True
-            except Exception:  # noqa: BLE001
-                pass
+                session = await self._get_session()
+                async with session.get(
+                    f"http://127.0.0.1:{self.port}/json",
+                    timeout=aiohttp.ClientTimeout(total=2),
+                ) as resp:
+                    pages = await resp.json()
+                    if pages and pages[0].get("webSocketDebuggerUrl"):
+                        _LOGGER.info("CDP ready after %d probe(s)", attempt + 1)
+                        return True
+            except Exception as exc:  # noqa: BLE001
+                _LOGGER.debug("CDP readiness probe %d failed: %s", attempt + 1, exc)
             attempt += 1
             await asyncio.sleep(interval)
         _LOGGER.warning("CDP did not become ready within %.0fs", timeout)
