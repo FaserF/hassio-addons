@@ -394,8 +394,8 @@ bashio::log.info "🔗 Ingress (Home Assistant) active on Port 8099 (Plain HTTP)
 # ------------------------------------------------------------------------------
 # 3.5. Developer Mode (Download and Compile Latest Code from GitHub)
 # ------------------------------------------------------------------------------
+BOOTSTRAP_COREDNS_PID=""
 if bashio::config.true 'developer_mode'; then
-	BOOTSTRAP_COREDNS_PID=""
 	if command -v coredns >/dev/null 2>&1; then
 		cat <<EOF >/tmp/Corefile.bootstrap
 .:${DNS_PORT} {
@@ -407,7 +407,7 @@ if bashio::config.true 'developer_mode'; then
     errors
 }
 EOF
-		bashio::log.info "🛡️  Starting temporary bootstrap CoreDNS on port ${DNS_PORT} during developer_mode compilation..."
+		bashio::log.info "🛡️  Starting temporary bootstrap CoreDNS on port ${DNS_PORT} during developer_mode compile and setup..."
 		coredns -conf /tmp/Corefile.bootstrap >/dev/null 2>&1 &
 		BOOTSTRAP_COREDNS_PID=$!
 	fi
@@ -415,7 +415,6 @@ EOF
 	bashio::log.warning "   ⚠️  DEVELOPER MODE ENABLED  ⚠️"
 	bashio::log.warning "=================================================="
 	bashio::log.warning "Using latest code from GitHub 'main' branch."
-	bashio::log.warning "Downloading and recompiling ShieldDNS Admin..."
 
 	GITHUB_TOKEN=""
 	if bashio::config.has_value 'github_token'; then
@@ -426,107 +425,133 @@ EOF
 		fi
 	fi
 
-	DEV_BUILD_DIR="/tmp/shielddns-dev-build"
-	rm -rf "$DEV_BUILD_DIR"
-	mkdir -p "$DEV_BUILD_DIR"
-	cd "$DEV_BUILD_DIR" || exit 1
+	export GOMODCACHE="/data/.go-cache/mod"
+	export GOCACHE="/data/.go-cache/build"
+	mkdir -p "$GOMODCACHE" "$GOCACHE"
 
-	download_dev_code() {
-		local BRANCH=$1
-		local URL="https://github.com/FaserF/ShieldDNS/archive/refs/heads/${BRANCH}.tar.gz"
-		local CURL_ARGS=("-fL" "-s" "-S")
+	DEV_CACHE_BIN="/data/shielddns-admin-dev"
+	DEV_CACHE_SHA_FILE="/data/.dev_build_sha"
+	LATEST_DEV_SHA=""
+	SHA_CURL_ARGS=("-s" "--connect-timeout" "5" "--max-time" "8" "-H" "Accept: application/vnd.github.v3+json")
+	if [ -n "$GITHUB_TOKEN" ]; then
+		echo "Authorization: token ${GITHUB_TOKEN}" >/tmp/gh_sha_header
+		SHA_CURL_ARGS+=("-H" "@/tmp/gh_sha_header")
+	fi
+	LATEST_DEV_SHA=$(curl "${SHA_CURL_ARGS[@]}" "https://api.github.com/repos/FaserF/ShieldDNS/commits/main" 2>/dev/null | jq -r '.sha // empty' 2>/dev/null || echo "")
+	rm -f /tmp/gh_sha_header
 
-		if [ -n "$GITHUB_TOKEN" ]; then
-			bashio::log.info "Using GitHub Token for authentication..."
-			echo "Authorization: token ${GITHUB_TOKEN}" >/tmp/gh_token_header
-			CURL_ARGS+=("-H" "@/tmp/gh_token_header")
-		fi
-
-		bashio::log.info "Attempting to download branch: ${BRANCH}"
-		if curl "${CURL_ARGS[@]}" "$URL" -o dev_source.tar.gz; then
-			rm -f /tmp/gh_token_header
-			return 0
-		else
-			rm -f /tmp/gh_token_header
-			return 1
-		fi
-	}
-
-	if download_dev_code "main" || download_dev_code "master"; then
-		bashio::log.info "Extracting ShieldDNS source code..."
-		if tar -xzf dev_source.tar.gz --strip-components=1; then
-			if [ -d "$DEV_BUILD_DIR/admin" ]; then
-				bashio::log.info "Compiling ShieldDNS Admin binary..."
-				cd "$DEV_BUILD_DIR/admin" || exit 1
-
-				# Hardware detection & resource adaptation for compilation
-				BUILD_PROCS=$(nproc 2>/dev/null || echo 1)
-				FREE_MEM_KB=$(grep MemAvailable /proc/meminfo 2>/dev/null | awk '{print $2}')
-				if [ -z "$FREE_MEM_KB" ]; then
-					FREE_MEM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null | awk '{print $2}')
-				fi
-				FREE_MEM_MB=$((${FREE_MEM_KB:-2097152} / 1024))
-
-				bashio::log.info "Hardware detected: ${BUILD_PROCS} CPU cores, ~${FREE_MEM_MB} MB available memory."
-
-				# Limit Go compiler concurrency on low-resource hardware to prevent OOM kills
-				if [ "$FREE_MEM_MB" -lt 1500 ]; then
-					bashio::log.warning "Low memory environment (< 1.5 GB). Setting GOMAXPROCS=1 and build parallelism -p 1 to prevent OOM."
-					BUILD_PROCS=1
-					export GOGC=50
-				elif [ "$FREE_MEM_MB" -lt 2500 ] && [ "$BUILD_PROCS" -gt 2 ]; then
-					bashio::log.notice "Moderate memory environment (< 2.5 GB). Limiting build parallelism to 2 cores."
-					BUILD_PROCS=2
-					export GOGC=75
-				fi
-
-				export GOMAXPROCS="$BUILD_PROCS"
-				export CGO_ENABLED=0
-
-				BUILD_EXIT=0
-				go build -p "$BUILD_PROCS" -ldflags="-s -w" -o /usr/bin/shielddns-admin . || BUILD_EXIT=$?
-				if [ "$BUILD_EXIT" -ne 0 ]; then
-					bashio::log.warning "Standard go build exited with code ${BUILD_EXIT}. Retrying with GOTOOLCHAIN=auto..."
-					BUILD_EXIT=0
-					GOTOOLCHAIN=auto go build -p "$BUILD_PROCS" -ldflags="-s -w" -o /usr/bin/shielddns-admin . || BUILD_EXIT=$?
-				fi
-
-				if [ "$BUILD_EXIT" -eq 0 ]; then
-					chmod +x /usr/bin/shielddns-admin
-					bashio::log.info "=================================================="
-					bashio::log.info "   ✅ DEV MODE COMPILE COMPLETE"
-					bashio::log.info "=================================================="
-				else
-					bashio::log.error "❌ Go compilation failed with exit code: ${BUILD_EXIT}!"
-					if [ "$BUILD_EXIT" -eq 137 ]; then
-						bashio::log.error "💥 Exit code 137 indicates Go compiler was KILLED by OOM Killer (Insufficient RAM)!"
-						bashio::log.error "💡 Increase VM / Host memory to at least 2 GB or turn off developer_mode."
-					fi
-					if [ -f "/usr/bin/shielddns-admin" ]; then
-						bashio::log.warning "⚠️  Falling back to previously installed / pre-baked shielddns-admin binary."
-					else
-						bashio::log.error "🚨 No existing shielddns-admin binary found. Cannot proceed."
-						exit "$BUILD_EXIT"
-					fi
-				fi
-			else
-				bashio::log.error "Admin directory not found in downloaded repository!"
-			fi
-		else
-			bashio::log.error "Failed to extract downloaded repository archive!"
-		fi
-	else
-		bashio::log.error "Failed to download repository from GitHub!"
+	CACHED_DEV_SHA=""
+	if [ -f "$DEV_CACHE_SHA_FILE" ]; then
+		CACHED_DEV_SHA=$(head -n 1 "$DEV_CACHE_SHA_FILE" 2>/dev/null || echo "")
 	fi
 
-	# Clean up
-	cd / || exit 1
-	rm -rf "$DEV_BUILD_DIR"
-	if [ -n "${BOOTSTRAP_COREDNS_PID:-}" ]; then
-		bashio::log.info "🛑 Stopping temporary bootstrap CoreDNS before starting ShieldDNS backend..."
-		kill "$BOOTSTRAP_COREDNS_PID" 2>/dev/null || true
-		wait "$BOOTSTRAP_COREDNS_PID" 2>/dev/null || true
-		rm -f /tmp/Corefile.bootstrap
+	if [ -n "$LATEST_DEV_SHA" ] && [ "$LATEST_DEV_SHA" = "$CACHED_DEV_SHA" ] && [ -x "$DEV_CACHE_BIN" ]; then
+		cp -f "$DEV_CACHE_BIN" /usr/bin/shielddns-admin
+		chmod +x /usr/bin/shielddns-admin
+		bashio::log.info "⚡ Using cached developer_mode binary for commit ${LATEST_DEV_SHA:0:7} (skipping recompile)."
+	else
+		bashio::log.warning "Downloading and recompiling ShieldDNS Admin..."
+
+		DEV_BUILD_DIR="/tmp/shielddns-dev-build"
+		rm -rf "$DEV_BUILD_DIR"
+		mkdir -p "$DEV_BUILD_DIR"
+		cd "$DEV_BUILD_DIR" || exit 1
+
+		download_dev_code() {
+			local BRANCH=$1
+			local URL="https://github.com/FaserF/ShieldDNS/archive/refs/heads/${BRANCH}.tar.gz"
+			local CURL_ARGS=("-fL" "-s" "-S")
+
+			if [ -n "$GITHUB_TOKEN" ]; then
+				bashio::log.info "Using GitHub Token for authentication..."
+				echo "Authorization: token ${GITHUB_TOKEN}" >/tmp/gh_token_header
+				CURL_ARGS+=("-H" "@/tmp/gh_token_header")
+			fi
+
+			bashio::log.info "Attempting to download branch: ${BRANCH}"
+			if curl "${CURL_ARGS[@]}" "$URL" -o dev_source.tar.gz; then
+				rm -f /tmp/gh_token_header
+				return 0
+			else
+				rm -f /tmp/gh_token_header
+				return 1
+			fi
+		}
+
+		if download_dev_code "main" || download_dev_code "master"; then
+			bashio::log.info "Extracting ShieldDNS source code..."
+			if tar -xzf dev_source.tar.gz --strip-components=1; then
+				if [ -d "$DEV_BUILD_DIR/admin" ]; then
+					bashio::log.info "Compiling ShieldDNS Admin binary..."
+					cd "$DEV_BUILD_DIR/admin" || exit 1
+
+					# Hardware detection & resource adaptation for compilation
+					BUILD_PROCS=$(nproc 2>/dev/null || echo 1)
+					FREE_MEM_KB=$(grep MemAvailable /proc/meminfo 2>/dev/null | awk '{print $2}')
+					if [ -z "$FREE_MEM_KB" ]; then
+						FREE_MEM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null | awk '{print $2}')
+					fi
+					FREE_MEM_MB=$((${FREE_MEM_KB:-2097152} / 1024))
+
+					bashio::log.info "Hardware detected: ${BUILD_PROCS} CPU cores, ~${FREE_MEM_MB} MB available memory."
+
+					# Limit Go compiler concurrency on low-resource hardware to prevent OOM kills
+					if [ "$FREE_MEM_MB" -lt 1500 ]; then
+						bashio::log.warning "Low memory environment (< 1.5 GB). Setting GOMAXPROCS=1 and build parallelism -p 1 to prevent OOM."
+						BUILD_PROCS=1
+						export GOGC=50
+					elif [ "$FREE_MEM_MB" -lt 2500 ] && [ "$BUILD_PROCS" -gt 2 ]; then
+						bashio::log.notice "Moderate memory environment (< 2.5 GB). Limiting build parallelism to 2 cores."
+						BUILD_PROCS=2
+						export GOGC=75
+					fi
+
+					export GOMAXPROCS="$BUILD_PROCS"
+					export CGO_ENABLED=0
+
+					BUILD_EXIT=0
+					go build -p "$BUILD_PROCS" -ldflags="-s -w" -o /usr/bin/shielddns-admin . || BUILD_EXIT=$?
+					if [ "$BUILD_EXIT" -ne 0 ]; then
+						bashio::log.warning "Standard go build exited with code ${BUILD_EXIT}. Retrying with GOTOOLCHAIN=auto..."
+						BUILD_EXIT=0
+						GOTOOLCHAIN=auto go build -p "$BUILD_PROCS" -ldflags="-s -w" -o /usr/bin/shielddns-admin . || BUILD_EXIT=$?
+					fi
+
+					if [ "$BUILD_EXIT" -eq 0 ]; then
+						chmod +x /usr/bin/shielddns-admin
+						cp -f /usr/bin/shielddns-admin "$DEV_CACHE_BIN" || true
+						if [ -n "$LATEST_DEV_SHA" ]; then
+							printf '%s\n' "$LATEST_DEV_SHA" >"$DEV_CACHE_SHA_FILE" || true
+						fi
+						bashio::log.info "=================================================="
+						bashio::log.info "   ✅ DEV MODE COMPILE COMPLETE"
+						bashio::log.info "=================================================="
+					else
+						bashio::log.error "❌ Go compilation failed with exit code: ${BUILD_EXIT}!"
+						if [ "$BUILD_EXIT" -eq 137 ]; then
+							bashio::log.error "💥 Exit code 137 indicates Go compiler was KILLED by OOM Killer (Insufficient RAM)!"
+							bashio::log.error "💡 Increase VM / Host memory to at least 2 GB or turn off developer_mode."
+						fi
+						if [ -f "/usr/bin/shielddns-admin" ]; then
+							bashio::log.warning "⚠️  Falling back to previously installed / pre-baked shielddns-admin binary."
+						else
+							bashio::log.error "🚨 No existing shielddns-admin binary found. Cannot proceed."
+							exit "$BUILD_EXIT"
+						fi
+					fi
+				else
+					bashio::log.error "Admin directory not found in downloaded repository!"
+				fi
+			else
+				bashio::log.error "Failed to extract downloaded repository archive!"
+			fi
+		else
+			bashio::log.error "Failed to download repository from GitHub!"
+		fi
+
+		# Clean up
+		cd / || exit 1
+		rm -rf "$DEV_BUILD_DIR"
 	fi
 fi
 
@@ -547,8 +572,15 @@ export INGRESS_PORT=8099
 export DNS_PORT
 export DOT_PORT
 
-# Run integration manager (install/update integration)
+# Run integration manager while bootstrap DNS (if active) is still resolving GitHub API
 /usr/bin/shielddns_integration.sh || true
+
+if [ -n "${BOOTSTRAP_COREDNS_PID:-}" ]; then
+	bashio::log.info "🛑 Stopping temporary bootstrap CoreDNS before starting ShieldDNS backend..."
+	kill "$BOOTSTRAP_COREDNS_PID" 2>/dev/null || true
+	wait "$BOOTSTRAP_COREDNS_PID" 2>/dev/null || true
+	rm -f /tmp/Corefile.bootstrap
+fi
 
 # Start the unified ShieldDNS Admin backend
 # It will listen on:

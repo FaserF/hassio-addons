@@ -1175,7 +1175,7 @@ jobs:
             echo "VERSION=$VERSION"
           } >> "$GITHUB_ENV"
 
-          # Extract build_from from build.yaml (legacy format) if file exists
+          # Extract build_from from build.yaml (legacy format) or Dockerfile ARG BUILD_FROM
           BUILD_FROM_AMD64=""
           BUILD_FROM_AARCH64=""
           if [ -f "${{ matrix.App }}/build.yaml" ]; then
@@ -1194,6 +1194,13 @@ jobs:
             if [ "$BUILD_FROM_AARCH64" == "null" ]; then
               BUILD_FROM_AARCH64=""
             fi
+          fi
+          DOCKERFILE_BUILD_FROM=$(grep -E '^ARG[[:space:]]+BUILD_FROM=' "${{ matrix.App }}/Dockerfile" | head -n 1 | cut -d'=' -f2- | tr -d '"' | tr -d "'" | xargs || echo "")
+          if [ -z "$BUILD_FROM_AMD64" ] && [ -n "$DOCKERFILE_BUILD_FROM" ]; then
+            BUILD_FROM_AMD64="$DOCKERFILE_BUILD_FROM"
+          fi
+          if [ -z "$BUILD_FROM_AARCH64" ] && [ -n "$DOCKERFILE_BUILD_FROM" ]; then
+            BUILD_FROM_AARCH64="$DOCKERFILE_BUILD_FROM"
           fi
 
           BUILD_DESCRIPTION=$(yq -r '.description' "${{ matrix.App }}/config.yaml" 2>/dev/null || echo "")

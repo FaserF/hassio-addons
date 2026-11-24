@@ -9,13 +9,7 @@ ARG TARGETARCH
 ARG COREDNS_VERSION="1.15.0"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="2.5.16"
-ENV APP_NAME="ShieldDNS"
-ENV APP_SLUG="shielddns"
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
-ENV APP_UNSUPPORTED="false"
-
-# App metadata (injected by CI)
 ENV APP_VERSION="2.5.20"
 ENV APP_NAME="ShieldDNS"
 ENV APP_SLUG="shielddns"
@@ -53,7 +47,7 @@ FROM ${BUILD_FROM}
 ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # Setup directories
-RUN mkdir -p /etc/services.d/shielddns /data
+RUN mkdir -p /etc/s6-overlay/s6-rc.d/shielddns /data
 
 # Copy pre-compiled binaries from build stages
 COPY --from=binary /coredns /usr/bin/coredns
@@ -85,9 +79,10 @@ RUN \
 COPY rootfs /
 RUN chmod a+x /usr/bin/shielddns_integration.sh
 
-# Copy Addon run script to S6 services directory
-COPY run.sh /etc/services.d/shielddns/run
-RUN dos2unix /etc/services.d/shielddns/run && chmod +x /etc/services.d/shielddns/run
+# Copy Addon run script to S6-rc service directory
+COPY run.sh /etc/s6-overlay/s6-rc.d/shielddns/run
+RUN find /etc/s6-overlay -type f -exec dos2unix {} + \
+    && chmod +x /etc/s6-overlay/s6-rc.d/shielddns/run
 
 # Healthcheck
 HEALTHCHECK --interval=15s --timeout=5s --retries=5 --start-period=300s \

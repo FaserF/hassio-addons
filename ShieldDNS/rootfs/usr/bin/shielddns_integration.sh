@@ -10,7 +10,16 @@
 
 # Constants
 DOMAIN="shielddns"
-INTEGRATION_PATH="/config/custom_components/$DOMAIN"
+if [ -d "/homeassistant" ] && { [ -f "/homeassistant/configuration.yaml" ] || [ -d "/homeassistant/custom_components" ]; }; then
+	HA_CONFIG_DIR="/homeassistant"
+elif [ -d "/config" ] && { [ -f "/config/configuration.yaml" ] || [ -d "/config/custom_components" ]; }; then
+	HA_CONFIG_DIR="/config"
+elif [ -d "/homeassistant" ]; then
+	HA_CONFIG_DIR="/homeassistant"
+else
+	HA_CONFIG_DIR="/config"
+fi
+INTEGRATION_PATH="${HA_CONFIG_DIR}/custom_components/$DOMAIN"
 
 bashio::log.info "Checking ShieldDNS integration..."
 
@@ -100,7 +109,9 @@ if [ -n "$GITHUB_TOKEN" ]; then
 fi
 rel_code=$(curl "${GH_CURL_ARGS[@]}" "https://api.github.com/repos/FaserF/ha-shielddns/releases" 2>/dev/null) || true
 rm -f /tmp/gh_int_token_header
-rel_code="${rel_code:-000}"
+rel_code="${rel_code//[!0-9]/}"
+[ "${#rel_code}" -gt 3 ] && rel_code="${rel_code: -3}"
+[[ "$rel_code" =~ ^[0-9]{3}$ ]] || rel_code="000"
 
 if [ "$rel_code" = "200" ] && [ -s /tmp/shielddns_releases.json ]; then
 	RELEASES_JSON=$(cat /tmp/shielddns_releases.json)
@@ -151,7 +162,9 @@ if [ "$UPDATE_NEEDED" = "true" ]; then
 	if [ -n "$TARGET_TAG" ]; then
 		ZIP_URL="https://github.com/FaserF/ha-shielddns/releases/download/${TARGET_TAG}/shielddns.zip"
 		dl_code=$(curl -L -s --connect-timeout 10 --max-time 60 -w "%{http_code}" -o "/tmp/shielddns.zip" "$ZIP_URL" 2>/dev/null) || true
-		dl_code="${dl_code:-000}"
+		dl_code="${dl_code//[!0-9]/}"
+		[ "${#dl_code}" -gt 3 ] && dl_code="${dl_code: -3}"
+		[[ "$dl_code" =~ ^[0-9]{3}$ ]] || dl_code="000"
 	fi
 	if [ "$dl_code" != "200" ] || [ ! -s "/tmp/shielddns.zip" ]; then
 		if [ -n "$TARGET_TAG" ]; then
@@ -179,7 +192,7 @@ if [ "$UPDATE_NEEDED" = "true" ]; then
 
 			if [ -n "$SRC_DIR" ] && [ -f "$SRC_DIR/manifest.json" ]; then
 				rm -rf "$INTEGRATION_PATH"
-				mkdir -p "/config/custom_components"
+				mkdir -p "${HA_CONFIG_DIR}/custom_components"
 				cp -rf "$SRC_DIR" "$INTEGRATION_PATH"
 				bashio::log.green "ShieldDNS integration successfully updated to $TARGET_TAG."
 				bashio::log.info "Please restart Home Assistant to apply changes."
