@@ -29,7 +29,7 @@ jobs:
         uses: actions/create-github-app-token@v3
         continue-on-error: true
         with:
-          app-id: ${{ env.BOT_APP_ID }}
+          client-id: ${{ env.BOT_APP_ID }}
           private-key: ${{ env.BOT_PRIVATE_KEY }}
 
       - name: ⤵️ Check out code
