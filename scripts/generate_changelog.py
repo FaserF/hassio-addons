@@ -120,9 +120,7 @@ def get_norm_key(msg: str) -> str:
     return n.strip()
 
 
-def get_formatted_item(
-    display: str, hashes: list, repo: str, commit_authors: dict
-) -> str:
+def get_formatted_item(display: str, hashes: list, repo: str, commit_authors: dict) -> str:
     if hashes:
         links = []
         attributions = []
@@ -170,9 +168,7 @@ def main():
         git_args = ["git", "log", "--pretty=format:%h %an || %s", "--max-count=2000"]
 
     try:
-        raw_output = subprocess.check_output(
-            git_args, stderr=subprocess.DEVNULL
-        ).decode("utf-8", errors="ignore")
+        raw_output = subprocess.check_output(git_args, stderr=subprocess.DEVNULL).decode("utf-8", errors="ignore")
     except subprocess.CalledProcessError:
         raw_output = ""
 
@@ -219,15 +215,11 @@ def main():
         display = msg
         is_break = False
 
-        conv_match = re.match(
-            r"^([A-Za-z][A-Za-z0-9_-]*)(\([^)]*\))?(!)?:\s*(.+)$", msg
-        )
+        conv_match = re.match(r"^([A-Za-z][A-Za-z0-9_-]*)(\([^)]*\))?(!)?:\s*(.+)$", msg)
         if conv_match:
             raw_type = conv_match.group(1).lower()
             raw_scope = conv_match.group(2)
-            raw_scope = (
-                re.sub(r"[()]", "", raw_scope).lower().strip() if raw_scope else ""
-            )
+            raw_scope = re.sub(r"[()]", "", raw_scope).lower().strip() if raw_scope else ""
             is_break = bool(conv_match.group(3))
             desc = conv_match.group(4).strip()
 
@@ -241,10 +233,9 @@ def main():
         else:
             display = msg[0].upper() + msg[1:] if msg else msg
             msg_lower = msg.lower()
-            if any(
-                w in msg_lower
-                for w in ["general fix", "small fix", "bug fix", "fixes", "fixed"]
-            ) or re.search(r"\bfix(es|ed)?\b", msg_lower):
+            if any(w in msg_lower for w in ["general fix", "small fix", "bug fix", "fixes", "fixed"]) or re.search(
+                r"\bfix(es|ed)?\b", msg_lower
+            ):
                 bucket = "fix"
             elif any(
                 w in msg_lower
@@ -283,9 +274,7 @@ def main():
                 ]
             ) or msg_lower.startswith(("add ", "adds ", "expose ", "exposed ")):
                 bucket = "feat"
-            elif any(
-                w in msg_lower for w in ["security", "vulnerability", "cve", "auth"]
-            ):
+            elif any(w in msg_lower for w in ["security", "vulnerability", "cve", "auth"]):
                 bucket = "security"
             elif any(w in msg_lower for w in ["perf", "speed", "faster", "optim"]):
                 bucket = "perf"
@@ -294,9 +283,7 @@ def main():
                 or "cleanup" in msg_lower
                 or "clean up" in msg_lower
                 or "improve" in msg_lower
-                or msg_lower.startswith(
-                    ("filter ", "use ", "remove ", "avoid ", "robust ")
-                )
+                or msg_lower.startswith(("filter ", "use ", "remove ", "avoid ", "robust "))
             ):
                 bucket = "refactor"
             elif any(w in msg_lower for w in ["doc", "readme", "wiki", "guide"]):
@@ -352,14 +339,10 @@ def main():
     if buckets["breaking"]:
         has_any = True
         out.append("> [!CAUTION]")
-        out.append(
-            "> **This release contains breaking changes. Please review before updating.**"
-        )
+        out.append("> **This release contains breaking changes. Please review before updating.**")
         out.append(">")
         for item in buckets["breaking"]:
-            formatted = get_formatted_item(
-                item["display"], item["hashes"], repo, commit_authors
-            )
+            formatted = get_formatted_item(item["display"], item["hashes"], repo, commit_authors)
             out.append(f"> - {formatted}")
         out.append("")
 
@@ -378,9 +361,7 @@ def main():
 
         if collapse:
             for i in range(MAX_PER_SECTION):
-                formatted = get_formatted_item(
-                    bucket[i]["display"], bucket[i]["hashes"], repo, commit_authors
-                )
+                formatted = get_formatted_item(bucket[i]["display"], bucket[i]["hashes"], repo, commit_authors)
                 out.append(f"- {formatted}")
             remaining = len(bucket) - MAX_PER_SECTION
             out.append("")
@@ -388,34 +369,26 @@ def main():
             out.append(f"<summary>Show {remaining} more changes…</summary>")
             out.append("")
             for i in range(MAX_PER_SECTION, len(bucket)):
-                formatted = get_formatted_item(
-                    bucket[i]["display"], bucket[i]["hashes"], repo, commit_authors
-                )
+                formatted = get_formatted_item(bucket[i]["display"], bucket[i]["hashes"], repo, commit_authors)
                 out.append(f"- {formatted}")
             out.append("")
             out.append("</details>")
         else:
             for item in bucket:
-                formatted = get_formatted_item(
-                    item["display"], item["hashes"], repo, commit_authors
-                )
+                formatted = get_formatted_item(item["display"], item["hashes"], repo, commit_authors)
                 out.append(f"- {formatted}")
         out.append("")
 
     if not has_any:
         out.append("> *No categorised changes found in this release.*")
-        out.append(
-            "> Most commits were maintenance, dependency updates, or automated changes."
-        )
+        out.append("> Most commits were maintenance, dependency updates, or automated changes.")
         out.append("")
 
     range_str = f"{from_tag}..HEAD" if from_tag else "all history"
     out.append("---")
 
     if total_raw > 0:
-        out.append(
-            f"*{filtered_count} significant changes from {total_raw} total commits since `{from_tag}`.*"
-        )
+        out.append(f"*{filtered_count} significant changes from {total_raw} total commits since `{from_tag}`.*")
     else:
         out.append(f"*Changelog generated from `{range_str}`.*")
 
