@@ -1,0 +1,21 @@
+# Pull Request Labeler configuration
+enhancement:
+  - head-branch: ['^feat/', '^feature/']
+
+bug:
+  - head-branch: ['^fix/', '^bugfix/']
+
+dependencies:
+  - head-branch: ['^renovate/', '^deps/']
+
+documentation:
+  - changed-files:
+    - any-glob-to-any-file: ['**/*.md', 'docs/**']
+
+ci:
+  - changed-files:
+    - any-glob-to-any-file: ['.github/**', 'scripts/**']
+
+tests:
+  - changed-files:
+    - any-glob-to-any-file: ['tests/**', '**/*test*']
