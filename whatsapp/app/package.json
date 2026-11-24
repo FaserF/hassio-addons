@@ -24,7 +24,7 @@
     "bonjour-service": "^1.4.1",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
-    "jimp": "^1.6.1",
+    "jimp": "^2.0.0",
     "link-preview-js": "6.0.0",
     "lru-cache": "^11.5.1",
     "mime-types": "^3.0.2",
