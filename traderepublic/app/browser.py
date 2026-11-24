@@ -223,12 +223,15 @@ class TradeRepublicBrowserService:
         self.last_logout_time = None
         self.last_logout_reason = None
         self.last_session_duration = None
-        self.status_message = (
-            "Everything is connected and running normally. Re-login is only required if your session expires or if you experience connection issues."
-        )
+        self.status_message = "Everything is connected and running normally. Re-login is only required if your session expires or if you experience connection issues."
         self.last_error = None
         self.session_manager.save(
-            clean_tok, self.phone_number, login_time=self.last_login_time, logout_time=None, logout_reason=None, duration_seconds=None
+            clean_tok,
+            self.phone_number,
+            login_time=self.last_login_time,
+            logout_time=None,
+            logout_reason=None,
+            duration_seconds=None,
         )
         await self.auth_helper.inject_session_cookies(clean_tok)
         if notify_keeper:
@@ -467,7 +470,11 @@ class TradeRepublicBrowserService:
                         continue
                     if await verify_tr_token(token):
                         await self._finalize_login(token, "submit_2fa")
-                        return {"success": True, "session_token": token, "message": "Login successful! Session token active."}
+                        return {
+                            "success": True,
+                            "session_token": token,
+                            "message": "Login successful! Session token active.",
+                        }
                     invalid_tokens.add(token)
 
                 if clean_code:
@@ -535,14 +542,18 @@ class TradeRepublicBrowserService:
                     continue
 
                 token_age = time.time() - (self.last_token_update_time or self.last_login_time or 0)
-                needs_refresh = ((not self._ws_keeper.is_authenticated) and self.last_login_time is not None) or (token_age > 1800)
+                needs_refresh = ((not self._ws_keeper.is_authenticated) and self.last_login_time is not None) or (
+                    token_age > 1800
+                )
 
                 if needs_refresh and not self._lock.locked():
                     async with self._lock:
                         try:
                             _LOGGER.debug("Keepalive: refreshing web session via Chromium (age: %ss)", int(token_age))
                             if new_token := await self._navigate_and_extract_token():
-                                _LOGGER.info("Keepalive: renewed session token from Chromium (length: %s)", len(new_token))
+                                _LOGGER.info(
+                                    "Keepalive: renewed session token from Chromium (length: %s)", len(new_token)
+                                )
                                 await self.save_session(new_token, notify_keeper=True)
                             else:
                                 self.last_token_update_time = time.time()

@@ -143,7 +143,9 @@ async def register_supervisor_discovery() -> None:
                 ) as resp,
             ):
                 if resp.status in (200, 201):
-                    _LOGGER.info("Successfully registered Trade Republic discovery with Supervisor (host=%s)", host_name)
+                    _LOGGER.info(
+                        "Successfully registered Trade Republic discovery with Supervisor (host=%s)", host_name
+                    )
                     break
                 resp_txt = await resp.text()
                 _LOGGER.debug("Supervisor discovery response (attempt %s) [%s]: %s", attempt + 1, resp.status, resp_txt)
@@ -269,7 +271,9 @@ async def get_index(request: Request):
 
     last_data_time = getattr(browser_service._ws_keeper, "last_data_update_time", None)
     last_data_sec: Optional[int] = int(now - last_data_time) if last_data_time else None
-    last_login_sec: Optional[int] = int(now - browser_service.last_login_time) if browser_service.last_login_time else None
+    last_login_sec: Optional[int] = (
+        int(now - browser_service.last_login_time) if browser_service.last_login_time else None
+    )
     last_token_sec: Optional[int] = (
         int(now - browser_service.last_token_update_time) if browser_service.last_token_update_time else None
     )

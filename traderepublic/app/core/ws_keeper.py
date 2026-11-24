@@ -52,15 +52,26 @@ def _parse_price(val: Any) -> Optional[float]:
 
 def _default_latest_data() -> dict[str, Any]:
     return {
-        "net_value": 0.0, "available_cash": 0.0, "invested_capital": 0.0,
-        "invested_stocks_etfs": 0.0, "invested_crypto": 0.0,
-        "value_stocks_etfs": 0.0, "value_crypto": 0.0,
-        "total_profit": 0.0, "total_profit_percent": 0.0,
-        "exemption_total": 1000.00, "exemption_used": 0.00, "savings_plans_count": 0,
-        "holdings": [], "card_status": "INACTIVE",
-        "card_saveback_earned": 0.0, "card_saveback_limit": 0.0,
-        "recent_transactions": [], "interest_rate": 2.25,
-        "accrued_interest_daily": 0.0, "accrued_interest_monthly_est": 0.0,
+        "net_value": 0.0,
+        "available_cash": 0.0,
+        "invested_capital": 0.0,
+        "invested_stocks_etfs": 0.0,
+        "invested_crypto": 0.0,
+        "value_stocks_etfs": 0.0,
+        "value_crypto": 0.0,
+        "total_profit": 0.0,
+        "total_profit_percent": 0.0,
+        "exemption_total": 1000.00,
+        "exemption_used": 0.00,
+        "savings_plans_count": 0,
+        "holdings": [],
+        "card_status": "INACTIVE",
+        "card_saveback_earned": 0.0,
+        "card_saveback_limit": 0.0,
+        "recent_transactions": [],
+        "interest_rate": 2.25,
+        "accrued_interest_daily": 0.0,
+        "accrued_interest_monthly_est": 0.0,
     }
 
 
@@ -206,7 +217,11 @@ class TRWebSocketKeeper:
         if self._on_auth_lost_callback and callable(self._on_auth_lost_callback):
             try:
                 sig = inspect.signature(self._on_auth_lost_callback)
-                kinds = (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.VAR_POSITIONAL)
+                kinds = (
+                    inspect.Parameter.POSITIONAL_ONLY,
+                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    inspect.Parameter.VAR_POSITIONAL,
+                )
                 accepts_arg = any(p.kind in kinds for p in sig.parameters.values())
                 res = self._on_auth_lost_callback(reason) if accepts_arg else self._on_auth_lost_callback()
                 if inspect.isawaitable(res):
@@ -247,8 +262,12 @@ class TRWebSocketKeeper:
             }
             try:
                 self._ws = await websockets.connect(
-                    _TR_WS_URL, ssl=ssl.create_default_context(), additional_headers=headers,
-                    ping_interval=20, ping_timeout=20, close_timeout=5,
+                    _TR_WS_URL,
+                    ssl=ssl.create_default_context(),
+                    additional_headers=headers,
+                    ping_interval=20,
+                    ping_timeout=20,
+                    close_timeout=5,
                 )
             except Exception as first_exc:
                 if _is_http_401(first_exc):
@@ -279,8 +298,10 @@ class TRWebSocketKeeper:
                     is_auth_err = resp_str.startswith(f"{26} E") or any(
                         k in resp_lower for k in ("401", "error", "unauth", "invalid")
                     )
-                    is_ok = bool(resp) and not is_auth_err and (
-                        "connected" in resp_lower or "success" in resp_lower or resp_str.startswith("26 A")
+                    is_ok = (
+                        bool(resp)
+                        and not is_auth_err
+                        and ("connected" in resp_lower or "success" in resp_lower or resp_str.startswith("26 A"))
                     )
                     if not is_ok:
                         await self._close_ws()
@@ -299,7 +320,11 @@ class TRWebSocketKeeper:
                 self._sub_map, self._subscribed_categories = {}, {}
                 self._ticker_subs, self._instrument_subs = {}, {}
                 self._ticker_fallbacks, self._subscribed_isins, self._portfolio_payload = {}, set(), {}
-                effective = set(self.active_categories) | {"portfolio", "cash"} | ({"timeline"} if self.webhook.enabled else set())
+                effective = (
+                    set(self.active_categories)
+                    | {"portfolio", "cash"}
+                    | ({"timeline"} if self.webhook.enabled else set())
+                )
                 self.active_categories = effective
                 for cat in effective:
                     if cat in _CAT_TYPE_MAP:
@@ -337,7 +362,9 @@ class TRWebSocketKeeper:
         await self._ws.send(f'sub {sub_id} {{"type":"instrument","id":"{isin}"}}')
         _LOGGER.debug("WS Keeper: querying instrument metadata for %s (sub %s)", isin, sub_id)
 
-    async def _subscribe_ticker(self, pos: dict[str, Any], exchange: str, fallbacks: Optional[list[str]] = None) -> None:
+    async def _subscribe_ticker(
+        self, pos: dict[str, Any], exchange: str, fallbacks: Optional[list[str]] = None
+    ) -> None:
         isin = str(pos.get("isin", ""))
         if not isin or not self._ws:
             return
@@ -359,7 +386,9 @@ class TRWebSocketKeeper:
 
         for pos in positions:
             isin = pos.get("isin")
-            is_crypto = str(pos.get("instrumentType", "")).lower() == "crypto" or bool(isin and str(isin).startswith("XF"))
+            is_crypto = str(pos.get("instrumentType", "")).lower() == "crypto" or bool(
+                isin and str(isin).startswith("XF")
+            )
             try:
                 net_size, average_buy_in = float(pos.get("netSize", 0.0)), float(pos.get("averageBuyIn", 0.0))
             except (ValueError, TypeError):
@@ -373,7 +402,12 @@ class TRWebSocketKeeper:
                 invested_stocks_etfs += pos_invested
 
             raw_net = pos.get("netValue") or pos.get("value") or pos.get("marketValue") or pos.get("currentValue")
-            raw_pnl = pos.get("unrealisedProfit") or pos.get("unrealisedPnl") or pos.get("unrealizedProfit") or pos.get("profit")
+            raw_pnl = (
+                pos.get("unrealisedProfit")
+                or pos.get("unrealisedPnl")
+                or pos.get("unrealizedProfit")
+                or pos.get("profit")
+            )
             if raw_net is not None:
                 pos_value = float(raw_net)
             elif raw_pnl is not None:
@@ -386,18 +420,30 @@ class TRWebSocketKeeper:
                 value_crypto += pos_value
             else:
                 value_stocks_etfs += pos_value
-            holdings.append({"isin": isin, "name": pos.get("name", isin), "value": pos_value, "type": "crypto" if is_crypto else "stock_etf"})
+            holdings.append(
+                {
+                    "isin": isin,
+                    "name": pos.get("name", isin),
+                    "value": pos_value,
+                    "type": "crypto" if is_crypto else "stock_etf",
+                }
+            )
 
         available_cash = float(self.latest_data.get("available_cash", 0.0))
         total_profit = securities_value - invested_capital
-        self.latest_data.update({
-            "invested_capital": invested_capital, "invested_stocks_etfs": invested_stocks_etfs,
-            "invested_crypto": invested_crypto, "value_stocks_etfs": value_stocks_etfs,
-            "value_crypto": value_crypto, "net_value": securities_value + available_cash,
-            "total_profit": total_profit,
-            "total_profit_percent": (total_profit / invested_capital * 100) if invested_capital > 0 else 0.0,
-            "holdings": holdings,
-        })
+        self.latest_data.update(
+            {
+                "invested_capital": invested_capital,
+                "invested_stocks_etfs": invested_stocks_etfs,
+                "invested_crypto": invested_crypto,
+                "value_stocks_etfs": value_stocks_etfs,
+                "value_crypto": value_crypto,
+                "net_value": securities_value + available_cash,
+                "total_profit": total_profit,
+                "total_profit_percent": (total_profit / invested_capital * 100) if invested_capital > 0 else 0.0,
+                "holdings": holdings,
+            }
+        )
         active_rate = float(self.latest_data.get("api_interest_rate") or 2.25)
         rate_factor = active_rate / 100.0 if active_rate > 1.0 else active_rate
         self.latest_data["interest_rate"] = round(rate_factor * 100.0, 4)
@@ -413,7 +459,9 @@ class TRWebSocketKeeper:
             for ex_obj in payload.get("exchanges") or []:
                 if isinstance(ex_obj, str) and ex_obj:
                     extracted.append(ex_obj)
-                elif isinstance(ex_obj, dict) and (ex_id := ex_obj.get("slug") or ex_obj.get("id") or ex_obj.get("exchangeId")):
+                elif isinstance(ex_obj, dict) and (
+                    ex_id := ex_obj.get("slug") or ex_obj.get("id") or ex_obj.get("exchangeId")
+                ):
                     extracted.append(str(ex_id))
         return list(dict.fromkeys(extracted + self._default_exchanges(pos)))
 
@@ -472,8 +520,17 @@ class TRWebSocketKeeper:
                 self.latest_data["available_cash"] = float(target.get("amount") or target.get("availableCash") or 0.0)
                 for key, field in (
                     ("api_interest_rate", target.get("interestRate") or target.get("rate") or target.get("interest")),
-                    ("exemption_total", target.get("availableTaxExemption") or target.get("taxExemptionTotal") or target.get("taxExemption") or target.get("exemptionTotal")),
-                    ("exemption_used", target.get("usedTaxExemption") or target.get("taxExemptionUsed") or target.get("exemptionUsed")),
+                    (
+                        "exemption_total",
+                        target.get("availableTaxExemption")
+                        or target.get("taxExemptionTotal")
+                        or target.get("taxExemption")
+                        or target.get("exemptionTotal"),
+                    ),
+                    (
+                        "exemption_used",
+                        target.get("usedTaxExemption") or target.get("taxExemptionUsed") or target.get("exemptionUsed"),
+                    ),
                 ):
                     if field is not None:
                         with contextlib.suppress(ValueError, TypeError):
@@ -501,7 +558,11 @@ class TRWebSocketKeeper:
                     "id": str(item.get("id") or f"{item.get('title')}_{item.get('timestamp')}"),
                     "title": item.get("title"),
                     "subtitle": item.get("subtitle"),
-                    "amount": float(amt.get("value") or 0.0) if isinstance(amt := item.get("amount"), dict) else (float(amt) if isinstance(amt, (int, float)) else 0.0),
+                    "amount": (
+                        float(amt.get("value") or 0.0)
+                        if isinstance(amt := item.get("amount"), dict)
+                        else (float(amt) if isinstance(amt, (int, float)) else 0.0)
+                    ),
                     "timestamp": item.get("timestamp"),
                 }
                 for item in items
@@ -521,7 +582,12 @@ class TRWebSocketKeeper:
         elif sub_id in self._ticker_subs:
             pos = self._ticker_subs[sub_id]
             if (isin := pos.get("isin")) and isinstance(payload, dict):
-                if (price := next((p for k in ("last", "bid", "ask", "price") if (p := _parse_price(payload.get(k))) is not None), None)) is not None:
+                if (
+                    price := next(
+                        (p for k in ("last", "bid", "ask", "price") if (p := _parse_price(payload.get(k))) is not None),
+                        None,
+                    )
+                ) is not None:
                     self._prices[isin] = price
                     self._recalculate_portfolio()
                     asyncio.create_task(self.webhook.check_price_threshold(isin, str(pos.get("name") or isin), price))
