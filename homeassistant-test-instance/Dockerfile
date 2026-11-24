@@ -22,6 +22,12 @@ ENV APP_SLUG="ha_test_instance"
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV APP_UNSUPPORTED="false"
 
+# App metadata (injected by CI)
+ENV APP_VERSION="1.0.14"
+ENV APP_NAME="Home Assistant Test Instance"
+ENV APP_SLUG="ha_test_instance"
+ENV APP_UNSUPPORTED="false"
+
 RUN \
     apk update \
     && apk upgrade --no-cache \
