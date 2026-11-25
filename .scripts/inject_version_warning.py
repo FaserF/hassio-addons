@@ -95,53 +95,69 @@ _show_app_banner() {{
     local REPO="$MAINTAINER/hassio-addons"
 
     # Restart Loop Protection (Max 3 consecutive failed starts)
+    # Scope check once per container boot via /run/.boot_loop_lock + owner script
     if [ -z "${{_BOOT_LOOP_CHECKED:-}}" ] && [ -d "/data" ]; then
         export _BOOT_LOOP_CHECKED=1
-        local STATE_FILE="/data/.boot_loop_protection"
-        local LAST_VER=""
-        local FAIL_COUNT=0
-
-        if [ -f "$STATE_FILE" ]; then
-            LAST_VER=$(head -n 1 "$STATE_FILE" 2>/dev/null)
-            FAIL_COUNT=$(sed -n '2p' "$STATE_FILE" 2>/dev/null)
-            FAIL_COUNT="${{FAIL_COUNT//[!0-9]/}}"
-            [ -z "${{FAIL_COUNT:-}}" ] && FAIL_COUNT=0
-        fi
-
-        if [ "${{VERSION:-}}" != "${{LAST_VER:-}}" ]; then
-            FAIL_COUNT=0
-            LAST_VER="${{VERSION:-}}"
-        fi
-
-        FAIL_COUNT=$((FAIL_COUNT + 1))
-
-        if [ "$FAIL_COUNT" -gt 3 ]; then
-            bashio::log.error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            bashio::log.error "🚨 RESTART LOOP DETECTED!"
-            bashio::log.error "⚠️  This App has failed to start 3 times consecutively."
-            bashio::log.error "⚠️  Stopping App to prevent an endless restart loop."
-            bashio::log.error "💡 Update the App or fix configuration issues to try again."
-            bashio::log.error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-            printf "%s\n0\n" "$VERSION" > "$STATE_FILE" 2>/dev/null
-
-            if type bashio::app.stop >/dev/null 2>&1; then
-                bashio::app.stop 2>/dev/null || true
-            elif type bashio::addon.stop >/dev/null 2>&1; then
-                bashio::addon.stop 2>/dev/null || true
+        local _BOOT_OWNER_FILE="/run/.boot_loop_owner"
+        local _SELF_ID="${{0:-banner}}"
+        local _SHOULD_CHECK_LOOP=0
+        if [ -d "/run" ]; then
+            if mkdir /run/.boot_loop_lock 2>/dev/null; then
+                printf '%s\n' "$_SELF_ID" > "$_BOOT_OWNER_FILE" 2>/dev/null || true
+                _SHOULD_CHECK_LOOP=1
+            elif [ -f "$_BOOT_OWNER_FILE" ] && [ "$(cat "$_BOOT_OWNER_FILE" 2>/dev/null)" = "$_SELF_ID" ]; then
+                _SHOULD_CHECK_LOOP=1
             fi
-            sleep 3600
-            exit 0
+        else
+            _SHOULD_CHECK_LOOP=1
         fi
+        if [ "$_SHOULD_CHECK_LOOP" -eq 1 ]; then
+            local STATE_FILE="/data/.boot_loop_protection"
+            local LAST_VER=""
+            local FAIL_COUNT=0
 
-        printf "%s\n%s\n" "$VERSION" "$FAIL_COUNT" > "$STATE_FILE" 2>/dev/null
-
-        (
-            sleep 120
-            if [ -d "/data" ]; then
-                printf "%s\n0\n" "$VERSION" > "/data/.boot_loop_protection" 2>/dev/null
+            if [ -f "$STATE_FILE" ]; then
+                LAST_VER=$(head -n 1 "$STATE_FILE" 2>/dev/null)
+                FAIL_COUNT=$(sed -n '2p' "$STATE_FILE" 2>/dev/null)
+                FAIL_COUNT="${{FAIL_COUNT//[!0-9]/}}"
+                [ -z "${{FAIL_COUNT:-}}" ] && FAIL_COUNT=0
             fi
-        ) &
+
+            if [ "${{VERSION:-}}" != "${{LAST_VER:-}}" ]; then
+                FAIL_COUNT=0
+                LAST_VER="${{VERSION:-}}"
+            fi
+
+            FAIL_COUNT=$((FAIL_COUNT + 1))
+
+            if [ "$FAIL_COUNT" -gt 3 ]; then
+                bashio::log.error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                bashio::log.error "🚨 RESTART LOOP DETECTED!"
+                bashio::log.error "⚠️  This App has failed to start 3 times consecutively."
+                bashio::log.error "⚠️  Stopping App to prevent an endless restart loop."
+                bashio::log.error "💡 Update the App or fix configuration issues to try again."
+                bashio::log.error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+                printf "%s\n0\n" "$VERSION" > "$STATE_FILE" 2>/dev/null
+
+                if type bashio::app.stop >/dev/null 2>&1; then
+                    bashio::app.stop 2>/dev/null || true
+                elif type bashio::addon.stop >/dev/null 2>&1; then
+                    bashio::addon.stop 2>/dev/null || true
+                fi
+                sleep 3600
+                exit 0
+            fi
+
+            printf "%s\n%s\n" "$VERSION" "$FAIL_COUNT" > "$STATE_FILE" 2>/dev/null
+
+            (
+                sleep 120
+                if [ -d "/data" ]; then
+                    printf "%s\n0\n" "$VERSION" > "/data/.boot_loop_protection" 2>/dev/null
+                fi
+            ) &
+        fi
     fi
 
     # Extract base version and commit from dev versions (1.2.3-dev+abc123)
@@ -363,21 +379,24 @@ def find_run_script(addon_path: str) -> str | None:
         if os.path.exists(candidate):
             return candidate
 
-    # Search for any run file in services.d
-    services_dir = os.path.join(addon_path, "rootfs", "etc", "services.d")
-    if os.path.isdir(services_dir):
-        for service in os.listdir(services_dir):
-            run_path = os.path.join(services_dir, service, "run")
+    # Search run scripts deterministically, preferring one that already carries banner markers
+    for base_dir in (
+        os.path.join(addon_path, "rootfs", "etc", "services.d"),
+        os.path.join(addon_path, "rootfs", "etc", "s6-overlay", "s6-rc.d"),
+    ):
+        if not os.path.isdir(base_dir):
+            continue
+        run_paths = []
+        for service in sorted(os.listdir(base_dir)):
+            run_path = os.path.join(base_dir, service, "run")
             if os.path.exists(run_path):
-                return run_path
-
-    # Search for any run file in s6-rc.d
-    s6rc_dir = os.path.join(addon_path, "rootfs", "etc", "s6-overlay", "s6-rc.d")
-    if os.path.isdir(s6rc_dir):
-        for service in os.listdir(s6rc_dir):
-            run_path = os.path.join(s6rc_dir, service, "run")
-            if os.path.exists(run_path):
-                return run_path
+                run_paths.append(run_path)
+        for run_path in run_paths:
+            with open(run_path, encoding="utf-8", errors="ignore") as f:
+                if "<App_BANNER_INJECTION>" in f.read():
+                    return run_path
+        if run_paths:
+            return run_paths[0]
 
     return None
 

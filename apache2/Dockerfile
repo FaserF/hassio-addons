@@ -9,13 +9,13 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 
 # Set shell with pipefail for Alpine (busybox/ash)
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
 # App metadata (injected by CI)
 ENV APP_VERSION="3.4.14"
 ENV APP_NAME="Apache2"
 ENV APP_SLUG="apache2"
 ENV APP_UNSUPPORTED="false"
-ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
 WORKDIR /tmp
 
@@ -28,72 +28,69 @@ ARG APACHE2_VERSION="2.4.71-r0"
 # Excluded due to low usage but high increase of image size: libxml2-dev, php85-dev, php85-pecl-xdebug, mosquitto-dev
 # hadolint ignore=DL3018,DL3047,DL4006,DL3003
 RUN mkdir /run/apache2 \
-    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
-    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
-    && echo "@edge http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && echo "@edgemain http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories \
+    && sed -i -E 's/(libcrypto3|libssl3)=.*/\1/' /etc/apk/world \
     && apk add --no-cache musl musl-dev \
     && apk upgrade --no-cache --available \
-    && apk add --no-cache libcrypto3 libssl3 \
-    apache2${APACHE2_VERSION:+=$APACHE2_VERSION} \
+    && apk add --no-cache \
+    "apache2${APACHE2_VERSION:+=$APACHE2_VERSION}" \
     curl \
     jq \
-    icu-data-en@edgemain \
-    icu-libs@edgemain \
+    icu-data-en \
+    icu-libs \
     && PHP_V=$(echo "${PHP_VERSION}" | cut -d. -f1-2 | tr -d '.') \
     && apk add --no-cache \
-    "php${PHP_V}-common@edge" \
-    "php${PHP_V}-openssl@edge" \
-    "php${PHP_V}-apache2@edge" \
+    "php${PHP_V}-common" \
+    "php${PHP_V}-openssl" \
+    "php${PHP_V}-apache2" \
     apache2-utils \
     apache2-mod-wsgi \
     apache2-ssl \
     apache2-proxy \
-    "php${PHP_V}@edge" \
-    "php${PHP_V}-fpm@edge" \
-    "php${PHP_V}-mysqli@edge" \
-    "php${PHP_V}-mysqlnd@edge" \
-    "php${PHP_V}-gd@edge" \
-    "php${PHP_V}-intl@edge" \
-    "php${PHP_V}-curl@edge" \
-    "php${PHP_V}-phar@edge" \
-    "php${PHP_V}-mbstring@edge" \
-    "php${PHP_V}-zip@edge" \
-    "php${PHP_V}-xml@edge" \
-    "php${PHP_V}-iconv@edge" \
-    "php${PHP_V}-pdo@edge" \
-    "php${PHP_V}-pdo_mysql@edge" \
-    "php${PHP_V}-pdo_sqlite@edge" \
-    "php${PHP_V}-session@edge" \
-    "php${PHP_V}-ctype@edge" \
-    "php${PHP_V}-simplexml@edge" \
-    "php${PHP_V}-dom@edge" \
-    "php${PHP_V}-tokenizer@edge" \
-    "php${PHP_V}-xmlreader@edge" \
-    "php${PHP_V}-xmlwriter@edge" \
-    "php${PHP_V}-fileinfo@edge" \
-    "php${PHP_V}-soap@edge" \
-    "php${PHP_V}-gettext@edge" \
-    "php${PHP_V}-bz2@edge" \
-    "php${PHP_V}-shmop@edge" \
-    "php${PHP_V}-posix@edge" \
-    "php${PHP_V}-ldap@edge" \
-    "php${PHP_V}-pecl-redis@edge" \
-    "php${PHP_V}-pecl-imagick@edge" \
-    "php${PHP_V}-sqlite3@edge" \
-    "php${PHP_V}-bcmath@edge" \
-    "php${PHP_V}-calendar@edge" \
-    "php${PHP_V}-exif@edge" \
-    "php${PHP_V}-ftp@edge" \
-    "php${PHP_V}-sysvsem@edge" \
-    "php${PHP_V}-sysvshm@edge" \
-    "php${PHP_V}-sysvmsg@edge" \
-    "php${PHP_V}-pcntl@edge" \
-    "php${PHP_V}-sodium@edge" \
-    "php${PHP_V}-cgi@edge" \
-    "php${PHP_V}-sockets@edge" \
-    "php${PHP_V}-pecl-imap@edge" \
-    "php${PHP_V}-pecl-apcu@edge" \
+    "php${PHP_V}" \
+    "php${PHP_V}-fpm" \
+    "php${PHP_V}-mysqli" \
+    "php${PHP_V}-mysqlnd" \
+    "php${PHP_V}-gd" \
+    "php${PHP_V}-intl" \
+    "php${PHP_V}-curl" \
+    "php${PHP_V}-phar" \
+    "php${PHP_V}-mbstring" \
+    "php${PHP_V}-zip" \
+    "php${PHP_V}-xml" \
+    "php${PHP_V}-iconv" \
+    "php${PHP_V}-pdo" \
+    "php${PHP_V}-pdo_mysql" \
+    "php${PHP_V}-pdo_sqlite" \
+    "php${PHP_V}-session" \
+    "php${PHP_V}-ctype" \
+    "php${PHP_V}-simplexml" \
+    "php${PHP_V}-dom" \
+    "php${PHP_V}-tokenizer" \
+    "php${PHP_V}-xmlreader" \
+    "php${PHP_V}-xmlwriter" \
+    "php${PHP_V}-fileinfo" \
+    "php${PHP_V}-soap" \
+    "php${PHP_V}-gettext" \
+    "php${PHP_V}-bz2" \
+    "php${PHP_V}-shmop" \
+    "php${PHP_V}-posix" \
+    "php${PHP_V}-ldap" \
+    "php${PHP_V}-pecl-redis" \
+    "php${PHP_V}-pecl-imagick" \
+    "php${PHP_V}-sqlite3" \
+    "php${PHP_V}-bcmath" \
+    "php${PHP_V}-calendar" \
+    "php${PHP_V}-exif" \
+    "php${PHP_V}-ftp" \
+    "php${PHP_V}-sysvsem" \
+    "php${PHP_V}-sysvshm" \
+    "php${PHP_V}-sysvmsg" \
+    "php${PHP_V}-pcntl" \
+    "php${PHP_V}-sodium" \
+    "php${PHP_V}-cgi" \
+    "php${PHP_V}-sockets" \
+    "php${PHP_V}-pecl-imap" \
+    "php${PHP_V}-pecl-apcu" \
     mosquitto \
     mariadb-client \
     ffmpeg \

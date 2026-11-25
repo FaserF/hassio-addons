@@ -98,6 +98,12 @@ jobs:
             App=$(echo "$App" | xargs)  # trim whitespace
             [ -z "$App" ] && continue
 
+            # Skip CI-excluded Apps (heavy/long-running or require host/privileged protection mode disabled)
+            if [ "$App" = "homeassistant-test-instance" ] || [ "$App" = "sap-abap-cloud-dev" ] || [ "$App" = "netboot-xyz" ]; then
+              echo "⏭️ $App is excluded from Supervisor CI tests - skipping"
+              continue
+            fi
+
             # Skip .unsupported and .dev Apps - they are built locally or dev submodules
             if [[ "$App" == .unsupported/* ]] || [[ "$App" == .unsupported* ]] || [ -f "./.unsupported/$App/config.yaml" ] || [[ "$App" == .dev/* ]] || [[ "$App" == .dev* ]] || [ -f "./.dev/$App/config.yaml" ]; then
               echo "⏭️ $App is unsupported or dev - skipping (built locally or dev submodule)"
@@ -728,27 +734,15 @@ jobs:
               START_EXIT=$?
               set -e # Re-enable exit on error
 
-              # Handle 500 errors and context deadline exceeded as warnings instead of failures
+              # Handle 500 errors and transient CLI HTTP timeouts (app still starts in Supervisor)
               if [ "$START_EXIT" -ne 0 ]; then
                 if echo "$START_OUTPUT" | grep -qE "unexpected server response.*500|500.*unexpected server response|status: 500"; then
-                  echo "⚠️ Start returned 500 error (treating as WARN - likely CI issue)"
+                  echo "⚠️ Start returned 500 error (treating as WARN - verifying via Supervisor state polling)"
                   RESULTS="$RESULTS\n⚠️ $App: WARN (Start 500)"
                   START_EXIT=0
-                elif echo "$START_OUTPUT" | grep -qE "context deadline exceeded|Client\.Timeout"; then
-                  echo "⚠️ Start timed out (context deadline exceeded) - treating as WARN"
-                  # The addon may still be starting in the background, give it time
-                  sleep 30
-                  # Check if it actually started despite the timeout
-                  if docker exec ha-supervisor-test docker ps --format "{{.Names}}" 2>/dev/null | grep -q "addon_${SLUG}"; then
-                    echo "✅ App container is actually running despite timeout"
-                    RESULTS="$RESULTS\n⚠️ $App: WARN (Start timeout but running)"
-                    START_EXIT=0
-                  else
-                    echo "⚠️ App did not start after timeout grace period"
-                    docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -50 || true
-                    RESULTS="$RESULTS\n⚠️ $App: WARN (Start timeout)"
-                    START_EXIT=0
-                  fi
+                elif echo "$START_OUTPUT" | grep -qE "context deadline exceeded|Client\.Timeout|i/o timeout|connection reset by peer"; then
+                  echo "⚠️ Start CLI request timed out (Supervisor continues starting app in background): $START_OUTPUT"
+                  START_EXIT=0
                 else
                   echo "❌ Start failed: $START_OUTPUT"
                   docker exec ha-supervisor-test ha apps logs "$SLUG" 2>&1 | tail -50 || true
@@ -758,7 +752,7 @@ jobs:
               fi
 
               if [ "$START_EXIT" -eq 0 ]; then
-                echo "✅ Start command successful"
+                echo "✅ Start initiated"
 
                 # Check for mandatory service dependencies (like mysql:need)
                 # These addons cannot start in isolation in this mock environment
@@ -768,16 +762,15 @@ jobs:
                   RESULTS="$RESULTS\n✅ $App: PASS (Build/Install verified)"
                   STATUS="skipped_runtime"
                 else
-                  # Poll for status (wait for start)
+                  # Poll Supervisor state (wait for start; avoids false-positives from crash-looping containers)
                   echo "Waiting for App to start (up to ${App_START_TIMEOUT}s)..."
                   START_TIME=$(date +%s)
                   END_TIME=$((START_TIME + App_START_TIMEOUT))
                   STATUS="unknown"
 
                   while [ "$(date +%s)" -lt "$END_TIME" ]; do
-                    # Check if container is running or CLI reports started
-                    if docker exec ha-supervisor-test docker ps --format "{{.Names}}" | grep -q "addon_local_$SLUG" || \
-                       [ "$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.state // "unknown"')" = "started" ]; then
+                    APP_STATE=$(docker exec ha-supervisor-test ha apps info "$SLUG" --raw-json 2>/dev/null | jq -r '.data.state // "unknown"')
+                    if [ "$APP_STATE" = "started" ]; then
                       STATUS="started"
                       break
                     fi

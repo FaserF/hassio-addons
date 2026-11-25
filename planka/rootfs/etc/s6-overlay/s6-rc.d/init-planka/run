@@ -334,14 +334,14 @@ if ! bashio::fs.file_exists "${PLANKA_DATA_DIR}/admin_created"; then
     # Generate secure password if not already generated
     if ! bashio::fs.file_exists "${PLANKA_DATA_DIR}/admin_password"; then
         ADMIN_PASSWORD=$(openssl rand -base64 24 | tr -d '\n')
-        echo -n "$ADMIN_PASSWORD" > "${PLANKA_DATA_DIR}/admin_password"
+        echo -n "REDACTED_SECRET_51110" > "${PLANKA_DATA_DIR}/admin_password"
         chmod 600 "${PLANKA_DATA_DIR}/admin_password"
     fi
     ADMIN_PASSWORD=$(cat "${PLANKA_DATA_DIR}/admin_password")
 
     # Set environment variables for the Planka seed
     export DEFAULT_ADMIN_EMAIL="admin@planka.local"
-    export DEFAULT_ADMIN_PASSWORD="$ADMIN_PASSWORD"
+    export DEFAULT_ADMIN_PASSWORD="REDACTED_SECRET_51110"
     export DEFAULT_ADMIN_NAME="Administrator"
     export DEFAULT_ADMIN_USERNAME="admin"
     export NODE_ENV=production
