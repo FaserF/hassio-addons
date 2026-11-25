@@ -396,15 +396,15 @@ class AuthHelper:
             await self.cdp.click_at(phone_val["x"], phone_val["y"])
             await asyncio.sleep(0.15)
             # Select all & delete any residual characters before inserting
-            clear_expr = """
-                (() => {
-                    const inp = document.querySelector(
-                        'input.phone-input__input, input[type="tel"], input[name="username"]'
-                    );
-                    if (inp) { inp.focus(); inp.select(); }
-                })()
-            """
-            await self.cdp.send_cmd("Runtime.evaluate", {"expression": clear_expr})
+            await self.cdp.send_cmd(
+                "Runtime.evaluate",
+                {"expression": """
+                    (() => {
+                        const inp = document.querySelector('input.phone-input__input, input[type="tel"], input[name="username"]');
+                        if (inp) { inp.focus(); inp.select(); }
+                    })()
+                    """},
+            )
             await self.cdp.send_cmd(
                 "Input.dispatchKeyEvent",
                 {"type": "keyDown", "key": "Backspace", "code": "Backspace", "windowsVirtualKeyCode": 8},

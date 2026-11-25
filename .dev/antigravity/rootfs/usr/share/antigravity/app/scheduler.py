@@ -163,10 +163,14 @@ class DynamicScheduler:
             now = datetime.now(UTC)
             self.next_poll_at = now + timedelta(seconds=self.current_interval)
 
-            mode_label = (
-                "FAST (3m)"
-                if self.is_fast_polling
-                else ("IDLE (60m)" if self.current_interval >= self.idle_interval else "BASE (30m)")
+            _LOGGER.debug(
+                "Next poll scheduled in %ds (Mode: %s)",
+                self.current_interval,
+                (
+                    "FAST (3m)"
+                    if self.is_fast_polling
+                    else "IDLE (60m)" if self.current_interval >= self.idle_interval else "BASE (30m)"
+                ),
             )
             _LOGGER.debug("Next poll scheduled in %ds (Mode: %s)", self.current_interval, mode_label)
 

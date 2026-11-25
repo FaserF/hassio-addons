@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-11-24T09:19:42.154151",
+  "timestamp": "2026-11-25T00:35:20.816184",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
@@ -47,7 +47,7 @@
     },
     "apache2": {
       "name": "Apache2",
-      "version": "3.4.13",
+      "version": "3.4.14",
       "description": "Open Source Webserver with PHP and MariaDB.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-apache2-{arch}",
@@ -98,7 +98,7 @@
     },
     "apache2-minimal-mariadb": {
       "name": "Apache2 Minimal with MariaDB Client",
-      "version": "3.4.13",
+      "version": "3.4.14",
       "description": "Open Source Webserver with MariaDB Client and some PHP Modules.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-apache2-minimal-mariadb-{arch}",
@@ -170,7 +170,7 @@
     },
     "dbf": {
       "name": "DBF (DB-Infoscreen)",
-      "version": "1.1.12",
+      "version": "1.1.13",
       "description": "Railway departure display (formerly db-fakescreen) as a Home Assistant App.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-dbf-{arch}",
@@ -564,7 +564,7 @@
     },
     "wiki.js": {
       "name": "Wiki.JS",
-      "version": "3.5.13",
+      "version": "3.5.14",
       "description": "The most powerful and extensible open source Wiki software",
       "arch": ["amd64"],
       "image": "ghcr.io/faserf/hassio-addons-wiki-{arch}",
@@ -663,7 +663,7 @@
     },
     "EntraMirror": {
       "name": "EntraMirror",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "description": "Microsoft Entra ID Tenant Backup, Restore, Synchronization & Cloning for Home Assistant.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-entramirror-{arch}",
