@@ -169,10 +169,11 @@ class DynamicScheduler:
                 (
                     "FAST (3m)"
                     if self.is_fast_polling
-                    else "IDLE (60m)" if self.current_interval >= self.idle_interval else "BASE (30m)"
+                    else "IDLE (60m)"
+                    if self.current_interval >= self.idle_interval
+                    else "BASE (30m)"
                 ),
             )
-            _LOGGER.debug("Next poll scheduled in %ds (Mode: %s)", self.current_interval, mode_label)
 
             try:
                 # Wait for interval or immediate wake event
