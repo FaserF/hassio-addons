@@ -5,6 +5,9 @@ configuration:
   workers:
     name: "Worker"
     description: "Anzahl der Worker-Prozesse für den web server (Standard: 2)."
+  lookahead:
+    name: "Vorschau-Zeitraum (Minuten)"
+    description: "Vorschau-Zeitfenster für Abfahrten in Minuten (60-1440, Standard: 180)."
   imprint_name:
     name: "Impressum Name"
     description: "Der Name, der auf der Impressum-Seite angezeigt werden soll."
