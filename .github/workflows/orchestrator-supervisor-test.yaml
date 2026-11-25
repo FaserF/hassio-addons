@@ -343,6 +343,8 @@ jobs:
               mkdir -p /data/addons 2>/dev/null || true
               ln -sfn /data/apps/local /data/addons/local 2>/dev/null || true
             fi
+            mkdir -p /run/supervisor/supervisor/apps 2>/dev/null || true
+            sed -i 's|-v /mnt/supervisor:/data:rw|-v /mnt/supervisor:/data:rw -v /run/supervisor:/run/os:rw|g' /usr/bin/supervisor_run 2>/dev/null || true
           "
 
           # Verify supervisor_run is available
