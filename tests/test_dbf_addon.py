@@ -23,13 +23,12 @@ def test_periodic_run_exists() -> None:
 def test_periodic_run_no_invalid_crond_args() -> None:
     """Verify crond is not called with invalid conflicting flags such as -d -l."""
     content = PERIODIC_RUN.read_text(encoding="utf-8")
-    assert "-d -l" not in content, (
-        "crond must not be called with '-d -l' as busybox crond treats -l as the numeric argument for -d"
-    )
-    assert "crond -f -l 0 -L /proc/self/fd/1" in content, (
-        "Debug/trace mode must call crond with -l 0 -L /proc/self/fd/1"
-    )
-    assert "crond -f -l 9 -L /dev/null" in content, "Normal mode must suppress crond noise via -l 9 -L /dev/null"
+    msg_bad_args = "crond must not be called with '-d -l' as busybox crond treats -l as the numeric argument for -d"
+    assert "-d -l" not in content, msg_bad_args
+    msg_debug = "Debug/trace mode must call crond with -l 0 -L /proc/self/fd/1"
+    assert "crond -f -l 0 -L /proc/self/fd/1" in content, msg_debug
+    msg_normal = "Normal mode must suppress crond noise via -l 9 -L /dev/null"
+    assert "crond -f -l 9 -L /dev/null" in content, msg_normal
 
 
 def test_periodic_run_no_banner_injection() -> None:
