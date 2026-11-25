@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 import logging
 import urllib.parse
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional, Tuple
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 import httpx
 
@@ -35,7 +35,7 @@ OAUTH_SCOPES = (
 )
 
 
-def parse_credentials_input(raw: str) -> Dict[str, str]:
+def parse_credentials_input(raw: str) -> dict[str, str]:
     """Parse raw text, JSON credentials file, or token string into a dict."""
     cleaned = raw.strip()
     if cleaned.startswith("{") and cleaned.endswith("}"):
@@ -89,11 +89,11 @@ class AntigravityFetcher:
 
     def __init__(self, timeout: float = 15.0) -> None:
         self.timeout = timeout
-        self._token_cache: Dict[str, Dict[str, Any]] = {}
+        self._token_cache: dict[str, dict[str, Any]] = {}
 
     def get_auth_url(
         self,
-        client_id: Optional[str] = None,
+        client_id: str | None = None,
         redirect_uri: str = "https://sdk.cloud.google.com/applicationdefaultcredentials.html",
     ) -> str:
         """Generate Google OAuth 2.0 Web Authorization URL."""
@@ -109,7 +109,7 @@ class AntigravityFetcher:
         return f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params)}"
 
     async def start_device_flow(
-        self, client_id: Optional[str] = None, client_secret: Optional[str] = None
+        self, client_id: str | None = None, client_secret: str | None = None
     ) -> DeviceAuthStartResponse:
         """Start Google OAuth 2.0 Device Flow."""
         cid = client_id.strip() if client_id else ""
@@ -139,9 +139,9 @@ class AntigravityFetcher:
     async def poll_device_flow(
         self,
         device_code: str,
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
-    ) -> Tuple[str, Optional[str], Optional[str], Optional[str]]:
+        client_id: str | None = None,
+        client_secret: str | None = None,
+    ) -> tuple[str, str | None, str | None, str | None]:
         """Poll Google OAuth token endpoint for Device Flow.
 
         Returns (status, refresh_token, access_token, error_message).
@@ -184,10 +184,10 @@ class AntigravityFetcher:
     async def exchange_auth_code(
         self,
         code: str,
-        redirect_uri: Optional[str] = None,
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
-    ) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+        redirect_uri: str | None = None,
+        client_id: str | None = None,
+        client_secret: str | None = None,
+    ) -> tuple[str | None, str | None, str | None]:
         """Exchange manual authorization code for a refresh token.
 
         Returns (refresh_token, access_token, error_message).
@@ -232,7 +232,7 @@ class AntigravityFetcher:
 
         return None, None, f"Code exchange failed: {last_err}"
 
-    async def refresh_access_token(self, account: AccountConfig) -> Tuple[Optional[str], Optional[str]]:
+    async def refresh_access_token(self, account: AccountConfig) -> tuple[str | None, str | None]:
         """Refresh OAuth2 access token for an account.
 
         Returns (access_token, error_message).
@@ -243,10 +243,10 @@ class AntigravityFetcher:
 
         # Check cache
         cached = self._token_cache.get(account.name)
-        if cached and cached.get("expires_at") > datetime.now(timezone.utc):
+        if cached and cached.get("expires_at") > datetime.now(UTC):
             return cached["token"], None
 
-        payload: Dict[str, str] = {
+        payload: dict[str, str] = {
             "refresh_token": token,
             "grant_type": "refresh_token",
         }
@@ -264,7 +264,7 @@ class AntigravityFetcher:
                     expires_in = data.get("expires_in", 3600)
                     self._token_cache[account.name] = {
                         "token": access_token,
-                        "expires_at": datetime.now(timezone.utc) + timedelta(seconds=expires_in - 60),
+                        "expires_at": datetime.now(UTC) + timedelta(seconds=expires_in - 60),
                     }
                     return access_token, None
                 _LOGGER.warning("Token refresh failed for account '%s': %s", account.name, res.text)
@@ -273,7 +273,7 @@ class AntigravityFetcher:
             _LOGGER.error("Failed to connect to Google OAuth server: %s", ex)
             return None, f"Network connection error: {str(ex)}"
 
-    async def fetch_user_info(self, access_token: str) -> Dict[str, str]:
+    async def fetch_user_info(self, access_token: str) -> dict[str, str]:
         """Fetch user email and profile details using access token."""
         headers = {"Authorization": f"Bearer {access_token}"}
         try:
@@ -290,7 +290,7 @@ class AntigravityFetcher:
             _LOGGER.debug("Failed to fetch user info: %s", ex)
         return {"email": "user@gmail.com", "name": "Google User", "id": ""}
 
-    async def test_credentials(self, req: CredentialsTestRequest) -> Dict[str, Any]:
+    async def test_credentials(self, req: CredentialsTestRequest) -> dict[str, Any]:
         """Validate credentials payload and return account info."""
         raw_text = req.raw_json or req.refresh_token or ""
         parsed = parse_credentials_input(raw_text)
@@ -333,13 +333,13 @@ class AntigravityFetcher:
     async def fetch_quota(
         self,
         account: AccountConfig,
-        previous_quota: Optional[AccountQuota] = None,
-    ) -> Tuple[AccountQuota, bool]:
+        previous_quota: AccountQuota | None = None,
+    ) -> tuple[AccountQuota, bool]:
         """Fetch full quota and limits for an account.
 
         Returns (AccountQuota, has_quota_changed_boolean).
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         now_iso = now.isoformat()
 
         # Handle unconfigured / empty token accounts (NO fake demo data!)
@@ -452,9 +452,7 @@ class AntigravityFetcher:
         has_changed = self._check_if_changed(previous_quota, connected_quota)
         return connected_quota, has_changed
 
-    async def _query_google_cloud_quota_api(
-        self, access_token: str, project_id: Optional[str]
-    ) -> Optional[Dict[str, Any]]:
+    async def _query_google_cloud_quota_api(self, access_token: str, project_id: str | None) -> dict[str, Any] | None:
         """Query Google Cloud AI companion tier and quota endpoints."""
         headers = {
             "Authorization": f"Bearer {access_token}",
@@ -479,7 +477,7 @@ class AntigravityFetcher:
         self,
         account: AccountConfig,
         email: str,
-        api_data: Dict[str, Any],
+        api_data: dict[str, Any],
         now: datetime,
     ) -> AccountQuota:
         """Parse raw Google Cloud AI Companion response into typed AccountQuota."""
@@ -533,7 +531,7 @@ class AntigravityFetcher:
             last_updated=now.isoformat(),
         )
 
-    def _check_if_changed(self, prev: Optional[AccountQuota], curr: AccountQuota) -> bool:
+    def _check_if_changed(self, prev: AccountQuota | None, curr: AccountQuota) -> bool:
         """Check if any usage numbers changed between previous and current poll."""
         if prev is None:
             return True

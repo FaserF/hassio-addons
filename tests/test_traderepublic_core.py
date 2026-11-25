@@ -228,15 +228,15 @@ def test_browser_service_finalize_login_is_idempotent():
             svc.session_token = tok
             svc._is_logged_in_override = True
 
-        svc.save_session = AsyncMock(side_effect=_fake_save)
         svc._ws_keeper = MagicMock()
         svc._ws_keeper.is_authenticated = True
         svc._ws_keeper.wait_until_connected = AsyncMock(return_value=True)
 
-        await svc._finalize_login("jwt_token_123", "app_poller")
-        await svc._finalize_login("jwt_token_123", "submit_2fa")
+        with patch.object(svc, "save_session", AsyncMock(side_effect=_fake_save)) as mock_save:
+            await svc._finalize_login("jwt_token_123", "app_poller")
+            await svc._finalize_login("jwt_token_123", "submit_2fa")
 
-        assert svc.save_session.await_count == 1
+            assert mock_save.await_count == 1
         assert svc._ws_keeper.wait_until_connected.await_count == 1
 
     asyncio.run(_run())

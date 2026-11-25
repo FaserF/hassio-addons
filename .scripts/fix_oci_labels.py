@@ -12,7 +12,7 @@ def generate_labels(addon_path):
         return False
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             config = yaml.safe_load(f)
     except Exception as e:
         print(f"Failed to read config.yaml in {addon_path}: {e}")
@@ -36,7 +36,7 @@ def generate_labels(addon_path):
         "org.opencontainers.image.created": '"${BUILD_DATE}"',
     }
 
-    with open(dockerfile_path, "r", encoding="utf-8") as f:
+    with open(dockerfile_path, encoding="utf-8") as f:
         content = f.read()
 
     new_content = content

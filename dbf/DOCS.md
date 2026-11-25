@@ -56,6 +56,10 @@ The app can be configured via the **Configuration** tab in the App page.
 
 - `workers`: Number of worker processes for the `hypnotoad` web server. Default is `2`.
 
+### Lookahead Window
+
+- `lookahead`: Lookahead window in minutes (`60`–`1440`) passed via `DBFAKEDISPLAY_LOOKAHEAD` (default: `180`). Useful for sparse evening/night timetables to include next-morning departures.
+
 ## 📜 Legal Information
 
 The software allows you to provide an **Imprint** and a **Privacy Policy** page. You can configure these in the configuration tab:

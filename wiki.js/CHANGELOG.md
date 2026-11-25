@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.5.14 (2026-11-25)
+
+### 🐛 Bug Fixes
+
+- Revert `ghcr.io/requarks/wiki` from `3.6.1` back to `2.5.317` so `/wiki/server` exists and Wiki.js starts cleanly (Fixes #1385)
+
 ## 3.5.13 (2026-11-23)
 
 ### 📦 Dependencies

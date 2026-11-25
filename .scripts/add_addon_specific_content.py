@@ -19,12 +19,12 @@ def load_addon_config(addon_path):
     config_json = os.path.join(addon_path, "config.json")
 
     if os.path.exists(config_yaml):
-        with open(config_yaml, "r", encoding="utf-8") as f:
+        with open(config_yaml, encoding="utf-8") as f:
             return yaml.safe_load(f), "yaml"
     elif os.path.exists(config_json):
         import json
 
-        with open(config_json, "r", encoding="utf-8") as f:
+        with open(config_json, encoding="utf-8") as f:
             return json.load(f), "json"
     return None, None
 
@@ -78,7 +78,7 @@ def extract_about_from_docs(addon_path):
     if not os.path.exists(docs_path):
         return None
 
-    with open(docs_path, "r", encoding="utf-8") as f:
+    with open(docs_path, encoding="utf-8") as f:
         docs_content = f.read()
 
     # Look for "## About" section
@@ -342,7 +342,7 @@ def process_addon(addon_path, dry_run=False):
         return False
 
     # Read README
-    with open(readme_path, "r", encoding="utf-8") as f:
+    with open(readme_path, encoding="utf-8") as f:
         content = f.read()
 
     # Check if content already exists

@@ -10,7 +10,6 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Optional
 
 import yaml
 
@@ -141,9 +140,9 @@ def parse_version(version_str: str) -> tuple:
         return (0, 0, 0)
 
 
-def extract_metadata(config_path: Path, relative_path: str, is_unsupported: bool) -> Optional[dict]:
+def extract_metadata(config_path: Path, relative_path: str, is_unsupported: bool) -> dict | None:
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             config = yaml.safe_load(f) or {}
 
         slug = str(config.get("slug", config_path.parent.name))

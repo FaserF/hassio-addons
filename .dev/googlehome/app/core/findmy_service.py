@@ -14,7 +14,7 @@ import logging
 import os
 import urllib.parse
 import uuid
-from typing import Any, Dict, Optional
+from typing import Any
 
 _LOGGER = logging.getLogger("googlehome-addon.findmy")
 
@@ -55,7 +55,7 @@ OAUTHLOGIN_SERVICE = "oauth2:https://www.google.com/accounts/OAuthLogin"
 
 def get_browser_session_url(
     email: str, master_token: str, continue_url: str, android_id: str = "android-701ab861a7be"
-) -> Optional[str]:
+) -> str | None:
     """Build a MergeSession URL that signs the headless browser in using the master token.
 
     The headless Chromium has no Google cookies after a restart (Google Home works via
@@ -97,7 +97,7 @@ def get_browser_session_url(
         return None
 
 
-def parse_vault_shared_keys(vault_keys_raw: str) -> Optional[str]:
+def parse_vault_shared_keys(vault_keys_raw: str) -> str | None:
     """Parse vaultKeys JSON returned by the JavaScript interface to extract the hex shared_key.
 
     Mirrors KeyBackup.response_parser.get_fmdn_shared_key.
@@ -121,7 +121,7 @@ def parse_vault_shared_keys(vault_keys_raw: str) -> Optional[str]:
     return None
 
 
-def generate_adm_token(email: str, master_token: str, android_id: str = "android-701ab861a7be") -> Dict[str, Any]:
+def generate_adm_token(email: str, master_token: str, android_id: str = "android-701ab861a7be") -> dict[str, Any]:
     """Use gpsoauth to mint an ADM token for Google Find My Device."""
     try:
         import gpsoauth
@@ -143,7 +143,7 @@ def generate_adm_token(email: str, master_token: str, android_id: str = "android
         return {"success": False, "error": "ADM token generation failed"}
 
 
-def deploy_secrets_to_homeassistant(secrets_data: Dict[str, Any]) -> tuple[bool, str]:
+def deploy_secrets_to_homeassistant(secrets_data: dict[str, Any]) -> tuple[bool, str]:
     """Deploy secrets bundle directly to Home Assistant's googlefindmy integration path.
 
     The add-on config maps /config (homeassistant_config:rw).

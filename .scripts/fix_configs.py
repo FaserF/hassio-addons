@@ -5,9 +5,9 @@ import sys
 
 def fix_config(path):
     try:
-        with open(path, "r") as f:
+        with open(path) as f:
             content = f.readlines()
-    except (OSError, IOError) as e:
+    except OSError as e:
         print(f"Error reading {path}: {e}")
         return
 
@@ -55,16 +55,16 @@ def fix_config(path):
         try:
             with open(path, "w") as f:
                 f.writelines(new_content)
-        except (OSError, IOError) as e:
+        except OSError as e:
             print(f"Error writing {path}: {e}")
 
 
 def fix_build_json(path):
     """Remove empty 'args' objects from build.json files using proper JSON parsing."""
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
-    except (OSError, IOError) as e:
+    except OSError as e:
         print(f"Error reading {path}: {e}")
         return
     except json.JSONDecodeError as e:
@@ -83,7 +83,7 @@ def fix_build_json(path):
             with open(path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2)
                 f.write("\n")  # Add trailing newline
-        except (OSError, IOError) as e:
+        except OSError as e:
             print(f"Error writing {path}: {e}")
 
 

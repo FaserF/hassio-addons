@@ -4,7 +4,7 @@ import asyncio
 import logging
 import os
 import time
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 import aiohttp
 
@@ -16,9 +16,9 @@ class TRWebhookDispatcher:
 
     def __init__(
         self,
-        url: Optional[str] = None,
-        token: Optional[str] = None,
-        enabled: Optional[bool] = None,
+        url: str | None = None,
+        token: str | None = None,
+        enabled: bool | None = None,
     ) -> None:
         self.enabled: bool = (
             enabled if enabled is not None else os.getenv("WEBHOOK_ENABLED", "false").lower() in ("true", "1", "yes")
@@ -26,10 +26,10 @@ class TRWebhookDispatcher:
         self.url: str = url or os.getenv("WEBHOOK_URL", "").strip()
         self.token: str = token or os.getenv("WEBHOOK_TOKEN", "").strip()
 
-        self._seen_tx_ids: Set[str] = set()
+        self._seen_tx_ids: set[str] = set()
         self._initialized: bool = False
-        self._last_prices: Dict[str, float] = {}
-        self._session: Optional[aiohttp.ClientSession] = None
+        self._last_prices: dict[str, float] = {}
+        self._session: aiohttp.ClientSession | None = None
 
     async def _get_session(self) -> aiohttp.ClientSession:
         if self._session is None or self._session.closed:
@@ -40,7 +40,7 @@ class TRWebhookDispatcher:
         if self._session and not self._session.closed:
             await self._session.close()
 
-    async def send_event(self, event_type: str, item_data: Dict[str, Any]) -> bool:
+    async def send_event(self, event_type: str, item_data: dict[str, Any]) -> bool:
         """Post event payload to webhook URL."""
         if not self.enabled or not self.url:
             return False
@@ -68,7 +68,7 @@ class TRWebhookDispatcher:
             _LOGGER.debug("TR Webhook: failed dispatching '%s': %s", event_type, exc)
             return False
 
-    async def handle_timeline_update(self, items: List[Dict[str, Any]]) -> None:
+    async def handle_timeline_update(self, items: list[dict[str, Any]]) -> None:
         """Process incoming timeline stream. Dispatches events for new orders, dividends, and executions."""
         if not items:
             return

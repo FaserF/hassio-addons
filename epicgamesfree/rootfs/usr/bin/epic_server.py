@@ -22,8 +22,8 @@ class EpicGamesClaimer:
     def __init__(self):
         self.api = EpicGamesStoreAPI()
         self.session_data = {}
-        self.last_claim_ts = 0
-        self.next_claim_ts = 0
+        self.last_claim_ts: float = 0
+        self.next_claim_ts: float = 0
         self.claimed_count = 0
         self.username = None
         self.load_session()
@@ -32,7 +32,7 @@ class EpicGamesClaimer:
     def load_session(self):
         if os.path.exists(SESSION_FILE):
             try:
-                with open(SESSION_FILE, "r") as f:
+                with open(SESSION_FILE) as f:
                     self.session_data = json.load(f)
                     if "username" in self.session_data:
                         self.username = self.session_data["username"]

@@ -20,7 +20,7 @@ def load_file(file_path):
 
     ext = os.path.splitext(file_path)[1].lower()
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             data = None
             if ext in [".yaml", ".yml"]:
                 data = yaml.safe_load(f)

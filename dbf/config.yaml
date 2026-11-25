@@ -1,5 +1,5 @@
 name: "DBF (DB-Infoscreen)"
-version: "1.1.12"
+version: "1.1.13"
 slug: "dbf"
 description: "Railway departure display (formerly db-fakescreen) as a Home Assistant App."
 url: "https://github.com/FaserF/ha-db_infoscreen"
@@ -24,6 +24,7 @@ ports_description:
 options:
   log_level: info
   workers: 0
+  lookahead: 180
   imprint_name: ""
   imprint_address: ""
   privacy_policy_url: ""
@@ -31,6 +32,7 @@ options:
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
   workers: int?
+  lookahead: int(60,1440)?
   imprint_name: str?
   imprint_address: str?
   privacy_policy_url: str?

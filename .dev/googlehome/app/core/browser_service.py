@@ -5,7 +5,8 @@ import os
 import subprocess
 import time
 import urllib.parse
-from typing import Any, Callable, Dict, Optional
+from collections.abc import Callable
+from typing import Any
 
 from .cdp import CDPClient
 from .constants import CDP_PORT, DATA_DIR, USER_AGENT
@@ -18,19 +19,19 @@ class GoogleHomeBrowserService:
 
     def __init__(self) -> None:
         self.cdp = CDPClient(CDP_PORT)
-        self.proc: Optional[subprocess.Popen] = None
+        self.proc: subprocess.Popen | None = None
         self.auth_in_progress: bool = False
         self.auth_step: str = "idle"
-        self.auth_error: Optional[str] = None
+        self.auth_error: str | None = None
         self.extraction_in_progress: bool = False
         self.extraction_step: str = "idle"
-        self.extraction_error: Optional[str] = None
-        self.two_factor_data: Dict[str, Any] = {}
-        self._auth_task: Optional[asyncio.Task] = None
-        self._target_email: Optional[str] = None
-        self._last_password: Optional[str] = None
-        self._on_success_callback: Optional[Callable[[str, str], None]] = None
-        self._on_shared_key_callback: Optional[Callable[[str, str], None]] = None
+        self.extraction_error: str | None = None
+        self.two_factor_data: dict[str, Any] = {}
+        self._auth_task: asyncio.Task | None = None
+        self._target_email: str | None = None
+        self._last_password: str | None = None
+        self._on_success_callback: Callable[[str, str], None] | None = None
+        self._on_shared_key_callback: Callable[[str, str], None] | None = None
 
     def set_on_success_callback(self, cb: Callable[[str, str], None]) -> None:
         self._on_success_callback = cb
@@ -502,7 +503,7 @@ class GoogleHomeBrowserService:
             self.auth_error = "Authentication sequence failed"
             self.auth_in_progress = False
 
-    async def _click_continue_next(self) -> Optional[str]:
+    async def _click_continue_next(self) -> str | None:
         """Click 'Weiter / Next / Continue' on screens where the selection is already pre-filled.
 
         Used for the 'Who uses this device?' screen where 'Ich/Me' is pre-selected.
@@ -531,7 +532,7 @@ class GoogleHomeBrowserService:
         val = res.get("value") if res else None
         return val if val and isinstance(val, str) else None
 
-    async def _click_accept_terms(self) -> Optional[str]:
+    async def _click_accept_terms(self) -> str | None:
         """Click 'Accept / Agree / Zustimmen' on privacy/terms screens."""
         script = r"""
         (() => {
@@ -617,7 +618,7 @@ class GoogleHomeBrowserService:
         _LOGGER.info("Password Next click result: %s", pwd_click.get("value") if pwd_click else "none")
         return True
 
-    async def _check_page_error(self) -> Optional[str]:
+    async def _check_page_error(self) -> str | None:
         """Check for Google error elements in DOM."""
         script = r"""
         (() => {
@@ -653,7 +654,7 @@ class GoogleHomeBrowserService:
                 return val
         return None
 
-    async def _detect_2fa_challenge(self) -> Optional[Dict[str, Any]]:
+    async def _detect_2fa_challenge(self) -> dict[str, Any] | None:
         """Scan DOM for Google 2FA challenge markers."""
         script = r"""
         (() => {
@@ -708,7 +709,7 @@ class GoogleHomeBrowserService:
             return res["value"]
         return None
 
-    async def _extract_oauth_cookie(self) -> Optional[str]:
+    async def _extract_oauth_cookie(self) -> str | None:
         """Check for oauth_token cookie on accounts.google.com."""
         res = await self.cdp.send_cmd(
             "Network.getCookies", {"urls": ["https://accounts.google.com", "https://google.com"]}
@@ -752,10 +753,10 @@ class GoogleHomeBrowserService:
     async def _attempt_shared_key_extraction(
         self,
         email: str,
-        master_token: Optional[str] = None,
-        password: Optional[str] = None,
+        master_token: str | None = None,
+        password: str | None = None,
         poll_seconds: float = 45.0,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Attempt to retrieve the Google Find My E2EE Shared Key from the headless browser.
 
         Steps:

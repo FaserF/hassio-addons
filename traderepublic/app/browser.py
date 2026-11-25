@@ -4,7 +4,7 @@ import logging
 import os
 import subprocess
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from core.auth import AuthHelper
 from core.cdp import CDPClient
@@ -36,31 +36,31 @@ class TradeRepublicBrowserService:
         self.session_manager = SessionManager()
         self.auth_helper = AuthHelper(self.cdp)
 
-        self.proc: Optional[subprocess.Popen] = None
-        self._is_logged_in_override: Optional[bool] = None
-        self.session_token: Optional[str] = None
-        self.phone_number: Optional[str] = None
+        self.proc: subprocess.Popen | None = None
+        self._is_logged_in_override: bool | None = None
+        self.session_token: str | None = None
+        self.phone_number: str | None = None
         self.status_message: str = "App started. Ready for login."
-        self.last_sync_time: Optional[float] = None
-        self.last_error: Optional[str] = None
+        self.last_sync_time: float | None = None
+        self.last_error: str | None = None
         self.client_requests_count: int = 0
-        self.token_verified_at: Optional[float] = None
-        self.last_login_time: Optional[float] = None
-        self.last_token_update_time: Optional[float] = None
-        self.last_logout_time: Optional[float] = None
-        self.last_logout_reason: Optional[str] = None
-        self.last_session_duration: Optional[float] = None
+        self.token_verified_at: float | None = None
+        self.last_login_time: float | None = None
+        self.last_token_update_time: float | None = None
+        self.last_logout_time: float | None = None
+        self.last_logout_reason: str | None = None
+        self.last_session_duration: float | None = None
         self.last_interaction_type: str = "None"
         self.last_interaction_details: str = "No interactions yet"
         self.request_counts_by_type: dict[str, int] = {"data": 0, "session": 0, "refresh": 0, "status": 0}
 
         self._lock = asyncio.Lock()
-        self._keepalive_task: Optional[asyncio.Task] = None
-        self._approval_poll_task: Optional[asyncio.Task] = None
-        self._qr_poll_task: Optional[asyncio.Task] = None
+        self._keepalive_task: asyncio.Task | None = None
+        self._approval_poll_task: asyncio.Task | None = None
+        self._qr_poll_task: asyncio.Task | None = None
         self._qr_polling_active: bool = False
-        self.login_started_at: Optional[float] = None
-        self._last_invalidated_token: Optional[str] = None
+        self.login_started_at: float | None = None
+        self._last_invalidated_token: str | None = None
 
         self._ws_keeper = TRWebSocketKeeper(
             token_factory=lambda: self.session_token,
@@ -207,7 +207,7 @@ class TradeRepublicBrowserService:
             _LOGGER.info("Loaded session token from disk — keeper will verify connection shortly")
 
     async def save_session(
-        self, token: str, phone: Optional[str] = None, is_new_login: bool = False, notify_keeper: bool = True
+        self, token: str, phone: str | None = None, is_new_login: bool = False, notify_keeper: bool = True
     ) -> None:
         if not token:
             _LOGGER.warning("Attempted to save empty session token")
@@ -259,7 +259,7 @@ class TradeRepublicBrowserService:
         await self._ws_keeper.wait_until_connected(timeout=6.0)
         _LOGGER.info("Login finalized via %s (ws_authenticated=%s)", source, self._ws_keeper.is_authenticated)
 
-    async def _navigate_and_extract_token(self) -> Optional[str]:
+    async def _navigate_and_extract_token(self) -> str | None:
         """Navigate Chromium to TR web app with current cookies and extract any rotated token."""
         if not self.cdp or not self.session_token:
             return None
@@ -276,7 +276,7 @@ class TradeRepublicBrowserService:
             return new_token
         return None
 
-    async def _on_ws_token_refresh(self) -> Optional[str]:
+    async def _on_ws_token_refresh(self) -> str | None:
         """Attempt immediate browser navigation and token extraction when WS gets 401."""
         if not self.cdp or self._lock.locked() or self.is_login_in_progress or not self.session_token:
             return None
@@ -292,7 +292,7 @@ class TradeRepublicBrowserService:
                 _LOGGER.debug("Browser Service: token rotation error: %s", e)
         return None
 
-    async def start_login(self, phone: str, pin: str) -> Dict[str, Any]:
+    async def start_login(self, phone: str, pin: str) -> dict[str, Any]:
         """Navigate and input credentials via CDP + trigger push/SMS."""
         async with self._lock:
             try:
@@ -347,7 +347,7 @@ class TradeRepublicBrowserService:
                 _LOGGER.error("Login init error: %s", e)
                 return {"success": False, "error": f"Internal browser error: {e}"}
 
-    async def get_qr_code(self, force_refresh: bool = False) -> Dict[str, Any]:
+    async def get_qr_code(self, force_refresh: bool = False) -> dict[str, Any]:
         """Navigate to login, ensure QR challenge is present and extract it."""
         async with self._lock:
             try:
@@ -439,7 +439,7 @@ class TradeRepublicBrowserService:
         except Exception as e:
             _LOGGER.debug("Error in app approval poller: %s", e)
 
-    async def submit_2fa(self, code: str) -> Dict[str, Any]:
+    async def submit_2fa(self, code: str) -> dict[str, Any]:
         """Submit 2FA code or check In-App approval via CDP."""
         async with self._lock:
             try:
@@ -486,7 +486,7 @@ class TradeRepublicBrowserService:
             except Exception as e:
                 return {"success": False, "error": str(e)}
 
-    async def refresh_session(self) -> Optional[str]:
+    async def refresh_session(self) -> str | None:
         """Sync keeper auth state or attempt a single Chromium rotation if auth failed."""
         async with self._lock:
             try:

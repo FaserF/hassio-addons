@@ -27,6 +27,9 @@ RUN if [ -d "rootfs" ]; then cp -rv rootfs/* /; find /etc/s6-overlay -type f -ex
 
 EXPOSE 8195
 
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD ["curl", "--fail", "http://127.0.0.1:8195/"]
+
 # Labels
 LABEL org.opencontainers.image.title="Google Home Token Hub"
 LABEL org.opencontainers.image.description="Google Home Master Token Generator & Ingress Authentication Hub for Home Assistant."

@@ -258,6 +258,9 @@ else
 fi
 export DBFAKEDISPLAY_WORKERS="$NUM_WORKERS"
 bashio::log.info "Configured Hypnotoad worker processes: ${DBFAKEDISPLAY_WORKERS}"
+LOOKAHEAD=$(bashio::config 'lookahead' '180')
+export DBFAKEDISPLAY_LOOKAHEAD="${LOOKAHEAD}"
+bashio::log.info "Configured departure lookahead window: ${DBFAKEDISPLAY_LOOKAHEAD} minutes"
 export DBFAKEDISPLAY_STATS="/data/stats.json"
 export DBFAKEDISPLAY_IRIS_CACHE="/data/iris_cache"
 export DBFAKEDISPLAY_IRISRT_CACHE="/data/irisrt_cache"

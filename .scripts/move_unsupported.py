@@ -53,7 +53,7 @@ def main():
         print("📝 Updating README.md links...")
         readme_path = os.path.join(ROOT_DIR, "README.md")
         if os.path.exists(readme_path):
-            with open(readme_path, "r", encoding="utf-8") as f:
+            with open(readme_path, encoding="utf-8") as f:
                 content = f.read()
 
             for addon in UNSUPPORTED_ADDONS:

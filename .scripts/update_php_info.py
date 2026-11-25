@@ -42,7 +42,7 @@ def get_php_info(dockerfile_path):
     matches = re.finditer(rf"php{php_version_num}-([a-zA-Z0-9_\-]+)", content)
     for m in matches:
         mod = m.group(1)
-        if mod not in ["dev", "pear", "doc", "apache2", "fpm", "cgi"]:
+        if mod not in ["dev", "pear", "doc", "apache2", "fpm", "cgi", "common"]:
             modules.append(mod)
 
     # Variable matches: php${PHP_V...}-([a-zA-Z0-9_\-]+)
@@ -51,7 +51,7 @@ def get_php_info(dockerfile_path):
     matches = re.finditer(var_pattern, content)
     for m in matches:
         mod = m.group(1)
-        if mod not in ["dev", "pear", "doc", "apache2", "fpm", "cgi"]:
+        if mod not in ["dev", "pear", "doc", "apache2", "fpm", "cgi", "common"]:
             modules.append(mod)
 
     # Special case for "php85" or "php${PHP_VERSION}" as the base package

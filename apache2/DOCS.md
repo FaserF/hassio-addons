@@ -42,13 +42,11 @@ To avoid this issue:
 - **For production/remote access**: Access the website using the domain name for which the certificate was issued (e.g., `https://your-domain.duckdns.org:8324`).
 
 <!-- PHP_INFO_START -->
-
 ## 🐘 PHP Information
 
-**PHP Version**: 8.6
+**PHP Version**: 8.5
 
 **Available PHP Modules**:
-
 - bcmath
 - bz2
 - calendar
@@ -66,6 +64,7 @@ To avoid this issue:
 - mbstring
 - mysqli
 - mysqlnd
+- openssl
 - pcntl
 - pdo
 - pdo_mysql
@@ -74,6 +73,7 @@ To avoid this issue:
 - pecl-imagick
 - pecl-imap
 - pecl-redis
+- pecl-xdebug
 - phar
 - posix
 - session
@@ -91,7 +91,6 @@ To avoid this issue:
 - xmlreader
 - xmlwriter
 - zip
-
 <!-- PHP_INFO_END -->
 
 ## Support

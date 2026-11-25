@@ -27,7 +27,7 @@ def patch_web_ui_server():
         print("[Paseo-Ingress] web-ui.js not found, skipping server patch.")
         return
 
-    with open(server_js, "r", encoding="utf-8") as f:
+    with open(server_js, encoding="utf-8") as f:
         code = f.read()
 
     # If already patched previously, cleanly strip the injected wrapper
@@ -182,7 +182,7 @@ def patch_web_bundle():
         if js_path.endswith(".gz") or js_path.endswith(".br"):
             continue
         print(f"[Paseo-Ingress] Inspecting bundle: {js_path}")
-        with open(js_path, "r", encoding="utf-8") as f:
+        with open(js_path, encoding="utf-8") as f:
             code = f.read()
 
         changed = False
@@ -285,7 +285,7 @@ def patch_server_hostnames():
     ]
     for p in candidates:
         if os.path.isfile(p):
-            with open(p, "r", encoding="utf-8") as f:
+            with open(p, encoding="utf-8") as f:
                 code = f.read()
             p_func = r"export function isHostnameAllowed\(hostHeader, hostnames\) \{"
             r_func = "export function isHostnameAllowed(hostHeader, hostnames) {\n    return true;"
@@ -306,7 +306,7 @@ def patch_bootstrap():
     ]
     for p in candidates:
         if os.path.isfile(p):
-            with open(p, "r", encoding="utf-8") as f:
+            with open(p, encoding="utf-8") as f:
                 code = f.read()
             t = "if (!isHostnameAllowed(hostHeader, configuredHostnames)) {"
             r = "if (false && !isHostnameAllowed(hostHeader, configuredHostnames)) {"

@@ -3,7 +3,7 @@ import re
 
 
 def clean_lines(file_path):
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
 
     # Replace 3 or more newlines (potentially with whitespace) with 2 newlines (max 1 blank line)

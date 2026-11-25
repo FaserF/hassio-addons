@@ -74,7 +74,7 @@ def update_addon_stage(addon_path, stage):
         return False
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             content = f.read()
 
         # Check if stage field exists (simple regex)
@@ -113,7 +113,7 @@ def get_addon_status(addon_path, is_unsupported=False):
         return None
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             config = yaml.safe_load(f)
     except FileNotFoundError:
         print(f"Config file not found: {config_path}")
@@ -210,9 +210,9 @@ def update_readme():
 
     # Read README
     try:
-        with open(readme_path, "r", encoding="utf-8") as f:
+        with open(readme_path, encoding="utf-8") as f:
             content = f.read()
-    except IOError as e:
+    except OSError as e:
         print(f"⚠️ Failed to read README: {e}")
         return
 
@@ -261,7 +261,7 @@ def update_readme():
             with open(readme_path, "w", encoding="utf-8") as f:
                 f.write(new_content)
             print("\n✅ README updated with status changes")
-        except IOError as e:
+        except OSError as e:
             print(f"⚠️ Failed to write README: {e}")
     else:
         print("\n✨ README already up to date")

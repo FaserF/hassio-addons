@@ -81,7 +81,7 @@ CI_EXCLUDED_ADDONS = {"sap-abap-cloud-dev"}
 def _read(path: str) -> str:
     """Return file content as string, empty string on any error."""
     try:
-        with open(path, "r", encoding="utf-8", errors="ignore") as fh:
+        with open(path, encoding="utf-8", errors="ignore") as fh:
             return fh.read()
     except Exception:
         return ""
@@ -337,7 +337,7 @@ def generate_connections(addons: list[dict]) -> None:
 def _write_json(path: str, data: dict, key_exclude: str = "") -> None:
     if os.path.isfile(path):
         try:
-            with open(path, "r", encoding="utf-8") as fh:
+            with open(path, encoding="utf-8") as fh:
                 existing = json.load(fh)
             existing_cmp = {k: v for k, v in existing.items() if k != key_exclude}
             new_cmp = {k: v for k, v in data.items() if k != key_exclude}

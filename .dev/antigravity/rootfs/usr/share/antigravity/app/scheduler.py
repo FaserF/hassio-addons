@@ -6,9 +6,8 @@ import asyncio
 import json
 import logging
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import httpx
 
@@ -34,7 +33,7 @@ class DynamicScheduler:
 
     def __init__(
         self,
-        accounts: List[AccountConfig],
+        accounts: list[AccountConfig],
         base_interval: int = 1800,
         adaptive_polling: bool = True,
         fast_interval: int = 180,
@@ -49,21 +48,21 @@ class DynamicScheduler:
         self.version = version
 
         self.fetcher = AntigravityFetcher()
-        self._accounts_data: Dict[str, AccountQuota] = {}
+        self._accounts_data: dict[str, AccountQuota] = {}
         self._lock = asyncio.Lock()
-        self._task: Optional[asyncio.Task] = None
+        self._task: asyncio.Task | None = None
         self._running = False
         self._wake_event = asyncio.Event()
 
         # State tracking
-        self.last_polled_at: Optional[datetime] = None
-        self.last_change_at: Optional[datetime] = None
-        self.next_poll_at: Optional[datetime] = None
+        self.last_polled_at: datetime | None = None
+        self.last_change_at: datetime | None = None
+        self.next_poll_at: datetime | None = None
         self.current_interval: int = self.base_interval
         self.is_fast_polling: bool = False
         self.recent_activity: bool = False
 
-    def update_accounts(self, accounts: List[AccountConfig]) -> None:
+    def update_accounts(self, accounts: list[AccountConfig]) -> None:
         """Update configured accounts."""
         self.accounts = accounts
 
@@ -112,7 +111,7 @@ class DynamicScheduler:
             # Poll quota
             quota, changed = await self.fetcher.fetch_quota(account, self._accounts_data.get(account.name))
             self._accounts_data[account.name] = quota
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             self.last_polled_at = now
             if changed or self.last_change_at is None:
                 self.last_change_at = now
@@ -161,7 +160,7 @@ class DynamicScheduler:
         while self._running:
             # Determine next interval based on adaptive algorithm
             self._recalculate_interval()
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             self.next_poll_at = now + timedelta(seconds=self.current_interval)
 
             _LOGGER.debug(
@@ -170,7 +169,9 @@ class DynamicScheduler:
                 (
                     "FAST (3m)"
                     if self.is_fast_polling
-                    else "IDLE (60m)" if self.current_interval >= self.idle_interval else "BASE (30m)"
+                    else "IDLE (60m)"
+                    if self.current_interval >= self.idle_interval
+                    else "BASE (30m)"
                 ),
             )
 
@@ -178,7 +179,7 @@ class DynamicScheduler:
                 # Wait for interval or immediate wake event
                 self._wake_event.clear()
                 await asyncio.wait_for(self._wake_event.wait(), timeout=self.current_interval)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 pass  # Timer expired naturally, time to poll
             except asyncio.CancelledError:
                 break
@@ -197,7 +198,7 @@ class DynamicScheduler:
             self.recent_activity = False
             return
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if self.last_change_at is None:
             self.current_interval = self.base_interval
             self.is_fast_polling = False
@@ -222,7 +223,7 @@ class DynamicScheduler:
     async def poll_all_accounts(self, is_manual: bool = False) -> None:
         """Fetch quota data for all configured accounts."""
         async with self._lock:
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             self.last_polled_at = now
             any_changed = False
 
@@ -243,7 +244,7 @@ class DynamicScheduler:
             self._recalculate_interval()
             self.next_poll_at = now + timedelta(seconds=self.current_interval)
 
-    async def force_refresh(self, account_name: Optional[str] = None) -> SystemStatus:
+    async def force_refresh(self, account_name: str | None = None) -> SystemStatus:
         """Trigger an immediate manual refresh."""
         _LOGGER.info("Manual force refresh requested (target: %s)", account_name or "ALL")
         if account_name:
@@ -253,7 +254,7 @@ class DynamicScheduler:
                     prev = self._accounts_data.get(acc.name)
                     quota, changed = await self.fetcher.fetch_quota(acc, prev)
                     self._accounts_data[acc.name] = quota
-                    now = datetime.now(timezone.utc)
+                    now = datetime.now(UTC)
                     self.last_polled_at = now
                     if changed or self.last_change_at is None:
                         self.last_change_at = now
@@ -265,7 +266,7 @@ class DynamicScheduler:
 
     def get_system_status(self) -> SystemStatus:
         """Get aggregated system and quota status."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         accounts_list = list(self._accounts_data.values())
         active_name = accounts_list[0].account_name if accounts_list else ""
 
@@ -301,6 +302,6 @@ class DynamicScheduler:
             scheduler=scheduler_state,
         )
 
-    def get_account_quota(self, name: str) -> Optional[AccountQuota]:
+    def get_account_quota(self, name: str) -> AccountQuota | None:
         """Get quota for a specific account name."""
         return self._accounts_data.get(name)

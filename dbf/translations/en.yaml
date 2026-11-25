@@ -5,6 +5,9 @@ configuration:
   workers:
     name: "Workers"
     description: "Number of worker processes for the hypnotoad web server (default: 2)."
+  lookahead:
+    name: "Lookahead Window (Minutes)"
+    description: "Departure board lookahead window in minutes (60-1440, default: 180)."
   imprint_name:
     name: "Imprint Name"
     description: "The name to be displayed on the imprint page (Impressum)."

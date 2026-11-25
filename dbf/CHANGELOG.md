@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.13 (2026-11-25)
+
+### ✨ Features
+
+- Add configurable `lookahead` option (`60`–`1440` minutes, default `180`) exported as `DBFAKEDISPLAY_LOOKAHEAD` (Fixes #1402)
+
 ## 1.1.12 (2026-11-21)
 
 ### ✨ Features

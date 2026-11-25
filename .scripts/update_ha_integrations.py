@@ -62,7 +62,7 @@ def generate_content(repos):
 
 
 def update_readme(table):
-    with open(README_PATH, "r", encoding="utf-8") as f:
+    with open(README_PATH, encoding="utf-8") as f:
         content = f.read()
 
     pattern = re.compile(f"{RE_START}.*?{RE_END}", re.DOTALL)

@@ -28,7 +28,7 @@ def remove_image_from_config(config_path: str) -> bool:
         return False
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             content = f.read()
 
         # Check if image field exists (including commented out ones)
@@ -63,7 +63,7 @@ def update_addon_name(config_path: str, suffix: str) -> bool:
         return False
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             content = f.read()
 
         data = yaml.safe_load(content)
@@ -117,7 +117,7 @@ def ensure_experimental_stage(config_path: str) -> bool:
         return False
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             content = f.read()
 
         # Pattern to find 'stage:' field
@@ -154,7 +154,7 @@ def remap_ports_in_config(config_path: str) -> bool:
         return False
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             content = f.read()
 
         data = yaml.safe_load(content)
@@ -212,7 +212,7 @@ def add_edge_notice_to_readme(readme_path: str) -> bool:
 """
 
     try:
-        with open(readme_path, "r", encoding="utf-8") as f:
+        with open(readme_path, encoding="utf-8") as f:
             content = f.read()
 
         # Check if already has edge notice
@@ -244,7 +244,7 @@ def update_badge_hash_in_readme(readme_path: str, old_hash: str, new_hash: str) 
         return False
 
     try:
-        with open(readme_path, "r", encoding="utf-8") as f:
+        with open(readme_path, encoding="utf-8") as f:
             content = f.read()
 
         new_content = content.replace(f"addon={old_hash}_", f"addon={new_hash}_")
@@ -268,7 +268,7 @@ def update_repository_json() -> bool:
         return False
 
     try:
-        with open(repo_json_path, "r", encoding="utf-8") as f:
+        with open(repo_json_path, encoding="utf-8") as f:
             data = json.load(f)
 
         # Add edge indicator
@@ -304,7 +304,7 @@ def update_integration_for_edge() -> bool:
 
     try:
         # 1. Update manifest.json version
-        with open(manifest_path, "r", encoding="utf-8") as f:
+        with open(manifest_path, encoding="utf-8") as f:
             manifest = json.load(f)
 
         # Get current version and strip any existing -dev suffix
@@ -328,7 +328,7 @@ def update_integration_for_edge() -> bool:
 
         # 2. Update README Marketplace / HACS link
         if os.path.exists(readme_path):
-            with open(readme_path, "r", encoding="utf-8") as f:
+            with open(readme_path, encoding="utf-8") as f:
                 content = f.read()
 
             # Replace master link with edge branch link

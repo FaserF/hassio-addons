@@ -20,7 +20,7 @@ def update_repository_json():
         return
 
     try:
-        with open(repo_path, "r") as f:
+        with open(repo_path) as f:
             data = json.load(f)
 
         data["name"] = "FaserF's Home Assistant Apps (Unsupported)"
@@ -55,7 +55,7 @@ def add_unsupported_notice(readme_path):
 >
 """
     try:
-        with open(readme_path, "r", encoding="utf-8") as f:
+        with open(readme_path, encoding="utf-8") as f:
             content = f.read()
 
         if "UNSUPPORTED ADD-ON" in content:
@@ -84,7 +84,7 @@ def update_addon_name(config_path: str, suffix: str) -> bool:
         return False
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             content = f.read()
 
         data = yaml.safe_load(content)
@@ -137,7 +137,7 @@ def remove_image_key(config_path):
     if not os.path.exists(config_path):
         return
     try:
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             content = f.read()
 
         # Remove any image: ... line

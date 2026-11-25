@@ -12,7 +12,7 @@ def get_config_info(addon_path):
     if not os.path.exists(config_path):
         return None
     try:
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             return yaml.safe_load(f)
     except Exception:
         return None
@@ -23,7 +23,7 @@ def detect_new_addons(fix=False):
         print("❌ README.md not found.", file=sys.stderr)
         return []
 
-    with open(README_PATH, "r", encoding="utf-8") as f:
+    with open(README_PATH, encoding="utf-8") as f:
         readme_content = f.read()
 
     # Get all potential add-on dirs

@@ -397,11 +397,12 @@ bashio::log.info "🔗 Ingress (Home Assistant) active on Port 8099 (Plain HTTP)
 BOOTSTRAP_COREDNS_PID=""
 if bashio::config.true 'developer_mode'; then
 	if command -v coredns >/dev/null 2>&1; then
+		BOOTSTRAP_UPSTREAMS=$(echo "${UPSTREAM_DNS:-1.1.1.1 8.8.8.8 9.9.9.9}" | tr ',' ' ')
 		cat <<EOF >/tmp/Corefile.bootstrap
 .:${DNS_PORT} {
     bind 0.0.0.0
     cache 60
-    forward . 100.64.0.1 89.168.74.120 1.1.1.1 8.8.8.8 {
+    forward . ${BOOTSTRAP_UPSTREAMS} {
         health_check 5s
     }
     errors
@@ -608,7 +609,7 @@ bashio::log.info "✅ ShieldDNS Started Successfully."
 
 # Initial Corefile (if backend hasn't generated one yet)
 if [ ! -f "$COREFILE_PATH" ]; then
-	cat <<EOF >$COREFILE_PATH
+	cat <<EOF >"$COREFILE_PATH"
 .:${DNS_PORT} {
     bind 0.0.0.0
     forward . 1.1.1.1 8.8.8.8

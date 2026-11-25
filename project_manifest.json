@@ -2,7 +2,7 @@
   "project": "hassio-addons",
   "purpose": "Custom Home Assistant Add-on repository maintained by FaserF",
   "connections_map_reference": "project_connections.json (per-addon file mapping for AI agents)",
-  "timestamp": "2026-11-24T09:19:40.321131",
+  "timestamp": "2026-11-24T22:31:51.960620",
   "stack": {
     "runtime": "Home Assistant Supervisor (s6-overlay, Bashio)",
     "languages": "Shell (Bash), Python, YAML",
@@ -608,6 +608,7 @@
     ".": [
       "AGENTS.MD",
       "README.md",
+      "SECURITY.md",
       "mypy.ini",
       "package.json",
       "pyproject.toml",
@@ -839,6 +840,7 @@
     "pterodactyl-wings/examples": ["addon_config.yaml", "wings_config.yml"],
     "docs": ["index.html", "requests.html", "support.html"],
     "docs/css": ["style.css"],
+    "scripts": ["generate_changelog.py"],
     "nginx": [
       "CHANGELOG.md",
       "DOCS.md",

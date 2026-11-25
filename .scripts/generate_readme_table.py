@@ -110,7 +110,7 @@ def generate_table(addons: list[dict]) -> str:
 
     for addon in addons:
         try:
-            with open(addon["config"], "r", encoding="utf-8") as f:
+            with open(addon["config"], encoding="utf-8") as f:
                 config = yaml.safe_load(f)
 
             name = config.get("name", addon["path"])

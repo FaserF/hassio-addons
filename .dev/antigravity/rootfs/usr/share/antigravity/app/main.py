@@ -7,7 +7,6 @@ import logging
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import List
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,7 +40,7 @@ def load_configuration() -> dict:
     # 1. Read base options from options.json
     if os.path.exists(OPTIONS_FILE):
         try:
-            with open(OPTIONS_FILE, "r", encoding="utf-8") as f:
+            with open(OPTIONS_FILE, encoding="utf-8") as f:
                 data = json.load(f)
                 if isinstance(data, dict):
                     cfg["log_level"] = data.get("log_level", cfg["log_level"])
@@ -56,7 +55,7 @@ def load_configuration() -> dict:
     # 2. Check persistent accounts store (created via UI)
     if ACCOUNTS_STORE_FILE.exists():
         try:
-            with open(ACCOUNTS_STORE_FILE, "r", encoding="utf-8") as f:
+            with open(ACCOUNTS_STORE_FILE, encoding="utf-8") as f:
                 saved_accounts = json.load(f)
                 if isinstance(saved_accounts, list) and len(saved_accounts) > 0:
                     cfg["accounts"] = saved_accounts
@@ -66,9 +65,9 @@ def load_configuration() -> dict:
     return cfg
 
 
-def parse_accounts(raw_accounts: list) -> List[AccountConfig]:
+def parse_accounts(raw_accounts: list) -> list[AccountConfig]:
     """Parse list of account dictionaries into AccountConfig objects."""
-    accounts: List[AccountConfig] = []
+    accounts: list[AccountConfig] = []
     for item in raw_accounts:
         if isinstance(item, dict):
             name = item.get("name", "Account")
