@@ -319,9 +319,10 @@
       "allowedVersions": "<2.14"
     },
     {
-      "description": "PHP Version Update - update docs",
+      "description": "PHP Version Update - restrict to <8.6 until Alpine ships php86",
       "matchDepNames": ["php/php-src"],
-      "extractVersion": "^php-(?<version>\\d+\\.\\d+)"
+      "extractVersion": "^php-(?<version>\\d+\\.\\d+)",
+      "allowedVersions": "<8.6"
     },
     {
       "matchManagers": ["github-actions"],
@@ -395,9 +396,15 @@
       "automerge": true
     },
     {
+      "description": "Restrict Wiki.js stable addon to v2.x (<3.0.0) because v3 removes /wiki/server entrypoint",
+      "matchDepNames": ["requarks/wiki", "ghcr.io/requarks/wiki"],
+      "matchFileNames": ["wiki.js/Dockerfile"],
+      "allowedVersions": "<3.0.0"
+    },
+    {
       "description": "Allow pre-releases for Wiki.js V3",
       "matchDepNames": ["requarks/wiki", "ghcr.io/requarks/wiki"],
-      "matchFileNames": ["wiki.js3/Dockerfile"],
+      "matchFileNames": ["wiki.js3/Dockerfile", ".dev/wiki.js3/Dockerfile"],
       "ignoreUnstable": false
     },
     {
