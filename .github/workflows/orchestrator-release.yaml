@@ -749,9 +749,11 @@ jobs:
           fi
           # Docker/GHCR requires lowercase repository names
           IMAGE=$(echo "ghcr.io/${{ github.repository_owner }}/amd64-hassio-addons-$SLUG" | tr '[:upper:]' '[:lower:]')
-          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
-          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          {
+            echo "slug=$SLUG"
+            echo "image=$IMAGE"
+            echo "version=$VERSION"
+          } >> "$GITHUB_OUTPUT"
 
       - name: 🔧 Inject Version Warning
         run: |
@@ -1253,7 +1255,7 @@ jobs:
       - name: 📅 Get BUILD_DATE for Standalone WhatsApp
         if: matrix.App == 'whatsapp'
         id: date
-        run: echo "date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+        run: echo "date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
 
       - name: 🏷️ Extract Docker Metadata & OCI Labels for Standalone WhatsApp Gateway
         if: matrix.App == 'whatsapp'

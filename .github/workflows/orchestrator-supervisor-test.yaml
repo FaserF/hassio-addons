@@ -451,7 +451,6 @@ jobs:
             echo "Installing Dependency: MariaDB (core_mariadb)..."
             if ! docker exec ha-supervisor-test ha apps install core_mariadb; then
               echo "⚠️ Failed to install core_mariadb"
-              MYSQL_FAILED=true
               echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
             else
               echo "Configuring MariaDB options..."
@@ -461,7 +460,6 @@ jobs:
 
               if ! docker exec ha-supervisor-test ha apps start core_mariadb; then
                 echo "⚠️ Failed to start core_mariadb"
-                MYSQL_FAILED=true
                 echo "MYSQL_FAILED=true" >> "$GITHUB_ENV"
               else
                 echo "Waiting for MariaDB to be ready..."

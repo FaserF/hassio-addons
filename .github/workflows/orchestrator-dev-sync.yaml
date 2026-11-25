@@ -16,7 +16,7 @@ jobs:
   sync-dev:
     name: 🚥 Sync Dev Branch (Disabled)
     runs-on: ubuntu-latest
-    if: false
+    if: vars.ENABLE_DEV_SYNC == 'true'
     steps:
       - name: ⤵️ Checkout master
         uses: actions/checkout@v7

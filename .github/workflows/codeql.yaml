@@ -49,7 +49,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
-          STATUS=$(gh api repos/$REPO --jq '.security_and_analysis.advanced_security.status // "disabled"' 2>/dev/null || echo "disabled")
+          STATUS=$(gh api "repos/$REPO" --jq '.security_and_analysis.advanced_security.status // "disabled"' 2>/dev/null || echo "disabled")
           if [ "$STATUS" = "enabled" ]; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
             echo "GitHub Advanced Security is enabled - CodeQL will run."
