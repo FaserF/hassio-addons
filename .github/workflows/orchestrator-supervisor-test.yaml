@@ -64,9 +64,11 @@ jobs:
         uses: actions/checkout@v7
       - name: "🔧 Filter Ingress-Enabled Apps"
         id: filter
+        env:
+          INPUT_APPS: ${{ inputs.Apps }}
         run: |
           # Parse input - handle both JSON array (from workflow_call) and comma-separated (from dispatch)
-          INPUT="${{ inputs.Apps }}"
+          INPUT="$INPUT_APPS"
 
           # Check if it's a JSON array
           if echo "$INPUT" | jq -e 'type == "array"' > /dev/null 2>&1; then
@@ -268,22 +270,22 @@ jobs:
 
               # Remap common ports that might conflict in CI
               if [ -f "$DEST_DIR/config.yaml" ]; then
-                 if grep -q "8080/tcp" "$DEST_DIR/config.yaml"; then
-                    echo "Remapping port 8080 to 8088 to avoid CI conflicts..."
-                    sed -i "s/8080/8088/g" "$DEST_DIR/config.yaml"
+                 if grep -qE '(^|[[:space:]:])8080([[:space:]]|$)' "$DEST_DIR/config.yaml"; then
+                    echo "Remapping port 8080 to 8880 to avoid CI conflicts..."
+                    sed -i -E 's/(^|[[:space:]:])8080([[:space:]]|$)/\18880\2/g' "$DEST_DIR/config.yaml"
                  fi
-                 if grep -q "2022" "$DEST_DIR/config.yaml"; then
+                 if grep -qE '(^|[[:space:]:])2022([[:space:]]|$)' "$DEST_DIR/config.yaml"; then
                     echo "Remapping port 2022 to 2028 to avoid CI conflicts..."
-                    sed -i "s/2022/2028/g" "$DEST_DIR/config.yaml"
+                    sed -i -E 's/(^|[[:space:]:])2022([[:space:]]|$)/\12028\2/g' "$DEST_DIR/config.yaml"
                  fi
                  # HA 2026.8+ defaults to port 80/443 - remap addon host ports to avoid conflict
-                 if grep -q "80/tcp:" "$DEST_DIR/config.yaml"; then
+                 if grep -qE '80/tcp:[[:space:]]*80([[:space:]]|$)' "$DEST_DIR/config.yaml"; then
                     echo "Remapping host port 80 to 8880 to avoid HA port conflict..."
-                    sed -i -E 's/(80\/tcp:[[:space:]]*)80/\18880/g' "$DEST_DIR/config.yaml"
+                    sed -i -E 's/(80\/tcp:[[:space:]]*)80([[:space:]]|$)/\18880\2/g' "$DEST_DIR/config.yaml"
                  fi
-                 if grep -q "443/tcp:" "$DEST_DIR/config.yaml"; then
+                 if grep -qE '443/tcp:[[:space:]]*443([[:space:]]|$)' "$DEST_DIR/config.yaml"; then
                     echo "Remapping host port 443 to 8443 to avoid HA port conflict..."
-                    sed -i -E 's/(443\/tcp:[[:space:]]*)443/\18443/g' "$DEST_DIR/config.yaml"
+                    sed -i -E 's/(443\/tcp:[[:space:]]*)443([[:space:]]|$)/\18443\2/g' "$DEST_DIR/config.yaml"
                  fi
 
               fi

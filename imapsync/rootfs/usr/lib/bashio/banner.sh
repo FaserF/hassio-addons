@@ -15,53 +15,69 @@ bashio::app.print_banner() {
 	bashio::log.blue "-----------------------------------------------------------\n"
 
 	# Restart Loop Protection (Max 3 consecutive failed starts)
+	# Scope check once per container boot via /run/.boot_loop_lock + owner script
 	if [ -z "${_BOOT_LOOP_CHECKED:-}" ] && [ -d "/data" ]; then
 		export _BOOT_LOOP_CHECKED=1
-		local STATE_FILE="/data/.boot_loop_protection"
-		local LAST_VER=""
-		local FAIL_COUNT=0
-
-		if [ -f "$STATE_FILE" ]; then
-			LAST_VER=$(head -n 1 "$STATE_FILE" 2>/dev/null)
-			FAIL_COUNT=$(sed -n '2p' "$STATE_FILE" 2>/dev/null)
-			FAIL_COUNT="${FAIL_COUNT//[!0-9]/}"
-			[[ -z "$FAIL_COUNT" ]] && FAIL_COUNT=0
-		fi
-
-		if [ "$App_version" != "$LAST_VER" ]; then
-			FAIL_COUNT=0
-			LAST_VER="$App_version"
-		fi
-
-		FAIL_COUNT=$((FAIL_COUNT + 1))
-
-		if [ "$FAIL_COUNT" -gt 3 ]; then
-			bashio::log.error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-			bashio::log.error "🚨 RESTART LOOP DETECTED!"
-			bashio::log.error "⚠️  This App has failed to start 3 times consecutively."
-			bashio::log.error "⚠️  Stopping App to prevent an endless restart loop."
-			bashio::log.error "💡 Update the App or fix configuration issues to try again."
-			bashio::log.error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-			printf "%s\n0\n" "$App_version" >"$STATE_FILE" 2>/dev/null
-
-			if type bashio::app.stop >/dev/null 2>&1; then
-				bashio::app.stop 2>/dev/null || true
-			elif type bashio::addon.stop >/dev/null 2>&1; then
-				bashio::addon.stop 2>/dev/null || true
+		local _BOOT_OWNER_FILE="/run/.boot_loop_owner"
+		local _SELF_ID="${0:-banner}"
+		local _SHOULD_CHECK_LOOP=0
+		if [ -d "/run" ]; then
+			if mkdir /run/.boot_loop_lock 2>/dev/null; then
+				printf '%s\n' "$_SELF_ID" >"$_BOOT_OWNER_FILE" 2>/dev/null || true
+				_SHOULD_CHECK_LOOP=1
+			elif [ -f "$_BOOT_OWNER_FILE" ] && [ "$(cat "$_BOOT_OWNER_FILE" 2>/dev/null)" = "$_SELF_ID" ]; then
+				_SHOULD_CHECK_LOOP=1
 			fi
-			sleep 3600
-			exit 0
+		else
+			_SHOULD_CHECK_LOOP=1
 		fi
+		if [ "$_SHOULD_CHECK_LOOP" -eq 1 ]; then
+			local STATE_FILE="/data/.boot_loop_protection"
+			local LAST_VER=""
+			local FAIL_COUNT=0
 
-		printf "%s\n%s\n" "$App_version" "$FAIL_COUNT" >"$STATE_FILE" 2>/dev/null
-
-		(
-			sleep 120
-			if [ -d "/data" ]; then
-				printf "%s\n0\n" "$App_version" >"/data/.boot_loop_protection" 2>/dev/null
+			if [ -f "$STATE_FILE" ]; then
+				LAST_VER=$(head -n 1 "$STATE_FILE" 2>/dev/null)
+				FAIL_COUNT=$(sed -n '2p' "$STATE_FILE" 2>/dev/null)
+				FAIL_COUNT="${FAIL_COUNT//[!0-9]/}"
+				[[ -z "$FAIL_COUNT" ]] && FAIL_COUNT=0
 			fi
-		) &
+
+			if [ "$App_version" != "$LAST_VER" ]; then
+				FAIL_COUNT=0
+				LAST_VER="$App_version"
+			fi
+
+			FAIL_COUNT=$((FAIL_COUNT + 1))
+
+			if [ "$FAIL_COUNT" -gt 3 ]; then
+				bashio::log.error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+				bashio::log.error "🚨 RESTART LOOP DETECTED!"
+				bashio::log.error "⚠️  This App has failed to start 3 times consecutively."
+				bashio::log.error "⚠️  Stopping App to prevent an endless restart loop."
+				bashio::log.error "💡 Update the App or fix configuration issues to try again."
+				bashio::log.error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+				printf "%s\n0\n" "$App_version" >"$STATE_FILE" 2>/dev/null
+
+				if type bashio::app.stop >/dev/null 2>&1; then
+					bashio::app.stop 2>/dev/null || true
+				elif type bashio::addon.stop >/dev/null 2>&1; then
+					bashio::addon.stop 2>/dev/null || true
+				fi
+				sleep 3600
+				exit 0
+			fi
+
+			printf "%s\n%s\n" "$App_version" "$FAIL_COUNT" >"$STATE_FILE" 2>/dev/null
+
+			(
+				sleep 120
+				if [ -d "/data" ]; then
+					printf "%s\n0\n" "$App_version" >"/data/.boot_loop_protection" 2>/dev/null
+				fi
+			) &
+		fi
 	fi
 
 	# Version Checks with granular early development detection
