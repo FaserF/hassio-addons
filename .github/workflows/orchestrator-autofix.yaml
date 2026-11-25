@@ -136,25 +136,14 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # 2. Python (Format & Sort Imports)
-      # We format the internal scripts and any App python files
-      - name: 🐍 Run Black (Formatter)
-        id: black
+      # 2. Python (Format & Sort Imports via Ruff, matching reusable-linter.yml)
+      - name: 🐍 Run Ruff Format & Import Sort
+        id: ruff
         continue-on-error: true
         run: |
-          pip install black
-          black --verbose .
-          if git diff --quiet; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: 🐍 Run Isort (Import Sorter)
-        id: isort
-        run: |
-          pip install isort
-          isort --profile black .
+          pip install ruff
+          ruff check --select I --fix .
+          ruff format .
           if git diff --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
@@ -231,8 +220,7 @@ jobs:
         run: |
           tools=""
           if [[ "${{ steps.shfmt.outputs.changed }}" == "true" ]]; then tools="$tools shfmt"; fi
-          if [[ "${{ steps.black.outputs.changed }}" == "true" ]]; then tools="$tools black"; fi
-          if [[ "${{ steps.isort.outputs.changed }}" == "true" ]]; then tools="$tools isort"; fi
+          if [[ "${{ steps.ruff.outputs.changed }}" == "true" ]]; then tools="$tools ruff"; fi
           if [[ "${{ steps.prettier.outputs.changed }}" == "true" ]]; then tools="$tools prettier"; fi
           if [[ "${{ steps.markdownlint.outputs.changed }}" == "true" ]]; then tools="$tools markdownlint"; fi
 
