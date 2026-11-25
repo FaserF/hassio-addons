@@ -5,6 +5,7 @@ import argparse
 import re
 import subprocess
 import sys
+from typing import Any
 
 # Noise filter — commits matching ANY pattern are silently dropped
 NOISE_PATTERNS = [
@@ -180,8 +181,8 @@ def main():
     except ValueError:
         total_raw = len(commit_lines)
 
-    buckets = {k: [] for k in CATEGORY_ORDER}
-    seen_items = {}
+    buckets: dict[str, list[dict[str, Any]]] = {k: [] for k in CATEGORY_ORDER}
+    seen_items: dict[str, dict[str, Any]] = {}
 
     for line in commit_lines:
         author = ""
@@ -315,7 +316,7 @@ def main():
                 if commit_hash and commit_hash not in existing_break["hashes"]:
                     existing_break["hashes"].append(commit_hash)
             else:
-                break_item = {
+                break_item: dict[str, Any] = {
                     "display": break_display,
                     "hashes": [commit_hash] if commit_hash else [],
                 }
@@ -328,7 +329,7 @@ def main():
                 existing_item["hashes"].append(commit_hash)
             continue
 
-        item = {"display": display, "hashes": [commit_hash] if commit_hash else []}
+        item: dict[str, Any] = {"display": display, "hashes": [commit_hash] if commit_hash else []}
         seen_items[norm_key] = item
         buckets[bucket].append(item)
 
@@ -341,41 +342,45 @@ def main():
         out.append("> [!CAUTION]")
         out.append("> **This release contains breaking changes. Please review before updating.**")
         out.append(">")
-        for item in buckets["breaking"]:
-            formatted = get_formatted_item(item["display"], item["hashes"], repo, commit_authors)
+        for breaking_item in buckets["breaking"]:
+            formatted = get_formatted_item(breaking_item["display"], breaking_item["hashes"], repo, commit_authors)
             out.append(f"> - {formatted}")
         out.append("")
 
     for key in CATEGORY_ORDER:
         if key == "breaking":
             continue
-        bucket = buckets[key]
-        if not bucket:
+        category_items = buckets[key]
+        if not category_items:
             continue
         has_any = True
 
         out.append(f"### {CATEGORY_EMOJI[key]}")
         out.append("")
 
-        collapse = (len(bucket) > MAX_PER_SECTION) and (key not in NEVER_COLLAPSE)
+        collapse = (len(category_items) > MAX_PER_SECTION) and (key not in NEVER_COLLAPSE)
 
         if collapse:
             for i in range(MAX_PER_SECTION):
-                formatted = get_formatted_item(bucket[i]["display"], bucket[i]["hashes"], repo, commit_authors)
+                formatted = get_formatted_item(
+                    category_items[i]["display"], category_items[i]["hashes"], repo, commit_authors
+                )
                 out.append(f"- {formatted}")
-            remaining = len(bucket) - MAX_PER_SECTION
+            remaining = len(category_items) - MAX_PER_SECTION
             out.append("")
             out.append("<details>")
             out.append(f"<summary>Show {remaining} more changes…</summary>")
             out.append("")
-            for i in range(MAX_PER_SECTION, len(bucket)):
-                formatted = get_formatted_item(bucket[i]["display"], bucket[i]["hashes"], repo, commit_authors)
+            for i in range(MAX_PER_SECTION, len(category_items)):
+                formatted = get_formatted_item(
+                    category_items[i]["display"], category_items[i]["hashes"], repo, commit_authors
+                )
                 out.append(f"- {formatted}")
             out.append("")
             out.append("</details>")
         else:
-            for item in bucket:
-                formatted = get_formatted_item(item["display"], item["hashes"], repo, commit_authors)
+            for entry in category_items:
+                formatted = get_formatted_item(entry["display"], entry["hashes"], repo, commit_authors)
                 out.append(f"- {formatted}")
         out.append("")
 

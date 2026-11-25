@@ -4,7 +4,7 @@ import asyncio
 import json
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 import aiohttp
 import websockets
@@ -24,15 +24,15 @@ class CDPClient:
     def __init__(self, port: int = CDP_PORT) -> None:
         self.port = port
         self._ws: Any = None  # websockets.WebSocketClientProtocol
-        self._ws_url: Optional[str] = None
+        self._ws_url: str | None = None
         self._msg_id: int = 1
-        self._pending: Dict[int, asyncio.Future] = {}
-        self._recv_task: Optional[asyncio.Task] = None
+        self._pending: dict[int, asyncio.Future] = {}
+        self._recv_task: asyncio.Task | None = None
         self._lock = asyncio.Lock()
 
     # ── Internal helpers ───────────────────────────────────────────────────────
 
-    async def _get_page_ws_url(self) -> Optional[str]:
+    async def _get_page_ws_url(self) -> str | None:
         """Fetch the WebSocket debugger URL for the first page tab."""
         try:
             async with aiohttp.ClientSession() as session:
@@ -131,7 +131,7 @@ class CDPClient:
 
     # ── Public API ─────────────────────────────────────────────────────────────
 
-    async def send_cmd(self, method: str, params: Optional[Dict[str, Any]] = None, timeout: float = 15.0) -> Any:
+    async def send_cmd(self, method: str, params: dict[str, Any] | None = None, timeout: float = 15.0) -> Any:
         """Send a CDP command and wait for its result."""
         async with self._lock:
             if not await self._ensure_connected():
@@ -152,7 +152,7 @@ class CDPClient:
             try:
                 result = await asyncio.wait_for(fut, timeout=timeout)
                 return result
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 self._pending.pop(msg_id, None)
                 _LOGGER.debug("CDP command %s timed out after %ss", method, timeout)
                 return None

@@ -22,7 +22,7 @@ def check_addon(addon_path):
         # Simple string check in config.yaml
         config_path = os.path.join(addon_path, "config.yaml")
         if os.path.exists(config_path):
-            with open(config_path, "r", encoding="utf-8") as f:
+            with open(config_path, encoding="utf-8") as f:
                 cfg_content = f.read()
 
             # Use regex to find image tag pointing to ghcr.io precisely
@@ -44,7 +44,7 @@ def check_addon(addon_path):
         errors.append("Dockerfile missing")
         return False, errors, warnings
 
-    with open(dockerfile_path, "r", encoding="utf-8") as f:
+    with open(dockerfile_path, encoding="utf-8") as f:
         content = f.read()
 
     # Check 1: S6 Overlay
@@ -71,7 +71,7 @@ def check_addon(addon_path):
     detected_base = False
     if os.path.exists(build_yaml_path):
         try:
-            with open(build_yaml_path, "r") as b:
+            with open(build_yaml_path) as b:
                 build_config = yaml.safe_load(b)
                 if "build_from" in build_config:
                     base_images = build_config["build_from"]
@@ -138,7 +138,7 @@ def check_addon(addon_path):
     config_path = os.path.join(addon_path, "config.yaml")
     if os.path.exists(config_path):
         try:
-            with open(config_path, "r", encoding="utf-8") as f:
+            with open(config_path, encoding="utf-8") as f:
                 config = yaml.safe_load(f)
 
             has_log_level_option = "options" in config and "log_level" in config["options"]

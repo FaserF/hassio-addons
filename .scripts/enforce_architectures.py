@@ -13,7 +13,7 @@ class IndentedYamlDumper(yaml.SafeDumper):
 
 
 def enforce_config(file_path):
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         try:
             content = yaml.safe_load(f)
         except yaml.YAMLError:
@@ -38,13 +38,13 @@ def enforce_config(file_path):
 
 def enforce_build(file_path):
     if file_path.suffix == ".yaml":
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             try:
                 content = yaml.safe_load(f)
             except yaml.YAMLError:
                 return False
     elif file_path.suffix == ".json":
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             try:
                 content = json.load(f)
             except json.JSONDecodeError:

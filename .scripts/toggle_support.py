@@ -14,7 +14,7 @@ def update_readme_status(addon, to_unsupported, reason="deprecated by vendor"):
         print(f"[WARN] {README_PATH} not found.")
         return
 
-    with open(README_PATH, "r", encoding="utf-8") as f:
+    with open(README_PATH, encoding="utf-8") as f:
         lines = f.readlines()
 
     new_lines = []
@@ -46,7 +46,7 @@ def update_readme_status(addon, to_unsupported, reason="deprecated by vendor"):
                         status = "✅"
                         config_path = os.path.join(addon, "config.yaml")
                         if os.path.exists(config_path):
-                            with open(config_path, "r", encoding="utf-8") as cf:
+                            with open(config_path, encoding="utf-8") as cf:
                                 for cl in cf:
                                     if cl.strip().startswith("version:"):
                                         ver = cl.split(":", 1)[1].strip().strip("'\"")
@@ -74,7 +74,7 @@ def update_config_yaml(addon, to_unsupported):
         print(f"[WARN] {config_path} not found.")
         return
 
-    with open(config_path, "r", encoding="utf-8") as f:
+    with open(config_path, encoding="utf-8") as f:
         content = f.read()
 
     # Update URL

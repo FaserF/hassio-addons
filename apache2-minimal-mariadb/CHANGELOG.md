@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.4.14 (2026-11-25)
+
+### 🐛 Bug Fixes
+
+- Pin `PHP_VERSION` to `8.5` and pull `php85` (`>= 8.5.13-r0`) from Alpine `edge/community` to resolve `PHP2SHELL` / `phpAfterShell` CVEs (Refs FaserF/ha-webserver#6)
+
 ## 3.4.13 (2026-11-15)
 
 ### 📦 Dependencies

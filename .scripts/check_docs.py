@@ -19,7 +19,7 @@ def check_readme(addon_path, fix=False):
         print(f"❌ {addon_path}: README.md missing")
         return False
 
-    with open(readme_path, "r", encoding="utf-8") as f:
+    with open(readme_path, encoding="utf-8") as f:
         content = f.read()
 
     errors = []

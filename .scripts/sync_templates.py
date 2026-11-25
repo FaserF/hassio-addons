@@ -17,7 +17,7 @@ def sync_template():
         return
 
     print(f"📄 Reading {TEMPLATE_PATH}...")
-    with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
+    with open(TEMPLATE_PATH, encoding="utf-8") as f:
         lines = f.readlines()
 
     new_options = get_addons()

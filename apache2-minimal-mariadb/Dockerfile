@@ -12,14 +12,14 @@ ARG BUILD_DATE="1970-01-01T00:00:00Z"
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # renovate: datasource=github-releases depName=php/php-src
-ARG PHP_VERSION="8.6"
+ARG PHP_VERSION="8.5"
 
 # hadolint ignore=DL4006,DL3018
 # renovate: datasource=repology depName=alpine_3_21/apache2 versioning=loose
 ARG APACHE2_VERSION="2.4.71-r0"
 
 # App metadata (injected by CI)
-ENV APP_VERSION="3.4.13"
+ENV APP_VERSION="3.4.14"
 ENV APP_NAME="Apache2 Minimal with MariaDB Client"
 ENV APP_SLUG="apache2-minimal-mariadb"
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
@@ -28,6 +28,7 @@ ENV APP_UNSUPPORTED="false"
 RUN mkdir /run/apache2 \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/main" > /etc/apk/repositories \
     && echo "http://dl-cdn.alpinelinux.org/alpine/v3.23/community" >> /etc/apk/repositories \
+    && echo "@edge http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk upgrade --no-cache --available \
     && apk add --no-cache libcrypto3 libssl3 \
     apache2${APACHE2_VERSION:+=$APACHE2_VERSION} \
@@ -35,16 +36,18 @@ RUN mkdir /run/apache2 \
     jq \
     && PHP_V=$(echo "${PHP_VERSION}" | cut -d. -f1-2 | tr -d '.') \
     && apk add --no-cache \
-    "php${PHP_V}-apache2" \
+    "php${PHP_V}-common@edge" \
+    "php${PHP_V}-openssl@edge" \
+    "php${PHP_V}-apache2@edge" \
     libxml2-dev \
     apache2-utils \
     apache2-mod-wsgi \
     apache2-ssl \
-    "php${PHP_V}" \
-    "php${PHP_V}-mysqli" \
-    "php${PHP_V}-curl" \
-    "php${PHP_V}-mbstring" \
-    "php${PHP_V}-zip" \
+    "php${PHP_V}@edge" \
+    "php${PHP_V}-mysqli@edge" \
+    "php${PHP_V}-curl@edge" \
+    "php${PHP_V}-mbstring@edge" \
+    "php${PHP_V}-zip@edge" \
     mariadb-client \
     && sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf \
     && sed -i 's/User apache/User www-data/' /etc/apache2/httpd.conf \

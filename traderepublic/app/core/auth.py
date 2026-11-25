@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .cdp import CDPClient
 
@@ -13,7 +13,7 @@ class AuthHelper:
     def __init__(self, cdp: CDPClient) -> None:
         self.cdp = cdp
 
-    async def get_waf_token(self) -> Optional[str]:
+    async def get_waf_token(self) -> str | None:
         """Extract AWS WAF token from browser cookies if solved."""
         res = await self.cdp.send_cmd(
             "Network.getCookies",
@@ -73,7 +73,7 @@ class AuthHelper:
         except Exception as e:
             _LOGGER.debug("Failed to inject cookies into Chromium: %s", e)
 
-    async def extract_token_from_cookies(self) -> Optional[str]:
+    async def extract_token_from_cookies(self) -> str | None:
         """Extract valid JWT session token from Chromium via CDP cookies and storage."""
         # 1. Check CDP Network Cookies
         for cdp_method, params in [
@@ -177,7 +177,7 @@ class AuthHelper:
 
         return None
 
-    async def extract_qr_code(self) -> Optional[str]:
+    async def extract_qr_code(self) -> str | None:
         """Extract QR code as base64 data URI or screenshot from Trade Republic login page."""
         try:
             # 1. Check if the QR code is expired (.qrLoginCard__expired or blur overlay)
@@ -303,7 +303,7 @@ class AuthHelper:
             _LOGGER.debug("Failed to extract QR code: %s", e)
         return None
 
-    async def execute_login(self, clean_phone: str, clean_pin: str) -> Dict[str, Any]:
+    async def execute_login(self, clean_phone: str, clean_pin: str) -> dict[str, Any]:
         """Navigate to login, enter phone & PIN via trusted CDP events, and trigger push/SMS."""
         await self.cdp.send_cmd("Page.navigate", {"url": "https://app.traderepublic.com/login"})
         await asyncio.sleep(3.5)
@@ -398,12 +398,14 @@ class AuthHelper:
             # Select all & delete any residual characters before inserting
             await self.cdp.send_cmd(
                 "Runtime.evaluate",
-                {"expression": """
+                {
+                    "expression": """
                     (() => {
                         const inp = document.querySelector('input.phone-input__input, input[type="tel"], input[name="username"]');
                         if (inp) { inp.focus(); inp.select(); }
                     })()
-                    """},
+                    """
+                },
             )
             await self.cdp.send_cmd(
                 "Input.dispatchKeyEvent",

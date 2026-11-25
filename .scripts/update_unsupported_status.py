@@ -30,7 +30,7 @@ def add_banner(params):
 
     # 1. Update README
     if os.path.exists(readme_path):
-        with open(readme_path, "r", encoding="utf-8") as f:
+        with open(readme_path, encoding="utf-8") as f:
             content = f.read()
 
         # Check if banner already exists
@@ -58,7 +58,7 @@ def add_banner(params):
     # 2. Update config.yaml description
     if os.path.exists(config_path):
         try:
-            with open(config_path, "r", encoding="utf-8") as f:
+            with open(config_path, encoding="utf-8") as f:
                 config = yaml.safe_load(f)
 
             # Update description if not present
@@ -76,7 +76,7 @@ def add_banner(params):
                     )
         except yaml.YAMLError as e:
             print(f"Failed to parse config.yaml: {e}")
-        except IOError as e:
+        except OSError as e:
             print(f"Failed to update config.yaml: {e}")
 
 
@@ -85,7 +85,7 @@ def remove_banner(params):
     readme_path = os.path.join(path, "README.md")
 
     if os.path.exists(readme_path):
-        with open(readme_path, "r", encoding="utf-8") as f:
+        with open(readme_path, encoding="utf-8") as f:
             content = f.read()
 
         if "[!CAUTION]" in content:
@@ -101,7 +101,7 @@ def remove_banner(params):
     config_path = os.path.join(path, "config.yaml")
     if os.path.exists(config_path):
         try:
-            with open(config_path, "r", encoding="utf-8") as f:
+            with open(config_path, encoding="utf-8") as f:
                 config = yaml.safe_load(f)
 
             desc = config.get("description", "")

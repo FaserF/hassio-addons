@@ -4,7 +4,7 @@ import logging
 import os
 import time
 from contextlib import asynccontextmanager
-from typing import Any, Optional
+from typing import Any
 
 import aiohttp
 from fastapi import FastAPI, HTTPException, Request, Security
@@ -29,7 +29,7 @@ def get_addon_options() -> dict:
     options_path = os.path.join(DATA_DIR, "options.json")
     if os.path.exists(options_path):
         try:
-            with open(options_path, "r", encoding="utf-8") as f:
+            with open(options_path, encoding="utf-8") as f:
                 return json.load(f)
         except Exception as err:
             _LOGGER.warning("Could not read options.json: %s", err)
@@ -87,7 +87,7 @@ def get_addon_version() -> str:
     ]:
         if os.path.exists(path):
             try:
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     for line in f:
                         if line.startswith("version:"):
                             parsed = line.split(":", 1)[1].strip().strip('"').strip("'")
@@ -140,7 +140,7 @@ def get_pending_restart_state() -> dict[str, Any]:
     if not os.path.exists(INSTALL_STATE_FILE):
         return {"restart_required": False, "pending_integrations": []}
     try:
-        with open(INSTALL_STATE_FILE, "r", encoding="utf-8") as f:
+        with open(INSTALL_STATE_FILE, encoding="utf-8") as f:
             data = json.load(f)
             return data
     except Exception:
@@ -172,7 +172,7 @@ def clear_pending_restart_state() -> None:
             pass
 
 
-def get_installed_integration_manifest(slug: str) -> Optional[dict]:
+def get_installed_integration_manifest(slug: str) -> dict | None:
     """Retrieve parsed manifest.json for an installed integration if present."""
     ha_cfg = os.getenv("HA_CONFIG_ROOT", "/config")
     folder = INTEGRATION_SPECS.get(slug, {}).get("folder", slug)
@@ -186,14 +186,14 @@ def get_installed_integration_manifest(slug: str) -> Optional[dict]:
     for path in candidates:
         if os.path.exists(path):
             try:
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     return json.load(f)
             except Exception as err:
                 _LOGGER.debug("Error reading %s: %s", path, err)
     return None
 
 
-def get_integration_version(slug: str = "google_home") -> Optional[str]:
+def get_integration_version(slug: str = "google_home") -> str | None:
     """Retrieve locally installed integration version."""
     manifest = get_installed_integration_manifest(slug)
     if manifest and manifest.get("version"):
@@ -201,7 +201,7 @@ def get_integration_version(slug: str = "google_home") -> Optional[str]:
     return None
 
 
-async def fetch_latest_github_release(repo: str) -> Optional[str]:
+async def fetch_latest_github_release(repo: str) -> str | None:
     """Fetch latest release tag from GitHub API with in-memory caching."""
     now = time.time()
     cached = _GITHUB_CACHE.get(repo)
@@ -246,7 +246,7 @@ async def fetch_latest_github_release(repo: str) -> Optional[str]:
     return cached.get("version") if cached else None
 
 
-def compare_is_update_available(installed_ver: Optional[str], latest_ver: Optional[str]) -> bool:
+def compare_is_update_available(installed_ver: str | None, latest_ver: str | None) -> bool:
     """Compare semver strings to determine if an update is available."""
     if not installed_ver or not latest_ver:
         return False
@@ -260,15 +260,15 @@ def compare_is_update_available(installed_ver: Optional[str], latest_ver: Option
 
 class TokenState:
     def __init__(self) -> None:
-        self.email: Optional[str] = None
-        self.master_token: Optional[str] = None
-        self.findmy_adm_token: Optional[str] = None
-        self.findmy_shared_key: Optional[str] = None
-        self.findmy_owner_key: Optional[str] = None
+        self.email: str | None = None
+        self.master_token: str | None = None
+        self.findmy_adm_token: str | None = None
+        self.findmy_shared_key: str | None = None
+        self.findmy_owner_key: str | None = None
         self.status: str = "Ready for token input"
-        self.last_error: Optional[str] = None
+        self.last_error: str | None = None
         self.requests_count: int = 0
-        self.last_sync_time: Optional[float] = None
+        self.last_sync_time: float | None = None
         self.request_counts_by_type: dict[str, int] = {"session": 0, "login": 0, "status": 0, "findmy": 0}
         self.last_interaction_type: str = "None"
         self.last_interaction_details: str = "No requests recorded yet"
@@ -277,7 +277,7 @@ class TokenState:
     def load(self) -> None:
         if os.path.exists(SESSION_FILE):
             try:
-                with open(SESSION_FILE, "r", encoding="utf-8") as f:
+                with open(SESSION_FILE, encoding="utf-8") as f:
                     data = json.load(f)
                     self.email = data.get("email")
                     self.master_token = data.get("master_token")
@@ -334,7 +334,7 @@ state = TokenState()
 
 async def require_auth(
     request: Request,
-    authorization: Optional[str] = Security(_api_key_header),
+    authorization: str | None = Security(_api_key_header),
 ) -> None:
     client_ip = request.client.host if request.client else ""
     if (
@@ -478,8 +478,8 @@ if os.path.exists(static_dir):
 
 class LoginRequest(BaseModel):
     email: str
-    password: Optional[str] = None
-    token: Optional[str] = None
+    password: str | None = None
+    token: str | None = None
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -701,7 +701,7 @@ async def get_chromium_log():
     if not os.path.exists(log_path):
         return {"lines": [], "message": "No Chromium log file yet"}
     try:
-        with open(log_path, "r", errors="replace") as f:
+        with open(log_path, errors="replace") as f:
             lines = f.readlines()
         return {"lines": lines[-100:], "total_lines": len(lines)}
     except Exception as err:
@@ -898,12 +898,12 @@ async def get_findmy_extract_status():
 
 
 class ExtractSharedKeyRequest(BaseModel):
-    password: Optional[str] = None
+    password: str | None = None
 
 
 @app.post("/api/findmy/extract-shared-key")
 @app.post("/api/v1/findmy/extract-shared-key")
-async def post_extract_shared_key(req: Optional[ExtractSharedKeyRequest] = None):
+async def post_extract_shared_key(req: ExtractSharedKeyRequest | None = None):
     """Trigger headless Chromium to automatically extract the E2EE Shared Key.
 
     Requires an active authenticated browser session (master token must already exist).
@@ -933,7 +933,7 @@ async def post_extract_shared_key(req: Optional[ExtractSharedKeyRequest] = None)
     # Wait for sign-in bootstrap + unlock page (extraction polls up to 45s)
     try:
         result = await asyncio.wait_for(asyncio.shield(extraction_task), timeout=75.0)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         result = None
 
     if result:

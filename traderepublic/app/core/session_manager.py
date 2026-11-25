@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .constants import DATA_DIR, SESSION_FILE_PATH
 
@@ -15,11 +15,11 @@ class SessionManager:
     def __init__(self, file_path: str = SESSION_FILE_PATH) -> None:
         self.file_path = file_path
 
-    def load(self) -> Dict[str, Any]:
+    def load(self) -> dict[str, Any]:
         """Load session data from disk if available."""
         if os.path.exists(self.file_path):
             try:
-                with open(self.file_path, "r", encoding="utf-8") as f:
+                with open(self.file_path, encoding="utf-8") as f:
                     return json.load(f)
             except Exception as e:
                 _LOGGER.warning("Failed to load session file: %s", e)
@@ -28,11 +28,11 @@ class SessionManager:
     def save(
         self,
         token: str,
-        phone: Optional[str] = None,
-        login_time: Optional[float] = None,
-        logout_time: Optional[float] = None,
-        logout_reason: Optional[str] = None,
-        duration_seconds: Optional[float] = None,
+        phone: str | None = None,
+        login_time: float | None = None,
+        logout_time: float | None = None,
+        logout_reason: str | None = None,
+        duration_seconds: float | None = None,
     ) -> None:
         """Save session token and statistics to disk."""
         if not token:
@@ -60,8 +60,8 @@ class SessionManager:
     def record_logout(
         self,
         reason: str,
-        duration_seconds: Optional[float] = None,
-        logout_time: Optional[float] = None,
+        duration_seconds: float | None = None,
+        logout_time: float | None = None,
     ) -> None:
         """Record session termination details to disk."""
         existing = self.load()

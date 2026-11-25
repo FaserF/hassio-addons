@@ -7,7 +7,7 @@ import re
 import socket
 import time
 from contextlib import asynccontextmanager
-from typing import Any, Optional
+from typing import Any
 
 import aiohttp
 from browser import browser_service
@@ -33,14 +33,14 @@ logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
 _SUPERVISOR_TOKEN = os.getenv("SUPERVISOR_TOKEN", "")
 _api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
 
-_CACHED_ADDON_VERSION: Optional[str] = None
-_CACHED_ADDON_HOSTNAME: Optional[str] = None
+_CACHED_ADDON_VERSION: str | None = None
+_CACHED_ADDON_HOSTNAME: str | None = None
 _INTEGRATION_VERSION_CACHE: tuple[float, str] = (0.0, "—")
 
 
 async def require_supervisor_auth(
     request: Request,
-    authorization: Optional[str] = Security(_api_key_header),
+    authorization: str | None = Security(_api_key_header),
 ) -> None:
     """Require valid auth: allow Home Assistant container subnet (172.30.32.0/23, 127.0.0.1) or valid Bearer token."""
     client_ip = request.client.host if request.client else ""
@@ -197,7 +197,7 @@ def get_addon_version() -> str:
     ]:
         if os.path.exists(path):
             with contextlib.suppress(Exception):
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     for line in f:
                         if line.startswith("version:"):
                             parsed = line.split(":", 1)[1].strip().strip('"').strip("'")
@@ -237,7 +237,7 @@ def get_integration_version() -> str:
     for path in candidates:
         if os.path.exists(path):
             with contextlib.suppress(Exception):
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     manifest = json.load(f)
                     ver = manifest.get("version")
                     if ver:
@@ -259,7 +259,7 @@ class VerifyRequest(BaseModel):
 
 class ManualTokenRequest(BaseModel):
     session_token: str
-    phone_number: Optional[str] = None
+    phone_number: str | None = None
 
 
 @app.get("", response_class=HTMLResponse)
@@ -270,17 +270,15 @@ async def get_index(request: Request):
     last_sync_sec = int(now - browser_service.last_sync_time) if browser_service.last_sync_time else None
 
     last_data_time = getattr(browser_service._ws_keeper, "last_data_update_time", None)
-    last_data_sec: Optional[int] = int(now - last_data_time) if last_data_time else None
-    last_login_sec: Optional[int] = (
-        int(now - browser_service.last_login_time) if browser_service.last_login_time else None
-    )
-    last_token_sec: Optional[int] = (
+    last_data_sec: int | None = int(now - last_data_time) if last_data_time else None
+    last_login_sec: int | None = int(now - browser_service.last_login_time) if browser_service.last_login_time else None
+    last_token_sec: int | None = (
         int(now - browser_service.last_token_update_time) if browser_service.last_token_update_time else None
     )
-    last_checked_sec: Optional[int] = (
+    last_checked_sec: int | None = (
         int(now - browser_service.token_verified_at) if browser_service.token_verified_at else None
     )
-    last_logout_sec: Optional[int] = (
+    last_logout_sec: int | None = (
         int(now - browser_service.last_logout_time) if browser_service.last_logout_time else None
     )
 
@@ -291,7 +289,7 @@ async def get_index(request: Request):
             if lang_file.endswith(".json"):
                 lang_code = lang_file[:-5]
                 with contextlib.suppress(Exception):
-                    with open(os.path.join(i18n_dir, lang_file), "r", encoding="utf-8") as f:
+                    with open(os.path.join(i18n_dir, lang_file), encoding="utf-8") as f:
                         all_i18n[lang_code] = json.load(f)
 
     login_in_progress = False
@@ -401,7 +399,7 @@ async def get_session():
 
 
 @app.get("/api/v1/data", dependencies=[Security(require_supervisor_auth)])
-async def get_data(categories: Optional[str] = None):
+async def get_data(categories: str | None = None):
     """Return live portfolio data and metrics collected by the persistent keeper."""
     browser_service.client_requests_count += 1
     browser_service.last_sync_time = time.time()
@@ -460,7 +458,7 @@ async def get_data(categories: Optional[str] = None):
 
 
 @app.get("/api/v1/timeline", dependencies=[Security(require_supervisor_auth)])
-async def get_timeline(limit: int = 50, search: Optional[str] = None):
+async def get_timeline(limit: int = 50, search: str | None = None):
     """Query transactions from the timeline history with optional limit and search filtering."""
     data = getattr(browser_service._ws_keeper, "latest_data", {})
     all_txs = data.get("all_transactions") or data.get("recent_transactions") or []

@@ -28,7 +28,7 @@ def clean_source_content(content: str) -> tuple[str, bool]:
 def process_file(file_path: str, dry_run: bool = False) -> bool:
     if not os.path.exists(file_path):
         return False
-    with open(file_path, "r", encoding="utf-8") as file:
+    with open(file_path, encoding="utf-8") as file:
         content = file.read()
 
     new_content, changed = clean_source_content(content)

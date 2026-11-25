@@ -16,7 +16,6 @@ Usage:
 import os
 import re
 import sys
-from typing import Optional
 
 import yaml
 
@@ -42,7 +41,7 @@ def get_addon_info(addon_path: str) -> dict:
         return info
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             if config_path.endswith(".yaml"):
                 config = yaml.safe_load(f)
             else:
@@ -295,7 +294,7 @@ def inject_dockerfile_env(addon_path: str, addon_info: dict, unsupported: bool) 
         print(f"⚠️ No Dockerfile found in {addon_path}")
         return False
 
-    with open(dockerfile_path, "r", encoding="utf-8") as f:
+    with open(dockerfile_path, encoding="utf-8") as f:
         content = f.read()
 
     version = addon_info["version"]
@@ -349,7 +348,7 @@ ENV APP_UNSUPPORTED="{str(unsupported).lower()}" """
     return True
 
 
-def find_run_script(addon_path: str) -> Optional[str]:
+def find_run_script(addon_path: str) -> str | None:
     """Find the main run script for the addon."""
     addon_name = os.path.basename(addon_path.rstrip("/\\"))
     candidates = [
@@ -391,7 +390,7 @@ def inject_run_script(addon_path: str, addon_info: dict, unsupported: bool) -> b
         print("[INFO] No run script found, skipping banner injection")
         return False
 
-    with open(run_script, "r", encoding="utf-8") as f:
+    with open(run_script, encoding="utf-8") as f:
         content = f.read()
 
     # Robust cleanup of any existing markers (App or Addon, with or without #)

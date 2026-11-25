@@ -73,7 +73,7 @@ def main():
         sys.exit(1)
 
     try:
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             current_data = yaml.safe_load(f)
             new_version = current_data.get("scriptVersion")
     except (yaml.YAMLError, OSError) as e:
@@ -103,7 +103,7 @@ def main():
 
     print(f"Bumping script version: {new_version} -> {bumped_version}")
 
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         content = f.read()
 
     pattern = r'(scriptVersion:\s*")[^"]+(")'

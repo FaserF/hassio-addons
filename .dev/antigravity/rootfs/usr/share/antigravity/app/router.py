@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request
 
@@ -36,8 +36,8 @@ async def get_status(request: Request) -> SystemStatus:
     return scheduler.get_system_status()
 
 
-@api_router.get("/accounts", response_model=List[AccountQuota])
-async def get_accounts(request: Request) -> List[AccountQuota]:
+@api_router.get("/accounts", response_model=list[AccountQuota])
+async def get_accounts(request: Request) -> list[AccountQuota]:
     """List all accounts and current quotas."""
     scheduler = request.app.state.scheduler
     status = scheduler.get_system_status()
@@ -112,7 +112,7 @@ async def delete_account(account_name: str, request: Request) -> AccountActionRe
 
 
 @api_router.get("/oauth/auth-url", response_model=AuthUrlResponse)
-async def get_oauth_auth_url(request: Request, client_id: Optional[str] = None) -> AuthUrlResponse:
+async def get_oauth_auth_url(request: Request, client_id: str | None = None) -> AuthUrlResponse:
     """Get standard Google OAuth authorization URL for browser sign-in."""
     fetcher = request.app.state.scheduler.fetcher
     redirect_uri = "https://sdk.cloud.google.com/applicationdefaultcredentials.html"
@@ -235,15 +235,15 @@ async def refresh_single_account(account_name: str, request: Request) -> Account
     return quota
 
 
-@api_router.post("/test-credentials", response_model=Dict[str, Any])
-async def test_credentials(req: CredentialsTestRequest, request: Request) -> Dict[str, Any]:
+@api_router.post("/test-credentials", response_model=dict[str, Any])
+async def test_credentials(req: CredentialsTestRequest, request: Request) -> dict[str, Any]:
     """Validate pasted OAuth credentials or refresh token."""
     fetcher = request.app.state.scheduler.fetcher
     return await fetcher.test_credentials(req)
 
 
-@api_router.get("/config", response_model=Dict[str, Any])
-async def get_config(request: Request) -> Dict[str, Any]:
+@api_router.get("/config", response_model=dict[str, Any])
+async def get_config(request: Request) -> dict[str, Any]:
     """Get non-sensitive addon runtime configuration."""
     scheduler = request.app.state.scheduler
     return {
@@ -261,6 +261,6 @@ async def get_config(request: Request) -> Dict[str, Any]:
 
 
 @api_router.get("/health")
-async def health_check() -> Dict[str, str]:
+async def health_check() -> dict[str, str]:
     """API health status."""
     return {"status": "ok", "service": "antigravity"}

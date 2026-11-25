@@ -11,7 +11,8 @@ import json
 import logging
 import ssl
 import time
-from typing import Any, Callable, Dict, Optional
+from collections.abc import Callable
+from typing import Any
 
 import websockets
 
@@ -41,7 +42,7 @@ def _is_http_401(exc: Exception) -> bool:
     return getattr(resp, "status_code", None) == 401
 
 
-def _parse_price(val: Any) -> Optional[float]:
+def _parse_price(val: Any) -> float | None:
     if isinstance(val, (int, float)):
         return float(val)
     if isinstance(val, dict) and val.get("price") is not None:
@@ -80,24 +81,24 @@ class TRWebSocketKeeper:
 
     def __init__(
         self,
-        token_factory: Callable[[], Optional[str]],
-        on_data_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
-        on_auth_lost_callback: Optional[Callable[..., Any]] = None,
-        on_token_refresh: Optional[Callable[[], Any]] = None,
+        token_factory: Callable[[], str | None],
+        on_data_callback: Callable[[dict[str, Any]], None] | None = None,
+        on_auth_lost_callback: Callable[..., Any] | None = None,
+        on_token_refresh: Callable[[], Any] | None = None,
     ) -> None:
         self._token_factory = token_factory
         self._on_data_callback = on_data_callback
         self._on_auth_lost_callback = on_auth_lost_callback
         self._on_token_refresh = on_token_refresh
-        self._ws: Optional[Any] = None
-        self._task: Optional[asyncio.Task] = None
+        self._ws: Any | None = None
+        self._task: asyncio.Task | None = None
         self._connected_event = asyncio.Event()
         self.is_authenticated: bool = False
-        self.last_error: Optional[str] = None
+        self.last_error: str | None = None
         self._running: bool = False
         self._reconnect_delay: float = _RECONNECT_DELAY_MIN
         self.latest_data: dict[str, Any] = _default_latest_data()
-        self.last_data_update_time: Optional[float] = None
+        self.last_data_update_time: float | None = None
         self.active_categories: set[str] = {"portfolio", "cash", "savings", "card", "timeline"}
         self._subscribed_categories: dict[str, int] = {}
         self._portfolio_payload: dict[str, Any] = {}
@@ -160,7 +161,7 @@ class TRWebSocketKeeper:
                 return False
             try:
                 await asyncio.wait_for(self._connected_event.wait(), timeout=min(remaining, 0.25))
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 continue
         return self.is_authenticated
 
@@ -362,9 +363,7 @@ class TRWebSocketKeeper:
         await self._ws.send(f'sub {sub_id} {{"type":"instrument","id":"{isin}"}}')
         _LOGGER.debug("WS Keeper: querying instrument metadata for %s (sub %s)", isin, sub_id)
 
-    async def _subscribe_ticker(
-        self, pos: dict[str, Any], exchange: str, fallbacks: Optional[list[str]] = None
-    ) -> None:
+    async def _subscribe_ticker(self, pos: dict[str, Any], exchange: str, fallbacks: list[str] | None = None) -> None:
         isin = str(pos.get("isin", ""))
         if not isin or not self._ws:
             return

@@ -6,7 +6,7 @@ FILE_PATH = "/tado_aa.py"
 
 
 def replace_in_file(filepath, mapping):
-    with open(filepath, "r") as f:
+    with open(filepath) as f:
         content = f.read()
 
     replaced = []

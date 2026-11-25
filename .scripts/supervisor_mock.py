@@ -43,13 +43,13 @@ class SupervisorMockHandler(BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         # Allow some logging to help debug
-        sys.stderr.write("%s - - [%s] %s\n" % (self.address_string(), self.log_date_time_string(), format % args))
+        sys.stderr.write(f"{self.address_string()} - - [{self.log_date_time_string()}] {format % args}\n")
 
     def get_options(self):
         """Load options from file dynamically with retries for file locks."""
         for _ in range(3):
             try:
-                with open(self.options_path, "r", encoding="utf-8-sig") as f:
+                with open(self.options_path, encoding="utf-8-sig") as f:
                     data = json.load(f)
                     # Ensure at least info log_level exists
                     if not data.get("log_level"):

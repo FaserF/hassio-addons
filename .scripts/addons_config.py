@@ -3,9 +3,7 @@ Single Source of Truth for Home Assistant Add-ons repository configuration.
 Used across CI scripts, documentation generators, and README formatters.
 """
 
-from typing import Set
-
-DEV_ADDONS: Set[str] = {
+DEV_ADDONS: set[str] = {
     "aegisbot",
     "solumati",
     "alivro",
@@ -17,7 +15,7 @@ DEV_ADDONS: Set[str] = {
     "epicgamesfree",
 }
 
-UNSUPPORTED_ADDONS: Set[str] = {
+UNSUPPORTED_ADDONS: set[str] = {
     "antigravity-server",
     "bt-mqtt-gateway",
     "freenom-dns-updater",
@@ -93,7 +91,7 @@ def check_dev_addons_version_warnings(repo_root: str) -> list[str]:
             if os.path.isfile(cfg_path):
                 checked.add(clean_item)
                 try:
-                    with open(cfg_path, "r", encoding="utf-8") as f:
+                    with open(cfg_path, encoding="utf-8") as f:
                         data = yaml.safe_load(f)
                     version_str = str(data.get("version", ""))
                     if version_str:

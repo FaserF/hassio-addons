@@ -67,7 +67,7 @@ def get_version_from_config(config_path: str) -> str | None:
     if not os.path.isfile(config_path):
         return None
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             for line in f:
                 if line.startswith("version:"):
                     return line.split(":", 1)[1].strip().strip('"').strip("'")
@@ -81,7 +81,7 @@ def set_version_in_config(config_path: str, new_version: str) -> bool:
     if not os.path.isfile(config_path):
         return False
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             content = f.read()
 
         version_pattern = r"""^(version:\s*["']?)([^"'\s]+)(["']?)"""
@@ -108,7 +108,7 @@ def load_previous_edge_versions(versions_file: str) -> dict[str, str]:
         return versions
 
     try:
-        with open(versions_file, "r", encoding="utf-8") as f:
+        with open(versions_file, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line or "=" not in line:

@@ -70,7 +70,7 @@ def find_addons(repo_root):
 def get_slug_from_config(config_path):
     """Extract slug from config.yaml."""
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             config = yaml.safe_load(f)
             return config.get("slug") or os.path.basename(os.path.dirname(config_path))
     except Exception as e:
@@ -88,7 +88,7 @@ def normalize_slug_for_image(slug):
 def add_image_field(config_path, slug, dry_run=False):
     """Add or update image field in config.yaml."""
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             content = f.read()
 
         # Generate correct image name

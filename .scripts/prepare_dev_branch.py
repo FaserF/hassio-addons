@@ -16,7 +16,7 @@ def update_repository_json():
         return
 
     try:
-        with open(repo_path, "r", encoding="utf-8") as f:
+        with open(repo_path, encoding="utf-8") as f:
             data = json.load(f)
 
         data["name"] = "FaserF's Home Assistant Apps (Dev)"
@@ -34,7 +34,7 @@ def update_repository_json():
 def remove_image(file_path):
     if not os.path.exists(file_path):
         return
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
     new_content = re.sub(r"^(\s*)image:.*$\n?", "", content, flags=re.MULTILINE)
     new_content = re.sub(r"^(\s*)#\s*image:.*$\n?", "", new_content, flags=re.MULTILINE)
@@ -47,7 +47,7 @@ def remove_image(file_path):
 def set_experimental(file_path):
     if not os.path.exists(file_path):
         return
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
     if "stage:" in content:
         new_content = re.sub(r"^\s*stage:.*$", "stage: experimental", content, flags=re.MULTILINE)

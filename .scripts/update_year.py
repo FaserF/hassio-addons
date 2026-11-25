@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Update year references from previous year to current year in README and LICENSE files.
 This script is designed to be run annually on January 1st.
@@ -27,7 +26,7 @@ def update_license_file(license_path, old_year, new_year):
     if not os.path.exists(license_path):
         return False
 
-    with open(license_path, "r", encoding="utf-8") as f:
+    with open(license_path, encoding="utf-8") as f:
         content = f.read()
 
     original_content = content
@@ -66,7 +65,7 @@ def update_readme_md(readme_path, old_year, new_year):
     if not os.path.exists(readme_path):
         return False
 
-    with open(readme_path, "r", encoding="utf-8") as f:
+    with open(readme_path, encoding="utf-8") as f:
         content = f.read()
 
     original_content = content

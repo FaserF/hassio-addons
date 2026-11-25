@@ -6,6 +6,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT_PATH = REPO_ROOT / ".scripts" / "sync_edge_versions.py"
 
 spec = importlib.util.spec_from_file_location("sync_edge_versions", SCRIPT_PATH)
+assert spec is not None and spec.loader is not None
 sync_edge_versions = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(sync_edge_versions)
 parse_semver = sync_edge_versions.parse_semver

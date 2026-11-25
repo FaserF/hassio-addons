@@ -18,7 +18,7 @@ def get_addon_title(addon_dir: str) -> str:
     cfg_file = os.path.join(addon_dir, "config.yaml")
     if os.path.exists(cfg_file):
         try:
-            with open(cfg_file, "r", encoding="utf-8") as f:
+            with open(cfg_file, encoding="utf-8") as f:
                 cfg = yaml.safe_load(f)
                 if isinstance(cfg, dict) and "name" in cfg:
                     return str(cfg["name"])

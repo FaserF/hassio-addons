@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 import aiohttp
 import websockets
@@ -17,7 +17,7 @@ class CDPClient:
 
     def __init__(self, port: int = CDP_PORT) -> None:
         self.port = port
-        self._session: Optional[aiohttp.ClientSession] = None
+        self._session: aiohttp.ClientSession | None = None
 
     async def _get_session(self) -> aiohttp.ClientSession:
         if self._session is None or self._session.closed:
@@ -29,7 +29,7 @@ class CDPClient:
             await self._session.close()
             self._session = None
 
-    async def send_cmd(self, method: str, params: Optional[Dict[str, Any]] = None) -> Any:
+    async def send_cmd(self, method: str, params: dict[str, Any] | None = None) -> Any:
         """Send command via Chrome DevTools Protocol."""
         try:
             session = await self._get_session()

@@ -104,7 +104,7 @@ def get_git_log_for_addon(addon_path, since_tag=None, ignore_tag=None):
                 config_file = os.path.join(addon_path, "config.yaml")
                 if os.path.isfile(config_file):
                     try:
-                        with open(config_file, "r", encoding="utf-8") as f:
+                        with open(config_file, encoding="utf-8") as f:
                             for line in f:
                                 if line.startswith("slug:"):
                                     addon_slug = line.split(":", 1)[1].strip().strip("\"'")
@@ -566,7 +566,7 @@ def bump_version(
 
     print(f"📄 Processing {config_path}...")
 
-    with open(config_path, "r", encoding="utf-8") as f:
+    with open(config_path, encoding="utf-8") as f:
         content = f.read()
 
     # Regex to find version (supports -dev and -dev-timestamp-commit suffix)
@@ -654,7 +654,7 @@ def bump_version(
         skip_auto_generation = False
 
         if os.path.exists(changelog_path):
-            with open(changelog_path, "r", encoding="utf-8") as f:
+            with open(changelog_path, encoding="utf-8") as f:
                 existing_changelog = f.read()
 
             # Check if entry for new version already exists and extract it

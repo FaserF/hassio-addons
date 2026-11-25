@@ -1,7 +1,7 @@
 """Unit tests for scheduler in Google Antigravity Addon."""
 
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -48,7 +48,7 @@ def test_scheduler_adaptive_recalculation():
         idle_interval=3600,
     )
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     # 1. Activity within last 5 minutes -> Fast Polling (180s)
     scheduler.last_change_at = now - timedelta(minutes=5)
