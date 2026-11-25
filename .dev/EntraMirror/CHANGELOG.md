@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2 (2026-11-25)
+
+### 🐛 Bug Fixes
+
+- Make host port `8094/tcp` optional (`null` by default) to avoid address-already-in-use errors while keeping Ingress enabled on port `8094` (Fixes #1406)
+
 ## 0.1.1 (2026-08-22)
 
 ### ✨ Features

@@ -375,7 +375,7 @@ fi
 # First Admin Password (if provided)
 if bashio::config.has_value 'first_admin_password'; then
 	FIRST_ADMIN_PASSWORD=$(bashio::config 'first_admin_password')
-	export ENTRAMIRROR_FIRST_ADMIN_[REDACTED_SECRET_88213]
+	export ENTRAMIRROR_FIRST_ADMIN_PASSWORD="$FIRST_ADMIN_PASSWORD"
 fi
 
 # GitHub Repo Configuration
