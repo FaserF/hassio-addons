@@ -9,7 +9,7 @@ pydantic-settings==2.16.3
 python-multipart==0.0.34
 msal==1.39.0
 PyJWT==2.15.1
-httpx==0.28.1
+httpx==0.29.0
 bcrypt==5.0.0
 cryptography==50.0.2
 requests==2.34.2
