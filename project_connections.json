@@ -1,7 +1,7 @@
 {
   "project": "hassio-addons",
   "description": "Per-addon file connection map for AI agents",
-  "timestamp": "2026-11-25T22:38:18.845497",
+  "timestamp": "2026-11-27T14:58:14.105268",
   "connections": {
     "ShieldDNS": {
       "name": "ShieldDNS",
@@ -333,7 +333,7 @@
     },
     "paseo": {
       "name": "Paseo",
-      "version": "0.3.1",
+      "version": "0.3.2",
       "description": "Autonomous AI Code Studio & Web IDE powered by OmniRoute and OpenCode.",
       "arch": ["aarch64", "amd64"],
       "image": "ghcr.io/faserf/hassio-addons-paseo-{arch}",
