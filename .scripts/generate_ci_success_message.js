@@ -1,4 +1,10 @@
-module.exports = ({ skipped, buildStatus, autoMergeNote, previousErrorsNote, isSelfDev = false }) => {
+module.exports = ({
+  skipped,
+  buildStatus,
+  autoMergeNote,
+  previousErrorsNote,
+  isSelfDev = false,
+}) => {
   let body = '## ✅ Verification Successful\n\n';
   if (!isSelfDev) {
     body += 'Thank you for your contribution!\n\n';
