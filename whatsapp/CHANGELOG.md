@@ -1,5 +1,26 @@
 # Changelog
 
+## 2.1.11-dev-20261127-1713-7119b79 (2026-11-27)
+
+### 🐛 Bug Fixes
+- ack top-level status stanzas and expose disconnect reason (fixes FaserF/ha-whatsapp#136, fixes #1300) ([`dc9778b8`](https://github.com/FaserF/hassio-addons/commit/dc9778b88750321756274891a00763e644528f14))
+- remove duplicated closing brace causing SyntaxError in messaging.js ([`6609db60`](https://github.com/FaserF/hassio-addons/commit/6609db606b42153cbf80b3114eaa66c78f62790b))
+- sanitize all image URLs in /send_image to prevent SSRF ([`ef5df544`](https://github.com/FaserF/hassio-addons/commit/ef5df544735f109dab505cdb5b3483d5bc18f0d2))
+- prevent SSRF vulnerability in /send_image route ([`6dd89c2a`](https://github.com/FaserF/hassio-addons/commit/6dd89c2aec11ae815dc8e288596a17b988dbbb3f))
+
+### 📦 Dependencies
+- ⬆️ Update dependency eslint to v10.16.0 (#1417) ([`7119b791`](https://github.com/FaserF/hassio-addons/commit/7119b791c5b0bccbb0bec2338d6cb3bea359c8ed))
+- ⬆️ Update dependency jimp to v2 (#1401) ([`bfac253a`](https://github.com/FaserF/hassio-addons/commit/bfac253ae7cccd25f823008f14079c2508427fca))
+- ⬆️ Update dependency brace-expansion to v5.1.0 (#1399) ([`3f5bad16`](https://github.com/FaserF/hassio-addons/commit/3f5bad16f19c593bba1521441d9452c3d7433ef7))
+- ⬆️ Update dependency jimp to v1.7.0 (#1393) ([`b44194ad`](https://github.com/FaserF/hassio-addons/commit/b44194adc632d3a656bf684779a6586ca45aa999))
+- ⬆️ Update dependency express-rate-limit to v8.7.5 (#1366) ([`09b39ae4`](https://github.com/FaserF/hassio-addons/commit/09b39ae4f890ffee49fe92550b44276774aaefda))
+- ⬆️ Update dependency fastapi to v0.165.0 ([`4d371c6d`](https://github.com/FaserF/hassio-addons/commit/4d371c6dcf9d58bcb3fb0b1dcbe6a31b45559722))
+- ⬆️ Update dependency fastapi to v0.164.0 (#1362) ([`fb0db6ac`](https://github.com/FaserF/hassio-addons/commit/fb0db6acc6c53a84936467f741a86878c90d530f))
+
+### 🚀 Other
+- document incoming reaction events (#1353) ([`cf9e2db7`](https://github.com/FaserF/hassio-addons/commit/cf9e2db74a5c85bfaf04c0fb4366ad97e460d3ce))
+
+
 ## 2.1.10 (2026-11-15)
 
 ### ✨ Features
