@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.3 (2026-11-27)
+
+### ✨ Features
+- move to stable root, bump to 0.1.9, fix ingress route ([`011d85f1`](https://github.com/FaserF/hassio-addons/commit/011d85f1c36cbf299d180bc3e120ba368abb8e38))
+
+### 🐛 Bug Fixes
+- install build-essential for arm64 node-gyp native builds ([`87b4bc7e`](https://github.com/FaserF/hassio-addons/commit/87b4bc7e1575c270c359b9b9d87c32f70f5b36e3))
+- apply ruff, mypy, and redacted-placeholder fixes across addons and scripts ([`a9368d72`](https://github.com/FaserF/hassio-addons/commit/a9368d726cfd409a55699f5217260b4428e07233))
+- enforce patched nginx for CVE-2026-123007 across 10 addons ([`2aa47a45`](https://github.com/FaserF/hassio-addons/commit/2aa47a4566f54f2634f53dd87bfa1f46cf707e7c))
+
+
 ## 0.3.2 (2026-11-27)
 
 ### ✨ Features
