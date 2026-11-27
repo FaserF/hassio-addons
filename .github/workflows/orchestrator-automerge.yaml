@@ -455,7 +455,8 @@ jobs:
           steps.check-author.outputs.allowed == 'true' &&
           steps.check-ci-ran.outputs.ci_ran == 'true' &&
           steps.verify-pr-status.outputs.still_valid == 'true' &&
-          steps.check-label.outputs.skip != 'true'
+          steps.check-label.outputs.skip != 'true' &&
+          !contains(fromJSON('["FaserF", "faserf-hermes-agent", "faserf-hermes-agent[bot]", "app/faserf-hermes-agent"]'), steps.find-pr.outputs.pr_author)
         uses: actions/github-script@v9
         with:
           github-token: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}

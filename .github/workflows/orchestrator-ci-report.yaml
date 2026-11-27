@@ -141,12 +141,14 @@ jobs:
                 const buildStatus = buildSkipped ? "⏭️ Skipped (docs-only)" : "✅ Successful";
 
                 const author = fullPr.user.login;
-                const isMaintainer = ['FaserF', 'dependabot[bot]', 'renovate[bot]', 'github-actions[bot]'].includes(author);
+                const selfDevAuthors = ['FaserF', 'faserf-hermes-agent', 'faserf-hermes-agent[bot]', 'app/faserf-hermes-agent'];
+                const isSelfDev = selfDevAuthors.includes(author);
+                const isMaintainer = isSelfDev || ['dependabot[bot]', 'renovate[bot]', 'github-actions[bot]'].includes(author);
 
                 let autoMergeNote = "";
                 if (allSkipped) {
                     autoMergeNote = "\n\n> ⚠️ **No CI jobs ran** for this PR (likely docs-only or workflow files).\n> Auto-merge is **disabled** when no verification occurs.";
-                } else if (isMaintainer) {
+                } else if (isMaintainer && !isSelfDev) {
                     autoMergeNote = "\n\n🚀 **Auto-merge will be enabled** if branch protection rules are satisfied.";
                 }
 
@@ -156,7 +158,8 @@ jobs:
                     skipped: allSkipped,
                     buildStatus: buildStatus,
                     autoMergeNote: autoMergeNote,
-                    previousErrorsNote: ""
+                    previousErrorsNote: "",
+                    isSelfDev: isSelfDev
                 });
 
                 await github.rest.issues.createComment({
