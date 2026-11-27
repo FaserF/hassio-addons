@@ -9,7 +9,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # hadolint ignore=DL3016
 
 # App metadata (injected by CI)
-ENV APP_VERSION="0.3.1"
+ENV APP_VERSION="0.3.2"
 ENV APP_NAME="Paseo"
 ENV APP_SLUG="paseo"
 ENV APP_UNSUPPORTED="false"
