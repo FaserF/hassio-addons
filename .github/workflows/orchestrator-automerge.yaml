@@ -107,43 +107,11 @@ jobs:
             echo "found=true"
           } >> "$GITHUB_OUTPUT"
 
-      - name: ❌ Report CI Failure
+      - name: ⏭️ Skip Auto-Merge on Failed CI
         if: steps.find-pr.outputs.found == 'true' && github.event.workflow_run.conclusion != 'success'
-        uses: actions/github-script@v9
-        env:
-          RUN_NUMBER: "${{ github.event.workflow_run.run_number }}"
-          RUN_URL: "${{ github.event.workflow_run.html_url }}"
-          PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
-        with:
-          github-token: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
-          script: |
-            const prNumber = parseInt(process.env.PR_NUMBER);
-            const { data: comments } = await github.rest.issues.listComments({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-            });
-            const signature = "❌ **Auto-merge skipped:**";
-            const existing = comments.find(c => c.user.type === "Bot" && (c.body.includes(signature) || c.body.includes("❌ **Auto-merge aborted:**")));
-            const body = "❌ **Auto-merge skipped:** The associated CI run ([#" + process.env.RUN_NUMBER + "](" + process.env.RUN_URL + ")) did not complete successfully. Please resolve all CI issues to trigger auto-merge.";
-
-            if (existing) {
-                console.log("Updating existing auto-merge failure comment...");
-                await github.rest.issues.updateComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    comment_id: existing.id,
-                    body: body
-                });
-            } else {
-                console.log("Posting new auto-merge failure comment...");
-                await github.rest.issues.createComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: prNumber,
-                    body: body
-                });
-            }
+        run: |
+          echo "Associated CI run (${{ github.event.workflow_run.html_url }}) did not succeed. Skipping auto-merge (CI Report handles failure details)."
+          exit 0
 
       - name: 🚫 Skip if no PR found
         if: steps.find-pr.outputs.found != 'true'
@@ -153,7 +121,7 @@ jobs:
 
       - name: 👤 Check if author is allowed
         id: check-author
-        if: steps.find-pr.outputs.found == 'true'
+        if: steps.find-pr.outputs.found == 'true' && github.event.workflow_run.conclusion == 'success'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
         run: |
@@ -249,15 +217,11 @@ jobs:
 
           # Determine if auto-merge is allowed
           if [ "$FAILED_COUNT" -gt 0 ]; then
-            echo "❌ CI jobs failed - auto-merge blocked"
+            echo "❌ CI jobs failed - auto-merge blocked (CI Report handles PR comment)"
             {
               echo "ci_ran=false"
               echo "reason=failed"
             } >> "$GITHUB_OUTPUT"
-
-            # Post comment and fail
-            bash .github/scripts/minimize-comments.sh "$PR_NUMBER" "Auto-merge" || true
-            gh issue comment "$PR_NUMBER" --body "❌ **Auto-merge aborted:** CI jobs failed."
             exit 1
 
           elif [ "$TOTAL_JOBS" -eq 0 ]; then
@@ -266,9 +230,6 @@ jobs:
               echo "ci_ran=false"
               echo "reason=no_jobs"
             } >> "$GITHUB_OUTPUT"
-
-            # Post info comment and exit success (don't fail workflow for docs)
-            gh issue comment "$PR_NUMBER" --body "ℹ️ **Auto-merge skipped:** No verification jobs required (Docs/Workflow only)."
             exit 0
 
           elif [ "$SUCCESS_COUNT" -eq 0 ]; then
@@ -456,7 +417,7 @@ jobs:
           steps.check-ci-ran.outputs.ci_ran == 'true' &&
           steps.verify-pr-status.outputs.still_valid == 'true' &&
           steps.check-label.outputs.skip != 'true' &&
-          !contains(fromJSON('["FaserF", "faserf-hermes-agent", "faserf-hermes-agent[bot]", "app/faserf-hermes-agent"]'), steps.find-pr.outputs.pr_author)
+          !contains(fromJSON('["FaserF", "faserf-hermes-agent", "faserf-hermes-agent[bot]", "app/faserf-hermes-agent", "renovate[bot]", "app/renovate", "dependabot[bot]", "app/dependabot", "github-actions[bot]"]'), steps.find-pr.outputs.pr_author)
         uses: actions/github-script@v9
         with:
           github-token: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}

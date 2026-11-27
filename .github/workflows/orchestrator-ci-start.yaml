@@ -13,8 +13,10 @@ permissions:
 jobs:
   ci_start:
     name: 🚀 CI Start Notification (Privileged)
-    # Only run on actual PRs
-    if: github.event_name == 'pull_request_target'
+    # Only run on actual PRs from external human contributors (skip self-dev & dependency bots)
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      !contains(fromJSON('["FaserF", "faserf-hermes-agent", "faserf-hermes-agent[bot]", "app/faserf-hermes-agent", "renovate[bot]", "app/renovate", "dependabot[bot]", "app/dependabot"]'), github.event.pull_request.user.login)
     runs-on: ubuntu-latest
     env:
       BOT_APP_ID: ${{ secrets.BOT_APP_ID }}
