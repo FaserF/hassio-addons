@@ -28,6 +28,8 @@ RUN \
         procps \
         net-tools \
         python3 \
+        make \
+        g++ \
         python3-pip \
         python3-venv \
         bzip2 \
